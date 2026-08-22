@@ -30,6 +30,13 @@ One row per candidate feature. `Spec` is filled when the feature is promoted via
 a pointer. Sequence thin vertical slices: foundations first, reads before writes
 (`adoption/greenfield.md` step 5).
 
+**Features map many-to-many to inventory items — never default to one page = one
+feature.** A feature may cover several screens (login + forgot-password + reset = one
+auth feature), and one screen may split into several features (a page's read-only view
+ships before its edit actions — reads before writes). Group by entity + risk class;
+split anything that crosses the read/write line. Every inventory id must appear in some
+feature's `Covers` cell or be explicitly dropped in the decisions log.
+
 Status flow: `idea → specified → in progress → shipped → dropped`
 
 | Feature | Covers (Inv #) | Priority | Status | Owner | Spec |
