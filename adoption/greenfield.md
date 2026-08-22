@@ -3,6 +3,24 @@
 The sequence below takes an empty repository to a working, gated delivery loop. Do the steps
 in order — each one is the precondition of the next.
 
+## 0. Verify the kit copied completely
+
+`.specify/` and `.claude/` are **dot-directories** — file managers and naive copy globs
+(`copy *`, drag-select) silently skip them. A partial install is worse than none: the agent
+loses the `/speckit.*` commands and improvises its own structure. After copying, confirm
+every one of these exists in the target project:
+
+```text
+CLAUDE.md                          AGENTS.md
+.specify/memory/constitution.md    .specify/templates/   .specify/scripts/
+.claude/commands/                  (the /speckit.* command files)
+docs/sdlc/                         docs/rulebooks/
+specs/_templates/                  scripts/doc-lint.ps1
+```
+
+Machine check: `pwsh -File scripts/doc-lint.ps1` — it asserts the kit's required paths
+exist and exits non-zero on a partial install.
+
 ## 1. Ratify the constitution
 
 Copy the kit, then fill every `{{SLOT}}` and `TODO(...)` in `.specify/memory/constitution.md`:

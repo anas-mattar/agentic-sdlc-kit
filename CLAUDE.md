@@ -37,6 +37,26 @@ Package manager: yarn 4.x (corepack)
 **Conflict rules**: if any two rungs conflict, stop and report — never silently choose.
 Never invent a new UI layout when visual references exist.
 
+## Feature Structure
+
+Branch `NNN-name` maps to directory `specs/NNN-name/` — always, with exactly these names:
+
+```text
+specs/NNN-name/
+├── spec.md          # first
+├── plan.md          # second
+├── tasks.md         # third
+├── screenshots/     # visual references, if the feature has any
+├── contracts/       # external/API contracts, if any
+├── data-model.md    # if the feature touches data
+└── research.md      # optional
+```
+
+This structure is law even when tooling is absent. If the `/speckit.*` commands are
+unavailable (kit partially installed), do NOT invent a different layout: create this exact
+structure manually from the templates in `.specify/templates/`, and report the incomplete
+install so the user can finish it (see `adoption/`, step 0).
+
 ## Workflow
 
 1. Check current branch and working tree; stop if unrelated uncommitted changes exist.
