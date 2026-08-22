@@ -43,7 +43,9 @@ Never invent a new UI layout when visual references exist.
 2. Run the baseline gate on untouched code.
 3. One feature branch per feature (`docs/sdlc/branch-strategy.md`).
 4. Create/update `spec.md`, then `plan.md`, then `tasks.md` (the `/speckit.*` commands do this).
-5. Implement **one phase only**, then stop and ask the user to run the gate.
+5. Implement **one phase only**. UI phase with visual references? Run the Visual
+   Compliance Loop (`docs/sdlc/review-process.md`) until the deviation table is empty or
+   user-approved. Then stop and ask the user to run the gate.
 6. User checks `git diff --stat`; fix only current-phase issues.
 7. Commit the successful phase. AI review, then human review. Merge only after approval.
 
