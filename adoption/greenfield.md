@@ -1,0 +1,59 @@
+# Adoption Track A — New System From Scratch
+
+The sequence below takes an empty repository to a working, gated delivery loop. Do the steps
+in order — each one is the precondition of the next.
+
+## 1. Ratify the constitution
+
+Copy the kit, then fill every `{{SLOT}}` and `TODO(...)` in `.specify/memory/constitution.md`:
+project name, PK standard, audit fields, repository names (or delete principle III for
+single-repo). Write the domain-invariants pack (`modules/finance/finance-invariants.md` is the
+model) and point principle VII at it. Bump to v1.0.0 with today's ratification date. Keep it
+under ~20 principles — a constitution that says everything governs nothing.
+
+## 2. Fill CLAUDE.md
+
+Complete the Stack Profile and the `{{..._PATH}}` slots in `CLAUDE.md`. Delete any
+Task-Scoped Reading row whose rulebook doesn't exist yet — every path in that file must
+resolve from day one. Keep the file thin; rules live in rulebooks, CLAUDE.md holds pointers.
+
+## 3. Define and PROVE the gate
+
+Fill the gate slots in `docs/sdlc/gate-command.md`, scaffold the empty project(s), and run the
+gate until it exits 0 on the empty scaffold. **A gate that has never been green is not a
+gate.** Do this before any feature — otherwise the first feature debugs the toolchain and the
+feature at once.
+
+## 4. Ship `001-solution-scaffold` as a real feature
+
+Run the full ritual on something harmless: `/speckit.specify` a scaffold feature, plan it,
+task it, implement one phase, have the user run the gate, review, merge. This rehearses every
+gear of the framework (branch → spec → phase → gate → diff → reviews → merge) while the
+stakes are zero, and leaves the team knowing what "Done" feels like.
+
+## 5. Sequence thin vertical slices — foundations first, reads before writes
+
+- Foundations before domain logic: auth, core entities, permissions, reference data.
+- **Read-only slices before write slices** for each domain area: a view/report over data
+  teaches the agent (and validates the model) at zero risk before the first mutation ships.
+- One deliverable per feature; one phase per commit.
+
+## 6. Grow the rulebooks reactively
+
+Don't write stack rulebooks up front. When review catches a class of mistake **twice**, it
+becomes: (a) an item in that tier's compliance checklist
+(`docs/rulebooks/compliance-checklist-template.md`), and (b) where possible, a lint rule or
+analyzer — machine enforcement beats prose. The checklist item can be deleted once the linter
+owns it.
+
+## 7. Keep the framework honest
+
+From the first week:
+
+- **Doc-lint**: a CI step (or scheduled check) asserting every path referenced by CLAUDE.md
+  and the constitution exists. Drift between docs and reality is the disease that kills
+  rule-based frameworks.
+- **CI gate as second witness**: run the gate on every push. The user-run gate remains the
+  trust ritual; CI catches the day someone skips it.
+- **Institutional knowledge lives in the repo**, not in one person's chat memory: deployment
+  residuals, protected test data, open sign-offs get a home under `docs/`.
