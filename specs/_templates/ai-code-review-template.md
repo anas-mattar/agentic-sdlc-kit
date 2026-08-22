@@ -20,7 +20,7 @@ paragraph: what the change does, why the verdict, and where the residual risk si
 | Area | Evidence |
 |---|---|
 | Spec match (FRs implemented as specified) | |
-| Visual-reference match (where references exist) | |
+| Visual-reference match (where references exist): Visual Compliance Loop deviation table attached, empty or user-approved (`docs/sdlc/review-process.md`) | |
 | Feature contract held (no unapproved table/migration/permission/package) | |
 | Constitution / domain invariants | |
 | Security (authn/authz, secrets, sensitive logging) | |

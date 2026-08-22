@@ -75,6 +75,24 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
+## Visual Inventory *(mandatory when the feature has `screenshots/` — else delete this section)*
+
+<!--
+  Transcribe EVERY reference screenshot into enumerated, checkable facts BEFORE any UI
+  code is written. Most visual-fidelity failures are elements the implementer never
+  consciously registered. Each item below becomes a requirement the implementation is
+  measured against in the Visual Compliance Loop (docs/sdlc/review-process.md).
+  Do not summarize — enumerate.
+-->
+
+### Screenshot: `[screenshots/filename.png]` — [screen / state name, viewport if known]
+
+- **VI-001**: [region or component — exact label text, position, alignment, size, color]
+- **VI-002**: [element ordering, e.g. "toolbar buttons left→right: Save, Export, Delete"]
+- **VI-003**: [state shown, e.g. "empty state: illustration + 'Add first invoice' button"]
+
+[Repeat one block per screenshot.]
+
 ## Requirements *(mandatory)*
 
 <!--
