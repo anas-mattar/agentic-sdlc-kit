@@ -33,6 +33,23 @@ param(
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path $Root).Path
 
+# --- Kit integrity: a partial install (dot-directories skipped during copy) makes the
+# agent lose the /speckit.* commands and improvise its own structure. Fail fast.
+$requiredKitPaths = @(
+    'CLAUDE.md'
+    'AGENTS.md'
+    '.specify/memory/constitution.md'
+    '.specify/templates'
+    '.specify/scripts'
+    '.claude/commands'
+    'docs/sdlc/definition-of-done.md'
+    'docs/sdlc/gate-command.md'
+    'docs/sdlc/review-process.md'
+    'docs/rulebooks'
+    'specs/_templates'
+)
+$missingKit = $requiredKitPaths | Where-Object { -not (Test-Path (Join-Path $Root $_)) }
+
 # Kit-owned governance docs. Stock Spec Kit files (.claude/commands, .specify/templates,
 # .specify/scripts) are excluded — they contain illustrative example paths by design.
 $docFiles = @(
@@ -104,6 +121,11 @@ foreach ($file in $docFiles) {
 
 Write-Host "doc-lint: scanned $($docFiles.Count) governance docs under $Root"
 
+if ($missingKit.Count -gt 0) {
+    Write-Host "ERROR: kit incomplete — $($missingKit.Count) required path(s) missing (dot-directories skipped during copy?):"
+    foreach ($m in $missingKit) { Write-Host "  $m" }
+}
+
 if ($slotCount -gt 0) {
     $level = $FailOnSlots ? 'ERROR' : 'INFO'
     Write-Host "${level}: $slotCount unfilled {{SLOT}} / TODO(...) markers remain (expected in the kit template; must be 0 after ratification)"
@@ -114,6 +136,6 @@ if ($broken.Count -gt 0) {
     foreach ($b in $broken) { Write-Host ("  {0}:{1}  {2}" -f $b.File, $b.Line, $b.Ref) }
 }
 
-if ($broken.Count -gt 0 -or ($FailOnSlots -and $slotCount -gt 0)) { exit 1 }
-Write-Host 'doc-lint: OK — every referenced path resolves'
+if ($missingKit.Count -gt 0 -or $broken.Count -gt 0 -or ($FailOnSlots -and $slotCount -gt 0)) { exit 1 }
+Write-Host 'doc-lint: OK — kit complete, every referenced path resolves'
 exit 0

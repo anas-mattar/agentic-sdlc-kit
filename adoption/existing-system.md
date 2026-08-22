@@ -4,6 +4,18 @@ Adopting the framework on a living codebase is different from greenfield in one 
 way: **the codebase, not the documents, is the incumbent source of truth.** The sequence
 below wraps governance around what exists before changing any of it.
 
+## 0. Verify the kit copied completely
+
+Same as greenfield step 0 — and it matters even more here, because an existing repository
+already has files, so a half-copied kit is easy to miss in the noise. `.specify/` and
+`.claude/` are **dot-directories** that file managers and naive copy globs silently skip;
+without them the agent loses the `/speckit.*` commands and improvises its own structure.
+Confirm `CLAUDE.md`, `AGENTS.md`, `.specify/memory/constitution.md`, `.specify/templates/`,
+`.specify/scripts/`, `.claude/commands/`, `docs/sdlc/`, `docs/rulebooks/`,
+`specs/_templates/`, and `scripts/doc-lint.ps1` all exist, then run
+`pwsh -File scripts/doc-lint.ps1` — it asserts the kit's required paths exist and exits
+non-zero on a partial install.
+
 ## 1. Start with a baseline audit feature — not code
 
 Your first "feature" writes documents only:
