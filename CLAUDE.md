@@ -86,6 +86,7 @@ Read the pack that matches what you are about to touch — not everything, every
 |---|---|
 | Any phase (always) | This file + `docs/sdlc/definition-of-done.md` |
 | Branching / starting a feature | `docs/sdlc/branch-strategy.md`, `docs/sdlc/repository-strategy.md` |
+| Project with more than one developer | `docs/sdlc/team-workflow.md` |
 | A schema / migration | {{DATABASE_RULES_PATH}} + `docs/sdlc/rollback-process.md` |
 | Domain-critical logic | `{{DOMAIN_INVARIANTS_PATH}}` |
 | An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution IX) |

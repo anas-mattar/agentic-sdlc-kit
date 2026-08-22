@@ -17,6 +17,21 @@ next number automatically.
 > `specs/<branch>` and reject branches that don't start with `NNN-`; a divergent convention
 > silently disables the whole tooling layer.
 
+## Number Allocation
+
+`create-new-feature.ps1` allocates the next number from the **local** `specs/` directory —
+fine for one developer, a collision for a team. With more than one developer, the remote is
+the ledger:
+
+1. `git fetch origin` before allocating.
+2. Take the next number unused by any local **or remote** branch or spec directory
+   (`git branch -r` / `git ls-remote --heads origin`).
+3. **Push the branch immediately** (`git push -u origin NNN-<name>`) — the number belongs
+   to whichever branch reaches the remote first. If you lose the race, renumber before any
+   other work.
+
+The rest of the multi-developer rules live in `docs/sdlc/team-workflow.md`.
+
 ## Branch Taxonomy
 
 | Pattern | Use for | Spec dir? | Example |

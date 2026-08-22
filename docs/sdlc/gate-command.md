@@ -1,6 +1,8 @@
 # Gate Command
 
 The user must run the gate locally. AI must not claim success without the user's exit code.
+In a team, "the user" means **the feature's owner** — the developer driving this feature's
+agent (`docs/sdlc/team-workflow.md`).
 
 ## Define this project's gates
 

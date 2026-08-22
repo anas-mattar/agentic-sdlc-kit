@@ -16,6 +16,10 @@
       - single-segment dirs       contracts/ (per-feature relative directories)
       - URLs and @-includes
 
+    Authoring convention this enforces: backticked paths MUST resolve in the kit; paths
+    that exist only after adoption (files the adopter creates, e.g. docs/roadmap.md) are
+    written in **bold** or wrapped in [brackets] so they are not linted.
+
     Unfilled {{SLOT}}s and TODO(...) markers are counted and reported as information.
     Pass -FailOnSlots to make them errors — adopting projects should turn this on once
     the constitution is ratified.
