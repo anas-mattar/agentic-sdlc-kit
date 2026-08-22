@@ -51,6 +51,8 @@ stakes are zero, and leaves the team knowing what "Done" feels like.
 
 ## 5. Sequence thin vertical slices — foundations first, reads before writes
 
+- Keep the feature queue in **docs/roadmap.md** (copy `specs/_templates/roadmap-template.md`);
+  the roadmap carries no implementation authority — features become real via `/speckit.specify`.
 - Foundations before domain logic: auth, core entities, permissions, reference data.
 - **Read-only slices before write slices** for each domain area: a view/report over data
   teaches the agent (and validates the model) at zero risk before the first mutation ships.

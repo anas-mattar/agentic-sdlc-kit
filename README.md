@@ -26,9 +26,10 @@ AGENTS.md                      Cross-agent pointer (@CLAUDE.md) so non-Claude ag
 .specify/                      Stock Spec Kit 0.4.4: templates, PowerShell scripts, init receipt
 .claude/commands/              Stock /speckit.* commands (specify, plan, tasks, implement, analyze, …)
 docs/sdlc/                     The process law: gate-command, review-process, rollback-process,
-                               branch-strategy, repository-strategy, deployment-standards, definition-of-done
+                               branch-strategy, repository-strategy, deployment-standards,
+                               definition-of-done, team-workflow (multi-developer layer)
 docs/rulebooks/                Compliance-checklist template (grow stack rulebooks reactively)
-specs/_templates/              House review templates: ai-code-review, human-pr-review, rollback
+specs/_templates/              House templates: ai-code-review, human-pr-review, rollback, roadmap
 modules/finance/               Worked example of a domain-invariants pack (write your own for your domain)
 adoption/                      Step-by-step tracks: greenfield.md and existing-system.md
 ```

@@ -33,8 +33,9 @@ Codify the conventions the codebase already has — its real PK strategy, its re
 columns, its real layering — even where they're imperfect. An aspirational constitution makes
 the agent "improve" code it shouldn't touch; principle IV (Architecture Consistency) only
 works when the constitution describes the actual architecture. Park the improvements you want
-in a roadmap doc; promote them to constitutional rules only after a feature actually migrates
-the codebase to them.
+in a roadmap doc (`specs/_templates/roadmap-template.md` → copy to **docs/roadmap.md**; the
+generated inventory / authored roadmap split matters — see the template); promote them to
+constitutional rules only after a feature actually migrates the codebase to them.
 
 ## 3. Reverse-engineer reference docs for load-bearing logic
 
