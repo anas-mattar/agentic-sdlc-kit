@@ -58,11 +58,35 @@ Contains:
 Use it when backend and frontend teams need one canonical place for governance; otherwise keep
 specs in the primary repository.
 
+## Nested Layout (recommended when {{SPECS_REPO}} exists)
+
+Clone the code repositories **inside** the governance repository's working directory and list
+them in its `.gitignore` (the kit's `.gitignore` ships commented-out lines for exactly this).
+They remain fully independent repositories — **never git submodules** (pinned SHAs and detached
+HEADs are chronic friction, especially for AI agents).
+
+```text
+{{SPECS_REPO}}/                # governance repo
+├── CLAUDE.md  .specify/  docs/  specs/  scripts/
+├── {{BACKEND_REPO}}/          # independent code repo (ignored by parent)
+└── {{FRONTEND_REPO}}/         # independent code repo (ignored by parent)
+```
+
+Why nest: AI agents read `CLAUDE.md` from the working directory *and its ancestors*, so an
+agent working inside a code repository automatically inherits the governance rules — no pointer
+copies, no drift, one constitution. Governance changes merge in the parent without touching
+code repositories.
+
+The cost: three histories share one directory tree, so "which repository is active" becomes the
+discipline to watch — a commit from the wrong `cwd` lands in the wrong history. The parent's
+`.gitignore` makes most accidents harmless; confirm the active repository before every commit.
+
 ## Cross-Repository Feature Rule
 
 When a feature spans repositories:
 
-1. Create matching branches (same `NNN-<name>`) in each affected repository.
+1. Create matching branches (same `NNN-<name>`) in each affected repository — plus the spec
+   branch in {{SPECS_REPO}}, when one exists.
 2. Define the API contract in the feature's `contracts/` **before** frontend implementation.
 3. Implement and gate the backend phase first.
 4. Merge the backend after its gate passes and human review approves.
