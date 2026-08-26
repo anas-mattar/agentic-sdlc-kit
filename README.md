@@ -51,6 +51,12 @@ feature) → **feedback loops** (AI review, human review, second-model audits).
    define the gate in `docs/sdlc/gate-command.md` and **prove it green** — then ship feature
    `001` through the full ritual before anything real.
 
+Machine assist for the mechanical part: `pwsh -File scripts/init-kit.ps1` asks your project
+name, topology, and tiers, then instantiates the selected rulebooks, wires CLAUDE.md's
+Task-Scoped Reading table, fills the mechanical slots, and prints the judgment slots that
+remain yours (gates, invariants, stack profile). It generates no rulebook content — the
+judgment stays human.
+
 Find remaining slots at any time:
 
 ```bash
