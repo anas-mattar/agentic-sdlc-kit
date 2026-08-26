@@ -81,6 +81,11 @@ The cost: three histories share one directory tree, so "which repository is acti
 discipline to watch — a commit from the wrong `cwd` lands in the wrong history. The parent's
 `.gitignore` makes most accidents harmless; confirm the active repository before every commit.
 
+One more consequence: **a standalone clone of a code repository has no governance** — no
+constitution, no rulebooks, no specs. CI may clone a code repository alone to build and test,
+but any environment where an agent *authors* changes (including cloud agents) MUST reproduce
+the nested layout first.
+
 ## Cross-Repository Feature Rule
 
 When a feature spans repositories:
