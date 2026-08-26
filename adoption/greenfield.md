@@ -54,6 +54,14 @@ task it, implement one phase, have the user run the gate, review, merge. This re
 gear of the framework (branch → spec → phase → gate → diff → reviews → merge) while the
 stakes are zero, and leaves the team knowing what "Done" feels like.
 
+The scaffold feature's `plan.md` MUST record the selected architecture ADR-style — options
+considered, the decision, and its consequences (layering, dependency direction, persistence
+boundaries, error-handling strategy). Per the bootstrap clause of constitution principle IV,
+this approved plan **is** the architecture until the scaffold merges; after that it is "the
+existing architecture" every later feature must follow. There is no separate architecture
+document to invent — the decision lives in the plan, where the Constitution Check already
+reviews it.
+
 ## 5. Sequence thin vertical slices — foundations first, reads before writes
 
 - Keep the feature queue in **docs/roadmap.md** (copy `specs/_templates/roadmap-template.md`);

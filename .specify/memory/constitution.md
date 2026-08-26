@@ -1,9 +1,17 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (template / unversioned) → 0.1.0 (kit template — not yet ratified by a project)
-Bump rationale: Initial extraction of the portable constitution from a production
-  deployment of this framework (17 principles, 68 shipped features). Domain-specific
+Version change: 0.1.0 → 0.2.0 (kit template — not yet ratified by a project)
+Bump rationale: MINOR — Principle IV (Architecture Consistency) materially expanded with a
+  bootstrap clause: at project creation there is no existing architecture to follow, so during
+  the initial scaffold feature the approved plan.md IS the architecture source of truth, and
+  becomes "the existing architecture" once merged. Closes the greenfield gap where "follow the
+  existing architecture" was undefined at t=0. Dependent guidance updated:
+  adoption/greenfield.md step 4 (scaffold plan.md must record the architecture decision).
+
+Prior version history:
+  (template / unversioned) → 0.1.0: Initial extraction of the portable constitution from a
+  production deployment of this framework (17 principles, 68 shipped features). Domain-specific
   principles were moved to an optional domain module; parameterizable principles
   received {{SLOT}} placeholders. A project ratifies this as ITS constitution v1.0.0
   after filling every slot and resolving every TODO.
@@ -87,8 +95,17 @@ The existing architecture is the source of truth. New features MUST follow the e
 architecture. New architectural patterns, new frameworks, new UI libraries, and new persistence
 approaches MUST NOT be introduced unless explicitly approved in the technical plan.
 
+**Bootstrap clause**: at project creation there is no existing architecture to follow. During
+the initial scaffold feature (the project's first numbered feature — see
+`adoption/greenfield.md`, step 4), "the existing architecture" means the architecture selected
+and approved in that feature's `plan.md`, which MUST record the decision ADR-style: options
+considered, the decision, and its consequences. Once the scaffold feature is merged, that
+architecture becomes the existing architecture and this principle applies in full.
+
 **Rationale**: Consistency lowers maintenance cost and keeps the system reviewable by the whole
-team.
+team. Without the bootstrap clause, "follow the existing architecture" is undefined on an empty
+repository — the clause anchors the rule to an approved plan instead of leaving the agent to
+improvise one.
 
 ### V. Data Standards
 
@@ -199,4 +216,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.1.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.2.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
