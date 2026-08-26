@@ -31,9 +31,14 @@ under ~20 principles — a constitution that says everything governs nothing.
 
 ## 2. Fill CLAUDE.md
 
-Complete the Stack Profile and the `{{..._PATH}}` slots in `CLAUDE.md`. Delete any
-Task-Scoped Reading row whose rulebook doesn't exist yet — every path in that file must
-resolve from day one. Keep the file thin; rules live in rulebooks, CLAUDE.md holds pointers.
+Complete the Stack Profile and the `{{..._PATH}}` slots in `CLAUDE.md`. Instantiate each
+tier's rulebook from its template — `docs/rulebooks/backend-rules-template.md`,
+`docs/rulebooks/frontend-rules-template.md`, `docs/rulebooks/database-rules-template.md`,
+`docs/rulebooks/integration-rules-template.md` → copy to **docs/rulebooks/[tier]-rules.md**,
+keep only the baseline rules that are true for your stack, and point the CLAUDE.md slots at
+them. Delete any Task-Scoped Reading row whose rulebook doesn't exist yet — every path in
+that file must resolve from day one. Keep the file thin; rules live in rulebooks, CLAUDE.md
+holds pointers.
 
 ## 3. Define and PROVE the gate
 
@@ -60,9 +65,11 @@ stakes are zero, and leaves the team knowing what "Done" feels like.
 
 ## 6. Grow the rulebooks reactively
 
-Don't write stack rulebooks up front. When review catches a class of mistake **twice**, it
-becomes: (a) an item in that tier's compliance checklist
-(`docs/rulebooks/compliance-checklist-template.md`), and (b) where possible, a lint rule or
+The tier templates in `docs/rulebooks/` seed each rulebook with structure and universal
+baseline rules only — don't write project-specific rules up front. When review catches a
+class of mistake **twice**, it becomes: (a) a MUST/MUST NOT rule in that tier's rulebook,
+(b) a binary item in that tier's compliance checklist
+(`docs/rulebooks/compliance-checklist-template.md`), and (c) where possible, a lint rule or
 analyzer — machine enforcement beats prose. The checklist item can be deleted once the linter
 owns it.
 

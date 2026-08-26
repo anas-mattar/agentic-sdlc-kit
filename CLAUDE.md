@@ -87,13 +87,15 @@ Read the pack that matches what you are about to touch — not everything, every
 | Any phase (always) | This file + `docs/sdlc/definition-of-done.md` |
 | Branching / starting a feature | `docs/sdlc/branch-strategy.md`, `docs/sdlc/repository-strategy.md` |
 | Project with more than one developer | `docs/sdlc/team-workflow.md` |
+| Backend / service logic | {{BACKEND_RULES_PATH}} |
 | A schema / migration | {{DATABASE_RULES_PATH}} + `docs/sdlc/rollback-process.md` |
 | Domain-critical logic | `{{DOMAIN_INVARIANTS_PATH}}` |
 | An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution IX) |
 | Frontend UI | {{FRONTEND_RULES_PATH}} + `docs/rulebooks/` compliance checklist for that tier |
 | Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/` |
 
-<!-- Fill the {{..._PATH}} slots as those rulebooks come into existence; until a rulebook
+<!-- The {{..._RULES_PATH}} rulebooks are instantiated at adoption from the tier templates
+     in docs/rulebooks/ (adoption step 2) and grown reactively (step 6). Until a rulebook
      exists, delete its row rather than pointing at a file that isn't there. Every path in
      this file must resolve — a broken pointer teaches the agent to distrust all of them. -->
 
