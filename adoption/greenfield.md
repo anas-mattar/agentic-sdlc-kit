@@ -40,6 +40,11 @@ tiers you don't have — every path in that file must resolve from day one. A ti
 template (worker, desktop, CLI, …) is authored from the skeleton in the same README. Keep
 the file thin; rules live in rulebooks, CLAUDE.md holds pointers.
 
+Machine assist: `pwsh -File scripts/init-kit.ps1` does the mechanical part of steps 1–2 —
+instantiates the selected tier rulebooks, wires the Task-Scoped Reading rows, fills
+`{{PROJECT_NAME}}` and the repository slots — then prints the judgment slots that remain
+yours. It never writes rulebook content or ratifies the constitution.
+
 ## 3. Define and PROVE the gate
 
 Fill the gate slots in `docs/sdlc/gate-command.md`, scaffold the empty project(s), and run the

@@ -75,6 +75,11 @@ already has, exactly like the constitution (step 2): old code is brought into co
 when a feature touches it. This keeps "adopt the framework" from mutating into "rewrite the
 system" — the drive-by refactor the framework exists to prevent.
 
+Machine assist: `pwsh -File scripts/init-kit.ps1` handles the mechanical part — instantiates
+the selected tier rulebooks, wires CLAUDE.md's rows, fills the name/repository slots — and
+prints what remains for a human. The descriptive content of each rulebook is still yours to
+write.
+
 ## 8. Keep the framework honest
 
 Same as greenfield step 7: doc-lint in CI (every referenced path exists), CI gate as second
