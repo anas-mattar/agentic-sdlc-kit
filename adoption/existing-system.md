@@ -68,8 +68,9 @@ periodically; the audit → numbered-remediation loop is how the reference deplo
 ## 7. Grandfather deliberately
 
 Adopt each compliance checklist with an explicit date and grandfathering rule (see
-`docs/rulebooks/compliance-checklist-template.md`), and instantiate the tier rulebooks from
-the templates in `docs/rulebooks/` **descriptively** — codifying the conventions the code
+`docs/rulebooks/compliance-checklist-template.md`), and instantiate a rulebook for each tier
+the system actually has — pick from the menu in `docs/rulebooks/README.md` —
+**descriptively**: codifying the conventions the code
 already has, exactly like the constitution (step 2): old code is brought into compliance only
 when a feature touches it. This keeps "adopt the framework" from mutating into "rewrite the
 system" — the drive-by refactor the framework exists to prevent.

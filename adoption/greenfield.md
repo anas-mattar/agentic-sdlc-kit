@@ -31,14 +31,14 @@ under ~20 principles — a constitution that says everything governs nothing.
 
 ## 2. Fill CLAUDE.md
 
-Complete the Stack Profile and the `{{..._PATH}}` slots in `CLAUDE.md`. Instantiate each
-tier's rulebook from its template — `docs/rulebooks/backend-rules-template.md`,
-`docs/rulebooks/frontend-rules-template.md`, `docs/rulebooks/database-rules-template.md`,
-`docs/rulebooks/integration-rules-template.md` → copy to **docs/rulebooks/[tier]-rules.md**,
-keep only the baseline rules that are true for your stack, and point the CLAUDE.md slots at
-them. Delete any Task-Scoped Reading row whose rulebook doesn't exist yet — every path in
-that file must resolve from day one. Keep the file thin; rules live in rulebooks, CLAUDE.md
-holds pointers.
+Complete the Stack Profile and the `{{..._PATH}}` slots in `CLAUDE.md`. Then **pick your
+tiers** from the menu in `docs/rulebooks/README.md` — backend, frontend, mobile, database,
+integration are templates, not requirements. Instantiate a rulebook only for each tier your
+project actually has (copy the template to **docs/rulebooks/[tier]-rules.md**, keep only the
+baseline rules that are true for your stack) and delete the Task-Scoped Reading rows for
+tiers you don't have — every path in that file must resolve from day one. A tier with no
+template (worker, desktop, CLI, …) is authored from the skeleton in the same README. Keep
+the file thin; rules live in rulebooks, CLAUDE.md holds pointers.
 
 ## 3. Define and PROVE the gate
 

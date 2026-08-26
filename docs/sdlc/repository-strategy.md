@@ -7,11 +7,15 @@ explicitly approved in `plan.md`. *(Single-repo projects: delete this file's mul
 sections and constitution principle III, and keep everything in one repository — the rest of
 the kit works unchanged.)*
 
-Required repositories:
+One repository per tier the project has — the tier set mirrors the rulebook menu
+(`docs/rulebooks/README.md`): keep a repository (and a section below) for each tier you
+actually have — backend, web frontend, mobile app, worker, … — and delete the rest. The two
+sections below are examples of the shape; a mobile or worker repository gets the same
+treatment.
 
 ```text
 {{BACKEND_REPO}}     # Backend repository
-{{FRONTEND_REPO}}    # Frontend repository
+{{FRONTEND_REPO}}    # Frontend repository (and/or {{MOBILE_REPO}}, {{WORKER_REPO}}, …)
 ```
 
 Optional shared documentation/spec repository, when specs and governance need a home that is
@@ -70,6 +74,7 @@ HEADs are chronic friction, especially for AI agents).
 ├── CLAUDE.md  .specify/  docs/  specs/  scripts/
 ├── {{BACKEND_REPO}}/          # independent code repo (ignored by parent)
 └── {{FRONTEND_REPO}}/         # independent code repo (ignored by parent)
+                               # …one nested repo per tier: mobile, worker, etc.
 ```
 
 Why nest: AI agents read `CLAUDE.md` from the working directory *and its ancestors*, so an
@@ -92,10 +97,11 @@ When a feature spans repositories:
 
 1. Create matching branches (same `NNN-<name>`) in each affected repository — plus the spec
    branch in {{SPECS_REPO}}, when one exists.
-2. Define the API contract in the feature's `contracts/` **before** frontend implementation.
-3. Implement and gate the backend phase first.
-4. Merge the backend after its gate passes and human review approves.
-5. Merge the frontend after the contract is stable (or was mocked against the agreed contract),
-   its own gate passes, and human review approves.
+2. Define the API contract in the feature's `contracts/` **before** any consuming tier
+   (web, mobile, worker) implements against it.
+3. Implement and gate the providing tier (usually the backend) first.
+4. Merge the provider after its gate passes and human review approves.
+5. Merge each consuming tier after the contract is stable (or it was mocked against the
+   agreed contract), its own gate passes, and human review approves.
 
 Always confirm which repository is active before changing files.

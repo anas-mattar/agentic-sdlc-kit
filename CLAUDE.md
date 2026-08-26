@@ -94,8 +94,10 @@ Read the pack that matches what you are about to touch — not everything, every
 | Frontend UI | {{FRONTEND_RULES_PATH}} + `docs/rulebooks/` compliance checklist for that tier |
 | Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/` |
 
-<!-- The {{..._RULES_PATH}} rulebooks are instantiated at adoption from the tier templates
-     in docs/rulebooks/ (adoption step 2) and grown reactively (step 6). Until a rulebook
+<!-- Tier rows are a MENU, not a requirement: keep only the tiers this project has, and add
+     a row per extra tier (e.g. "Mobile UI | docs/rulebooks/mobile-rules.md", or a worker/CLI
+     rulebook authored from the skeleton in docs/rulebooks/README.md). Rulebooks are
+     instantiated at adoption (step 2) and grown reactively (step 6). Until a rulebook
      exists, delete its row rather than pointing at a file that isn't there. Every path in
      this file must resolve — a broken pointer teaches the agent to distrust all of them. -->
 
