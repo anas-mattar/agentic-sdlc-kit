@@ -10,7 +10,8 @@ SDLC workflow with Spec Kit documents. Do not implement everything at once.
 ## Stack Profile
 
 {{STACK_PROFILE}}
-<!-- e.g.:
+<!-- Author from docs/rulebooks/stack-profile-template.md — one short block per tier
+     (runtime, source roots, build/test, gate slice, dependency policy, failure modes). e.g.:
 Backend: .NET 10 / ASP.NET Core Web API, EF Core, SQL Server  → repo {{BACKEND_REPO}}
 Frontend: Next.js App Router, TypeScript strict, tRPC        → repo {{FRONTEND_REPO}}
 Package manager: yarn 4.x (corepack)
