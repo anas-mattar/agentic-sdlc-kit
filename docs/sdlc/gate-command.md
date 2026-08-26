@@ -57,6 +57,16 @@ cmd.exe:
 echo EXIT: %ERRORLEVEL%
 ```
 
+## Agent-run gates (fast feedback, never certification)
+
+During a phase, the AI agent MAY run the gate itself to get fast feedback, and MUST report
+the exact command and its full output when it does. This changes nothing about who certifies:
+a phase is only **Done** against a gate run by the user, with the exit code confirmed by the
+user (`docs/sdlc/definition-of-done.md`, item 3). The agent MUST NOT present its own gate run
+as that confirmation, and MUST NOT skip asking the user to run the gate because its own run
+passed. **Critical** features go further: agent-run gates are not used at all
+(`docs/sdlc/critical-delivery.md`).
+
 ## Minimum Gate
 
 When the full gate is too slow for a quick sanity check, define a minimum gate (typically the

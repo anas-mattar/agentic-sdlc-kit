@@ -15,7 +15,10 @@ and **XII. Human Review Requirement**.
    unrelated changes are bundled in (constitution XIII).
 3. **Gate passed with user-confirmed exit code** — the user (not AI) ran the gate
    (`docs/sdlc/gate-command.md`) and confirmed the exit code. AI MUST NOT claim
-   success without that confirmation (constitution XIII).
+   success without that confirmation (constitution XIII). The AI MAY run the gate
+   during implementation for fast feedback, but an agent-run gate never satisfies
+   this item — and is not used at all for Critical features
+   (`docs/sdlc/critical-delivery.md`).
 4. **Diff reviewed / scope guard** — `git diff --stat` was reviewed and shows only the
    files this phase intended to change; unrelated changes were reverted
    (`docs/sdlc/review-process.md`).
