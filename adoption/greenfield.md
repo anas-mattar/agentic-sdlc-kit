@@ -31,7 +31,8 @@ under ~20 principles — a constitution that says everything governs nothing.
 
 ## 2. Fill CLAUDE.md
 
-Complete the Stack Profile and the `{{..._PATH}}` slots in `CLAUDE.md`. Then **pick your
+Complete the Stack Profile (author it from `docs/rulebooks/stack-profile-template.md` — one
+short, checkable block per tier) and the `{{..._PATH}}` slots in `CLAUDE.md`. Then **pick your
 tiers** from the menu in `docs/rulebooks/README.md` — backend, frontend, mobile, database,
 integration are templates, not requirements. Instantiate a rulebook only for each tier your
 project actually has (copy the template to **docs/rulebooks/[tier]-rules.md**, keep only the

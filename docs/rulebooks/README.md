@@ -19,6 +19,7 @@ each project supplies the *content* for its own stack (PHP, .NET, Java, Python, 
 | A mobile app | `mobile-rules-template.md` |
 | A database it owns | `database-rules-template.md` |
 | Tiers talking to each other, or an external API | `integration-rules-template.md` |
+| (every project) CLAUDE.md's Stack Profile section | `stack-profile-template.md` |
 
 Common shapes, fully supported:
 
