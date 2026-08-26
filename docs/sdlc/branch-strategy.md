@@ -48,6 +48,12 @@ requires the user-run gate, the `git diff --stat` scope check, and human review 
 If a "fix" grows into behavior change or schema change, stop and promote it to a numbered
 feature.
 
+**Delivery levels**: the two lanes above are the kit's first two delivery levels — **Lite**
+(the lightweight lane) and **Standard** (the numbered-feature workflow). High-risk work uses
+**Critical**: a numbered feature plus the addendum in `docs/sdlc/critical-delivery.md`,
+declared in the feature's `spec.md` at creation. The level is chosen per feature, not per
+project.
+
 ## Rules
 
 - `main` is **protected**. No direct commits to `main`.
