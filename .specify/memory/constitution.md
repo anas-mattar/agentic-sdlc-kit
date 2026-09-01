@@ -33,6 +33,7 @@ Principles defined (13):
 
 Templates requiring updates when this file changes:
   - .specify/templates/plan-template.md (Constitution Check gate must mirror the principles 1:1)
+  - .specify/templates/tasks-template.md (test-policy language must not contradict Principle XI)
   - CLAUDE.md (strict rules must not contradict this file)
 
 Follow-up TODOs (resolve before ratification):

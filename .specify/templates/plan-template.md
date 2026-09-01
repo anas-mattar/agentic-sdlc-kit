@@ -38,7 +38,7 @@ Confirm each item or record a justified exception in Complexity Tracking. Source
      REPORT / amendment procedure). -->
 
 - [ ] **Specification First (I)**: spec.md, plan.md, and tasks.md exist and are approved before implementation.
-- [ ] **Source of Truth (II)**: No conflict between visual references → spec → plan → contracts → data model. Conflicts stop work.
+- [ ] **Source of Truth (II)**: No conflict between artifacts, per the ordered source-of-truth ladder in constitution II. Conflicts stop work.
 - [ ] **Repository Separation (III)**: Backend (`{{BACKEND_REPO}}`) and frontend (`{{FRONTEND_REPO}}`) code are not mixed unless approved here. *(Delete if the project is single-repo.)*
 - [ ] **Architecture Consistency (IV)**: No new patterns, frameworks, UI libraries, or persistence approaches unless approved in this plan.
 - [ ] **Data Standards (V)**: Primary keys follow {{PK_STANDARD}}; any deviation is explicitly approved here.

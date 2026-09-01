@@ -1,11 +1,21 @@
 # Definition of Done
 
-The single, authoritative checklist a phase MUST satisfy before it is considered
-complete. It is the operational form of constitution **XIII. Controlled Delivery**
+The single, authoritative checklist a feature's phases MUST satisfy before the feature is
+considered complete. It is the operational form of constitution **XIII. Controlled Delivery**
 and **XII. Human Review Requirement**.
 
-> A phase is **Done** only when **every** item below is true. If any item is false,
-> the phase is **not** Done — stop and resolve it before proceeding.
+## Two units of review
+
+Gates apply at two different points, not uniformly at every phase:
+
+- **Gates 1–5** MUST pass at **every phase commit** — a phase is not Done, and MUST NOT be
+  committed, until items 1–5 below are all true.
+- **Gate 6** (human review) applies **once per feature**, at the point the feature's final
+  phase is ready to merge to `main` — not after every individual phase commit. A 4-phase
+  feature owes one human review, not four.
+
+> A phase commit requires gates 1–5. A feature merge additionally requires gate 6. If any
+> required item is false, stop and resolve it before proceeding.
 
 ## Gates (all required, in order)
 
@@ -27,13 +37,15 @@ and **XII. Human Review Requirement**.
    match, stack rulebooks, security, tests, migrations, unrelated changes,
    rollback safety. For phases touching a tier with a compliance checklist
    (`docs/rulebooks/`), this includes passing that checklist — any FAIL blocks the phase.
-6. **Human review approved** — a human reviewer verified business requirements,
-   domain correctness, security implications, visual-reference compliance, and
-   architectural compliance, and approved the change. **Human review is required
-   before merge** (constitution XII; `specs/_templates/human-pr-review-template.md`).
+6. **Human review approved (once per feature, at merge)** — after the feature's final phase
+   passes gates 1–5, a human reviewer verified business requirements, domain correctness,
+   security implications, visual-reference compliance, and architectural compliance across the
+   **full feature diff**, and approved the change. **Human review is required before merge**
+   (constitution XII; `specs/_templates/human-pr-review-template.md`).
 
-Only after items 1–6 are all true may the phase be **committed and merged**. Merge
-occurs only after the human approval in item 6.
+Each phase may be **committed** to the feature branch once items 1–5 are true. The **feature**
+may be **merged** to `main` only after its final phase satisfies items 1–5 and the feature as a
+whole satisfies item 6.
 
 ## Conflict rule
 
