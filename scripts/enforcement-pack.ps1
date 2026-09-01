@@ -139,6 +139,59 @@ function Invoke-LiteAndAbuseCheck {
     }
 }
 
+# --- Critical-evidence check (FR-005) ---
+function Invoke-CriticalEvidenceCheck {
+    param([string]$Branch)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    $dir = "specs/$Branch"
+    $specPath = Join-Path $dir 'spec.md'
+    if (-not (Test-Path $specPath)) { return }
+    $line = (Get-Content $specPath | Where-Object { $_ -match '^\*\*Delivery Level\*\*:' } | Select-Object -First 1)
+    if (-not $line -or $line -notmatch '^\*\*Delivery Level\*\*:\s*Critical\b') { return }
+
+    $reviewPath = Join-Path $dir 'second-model-review.md'
+    if (-not (Test-Path $reviewPath)) {
+        $script:failures += "CriticalEvidence: $dir/second-model-review.md is missing (required for Critical features — docs/sdlc/critical-delivery.md item 5)"
+        return
+    }
+    $recorded = (git log --follow --format=%aI -- $reviewPath 2>$null) | Select-Object -Last 1
+    if (-not $recorded) {
+        $script:failures += "CriticalEvidence: $dir/second-model-review.md has no git history — cannot verify the cooling-off period (commit it to start the clock)"
+        return
+    }
+    $recordedTime = [DateTimeOffset]::Parse($recorded)
+    $elapsedHours = ([DateTimeOffset]::UtcNow - $recordedTime).TotalHours
+    if ($elapsedHours -lt $Config.CoolingOffHours) {
+        $remaining = [math]::Ceiling($Config.CoolingOffHours - $elapsedHours)
+        $script:failures += "CriticalEvidence: $dir/second-model-review.md was recorded $([math]::Round($elapsedHours, 1))h ago — cooling-off requires $($Config.CoolingOffHours)h ($remaining h remaining, docs/sdlc/critical-delivery.md item 5)"
+    }
+}
+
+# --- Phase-commit diff-size warning (FR-006, non-blocking) ---
+function Invoke-PhaseSizeWarningCheck {
+    param([string]$Branch, [string]$Base)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    if (-not $Base) { return }
+    $commits = (git rev-list "$Base..HEAD" 2>$null) | Where-Object { $_ }
+    foreach ($commit in $commits) {
+        $numstat = git show --numstat --format='' $commit 2>$null
+        $fileCount = 0
+        $lineCount = 0
+        foreach ($row in $numstat) {
+            if (-not $row) { continue }
+            $parts = $row -split "`t"
+            if ($parts.Count -lt 3) { continue }
+            $fileCount++
+            if ($parts[0] -match '^\d+$') { $lineCount += [int]$parts[0] }
+            if ($parts[1] -match '^\d+$') { $lineCount += [int]$parts[1] }
+        }
+        if ($lineCount -gt $Config.PhaseWarnLines -or $fileCount -gt $Config.PhaseWarnFiles) {
+            $short = $commit.Substring(0, 7)
+            $script:warnings += "PhaseSizeWarning: commit $short changes $lineCount line(s) across $fileCount file(s) — exceeds the phase-size guideline ($($Config.PhaseWarnLines) lines / $($Config.PhaseWarnFiles) files, constitution X). Non-blocking; consider whether this is one coherent slice."
+        }
+    }
+}
+
 # --- Dispatch ---
 $Branch = Get-CurrentBranch -Override $Branch
 $diffBase = Get-DiffBase
@@ -148,6 +201,8 @@ Write-Host "enforcement-pack: branch '$Branch', diff base '$diffBase', $($change
 
 if ($Branch -match '^\d{3}-') {
     Invoke-StructureCheck -Branch $Branch
+    Invoke-CriticalEvidenceCheck -Branch $Branch
+    Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles
 } elseif ($Branch -match '^docs/') {

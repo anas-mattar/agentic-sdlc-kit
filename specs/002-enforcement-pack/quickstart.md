@@ -63,8 +63,12 @@ git branch -D 999-fixture-critical-missing
 
 # SC-005: oversized single commit warns but does not block
 git checkout -b 999-fixture-oversized
+New-Item -ItemType Directory -Force specs/999-fixture-oversized | Out-Null
+"**Delivery Level**: Standard" | Out-File specs/999-fixture-oversized/spec.md
+"# plan" | Out-File specs/999-fixture-oversized/plan.md
+"# tasks" | Out-File specs/999-fixture-oversized/tasks.md
 1..500 | ForEach-Object { "line $_" } | Out-File specs/999-fixture-oversized/big.md
-git add specs/999-fixture-oversized/big.md
+git add specs/999-fixture-oversized
 git commit -m "fixture: oversized phase commit"
 pwsh -File scripts/enforcement-pack.ps1   # expect: WARNING printed, exit code still 0
 git checkout 002-enforcement-pack
