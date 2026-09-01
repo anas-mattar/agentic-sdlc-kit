@@ -1,7 +1,7 @@
 # Branch Protection Recipe
 
 Makes `.github/workflows/enforcement-pack.yml` an actual merge gate on GitHub, not just an
-informative CI run — completing the enforcement pack (`specs/002-enforcement-pack/`, FR-010).
+informative CI run — completing the enforcement pack (kit feature 002).
 Without this, the checks in `scripts/enforcement-pack.ps1` run but nothing stops a PR that
 fails them from being merged anyway.
 
@@ -58,9 +58,7 @@ Replace `{owner}/{repo}` with this repository's path.
 
 Open a PR from a branch you know will fail a check (e.g. a `NNN-*` branch missing
 `plan.md`). The PR page should show the `enforcement-pack` check as failing/red, and the
-merge button should be disabled with a message naming the required check. See
-`specs/002-enforcement-pack/quickstart.md`'s Phase 3 steps for the full fixture-branch
-verification procedure.
+merge button should be disabled with a message naming the required check.
 
 ## What this does NOT cover
 
