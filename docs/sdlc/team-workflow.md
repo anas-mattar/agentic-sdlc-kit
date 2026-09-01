@@ -14,7 +14,15 @@ owner** — not any teammate, and never the agent.
 ## 2. Number reservation — the remote is the ledger
 
 Feature numbers are claimed on the remote, not computed locally
-(see `docs/sdlc/branch-strategy.md`, "Number Allocation"):
+(see `docs/sdlc/branch-strategy.md`, "Number Allocation"). One command runs the whole
+ritual — fetch, remote-aware allocation, branch + spec creation, immediate push, and
+automatic renumbering on a lost race:
+
+```powershell
+pwsh -File scripts/claim-feature.ps1 -ShortName <name> "<feature description>"
+```
+
+The recipe it automates (kept as the manual fallback):
 
 1. `git fetch origin` before allocating.
 2. Take the next `NNN` unused by any local **or remote** branch or `specs/` directory.
@@ -58,7 +66,18 @@ gains teeth). The owner completes the AI review; a different developer completes
 ## 5. Territory check — before a phase, not at merge
 
 `plan.md` declares what the feature touches. Before starting each phase, the owner (or
-agent) checks that no *other open feature branch* claims the same files:
+agent) checks that no *other open feature branch* claims the same files — one command:
+
+```powershell
+pwsh -File scripts/territory-check.ps1
+```
+
+It fetches, diffs the current branch and every open remote `NNN-*` branch against
+`main`, and reports overlapping files per branch. Exit codes: `0` clean, `2` live
+overlap found, `1` execution error — so an agent can run it as a pre-phase check. Stale
+claims (no commits for two weeks) are flagged as reclaimable rather than treated as live
+conflicts; freshly claimed branches with no work yet are noted, not errors. The manual
+equivalent (kept as the fallback):
 
 ```bash
 git fetch origin

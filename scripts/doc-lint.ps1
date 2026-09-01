@@ -52,6 +52,8 @@ $requiredKitPaths = @(
     'docs/sdlc/review-process.md'
     'docs/rulebooks'
     'specs/_templates'
+    'scripts/claim-feature.ps1'
+    'scripts/territory-check.ps1'
 )
 $missingKit = $requiredKitPaths | Where-Object { -not (Test-Path (Join-Path $Root $_)) }
 

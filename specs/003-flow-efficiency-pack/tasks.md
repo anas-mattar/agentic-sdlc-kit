@@ -57,28 +57,28 @@ themselves are unchanged — the docs now name the scripts as the standard way t
 remote-ahead ledger, lost race + renumber, no-remote fallback, dirty-tree refusal,
 overlap detection (exit 2), stale-claim flagging.
 
-- [ ] T005 [P] [US2] Implement `scripts/claim-feature.ps1` per
+- [x] T005 [P] [US2] Implement `scripts/claim-feature.ps1` per
       `contracts/claim-feature-cli.md`: preflight (clean tree, on main), fetch,
       remote+local ledger allocation, delegate to
       `.specify/scripts/powershell/create-new-feature.ps1 -Number`, immediate push,
       race recovery (≤3 renumber attempts), no-remote fallback with warning, `-Json`
       output (FR-003, FR-004, research D2)
-- [ ] T006 [P] [US3] Implement `scripts/territory-check.ps1` per
+- [x] T006 [P] [US3] Implement `scripts/territory-check.ps1` per
       `contracts/territory-check-cli.md`: fetch, per-open-branch
       `git diff --name-only main...origin/NNN-*` intersection with current branch's
       touched set, live/stale/no-work-yet classification (14-day default), rule-5
       sequencing reminder, exit codes 0/2/1, `-Json` output (FR-005, FR-006, research D3)
-- [ ] T007 [P] [US2] Amend `docs/sdlc/branch-strategy.md` "Number Allocation": name
+- [x] T007 [P] [US2] Amend `docs/sdlc/branch-strategy.md` "Number Allocation": name
       `scripts/claim-feature.ps1` as the standard way to run the existing 3-step recipe
       (recipe kept as the manual fallback)
-- [ ] T008 [US2] Amend `docs/sdlc/team-workflow.md` rule 2 (number reservation) to name
+- [x] T008 [US2] Amend `docs/sdlc/team-workflow.md` rule 2 (number reservation) to name
       `scripts/claim-feature.ps1`
-- [ ] T009 [US3] Amend `docs/sdlc/team-workflow.md` rule 5 (territory check) to name
+- [x] T009 [US3] Amend `docs/sdlc/team-workflow.md` rule 5 (territory check) to name
       `scripts/territory-check.ps1` and its exit-code contract (same file as T008 —
       sequential, not parallel)
-- [ ] T010 [US2] Add both new scripts to the kit-integrity required-paths list in
+- [x] T010 [US2] Add both new scripts to the kit-integrity required-paths list in
       `scripts/doc-lint.ps1` (FR-010)
-- [ ] T011 [US2] Verification: run quickstart.md Phase 2 scenarios 1–7 against a scratch
+- [x] T011 [US2] Verification: run quickstart.md Phase 2 scenarios 1–7 against a scratch
       clone pair under the session scratchpad (never the real remote); fix until all pass
 
 **Checkpoint**: request user gate + `git diff --stat` review → AI review → commit.
