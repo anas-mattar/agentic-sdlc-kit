@@ -29,7 +29,7 @@ BLOCKING/CONFIRM findings were resolved, don't re-derive them]
 
 ## Approval
 
-**Decision**: [APPROVED / CHANGES REQUESTED] — merge only on APPROVED (constitution XII).
+**Decision**: [APPROVED / CHANGES REQUESTED] — merge only on APPROVED (constitution IX).
 
 ## Comments
 

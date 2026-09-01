@@ -9,15 +9,30 @@
 HOW TO FILL THIS RULEBOOK (then delete this comment): same three rules as the backend
 template — fill descriptively at adoption (copy to docs/rulebooks/database-rules.md,
 point {{DATABASE_RULES_PATH}} at it), grow reactively, MUST / MUST NOT with a Why.
-The schema standards below usually restate constitution slots — keep them in sync or
-point at the constitution instead of restating.
+The Schema Standards below are this kit's home for primary-key and auditability
+conventions (formerly constitution Principles V and VI — demoted here in the 0.3.0
+amendment: schema conventions are project-specific formatting choices, not law that
+"supersedes everything"; see review/out/DECISION.md finding #15). They are conventions
+of this rulebook, not constitutional principles — deviations are a plan-approved judgment
+call, not a constitutional violation.
 -->
 
 ## Schema Standards
 
-- Primary keys: {{PK_STANDARD}} <!-- from the constitution — e.g. "int identity" / "GUID v7" -->
-- Audit fields on every table: {{AUDIT_FIELDS}} <!-- e.g. "CreatedDate/CreatedBy, UpdatedDate/UpdatedBy" -->
-- Soft delete standard: {{SOFT_DELETE_STANDARD}} <!-- e.g. "IsDeleted, DeletedDate, DeletedBy; physical DELETE prohibited unless plan-approved" -->
+- Primary keys: the default primary key MUST be {{PK_STANDARD}}. <!-- e.g. `Id INT IDENTITY(1,1)
+  PRIMARY KEY` (SQL Server), `BIGSERIAL` (PostgreSQL), or your ORM's convention. -->
+  Deviations are prohibited unless explicitly approved in the technical plan.
+  Externally-exposed identifiers (public IDs, correlation IDs, integration references,
+  idempotency keys) MAY use opaque values such as GUIDs, but these are not primary keys.
+  **Why**: a uniform key strategy keeps indexes compact and joins predictable while still
+  allowing opaque identifiers where external exposure genuinely requires them.
+- Audit fields on every business entity: {{AUDIT_FIELDS}} <!-- e.g. "CreatedDate/CreatedBy,
+  UpdatedDate/UpdatedBy" -->. **Why**: systems of record require a verifiable trail of who
+  changed what and when.
+- Soft delete standard: {{SOFT_DELETE_STANDARD}} <!-- e.g. "IsDeleted, DeletedDate, DeletedBy;
+  physical DELETE prohibited unless plan-approved" -->. Business master data MUST use soft
+  delete; physical deletion is prohibited unless explicitly approved in the technical plan.
+  **Why**: master data referenced by history must never disappear from under it.
 - Naming conventions: {{DB_NAMING_CONVENTIONS}} <!-- tables, columns, indexes, constraints -->
 
 ## Constraints Mirror Invariants

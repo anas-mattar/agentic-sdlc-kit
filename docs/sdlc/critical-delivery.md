@@ -26,7 +26,7 @@ grew into a feature.
 
 Declare Critical when the feature touches any of:
 
-- rules in the domain-invariants pack (constitution VII) — postings, balances, consent
+- rules in the domain-invariants pack (constitution V) — postings, balances, consent
   trails, state machines;
 - irreversible or destructive data operations (migrations that drop or rewrite data);
 - authentication, authorization, or payment flows;
@@ -40,7 +40,7 @@ Declare Critical when the feature touches any of:
    filled for this feature **before phase 1 begins**, not at review time.
    **Why**: a rollback plan written after the change is a description, not a plan.
 2. **Domain-invariant review** — the AI review and the human review each include an explicit
-   pass over the domain-invariants pack (constitution VII), item by item, recorded in the
+   pass over the domain-invariants pack (constitution V), item by item, recorded in the
    review document.
    **Why**: invariant violations are the one class of defect the gate cannot catch.
 3. **Audit evidence retained** — the gate command + exit code, the `git diff --stat` output,

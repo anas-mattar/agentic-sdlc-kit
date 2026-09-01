@@ -51,7 +51,7 @@ and note it in the roadmap's decisions log so someone else can adopt it.
 ## 4. Cross-review — the owner never approves their own feature
 
 With one developer, human review means reviewing your own agent's work. With a team there
-is no excuse: **the human reviewer of a feature MUST NOT be its owner** (constitution XII
+is no excuse: **the human reviewer of a feature MUST NOT be its owner** (constitution IX
 gains teeth). The owner completes the AI review; a different developer completes
 `human-pr-review.md` and holds the merge approval.
 
