@@ -3,7 +3,7 @@
 > **What this is**: the domain-invariant pack from the kit's reference deployment — a
 > multi-entity financial management system that shipped 68 features under this framework.
 > If your project is a financial system, adopt these (adjusted to your entity names) as
-> `{{DOMAIN_INVARIANTS_PATH}}` and they carry constitutional force via principle VII.
+> `{{DOMAIN_INVARIANTS_PATH}}` and they carry constitutional force via principle V.
 > If not, use this file as the model for writing your own domain pack: name the data that
 > must survive any refactor, the operations that are forbidden, and the approved additive
 > alternatives.

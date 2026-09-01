@@ -1,13 +1,31 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.1.0 → 0.2.0 (kit template — not yet ratified by a project)
-Bump rationale: MINOR — Principle IV (Architecture Consistency) materially expanded with a
-  bootstrap clause: at project creation there is no existing architecture to follow, so during
-  the initial scaffold feature the approved plan.md IS the architecture source of truth, and
-  becomes "the existing architecture" once merged. Closes the greenfield gap where "follow the
-  existing architecture" was undefined at t=0. Dependent guidance updated:
-  adoption/greenfield.md step 4 (scaffold plan.md must record the architecture decision).
+Version change: 0.2.0 → 0.3.0 (kit template — not yet ratified by a project)
+Bump rationale: MINOR — delivery-core amendment (feature 001, `review/out/DECISION.md`) fixing
+  every verified internal contradiction in the delivery core, in three phases on one branch,
+  recorded here as one amendment covering all three:
+  1. Unit-of-review split: Definition of Done gate 6 (human review) now applies once per
+     feature at merge, not per phase commit; gates 1-5 remain per-phase. Aligned
+     docs/sdlc/definition-of-done.md with branch-strategy.md and review-process.md, which
+     already assumed feature-level review. tasks-template.md no longer instructs agents that
+     tests are optional (contradicted Principle XI, now VIII); this file's own mirror list
+     (below) now names tasks-template.md so this class of drift is caught on the next
+     amendment. spec-template.md gained a required Delivery Level header field. The
+     source-of-truth ladder is now canonical in Principle II only; CLAUDE.md and
+     plan-template.md point here instead of restating it.
+  2. Added a phase-sizing rule (plan-template.md, Controlled Delivery check): a phase MUST be
+     independently revertible and one testable slice, checked at plan approval. Defined the
+     Critical-solo review substitute (docs/sdlc/critical-delivery.md item 5) concretely: a
+     named artifact (second-model-review.md), a minimum 24-hour cooling-off period, and an
+     explicit sentence that it is a mitigation, not true independence.
+  3. Demoted Principle V (Data Standards) and VI (Auditability) — schema conventions, not
+     constitutional law — to docs/rulebooks/database-rules-template.md. Deleted Principle X
+     (Performance Responsibility) outright — unfalsifiable guidance with no checkable claim.
+     Renumbered the remaining principles contiguously: VII->V (Domain Invariants), VIII->VI
+     (Security), IX->VII (External Integration Governance), XI->VIII (Testing Requirements),
+     XII->IX (Human Review Requirement), XIII->X (Controlled Delivery); I-IV unchanged. Every
+     cross-reference to a renumbered or deleted principle was swept and updated.
 
 Prior version history:
   (template / unversioned) → 0.1.0: Initial extraction of the portable constitution from a
@@ -15,24 +33,29 @@ Prior version history:
   principles were moved to an optional domain module; parameterizable principles
   received {{SLOT}} placeholders. A project ratifies this as ITS constitution v1.0.0
   after filling every slot and resolving every TODO.
+  0.1.0 → 0.2.0: Principle IV (Architecture Consistency) gained a bootstrap clause for
+  greenfield projects (`adoption/greenfield.md` step 4).
 
-Principles defined (13):
+Principles defined (10):
   I.    Specification First
   II.   Source of Truth Hierarchy
   III.  Repository Separation            (optional — remove for single-repo projects)
   IV.   Architecture Consistency
-  V.    Data Standards                   (parameterized)
-  VI.   Auditability                     (parameterized)
-  VII.  Domain Invariants                (slot — see modules/)
-  VIII. Security
-  IX.   External Integration Governance
-  X.    Performance Responsibility
-  XI.   Testing Requirements
-  XII.  Human Review Requirement
-  XIII. Controlled Delivery
+  V.    Domain Invariants                (slot — see modules/)
+  VI.   Security
+  VII.  External Integration Governance
+  VIII. Testing Requirements
+  IX.   Human Review Requirement
+  X.    Controlled Delivery
+
+Retired: former V (Data Standards) and VI (Auditability) — demoted to conventions in
+  docs/rulebooks/database-rules-template.md, 0.3.0. Former X (Performance Responsibility) —
+  deleted outright, 0.3.0, no replacement (unfalsifiable; see review/out/DECISION.md finding
+  #15).
 
 Templates requiring updates when this file changes:
   - .specify/templates/plan-template.md (Constitution Check gate must mirror the principles 1:1)
+  - .specify/templates/tasks-template.md (test-policy language must not contradict Principle VIII)
   - CLAUDE.md (strict rules must not contradict this file)
 
 Follow-up TODOs (resolve before ratification):
@@ -107,29 +130,7 @@ team. Without the bootstrap clause, "follow the existing architecture" is undefi
 repository — the clause anchors the rule to an approved plan instead of leaving the agent to
 improvise one.
 
-### V. Data Standards
-
-The default primary key MUST be {{PK_STANDARD}}. <!-- e.g. `Id INT IDENTITY(1,1) PRIMARY KEY`
-(SQL Server), `BIGSERIAL` (PostgreSQL), or your ORM's convention. --> Deviations are prohibited
-unless explicitly approved in the technical plan. Externally-exposed identifiers
-(public IDs, correlation IDs, integration references, idempotency keys) MAY use opaque values
-such as GUIDs, but these are not primary keys.
-
-**Rationale**: A uniform key strategy keeps indexes compact and joins predictable while still
-allowing opaque identifiers where external exposure genuinely requires them.
-
-### VI. Auditability
-
-Business entities MUST support auditing with the fields {{AUDIT_FIELDS}}. <!-- e.g.
-`CreatedDate`, `CreatedBy`, `UpdatedDate`, `UpdatedBy`. --> Soft-delete entities MUST
-additionally include {{SOFT_DELETE_FIELDS}}. <!-- e.g. `IsDeleted`, `DeletedDate`,
-`DeletedBy`. --> Business master data MUST use soft delete; physical deletion is prohibited
-unless explicitly approved.
-
-**Rationale**: Systems of record require a verifiable trail of who changed what and when, and
-master data referenced by history must never disappear from under it.
-
-### VII. Domain Invariants
+### V. Domain Invariants
 
 The non-negotiable rules of this project's domain are defined in
 `{{DOMAIN_INVARIANTS_PATH}}` <!-- e.g. docs/domain/invariants.md; see modules/finance/ in the
@@ -140,7 +141,7 @@ and reviewers MUST treat a domain-invariant violation exactly like a violation o
 postings, consent trails, order-state machines). Naming them once, with constitutional force,
 stops an agent from "creatively" violating them.
 
-### VIII. Security
+### VI. Security
 
 Authentication is required for protected functionality. Authorization is required for protected
 operations. Secrets MUST NEVER be stored in source code. Sensitive information MUST NOT be
@@ -148,7 +149,7 @@ logged. All external integrations MUST use secure authentication mechanisms.
 
 **Rationale**: Security controls are non-negotiable architecture concerns, not cleanup tasks.
 
-### IX. External Integration Governance
+### VII. External Integration Governance
 
 All external integrations require documented contracts. Each contract MUST define purpose,
 authentication, endpoints, request schema, response schema, error schema, timeout policy, retry
@@ -156,16 +157,7 @@ policy, idempotency strategy, and audit requirements. Undocumented integrations 
 
 **Rationale**: Documented contracts make integrations testable, recoverable, and safe to change.
 
-### X. Performance Responsibility
-
-Performance MUST be considered during design. Solutions MUST avoid unnecessary database queries,
-unnecessary data transfer, unnecessary API calls, and unnecessary client rendering. Scalability
-MUST be considered for all production features.
-
-**Rationale**: Performance designed in is cheaper and more reliable than performance retrofitted
-after release.
-
-### XI. Testing Requirements
+### VIII. Testing Requirements
 
 Business-critical functionality requires automated tests. Business-critical calculations require
 deterministic validation (golden fixtures where outputs must be exact). Changes affecting
@@ -174,7 +166,7 @@ business-critical logic require regression coverage.
 **Rationale**: Deterministic, regression-covered tests are the only credible guarantee that
 critical logic remains correct across changes — especially changes made by an AI agent.
 
-### XII. Human Review Requirement
+### IX. Human Review Requirement
 
 AI review alone is insufficient. Human review is required before merge. Human reviewers MUST
 verify business requirements, domain correctness, security implications, visual-reference
@@ -183,7 +175,7 @@ compliance (where visual references exist), and architectural compliance.
 **Rationale**: Business and architectural correctness require human accountability that
 automated review cannot replace.
 
-### XIII. Controlled Delivery
+### X. Controlled Delivery
 
 Work MUST be delivered incrementally. Only one approved phase MAY be implemented at a time.
 Unrelated changes MUST NOT be included in the same feature implementation. Every completed phase
@@ -216,4 +208,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.2.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.3.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)

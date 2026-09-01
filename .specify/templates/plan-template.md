@@ -38,18 +38,21 @@ Confirm each item or record a justified exception in Complexity Tracking. Source
      REPORT / amendment procedure). -->
 
 - [ ] **Specification First (I)**: spec.md, plan.md, and tasks.md exist and are approved before implementation.
-- [ ] **Source of Truth (II)**: No conflict between visual references → spec → plan → contracts → data model. Conflicts stop work.
+- [ ] **Source of Truth (II)**: No conflict between artifacts, per the ordered source-of-truth ladder in constitution II. Conflicts stop work.
 - [ ] **Repository Separation (III)**: Backend (`{{BACKEND_REPO}}`) and frontend (`{{FRONTEND_REPO}}`) code are not mixed unless approved here. *(Delete if the project is single-repo.)*
 - [ ] **Architecture Consistency (IV)**: No new patterns, frameworks, UI libraries, or persistence approaches unless approved in this plan.
-- [ ] **Data Standards (V)**: Primary keys follow {{PK_STANDARD}}; any deviation is explicitly approved here.
-- [ ] **Auditability (VI)**: Business entities include the audit fields; soft-delete entities add the soft-delete fields; master data is never physically deleted.
-- [ ] **Domain Invariants (VII)**: The plan violates no rule in `{{DOMAIN_INVARIANTS_PATH}}`.
-- [ ] **Security (VIII)**: Auth required for protected functionality/operations; no secrets in source; no sensitive data in logs.
-- [ ] **External Integration Governance (IX)**: Every external integration has a complete documented contract.
-- [ ] **Performance Responsibility (X)**: Design avoids unnecessary queries, transfer, API calls, and client rendering; scalability considered.
-- [ ] **Testing Requirements (XI)**: Business-critical logic has automated/deterministic/regression coverage.
-- [ ] **Human Review (XII)**: Plan accounts for required human review before merge.
-- [ ] **Controlled Delivery (XIII)**: One approved phase at a time; no unrelated changes; each phase passes the user-run gate.
+- [ ] **Domain Invariants (V)**: The plan violates no rule in `{{DOMAIN_INVARIANTS_PATH}}`.
+- [ ] **Security (VI)**: Auth required for protected functionality/operations; no secrets in source; no sensitive data in logs.
+- [ ] **External Integration Governance (VII)**: Every external integration has a complete documented contract.
+- [ ] **Testing Requirements (VIII)**: Business-critical logic has automated/deterministic/regression coverage.
+- [ ] **Human Review (IX)**: Plan accounts for required human review before merge.
+- [ ] **Controlled Delivery (X)**: One approved phase at a time; no unrelated changes; each phase passes the user-run gate.
+
+  **Phase sizing rule**: A phase MUST be independently revertible (no other phase's
+  correctness depends on this phase being present) and MUST correspond to one meaningfully
+  independent, testable slice of the feature — not "whatever fits before the deadline." A
+  phase breakdown that bundles unrelated concerns (e.g., a schema change and an unrelated UI
+  change) into one phase FAILS this gate and MUST be split before the plan is approved.
 
 ## Project Structure
 

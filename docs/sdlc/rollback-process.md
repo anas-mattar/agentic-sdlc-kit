@@ -18,7 +18,7 @@ Do not drop tables/columns without explicit approval.
 ## Protected Domain Data
 
 Some domain data must never be physically deleted as a rollback mechanism — see
-`{{DOMAIN_INVARIANTS_PATH}}` (constitution VII). For such records:
+`{{DOMAIN_INVARIANTS_PATH}}` (constitution V). For such records:
 
 - Never `DELETE` or `DROP` protected records to undo a change.
 - Correct them with the domain's approved additive mechanisms (e.g. reversal, adjustment,

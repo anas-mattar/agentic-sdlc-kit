@@ -25,17 +25,12 @@ Package manager: yarn 4.x (corepack)
 - Gate command: `docs/sdlc/gate-command.md` — the user runs it; you never claim success
   without the user-confirmed exit code.
 
-## Source of Truth Priority
+## Source of Truth
 
-1. `specs/[feature]/screenshots/` *(only if this project keeps visual references — else delete)*
-2. `specs/[feature]/spec.md`
-3. `specs/[feature]/plan.md`
-4. `specs/[feature]/contracts/`
-5. `specs/[feature]/data-model.md`
-6. `specs/[feature]/tasks.md`
-7. `specs/[feature]/research.md`, then notes
+The canonical, ordered source-of-truth ladder lives in constitution **II** (`.specify/memory/constitution.md`) —
+do not restate it here; read it there.
 
-**Conflict rules**: if any two rungs conflict, stop and report — never silently choose.
+**Conflict rule**: if any two rungs conflict, stop and report — never silently choose.
 Never invent a new UI layout when visual references exist.
 
 ## Feature Structure
@@ -92,7 +87,7 @@ Read the pack that matches what you are about to touch — not everything, every
 | A schema / migration | {{DATABASE_RULES_PATH}} + `docs/sdlc/rollback-process.md` |
 | Domain-critical logic | `{{DOMAIN_INVARIANTS_PATH}}` |
 | A feature declared Critical (regulated / high-risk) | `docs/sdlc/critical-delivery.md` |
-| An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution IX) |
+| An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution VII) |
 | Frontend UI | {{FRONTEND_RULES_PATH}} + `docs/rulebooks/` compliance checklist for that tier |
 | Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/` |
 

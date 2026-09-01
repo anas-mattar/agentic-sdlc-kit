@@ -1,6 +1,6 @@
 # Integration Rules — {{PROJECT_NAME}}
 
-> **Binding**: contract-before-implementation is constitution IX; this rulebook only
+> **Binding**: contract-before-implementation is constitution VII; this rulebook only
 > operationalizes it. It covers every call that crosses a repository or leaves the system
 > (own API consumed by own frontend included).
 
