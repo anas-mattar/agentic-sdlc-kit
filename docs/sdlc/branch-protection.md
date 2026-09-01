@@ -30,15 +30,26 @@ to require after it has appeared at least once.
 
 ## Steps (GitHub CLI, equivalent)
 
+`gh api`'s `-f`/`-F` flags cannot express the nested `required_status_checks` object
+reliably (tested while writing this recipe — GitHub rejects it as an invalid boolean/array
+type). Use a JSON input file instead:
+
 ```bash
+cat > branch-protection.json <<'JSON'
+{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["enforcement-pack", "doc-lint"]
+  },
+  "enforce_admins": true,
+  "required_pull_request_reviews": null,
+  "restrictions": null
+}
+JSON
+
 gh api -X PUT repos/{owner}/{repo}/branches/main/protection \
   -H "Accept: application/vnd.github+json" \
-  -f required_status_checks[strict]=true \
-  -f 'required_status_checks[contexts][]=enforcement-pack' \
-  -f 'required_status_checks[contexts][]=doc-lint' \
-  -F enforce_admins=true \
-  -F required_pull_request_reviews=null \
-  -F restrictions=null
+  --input branch-protection.json
 ```
 
 Replace `{owner}/{repo}` with this repository's path.
