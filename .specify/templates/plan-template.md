@@ -51,6 +51,12 @@ Confirm each item or record a justified exception in Complexity Tracking. Source
 - [ ] **Human Review (XII)**: Plan accounts for required human review before merge.
 - [ ] **Controlled Delivery (XIII)**: One approved phase at a time; no unrelated changes; each phase passes the user-run gate.
 
+  **Phase sizing rule**: A phase MUST be independently revertible (no other phase's
+  correctness depends on this phase being present) and MUST correspond to one meaningfully
+  independent, testable slice of the feature — not "whatever fits before the deadline." A
+  phase breakdown that bundles unrelated concerns (e.g., a schema change and an unrelated UI
+  change) into one phase FAILS this gate and MUST be split before the plan is approved.
+
 ## Project Structure
 
 ### Documentation (this feature)

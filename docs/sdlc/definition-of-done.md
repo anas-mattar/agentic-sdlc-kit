@@ -22,7 +22,9 @@ Gates apply at two different points, not uniformly at every phase:
 1. **Specification approved** — `spec.md`, `plan.md`, and `tasks.md` for the feature
    exist and are approved before implementation begins (constitution I).
 2. **Single-phase scope respected** — only the one approved phase was implemented; no
-   unrelated changes are bundled in (constitution XIII).
+   unrelated changes are bundled in (constitution XIII), and the phase itself satisfies the
+   phase-sizing rule (`.specify/templates/plan-template.md`, Controlled Delivery check):
+   independently revertible, one meaningfully independent and testable slice.
 3. **Gate passed with user-confirmed exit code** — the user (not AI) ran the gate
    (`docs/sdlc/gate-command.md`) and confirmed the exit code. AI MUST NOT claim
    success without that confirmation (constitution XIII). The AI MAY run the gate

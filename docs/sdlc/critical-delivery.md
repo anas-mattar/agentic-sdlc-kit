@@ -52,9 +52,19 @@ Declare Critical when the feature touches any of:
    **Why**: for Critical work, even the fast-feedback loop stays on the human side of the
    trust boundary.
 5. **Independent approval** — the human reviewer MUST NOT be the feature's owner
-   (`docs/sdlc/team-workflow.md`). A solo developer substitutes a second-model adversarial
-   review (`adoption/existing-system.md`, step 6) plus a cooling-off period before merge.
-   **Why**: the person who drove the agent is the person least able to see its blind spots.
+   (`docs/sdlc/team-workflow.md`). A solo developer substitutes:
+   - a written **second-model adversarial review**, recorded as
+     `specs/NNN-name/second-model-review.md`, structured like
+     `specs/_templates/ai-code-review-template.md` but performed by a model different from
+     the one that implemented the feature, explicitly instructed to probe for the
+     implementer's likely blind spots (not to re-confirm its work); and
+   - a minimum **24-hour cooling-off period** between that review being recorded and the
+     feature being merged, during which the developer does not act further on the feature.
+
+   **Honesty**: this substitute is a mitigation for the solo-developer case, not a claim of
+   true independence — it does not provide the independence an external human reviewer would.
+   **Why**: the person who drove the agent is the person least able to see its blind spots,
+   and an undefined substitute ("some review, some time") is not falsifiable.
 
 ## What this addendum is NOT
 
