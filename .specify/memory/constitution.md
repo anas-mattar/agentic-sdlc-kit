@@ -1,7 +1,14 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.3.0 → 0.4.0 (kit template — not yet ratified by a project)
+Version change: 0.4.0 → 0.4.1 (kit template — not yet ratified by a project)
+Bump rationale: PATCH — sync-list bookkeeping only, no rule change (003 phase 4 AI
+  review, finding F3): scripts/enforcement-pack.ps1 added to the "Templates requiring
+  updates" list below, because it encodes constitutional constants (the batch-phase cap
+  from Principle X's Batched-gates clause, the Critical cooling-off hours) that MUST
+  change in lockstep with any amendment touching them.
+
+Prior version history (0.3.0 → 0.4.0):
 Bump rationale: MINOR — batched-gates clause added to Principle X (feature 003, flow-efficiency
   pack). For Lite and Standard features only, a run of at most 3 consecutive phases MAY be
   declared in the approved plan (before the batch starts, as `**Gate Batching**: phases N-M`)
@@ -70,6 +77,9 @@ Templates requiring updates when this file changes:
   - .specify/templates/plan-template.md (Constitution Check gate must mirror the principles 1:1)
   - .specify/templates/tasks-template.md (test-policy language must not contradict Principle VIII)
   - CLAUDE.md (strict rules must not contradict this file)
+  - scripts/enforcement-pack.ps1 (encodes constitutional constants — batch-phase cap,
+    Critical cooling-off hours — its $Config MUST change in lockstep with amendments
+    touching them)
 
 Follow-up TODOs (resolve before ratification):
   - TODO(PROJECT_NAME): replace every {{PROJECT_NAME}} occurrence
@@ -232,4 +242,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.4.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.4.1 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
