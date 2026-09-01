@@ -31,16 +31,16 @@ step linking to the owning document; zero law change.
 **Independent Test**: quickstart.md Phase 1 — a reader with only `docs/sdlc/flow.md`
 names all five mandatory checkpoints in order; doc-lint fails if the page goes missing.
 
-- [ ] T001 [US1] Create `docs/sdlc/flow.md`: ASCII flow diagram (claim → spec → plan →
+- [x] T001 [US1] Create `docs/sdlc/flow.md`: ASCII flow diagram (claim → spec → plan →
       tasks → phase loop [implement → gate → scope check → AI review → commit] →
       feature-level human review → merge) plus a `| Step | One line | Owning document |`
       table, and the explicit "owning documents prevail on conflict" note (FR-001,
       FR-002, research D1)
-- [ ] T002 [US1] Reference the flow page from `CLAUDE.md`: one line in the Workflow
+- [x] T002 [US1] Reference the flow page from `CLAUDE.md`: one line in the Workflow
       section intro and a row in the Task-Scoped Reading table (FR-002, FR-010)
-- [ ] T003 [US1] Add `docs/sdlc/flow.md` to the kit-integrity required-paths list in
+- [x] T003 [US1] Add `docs/sdlc/flow.md` to the kit-integrity required-paths list in
       `scripts/doc-lint.ps1` (FR-010)
-- [ ] T004 [US1] Verification: run quickstart.md Phase 1 scenarios 1–4 (doc-lint green,
+- [x] T004 [US1] Verification: run quickstart.md Phase 1 scenarios 1–4 (doc-lint green,
       rename-detection, checkpoint read test, CLAUDE.md grep); fix until all pass
 
 **Checkpoint**: request user gate (`scripts/doc-lint.ps1` exit 0) + `git diff --stat`

@@ -47,6 +47,7 @@ $requiredKitPaths = @(
     '.specify/scripts'
     '.claude/commands'
     'docs/sdlc/definition-of-done.md'
+    'docs/sdlc/flow.md'
     'docs/sdlc/gate-command.md'
     'docs/sdlc/review-process.md'
     'docs/rulebooks'
