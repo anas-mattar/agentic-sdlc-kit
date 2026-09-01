@@ -199,7 +199,9 @@ $changedFiles = Get-ChangedFiles -Base $diffBase
 
 Write-Host "enforcement-pack: branch '$Branch', diff base '$diffBase', $($changedFiles.Count) changed file(s)"
 
-if ($Branch -match '^\d{3}-') {
+if ($Branch -in @('main', 'master')) {
+    Write-Host "enforcement-pack: '$Branch' is the trunk, not a feature/fix/chore/docs branch — no scripted checks apply"
+} elseif ($Branch -match '^\d{3}-') {
     Invoke-StructureCheck -Branch $Branch
     Invoke-CriticalEvidenceCheck -Branch $Branch
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase

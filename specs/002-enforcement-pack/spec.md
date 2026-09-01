@@ -177,6 +177,11 @@ through the GitHub UI (merge button disabled / blocked).
 - What happens when a PR branch is not `NNN-*`, `fix/*`, `chore/*`, or `docs/*` (an
   unrecognized prefix)? The workflow reports the branch-naming violation itself
   (`docs/sdlc/branch-strategy.md`'s taxonomy) rather than silently skipping all checks.
+- What happens when the workflow runs directly on `main`/`master` itself (the `push` trigger
+  fires on every push, including a merge landing on the trunk)? `main`/`master` is not a
+  feature/fix/chore/docs branch and is explicitly recognized as a no-op — it MUST NOT be
+  reported as an "unrecognized prefix" violation (found live: this failed in CI immediately
+  after this feature's own first merge, since `main` matches none of the taxonomy patterns).
 - How does the script handle a `NNN-*` feature directory that legitimately spans **multiple
   repositories** (`docs/sdlc/repository-strategy.md`)? Only the repository the branch lives
   in is checked; cross-repo consistency is out of scope for this feature.
