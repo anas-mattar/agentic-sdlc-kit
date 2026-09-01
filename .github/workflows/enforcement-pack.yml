@@ -1,0 +1,16 @@
+name: enforcement-pack
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  enforcement-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check delivery-level non-negotiables for this branch
+        shell: pwsh
+        run: ./scripts/enforcement-pack.ps1
