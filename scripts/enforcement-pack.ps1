@@ -18,6 +18,12 @@
                          and was first committed at least $Config.CoolingOffHours ago.
       - PhaseSizeWarning (NNN-* branches): non-blocking warning when a single commit's
                          diff exceeds the configured line/file thresholds.
+      - GateBatching     (NNN-* branches): the plan.md '**Gate Batching**' declaration,
+                         when present, must be 'none' or 'phases N-M' spanning at most
+                         $Config.MaxBatchPhases consecutive phases, and is prohibited
+                         outright on Critical features (constitution X, Batched gates;
+                         docs/sdlc/critical-delivery.md item 4). An absent line means
+                         'none' — plans from before the clause remain valid.
 
     See specs/002-enforcement-pack/research.md for the rationale behind every default below.
 
@@ -46,6 +52,7 @@ $Config = @{
     CoolingOffHours         = 24
     PhaseWarnLines          = 400
     PhaseWarnFiles          = 15
+    MaxBatchPhases          = 3
 }
 
 $failures = @()
@@ -167,6 +174,44 @@ function Invoke-CriticalEvidenceCheck {
     }
 }
 
+# --- Gate-batching check (003 FR-008/FR-009: constitution X, Batched gates) ---
+function Invoke-GateBatchingCheck {
+    param([string]$Branch)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    $dir = "specs/$Branch"
+    $planPath = Join-Path $dir 'plan.md'
+    if (-not (Test-Path $planPath)) { return }   # missing plan.md is StructureCheck's failure
+
+    $line = (Get-Content $planPath | Where-Object { $_ -match '^\*\*Gate Batching\*\*:' } | Select-Object -First 1)
+    if (-not $line) { return }                   # absent line means 'none' (backward compatible)
+
+    # Strip any trailing HTML comment (the template ships one) before parsing the value.
+    $value = ($line -replace '^\*\*Gate Batching\*\*:\s*', '' -replace '<!--.*$', '').Trim()
+    if ($value -eq '' -or $value -eq 'none') { return }
+
+    if ($value -notmatch '^phases\s+(\d+)\s*[-–]\s*(\d+)$') {
+        $script:failures += "GateBatching: $dir/plan.md declares '**Gate Batching**: $value' — must be 'none' or 'phases N-M' (constitution X, Batched gates)"
+        return
+    }
+    $from = [int]$matches[1]; $to = [int]$matches[2]
+    if ($to -lt $from) {
+        $script:failures += "GateBatching: $dir/plan.md declares 'phases $from-$to' — the span is reversed (N must not exceed M)"
+        return
+    }
+    $span = $to - $from + 1
+    if ($span -gt $Config.MaxBatchPhases) {
+        $script:failures += "GateBatching: $dir/plan.md declares 'phases $from-$to' ($span phases) — a batch covers at most $($Config.MaxBatchPhases) consecutive phases (constitution X, Batched gates)"
+    }
+
+    $specPath = Join-Path $dir 'spec.md'
+    if (Test-Path $specPath) {
+        $level = (Get-Content $specPath | Where-Object { $_ -match '^\*\*Delivery Level\*\*:' } | Select-Object -First 1)
+        if ($level -match '^\*\*Delivery Level\*\*:\s*Critical\b') {
+            $script:failures += "GateBatching: $dir declares a gate batch on a Critical feature — Critical features never batch; every phase keeps its own human-executed gate (docs/sdlc/critical-delivery.md item 4)"
+        }
+    }
+}
+
 # --- Phase-commit diff-size warning (FR-006, non-blocking) ---
 function Invoke-PhaseSizeWarningCheck {
     param([string]$Branch, [string]$Base)
@@ -204,6 +249,7 @@ if ($Branch -in @('main', 'master')) {
 } elseif ($Branch -match '^\d{3}-') {
     Invoke-StructureCheck -Branch $Branch
     Invoke-CriticalEvidenceCheck -Branch $Branch
+    Invoke-GateBatchingCheck -Branch $Branch
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles

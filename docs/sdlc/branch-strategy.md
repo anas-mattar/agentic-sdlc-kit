@@ -21,7 +21,16 @@ next number automatically.
 
 `create-new-feature.ps1` allocates the next number from the **local** `specs/` directory —
 fine for one developer, a collision for a team. With more than one developer, the remote is
-the ledger:
+the ledger. **The standard way to run this ritual is one command**:
+
+```powershell
+pwsh -File scripts/claim-feature.ps1 -ShortName <name> "<feature description>"
+```
+
+It fetches, allocates the next number free across local and remote branches and `specs/`
+directories, delegates branch + spec creation to `create-new-feature.ps1`, pushes the
+claim immediately, and renumbers automatically if another claim reached the remote first.
+The manual recipe it automates (kept as the fallback):
 
 1. `git fetch origin` before allocating.
 2. Take the next number unused by any local **or remote** branch or spec directory

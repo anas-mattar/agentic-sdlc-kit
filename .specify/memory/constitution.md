@@ -1,7 +1,20 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.2.0 → 0.3.0 (kit template — not yet ratified by a project)
+Version change: 0.3.0 → 0.4.0 (kit template — not yet ratified by a project)
+Bump rationale: MINOR — batched-gates clause added to Principle X (feature 003, flow-efficiency
+  pack). For Lite and Standard features only, a run of at most 3 consecutive phases MAY be
+  declared in the approved plan (before the batch starts, as `**Gate Batching**: phases N-M`)
+  to share one certifying user-run gate at batch end; each phase still requires its own commit,
+  scope check, and AI review, and the agent still runs the gate per phase for feedback.
+  Critical features are excluded — their per-phase user-run gate obligation is unchanged
+  (docs/sdlc/critical-delivery.md), and scripts/enforcement-pack.ps1 fails a Critical feature
+  that declares a batch. The default (no declaration) remains the per-phase user-run gate, so
+  existing plans stay compliant unchanged. Mirrors synced in the same change:
+  plan-template.md (Constitution Check X + Gate Batching field), definition-of-done.md
+  (gate 3), gate-command.md (Batched gates section), critical-delivery.md (prohibition).
+
+Prior version history (0.2.0 → 0.3.0):
 Bump rationale: MINOR — delivery-core amendment (feature 001, `review/out/DECISION.md`) fixing
   every verified internal contradiction in the delivery core, in three phases on one branch,
   recorded here as one amendment covering all three:
@@ -182,8 +195,19 @@ Unrelated changes MUST NOT be included in the same feature implementation. Every
 MUST pass project gates — run by the user, with the exit code confirmed by the user — before
 proceeding. An AI agent MUST NOT claim success without that confirmation.
 
+**Batched gates**: for a Lite or Standard feature, the approved plan MAY declare — before the
+batch's first phase is implemented, as `**Gate Batching**: phases N-M` in `plan.md` — that a
+run of at most **3 consecutive phases** shares one certifying user-run gate at the end of the
+batch. Within a batch, every phase still requires its own commit, its own scope check, and its
+own AI review, and the agent still runs the gate per phase for feedback; only the user-run
+certification moves to batch end. Critical features MUST NOT declare batches — their per-phase
+user-run gate obligation is unchanged. Absent a declaration, the per-phase user-run gate above
+applies in full.
+
 **Rationale**: Small, gated increments keep changes reviewable, reversible, and low-risk; the
-user-held exit code keeps the trust boundary human.
+user-held exit code keeps the trust boundary human. Batching trades gate frequency — never
+per-phase revertibility or review — for fewer owner interruptions on low-risk work, and only
+when declared in an approved plan.
 
 ## Governance
 
@@ -208,4 +232,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.3.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.4.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
