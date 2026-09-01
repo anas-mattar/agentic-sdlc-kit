@@ -46,11 +46,13 @@ Declare Critical when the feature touches any of:
 3. **Audit evidence retained** — the gate command + exit code, the `git diff --stat` output,
    and both completed review checklists are kept in the feature directory.
    **Why**: "we reviewed it" must be demonstrable later, not remembered.
-4. **Human-executed gates only** — the agent-run gate feedback loop
-   (`docs/sdlc/gate-command.md`) does not apply. Every gate run that counts toward Done is
-   executed by a human.
+4. **Human-executed gates only, one per phase** — the agent-run gate feedback loop
+   (`docs/sdlc/gate-command.md`) does not apply, and neither does gate batching
+   (constitution X, Batched gates): a Critical feature MUST NOT declare
+   `**Gate Batching**` in its `plan.md` — `scripts/enforcement-pack.ps1` fails the branch
+   if it does. Every phase's gate run that counts toward Done is executed by a human.
    **Why**: for Critical work, even the fast-feedback loop stays on the human side of the
-   trust boundary.
+   trust boundary, and gate frequency is part of that boundary.
 5. **Independent approval** — the human reviewer MUST NOT be the feature's owner
    (`docs/sdlc/team-workflow.md`). A solo developer substitutes:
    - a written **second-model adversarial review**, recorded as

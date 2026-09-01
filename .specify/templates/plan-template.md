@@ -2,6 +2,11 @@
 
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Gate Batching**: none <!-- REQUIRED value: `none`, or `phases N-M` to declare that up to 3
+  consecutive phases share one certifying user-run gate at batch end (constitution X,
+  Batched gates). Lite/Standard only — a Critical feature declaring a batch fails
+  scripts/enforcement-pack.ps1. Declare BEFORE the batch's first phase is implemented;
+  never retroactively. -->
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
@@ -46,7 +51,7 @@ Confirm each item or record a justified exception in Complexity Tracking. Source
 - [ ] **External Integration Governance (VII)**: Every external integration has a complete documented contract.
 - [ ] **Testing Requirements (VIII)**: Business-critical logic has automated/deterministic/regression coverage.
 - [ ] **Human Review (IX)**: Plan accounts for required human review before merge.
-- [ ] **Controlled Delivery (X)**: One approved phase at a time; no unrelated changes; each phase passes the user-run gate.
+- [ ] **Controlled Delivery (X)**: One approved phase at a time; no unrelated changes; each phase passes the user-run gate — or, for a Lite/Standard feature with `**Gate Batching**: phases N-M` declared above (max 3 consecutive phases, before the batch starts), one certifying user-run gate at batch end while every phase keeps its own commit, scope check, AI review, and agent-run feedback gate. Critical features MUST NOT batch.
 
   **Phase sizing rule**: A phase MUST be independently revertible (no other phase's
   correctness depends on this phase being present) and MUST correspond to one meaningfully

@@ -31,6 +31,12 @@ Gates apply at two different points, not uniformly at every phase:
    during implementation for fast feedback, but an agent-run gate never satisfies
    this item — and is not used at all for Critical features
    (`docs/sdlc/critical-delivery.md`).
+   **Batched option (Lite/Standard only)**: when the feature's `plan.md` declares
+   `**Gate Batching**: phases N-M` (max 3 consecutive phases, declared before the
+   batch starts — constitution X, Batched gates), this item is satisfied for the
+   batch's phases by **one** user-run gate at batch end; items 1–2 and 4–5 still
+   apply to every phase individually, and each phase keeps its own commit. Critical
+   features MUST NOT batch (`scripts/enforcement-pack.ps1` fails the branch).
 4. **Diff reviewed / scope guard** — `git diff --stat` was reviewed and shows only the
    files this phase intended to change; unrelated changes were reverted
    (`docs/sdlc/review-process.md`).

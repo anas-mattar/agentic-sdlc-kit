@@ -121,31 +121,31 @@ merge-blocking enforcement check; Critical provably untouched.
 four mirrors agree; enforcement fixtures: Critical+batch FAILS, span>3 FAILS,
 none/absent passes (001/002 plans unchanged).
 
-- [ ] T015 [US5] Amend `.specify/memory/constitution.md`: add the Batched-gates clause
+- [x] T015 [US5] Amend `.specify/memory/constitution.md`: add the Batched-gates clause
       to principle X (Lite/Standard only; declared in the approved plan before the batch
       starts; max 3 consecutive phases; per-phase commit/scope-check/AI-review retained;
       agent-run feedback gates per phase; one certifying user-run gate at batch end;
       Critical excluded), bump 0.3.0 → 0.4.0, update the SYNC IMPACT REPORT (FR-008,
       FR-009, research D5)
-- [ ] T016 [P] [US5] Sync `.specify/templates/plan-template.md`: Constitution Check X
+- [x] T016 [P] [US5] Sync `.specify/templates/plan-template.md`: Constitution Check X
       item mirrors the amended wording; add the `**Gate Batching**: none | phases N-M`
       declaration line to the template (data-model Gate Batch; depends on T015 wording)
-- [ ] T017 [P] [US5] Amend `docs/sdlc/definition-of-done.md` gate 3 with the batched
+- [x] T017 [P] [US5] Amend `docs/sdlc/definition-of-done.md` gate 3 with the batched
       option (one user-run gate certifies a declared batch; per-phase obligations 1–2
       and 4–5 unchanged; Critical excluded) (depends on T015 wording)
-- [ ] T018 [P] [US5] Amend `docs/sdlc/gate-command.md` with a "Batched gates" section
+- [x] T018 [P] [US5] Amend `docs/sdlc/gate-command.md` with a "Batched gates" section
       (when allowed, what the owner runs, agent feedback gates unchanged) (depends on
       T015 wording)
-- [ ] T019 [P] [US5] Amend `docs/sdlc/critical-delivery.md` with the explicit
+- [x] T019 [P] [US5] Amend `docs/sdlc/critical-delivery.md` with the explicit
       prohibition: Critical features never batch; a declared batch on a Critical
       feature fails the enforcement pack (depends on T015 wording)
-- [ ] T020 [P] [US5] Implement the GateBatching check in `scripts/enforcement-pack.ps1`:
+- [x] T020 [P] [US5] Implement the GateBatching check in `scripts/enforcement-pack.ps1`:
       parse the `**Gate Batching**` line from the feature's plan.md (absent ⇒ none);
       FAIL on Critical + batch; FAIL on span > 3 or non-consecutive span; same
       bold-field parser shape as the existing Delivery Level check (FR-009, research D4)
-- [ ] T021 [P] [US5] Update `docs/sdlc/flow.md` gate step with a one-line batched-gate
+- [x] T021 [P] [US5] Update `docs/sdlc/flow.md` gate step with a one-line batched-gate
       note (page stays non-authoritative)
-- [ ] T022 [US5] Verification: run quickstart.md Phase 4 scenarios 1–4 (version +
+- [x] T022 [US5] Verification: run quickstart.md Phase 4 scenarios 1–4 (version +
       clause, mirror consistency FR-011, enforcement fixtures on a scratch branch,
       backward compatibility against specs/001-* and specs/002-*, doc-lint +
       enforcement-pack green on this branch); fix until all pass

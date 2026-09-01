@@ -66,6 +66,9 @@ feature**, at merge.
   (`docs/sdlc/branch-strategy.md`).
 - **Critical** (declared in `spec.md`): everything above plus the addendum in
   `docs/sdlc/critical-delivery.md`; agent-run gates are not used at all.
+- **Batched gates**: a Lite/Standard plan may declare up to 3 consecutive phases sharing
+  one certifying user-run gate at batch end (`docs/sdlc/gate-command.md`, constitution X)
+  — per-phase commits, scope checks, and AI reviews stay; Critical never batches.
 - **Teams**: ownership, claims, territory, cross-review, and parallel work are governed
   by `docs/sdlc/team-workflow.md`; single-developer projects can ignore it.
 - **Pipelining**: while a feature sits in step 4 (awaiting review), its owner may claim
