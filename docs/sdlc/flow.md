@@ -68,3 +68,6 @@ feature**, at merge.
   `docs/sdlc/critical-delivery.md`; agent-run gates are not used at all.
 - **Teams**: ownership, claims, territory, cross-review, and parallel work are governed
   by `docs/sdlc/team-workflow.md`; single-developer projects can ignore it.
+- **Pipelining**: while a feature sits in step 4 (awaiting review), its owner may claim
+  and start the next one under the conditions in `docs/sdlc/team-workflow.md` (rule 3) —
+  one awaiting-review + one active at most, territory disjoint.

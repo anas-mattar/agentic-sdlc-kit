@@ -49,9 +49,27 @@ How a developer takes a feature from the roadmap (**docs/roadmap.md**, see
    (rule 1), and picks their cross-reviewer (rule 4) at claim time — the owner of a
    neighboring feature is usually the best choice.
 
-**WIP limit — one active feature per developer.** Multiple claimed branches are number
-squatting: claims stop meaning "being worked on." To park a feature, push your progress
-and note it in the roadmap's decisions log so someone else can adopt it.
+**WIP limit — one active feature per developer, with a pipelining exception.** Multiple
+claimed branches are number squatting: claims stop meaning "being worked on." To park a
+feature, push your progress and note it in the roadmap's decisions log so someone else
+can adopt it.
+
+**Pipelining — working through the review wait.** A developer MAY claim a second feature
+while their first awaits review, under all of these conditions:
+
+- The first feature is fully done from the owner's side: **every phase committed
+  gate-green, the branch pushed, and human review formally requested** (a PR opened, or
+  the reviewer explicitly asked). "Almost done" does not qualify.
+- **Hard cap: one feature awaiting review + one active feature.** A third claim is
+  number squatting, whatever the states.
+- The second feature's territory is **disjoint** from the awaiting feature's
+  (`scripts/territory-check.ps1`), or explicitly sequenced behind it in both features'
+  `plan.md` — change requests may reopen the first feature's files at any time.
+- **When change requests arrive** on the awaiting feature while the second is mid-phase:
+  finish the current phase of the second feature to a clean gate-green commit, then
+  return to the first feature and resolve the change requests **before starting any
+  further phase**. No half-done phase is ever left behind; review turnaround waits at
+  most one phase.
 
 **Stale claims may be reclaimed.** A claimed branch with no commits for two weeks
 (adjust to taste) is up for adoption: new owner, one line in the decisions log.

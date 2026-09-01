@@ -95,15 +95,15 @@ limit is relaxed for the review-wait state under explicit conditions, not delete
 scenarios (awaiting-review → may claim; mid-phase → may not; change requests mid-phase →
 finish current phase, then return) without a judgment call.
 
-- [ ] T012 [US4] Amend `docs/sdlc/team-workflow.md` rule 3 WIP limit with the pipelining
+- [x] T012 [US4] Amend `docs/sdlc/team-workflow.md` rule 3 WIP limit with the pipelining
       clause: second claim allowed only when the first feature has all phases committed
       gate-green, is pushed, and review is formally requested; cap = one awaiting-review
       + one active; territory disjoint from (or explicitly sequenced behind) the first;
       change requests → finish current phase to gate-green, then return before any
       further phase (FR-007, research D6, data-model Pipeline State)
-- [ ] T013 [US4] Update `docs/sdlc/flow.md` with a short parallel-work note pointing to
+- [x] T013 [US4] Update `docs/sdlc/flow.md` with a short parallel-work note pointing to
       the amended rule 3 (page stays non-authoritative)
-- [ ] T014 [US4] Verification: run quickstart.md Phase 3 scenarios 1–4 (three-scenario
+- [x] T014 [US4] Verification: run quickstart.md Phase 3 scenarios 1–4 (three-scenario
       walk + doc-lint); fix until all pass
 
 **Checkpoint**: request user gate + `git diff --stat` review → AI review → commit.
