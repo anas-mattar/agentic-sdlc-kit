@@ -54,6 +54,8 @@ $requiredKitPaths = @(
     'specs/_templates'
     'scripts/claim-feature.ps1'
     'scripts/territory-check.ps1'
+    'scripts/update-kit.ps1'
+    'kit-manifest.json'
 )
 $missingKit = $requiredKitPaths | Where-Object { -not (Test-Path (Join-Path $Root $_)) }
 
@@ -108,14 +110,14 @@ if (Test-Path $manifestPath) {
     $shipped = $shipped | Where-Object { $_ -ne 'docs/roadmap.md' } | Select-Object -Unique
 
     foreach ($file in $shipped) {
-        $hits = $manifestEntries | Where-Object { $file -match (ConvertTo-GlobRegex $_.path) }
+        $hits = @($manifestEntries | Where-Object { $file -match (ConvertTo-GlobRegex $_.path) })
         if ($hits.Count -eq 0) {
             $manifestErrors += "unclassified: $file"
             continue
         }
         $maxSpec = ($hits | ForEach-Object { Get-PatternSpecificity $_.path } | Measure-Object -Maximum).Maximum
-        $winners = $hits | Where-Object { (Get-PatternSpecificity $_.path) -eq $maxSpec }
-        $winningClasses = $winners.class | Select-Object -Unique
+        $winners = @($hits | Where-Object { (Get-PatternSpecificity $_.path) -eq $maxSpec })
+        $winningClasses = @($winners.class | Select-Object -Unique)
         if ($winningClasses.Count -gt 1) {
             $manifestErrors += "conflict ($($winningClasses -join ' vs ')): $file"
             continue

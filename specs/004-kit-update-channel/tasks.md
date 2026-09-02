@@ -57,7 +57,7 @@ files reported never touched, local edits never clobbered, kit version recorded.
 degraded first run, clean update + idempotence, SC-002 hostile surgical sequence,
 verbatim conflict + targeted `-Force`, all preflight refusals, CRLF immunity.
 
-- [ ] T004 [US2] Implement `scripts/update-kit.ps1` per `contracts/update-kit-cli.md`:
+- [x] T004 [US2] Implement `scripts/update-kit.ps1` per `contracts/update-kit-cli.md`:
       preflights (kit has manifest; Target ≠ Kit; Target passes kit-integrity
       essentials; Target tree clean), manifest resolution, CRLF-normalized comparison
       (research D4), three-way verbatim pass incl. absent-in-target copy
@@ -65,11 +65,11 @@ verbatim conflict + targeted `-Force`, all preflight refusals, CRLF immunity.
       surgical report via `git log recordedCommit..HEAD` (research D6), `-DryRun`
       zero-write mode, `.kit-version` write (research D2), report + exit codes 0/2/1
       (FR-003..FR-008)
-- [ ] T005 [US2] Add `scripts/update-kit.ps1` and `kit-manifest.json` to the
+- [x] T005 [US2] Add `scripts/update-kit.ps1` and `kit-manifest.json` to the
       kit-integrity required-paths list in `scripts/doc-lint.ps1`, and add manifest
       entries classifying both as verbatim in `kit-manifest.json` (FR-010; the manifest
       classifies itself and the updater so adoptions receive them)
-- [ ] T006 [US2] Verification: build the scratch fixtures (kit clone + pre-004-style
+- [x] T006 [US2] Verification: build the scratch fixtures (kit clone + pre-004-style
       adoption under the session scratchpad) and run quickstart.md Phase 2 scenarios
       1–7; fix until all pass
 
