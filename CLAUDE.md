@@ -94,6 +94,7 @@ Read the pack that matches what you are about to touch — not everything, every
 | An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution VII) |
 | Frontend UI | {{FRONTEND_RULES_PATH}} + `docs/rulebooks/` compliance checklist for that tier |
 | Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/` |
+| Updating an adopted project from the kit | `adoption/updating.md` |
 
 <!-- Tier rows are a MENU, not a requirement: keep only the tiers this project has, and add
      a row per extra tier (e.g. "Mobile UI | docs/rulebooks/mobile-rules.md", or a worker/CLI
