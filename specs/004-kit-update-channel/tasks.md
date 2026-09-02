@@ -87,17 +87,17 @@ documentation, reachable from the always-loaded anchor.
 without external context; doc-lint green; CLAUDE.md row present; optional dry-run dress
 rehearsal against the real expense-tracker reports sanely with zero writes.
 
-- [ ] T007 [US3] Author `adoption/updating.md`: running the update (command, report
+- [x] T007 [US3] Author `adoption/updating.md`: running the update (command, report
       reading, conflict resolution), the constitution amendment flow-down procedure
       (project's own version bump + SYNC IMPACT entry; verify demoted content lives in
       the project's rulebooks before deletion; citation sweep; project human approval
       adopts), worked example = the 2026-09-01 kit 0.3.0/0.4.0 flow-back; no backticked
       kit-internal `specs/NNN-*` paths (branch-protection portability lesson) (FR-009)
-- [ ] T008 [P] [US3] Add the CLAUDE.md Task-Scoped Reading row ("Updating an adopted
+- [x] T008 [P] [US3] Add the CLAUDE.md Task-Scoped Reading row ("Updating an adopted
       project from the kit" → `adoption/updating.md`) (FR-010)
-- [ ] T009 [P] [US3] Add `adoption/updating.md` to doc-lint's required-paths list and a
+- [x] T009 [P] [US3] Add `adoption/updating.md` to doc-lint's required-paths list and a
       verbatim manifest entry for it
-- [ ] T010 [US3] Verification: run quickstart.md Phase 3 scenarios 1–4 (doc-lint,
+- [x] T010 [US3] Verification: run quickstart.md Phase 3 scenarios 1–4 (doc-lint,
       content walk against SC-004, CLAUDE.md grep, dry-run dress rehearsal against
       `D:\solutions\expense-tracker` — zero writes); fix until all pass
 

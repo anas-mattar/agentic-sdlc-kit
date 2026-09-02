@@ -56,6 +56,7 @@ $requiredKitPaths = @(
     'scripts/territory-check.ps1'
     'scripts/update-kit.ps1'
     'kit-manifest.json'
+    'adoption/updating.md'
 )
 $missingKit = $requiredKitPaths | Where-Object { -not (Test-Path (Join-Path $Root $_)) }
 
