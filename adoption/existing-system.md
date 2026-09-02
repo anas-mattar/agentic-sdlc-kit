@@ -80,6 +80,11 @@ the selected tier rulebooks, wires CLAUDE.md's rows, fills the name/repository s
 prints what remains for a human. The descriptive content of each rulebook is still yours to
 write.
 
+If this adoption scaffolds a new component or repo into the existing system (rather than only
+wrapping governance around code that already exists), run it past
+`adoption/greenfield.md` step 3's scaffolding-tool traps checklist (env-file gitignore swallow,
+skipped `git init`) before the first commit of that new component.
+
 ## 8. Keep the framework honest
 
 Same as greenfield step 7: doc-lint in CI (every referenced path exists), CI gate as second

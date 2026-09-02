@@ -53,6 +53,20 @@ gate until it exits 0 on the empty scaffold. **A gate that has never been green 
 gate.** Do this before any feature — otherwise the first feature debugs the toolchain and the
 feature at once.
 
+**Scaffolding-tool traps** — check these immediately after each scaffolding CLI runs, before
+the first commit:
+
+- **Env-file gitignore swallow**: some scaffolding tools (e.g. `create-next-app`) generate a
+  `.gitignore` with a blanket `.env*` pattern that also excludes `.env.example`, silently
+  dropping it from every commit. Run `git status --ignored` right after scaffolding and
+  confirm `.env.example` is not listed as ignored; if it is, add a `!.env.example` negation
+  line.
+- **Skipped or re-initialized `git init`**: some scaffolding CLIs skip `git init` when run
+  inside a directory that is already part of a git repository — or worse, initialize a stray
+  nested repo. Run `git status` and `git rev-parse --show-toplevel` right after scaffolding and
+  confirm new files appear as untracked additions at the expected parent-repo root, not inside
+  a stray nested `.git`.
+
 ## 4. Ship `001-solution-scaffold` as a real feature
 
 Run the full ritual on something harmless: `/speckit.specify` a scaffold feature, plan it,
