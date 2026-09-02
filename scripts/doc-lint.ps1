@@ -57,6 +57,75 @@ $requiredKitPaths = @(
 )
 $missingKit = $requiredKitPaths | Where-Object { -not (Test-Path (Join-Path $Root $_)) }
 
+# --- Manifest completeness (research D7): every kit-shipped file must resolve to
+# exactly one declared update class (verbatim/surgical) in kit-manifest.json. An
+# unclassified file, or a file matching entries of different classes at equal
+# specificity, fails the kit's own CI (FR-002).
+function ConvertTo-GlobRegex {
+    param([string]$Pattern)
+    $e = [regex]::Escape($Pattern)
+    $e = $e -replace '\\\*\\\*', '@@DBLSTAR@@'
+    $e = $e -replace '\\\*', '[^/]*'
+    $e = $e -replace '@@DBLSTAR@@', '.*'
+    return "^$e`$"
+}
+
+function Get-PatternSpecificity {
+    param([string]$Pattern)
+    $starIdx = $Pattern.IndexOf('*')
+    if ($starIdx -lt 0) { return 1000000 + $Pattern.Length }
+    return $starIdx
+}
+
+$manifestErrors = @()
+$manifestClassifiedCount = 0
+$manifestPath = Join-Path $Root 'kit-manifest.json'
+if (Test-Path $manifestPath) {
+    $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+    $manifestEntries = @($manifest.entries)
+
+    # Shipped surfaces (research D7): kit-root files, whole directories, scripts/*.ps1.
+    # docs/roadmap.md is the kit's own roadmap — kit-internal, excluded even though it
+    # lives under docs/. specs/NNN-*/ and review/ are outside these surfaces entirely.
+    $shipped = @()
+    foreach ($f in 'CLAUDE.md', 'AGENTS.md', 'README.md', '.specify/memory/constitution.md', 'kit-manifest.json') {
+        if (Test-Path (Join-Path $Root $f)) { $shipped += $f }
+    }
+    foreach ($dir in '.specify/templates', '.specify/scripts', '.claude/commands', 'docs', 'adoption', 'modules', 'specs/_templates', '.github') {
+        $p = Join-Path $Root $dir
+        if (Test-Path $p) {
+            $shipped += Get-ChildItem $p -Recurse -File | ForEach-Object {
+                ([IO.Path]::GetRelativePath($Root, $_.FullName)) -replace '\\', '/'
+            }
+        }
+    }
+    $scriptsDir = Join-Path $Root 'scripts'
+    if (Test-Path $scriptsDir) {
+        $shipped += Get-ChildItem $scriptsDir -Filter *.ps1 -File | ForEach-Object {
+            ([IO.Path]::GetRelativePath($Root, $_.FullName)) -replace '\\', '/'
+        }
+    }
+    $shipped = $shipped | Where-Object { $_ -ne 'docs/roadmap.md' } | Select-Object -Unique
+
+    foreach ($file in $shipped) {
+        $hits = $manifestEntries | Where-Object { $file -match (ConvertTo-GlobRegex $_.path) }
+        if ($hits.Count -eq 0) {
+            $manifestErrors += "unclassified: $file"
+            continue
+        }
+        $maxSpec = ($hits | ForEach-Object { Get-PatternSpecificity $_.path } | Measure-Object -Maximum).Maximum
+        $winners = $hits | Where-Object { (Get-PatternSpecificity $_.path) -eq $maxSpec }
+        $winningClasses = $winners.class | Select-Object -Unique
+        if ($winningClasses.Count -gt 1) {
+            $manifestErrors += "conflict ($($winningClasses -join ' vs ')): $file"
+            continue
+        }
+        $manifestClassifiedCount++
+    }
+} else {
+    $manifestErrors += 'kit-manifest.json not found at kit root'
+}
+
 # Kit-owned governance docs. Stock Spec Kit files (.claude/commands, .specify/templates,
 # .specify/scripts) are excluded — they contain illustrative example paths by design.
 $docFiles = @(
@@ -133,6 +202,13 @@ if ($missingKit.Count -gt 0) {
     foreach ($m in $missingKit) { Write-Host "  $m" }
 }
 
+if ($manifestErrors.Count -gt 0) {
+    Write-Host "ERROR: manifest completeness — $($manifestErrors.Count) issue(s):"
+    foreach ($e in $manifestErrors) { Write-Host "  $e" }
+} else {
+    Write-Host "doc-lint: manifest — $manifestClassifiedCount shipped file(s) classified"
+}
+
 if ($slotCount -gt 0) {
     $level = $FailOnSlots ? 'ERROR' : 'INFO'
     Write-Host "${level}: $slotCount unfilled {{SLOT}} / TODO(...) markers remain (expected in the kit template; must be 0 after ratification)"
@@ -143,6 +219,6 @@ if ($broken.Count -gt 0) {
     foreach ($b in $broken) { Write-Host ("  {0}:{1}  {2}" -f $b.File, $b.Line, $b.Ref) }
 }
 
-if ($missingKit.Count -gt 0 -or $broken.Count -gt 0 -or ($FailOnSlots -and $slotCount -gt 0)) { exit 1 }
+if ($missingKit.Count -gt 0 -or $manifestErrors.Count -gt 0 -or $broken.Count -gt 0 -or ($FailOnSlots -and $slotCount -gt 0)) { exit 1 }
 Write-Host 'doc-lint: OK — kit complete, every referenced path resolves'
 exit 0
