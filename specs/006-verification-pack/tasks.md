@@ -223,3 +223,16 @@ branches `999-prov2-demo` and `docs/prov-lane-demo` (deleted after):
 | P9 | grandfathered 001 review `git mv`-ed into the feature dir | `FAIL` on the rename target — AR filter (F3) |
 | P10 | review added on a `docs/` branch | `FAIL` — provenance check now runs on every recognized lane (F7) |
 | Regression | enforcement-pack on `006-verification-pack` after all fixes | OK (own reviews carry compliant provenance blocks) |
+
+### Phase 3 validation (T017, 2026-09-08)
+
+| # | Scenario | Evidence |
+|---|---|---|
+| R1 | `pwsh -File scripts/ritual-checks.ps1` on this branch | three `OK` member lines + `ritual-checks: RESULT OK`, exit 0 |
+| R2 | single violation mid-implementation (branch-protection.md still referenced the deleted 002 workflows) | `ritual-checks: doc-lint FAIL`, other members still ran, `RESULT FAIL (1 of 3 member(s) failed)` — never short-circuits |
+| R3 (green) | push of `phase 3: ritual checks as CI` (f548b1b) | GitHub check `ritual-checks` completed **success**, run 34144751539, 18s, ubuntu-latest — zero human initiation |
+| R3 (red) | throwaway branch `998-ci-red-demo`: phase commit adding `demo/stray.txt` outside declared territory, pushed | GitHub check `ritual-checks` completed **failure**, run 34145125813 — CI log shows the byte-identical local verdict: `scope-check: FAIL phase 1 commit 04bda2b: demo/stray.txt not in territory` → `RESULT FAIL (1 of 3 member(s) failed)`; branch then deleted locally + remotely |
+| R4 | next green push on the real branch (`phase 2 fixes`, b91bdde) | GitHub check `ritual-checks` completed **success**, run 34145110674, 16s — red→green with no human initiation |
+
+Wrapper/CI verdict parity (contract guarantee) is demonstrated by R3-red: the CI log line
+equals the local run's output verbatim, because CI executes the same wrapper command.
