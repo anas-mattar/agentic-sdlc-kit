@@ -44,6 +44,11 @@ On the same throwaway branch:
 | P3 | Add a review with `Reviewer: implementer` | FAIL |
 | P4 | Delete the throwaway reviews; branch diff adds no review files | OK (checks only added files) |
 | P5 | Run on `main` (001–005 reviews present, none added in diff) | OK (grandfathering) |
+| P6 | Header says fresh-context agent, provenance block says `Reviewer: implementer` | FAIL — the block's line is checked, never shadowed by the header (review F1) |
+| P7 | Provenance block filled correctly, header left as the template placeholder | OK — the header is not the provenance (review F1 mirror) |
+| P8 | Review added with a non-ASCII filename (`ai-code-review-phasé2.md`), no provenance | FAIL — quotepath cannot hide it (review F2) |
+| P9 | Grandfathered (pre-006) review `git mv`-ed into the feature dir | FAIL — rename targets are inspected like additions (review F3) |
+| P10 | Review file added on a `docs/` or `fix/` branch without provenance | FAIL — the check runs on every recognized lane (review F7) |
 
 ## Ritual wrapper + CI (phase 3)
 

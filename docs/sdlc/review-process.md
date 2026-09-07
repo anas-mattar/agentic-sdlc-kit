@@ -64,8 +64,9 @@ diff. Procedure:
    verification (running checks, replicating logic) is allowed and encouraged.
 3. The reviewer completes `specs/_templates/ai-code-review-template.md` **including the
    Reviewer Provenance block** (reviewer identity, inputs supplied, verbatim
-   non-implementer attestation). `scripts/enforcement-pack.ps1` fails the branch when a
-   review added on it lacks the block or names the implementer as reviewer.
+   non-implementer attestation), filed as `specs/NNN-name/ai-code-review*.md` — the exact
+   naming the machine check keys on. `scripts/enforcement-pack.ps1` fails the branch when
+   a review added on it lacks the block or names the implementer as reviewer.
 4. The implementer acts on the findings and records each finding's disposition (fixed /
    deferred-where / rejected-why) — appended to the review file, never edited into the
    reviewer's text.

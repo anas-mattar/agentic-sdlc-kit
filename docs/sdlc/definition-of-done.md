@@ -57,10 +57,11 @@ Gates apply at two different points, not uniformly at every phase:
    never self-graded by the implementing agent in the same context — and MUST carry the
    template's **Reviewer Provenance** block (reviewer identity, inputs supplied, and the
    verbatim attestation that the reviewer did not produce the diff).
-   `scripts/enforcement-pack.ps1` fails the branch when a review file added on it lacks
-   the block or attests the implementer as reviewer; reviews committed before the
-   verification pack are grandfathered (only files added in the branch's diff are
-   checked). The machine verifies the block's presence and consistency; the truth of the
+   The review is filed as `specs/NNN-name/ai-code-review*.md` — that exact naming is what
+   the machine check keys on; a review filed under another name is invisible to it.
+   `scripts/enforcement-pack.ps1` fails the branch when a review file added on it (or
+   renamed into it) lacks the block or attests the implementer as reviewer; reviews
+   committed before the verification pack are grandfathered at their historical paths. The machine verifies the block's presence and consistency; the truth of the
    attestation remains the owner's to audit — but it is now a falsifiable written
    statement, not an unstated assumption.
 6. **Human review approved (once per feature, at merge)** — after the feature's final phase

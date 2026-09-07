@@ -208,3 +208,18 @@ after the run). `scripts/enforcement-pack.ps1` verdicts:
 
 P2/P3/P3b/P3c ran as one commit adding four bad reviews: enforcement-pack reported all
 four failures in a single run (each check independent, none short-circuits).
+
+### Phase 2 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The phase 2 fresh-context review (`ai-code-review-phase2.md`) returned REQUEST CHANGES
+(F1 BLOCKING + F2–F7); dispositions in its fix-response log. Re-validation on throwaway
+branches `999-prov2-demo` and `docs/prov-lane-demo` (deleted after):
+
+| # | Scenario | Verdict | 
+|---|---|---|
+| P6 | header `Reviewer: fresh-context agent`, provenance block `Reviewer: implementer` | `FAIL … attests 'implementer' as reviewer` — the block is checked, the header no longer shadows it (F1) |
+| P7 | provenance block filled, header left as template placeholder | OK — exactly one failure in the P6+P7 combined run, and it was P6's (F1 mirror) |
+| P8 | `ai-code-review-phasé3.md` (non-ASCII) without provenance | `FAIL … has no '## Reviewer Provenance' section` — quotepath off + UTF-8 console decoding (F2); before the encoding fix it still failed closed (file-missing message), never silently passed |
+| P9 | grandfathered 001 review `git mv`-ed into the feature dir | `FAIL` on the rename target — AR filter (F3) |
+| P10 | review added on a `docs/` branch | `FAIL` — provenance check now runs on every recognized lane (F7) |
+| Regression | enforcement-pack on `006-verification-pack` after all fixes | OK (own reviews carry compliant provenance blocks) |

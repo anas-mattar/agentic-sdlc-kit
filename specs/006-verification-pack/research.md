@@ -73,6 +73,15 @@ attestation is now a falsifiable written statement rather than an unstated assum
 fails shipped features); a kit-version cutoff date (rejected: more state, same effect as
 diff-scoping).
 
+**Post-review amendments (phase 2 review)**: the diff filter is `AR`, not `A` — rename
+targets are inspected like additions, because moving a grandfathered review into the
+feature under review is not legitimate grandfathering (F3); the check runs on every
+recognized lane, self-scoped by the filter (F7). **Stated residual (F5)**: matching is
+purely textual and does not strip markdown code fences, so a document quoting the block in
+a fence can satisfy the presence check — the machine verifies presence and internal
+consistency; the truth (and honest placement) of the attestation remains the owner's to
+audit at human review.
+
 ## D5 — CI shape and the single local command (FR-007, FR-008)
 
 **Decision**: One workflow, `.github/workflows/ritual-checks.yml`, `runs-on: ubuntu-latest`
