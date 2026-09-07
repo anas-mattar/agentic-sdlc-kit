@@ -12,8 +12,9 @@ session findings; the roadmap is authored and never regenerated.
 ## Inventory *(generated — regenerate freely)*
 
 **Generated from**: adoption flow-back session findings (2026-09-01), feature 003 AI
-reviews, adoption field-lesson candidates (expense-tracker, flowboard)
-**Generated on**: 2026-09-01 — **by**: manual audit during the kit 0.3.0/0.4.0 flow-back
+reviews, adoption field-lesson candidates (expense-tracker, flowboard), first kit-update
+flow-down findings (2026-09-07, kit 005 → both adopted projects)
+**Generated on**: 2026-09-07 — **by**: manual audit during the 005 flow-down
 
 | Inv # | Gap / lesson | Source |
 |---|---|---|
@@ -22,6 +23,8 @@ reviews, adoption field-lesson candidates (expense-tracker, flowboard)
 | GAP-003 | Adoption traps live only in session memory, not kit docs: create-next-app `.env*` gitignore swallows `.env.example`; create-next-app skips `git init` inside an existing repo tree; pre-existing database behind a reused connection string (the `Spc` incident); `--warnaserror` vs vulnerable transitive template deps; raw imported docs break doc-lint | expense-tracker 001/002, flowboard scaffolds |
 | GAP-004 | Pipelining WIP conditions ("review formally requested") are socially checked; no machine check counts a developer's open `NNN-*` branches | 003 phase 3 AI review, finding F1 |
 | GAP-005 | The batch-size cap (3) lives in two places — constitution X and `$Config.MaxBatchPhases` — kept in sync only by amendment discipline | 003 phase 4 AI review, finding F3 |
+| GAP-006 | `scripts/init-kit.ps1` slot-fill spillover: it replaced `{{PROJECT_NAME}}` inside kit-owned verbatim docs (`adoption/greenfield.md` in flowboard), making them look locally modified and producing false conflicts on the first `update-kit.ps1` run — the initializer should fill slots only in project-instantiated (surgical) files, never in verbatim ones | 2026-09-07 flow-down, flowboard conflict triage |
+| GAP-007 | Verbatim `adoption/` docs backtick-reference surgical rulebook-template files that adopters may legitimately delete (flowboard deleted them as "redundant" at instantiation) — deletion then breaks doc-lint after every update refreshes the adoption docs; kit needs a stated rule: either templates are undeletable kit files, or adoption docs must reference them in bold per the authoring convention | 2026-09-07 flow-down, both projects' doc-lint failures |
 
 ## Roadmap *(authored — humans only, never regenerated)*
 
@@ -47,3 +50,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 - 2026-09-01 GAP-004 deliberately deferred until field use shows actual pipelining abuse
   (003 phase 3 review, F1) — encoding enforcement for a problem not yet observed is
   ceremony.
+- 2026-09-07 A third flow-down finding — doc-lint's manifest completeness sweep failing in
+  adopted projects on project-authored `docs/` files — was fixed directly the same day
+  (PR #11, `fix/doc-lint-adopted-projects`: sweep skipped when `.kit-version` exists), per
+  the GAP-002 direct-fix precedent; no open inventory row needed.
