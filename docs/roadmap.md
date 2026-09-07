@@ -54,3 +54,9 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   adopted projects on project-authored `docs/` files — was fixed directly the same day
   (PR #11, `fix/doc-lint-adopted-projects`: sweep skipped when `.kit-version` exists), per
   the GAP-002 direct-fix precedent; no open inventory row needed.
+- 2026-09-07 GAP-006 and GAP-007 fixed directly on `fix/flow-down-gaps` (GAP-002 precedent).
+  GAP-006: init-kit's slot fill now resolves targets through `kit-manifest.json` and never
+  touches verbatim files. GAP-007 resolved as the **bold-reference rule**, not undeletable
+  templates: the tier templates/menu stay deletable (the tier-menu philosophy — an adopted
+  project sees only what it picked); verbatim kit docs reference them in bold, and the
+  authoring convention in `scripts/doc-lint.ps1`'s header states the rule.
