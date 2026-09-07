@@ -49,7 +49,9 @@ conflict" against a source of truth that exists in writing.
 For business-critical calculations, add characterization tests first: feed real inputs,
 pin the current outputs as exact expected values (to the cent, to the row). These tests
 define "unchanged" — without them, an agent's silent behavioral drift is invisible until
-production. Do this at feature 001, not after the first incident.
+production. Do this at feature 001, not after the first incident. Before the first migration
+in this track, run the dedicated-database check in **docs/rulebooks/database-rules-template.md**
+(Setup).
 
 ## 5. First agent features are read-only derivations
 

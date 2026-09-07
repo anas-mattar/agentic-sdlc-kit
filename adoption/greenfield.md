@@ -89,6 +89,8 @@ reviews it.
 - Foundations before domain logic: auth, core entities, permissions, reference data.
 - **Read-only slices before write slices** for each domain area: a view/report over data
   teaches the agent (and validates the model) at zero risk before the first mutation ships.
+  When planning the first write slice, run the dedicated-database check in
+  **docs/rulebooks/database-rules-template.md** (Setup) before its first migration.
 - One deliverable per feature; one phase per commit.
 
 ## 6. Grow the rulebooks reactively

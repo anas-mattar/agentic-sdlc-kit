@@ -25,7 +25,7 @@ disjoint files/steps and share no infrastructure to build first.
 
 **Purpose**: Confirm the baseline before any guidance edits.
 
-- [ ] T001 Run `pwsh -File scripts/doc-lint.ps1` on the unmodified branch and confirm exit 0
+- [x] T001 Run `pwsh -File scripts/doc-lint.ps1` on the unmodified branch and confirm exit 0
   (baseline gate proof per constitution X / `adoption/greenfield.md` step 3 discipline)
 
 ---
@@ -42,16 +42,16 @@ exists and would have caught the original incident.
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] In `adoption/greenfield.md` step 3 ("Define and PROVE the gate"), add a
+- [x] T002 [US1] In `adoption/greenfield.md` step 3 ("Define and PROVE the gate"), add a
   bullet documenting the `.env*`-gitignore trap: name the pattern (blanket `.env*` ignore
   rules swallowing `.env.example`), and give the concrete check (`git status --ignored` after
   scaffolding; add a `!.env.example` negation line if it shows as ignored)
-- [ ] T003 [US1] In the same step 3 location in `adoption/greenfield.md`, add a bullet
+- [x] T003 [US1] In the same step 3 location in `adoption/greenfield.md`, add a bullet
   documenting the skipped-`git init` trap: name the pattern (a scaffolding CLI skips or
   re-initializes git when run inside an already-initialized tree), and give the concrete check
   (`git status` and `git rev-parse --show-toplevel` immediately after scaffolding, confirming
   new files are untracked additions in the parent repo, not a stray nested `.git`)
-- [ ] T004 [P] [US1] In `adoption/existing-system.md` step 7 ("Grandfather deliberately"), add
+- [x] T004 [P] [US1] In `adoption/existing-system.md` step 7 ("Grandfather deliberately"), add
   a short paragraph pointing to `adoption/greenfield.md` step 3's scaffolding-trap checklist,
   for use whenever this track adds a new scaffolded component/repo to an existing system
 
@@ -73,15 +73,15 @@ check would have caught the original incident before the first migration.
 
 ### Implementation for User Story 2
 
-- [ ] T005 [US2] In `docs/rulebooks/database-rules-template.md`, add a bullet (new "Setup"
+- [x] T005 [US2] In `docs/rulebooks/database-rules-template.md`, add a bullet (new "Setup"
   section, or the most fitting existing section — read the file's structure first) requiring
   confirmation that a migration's target database is dedicated to the project (not a reused
   local-dev instance or a shared/production database) before the first migration runs, with a
   one-line Why citing the class of incident (silent reuse of an existing database)
-- [ ] T006 [P] [US2] In `adoption/greenfield.md` step 5 ("read-only slices before write
+- [x] T006 [P] [US2] In `adoption/greenfield.md` step 5 ("read-only slices before write
   slices"), add a one-line cross-reference to the new database-rules-template.md bullet at the
   point the first write slice is planned
-- [ ] T007 [P] [US2] In `adoption/existing-system.md` step 4 ("Golden-fixture tests BEFORE the
+- [x] T007 [P] [US2] In `adoption/existing-system.md` step 4 ("Golden-fixture tests BEFORE the
   agent touches critical logic"), add a one-line cross-reference to the same bullet
 
 **Checkpoint**: Quickstart Scenario 3 passes by inspection; `pwsh -File scripts/doc-lint.ps1`

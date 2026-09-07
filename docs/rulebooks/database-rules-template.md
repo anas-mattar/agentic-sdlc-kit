@@ -17,6 +17,14 @@ of this rulebook, not constitutional principles — deviations are a plan-approv
 call, not a constitutional violation.
 -->
 
+## Setup
+
+- Before the FIRST migration runs, the connection string's target database MUST be
+  confirmed as dedicated to this project — not a reused local-dev instance and not a
+  shared/production database. **Why**: a connection string silently reused from another
+  project points the first `migration apply` at an existing database, mixing schemas the
+  moment it runs.
+
 ## Schema Standards
 
 - Primary keys: the default primary key MUST be {{PK_STANDARD}}. <!-- e.g. `Id INT IDENTITY(1,1)
