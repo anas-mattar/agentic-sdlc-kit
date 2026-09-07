@@ -122,6 +122,11 @@ summarize gates 4–5; roadmap row flipped; ritual-checks RESULT OK on the branc
 - `docs/sdlc/definition-of-done.md`
 - `docs/roadmap.md`
 - `kit-manifest.json`
+- `docs/sdlc/team-workflow.md`
+- `specs/_templates/ai-code-review-template.md`
+- `README.md`
+- `docs/sdlc/critical-delivery.md`
+- `docs/rulebooks/compliance-checklist-template.md`
 
 > Territory amended before the phase commit: syncing flow.md to the post-review phase
 > order (commit → machine scope check → AI review) exposed a stale clause in the DoD
@@ -135,13 +140,11 @@ summarize gates 4–5; roadmap row flipped; ritual-checks RESULT OK on the branc
 > / self-completed-review wording in `docs/sdlc/team-workflow.md`,
 > `specs/_templates/ai-code-review-template.md`, `README.md`,
 > `docs/sdlc/critical-delivery.md`, and `docs/rulebooks/compliance-checklist-template.md`.
-> Named files added (least-territory per that review's own F5 guidance):
-
-- `docs/sdlc/team-workflow.md`
-- `specs/_templates/ai-code-review-template.md`
-- `README.md`
-- `docs/sdlc/critical-delivery.md`
-- `docs/rulebooks/compliance-checklist-template.md`
+> Named files added to the territory list above (least-territory per that review's own F5
+> guidance). Dogfood note: the first attempt appended these as a *separate* list after
+> this note — `scope-check.ps1` correctly refused to read it (entries must be one
+> contiguous list, phase 1 F1 parser) and FAILed the fixes commit, which was redone per
+> the standard remediation path. The machine caught its own author.
 
 - [x] T022 [P] Add a Task-Scoped Reading row (or amend the existing review row) in `CLAUDE.md` pointing at the ritual checks; keep it summary-only per house style — also synced Workflow steps 6–7 (commit → machine scope check → fresh-context review)
 - [x] T023 [P] Sync `docs/sdlc/flow.md` step rows 3c–3e + phase-loop diagram with the machine-checked gates (summary only, owning docs prevail) and `docs/sdlc/gate-command.md` batched-gates wording — this exposed the stale DoD preamble clause fixed under the amended territory (gates 4–5 verified against the committed phase; both preamble and closing clause corrected)
