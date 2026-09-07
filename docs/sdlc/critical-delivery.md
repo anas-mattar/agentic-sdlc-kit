@@ -43,7 +43,8 @@ Declare Critical when the feature touches any of:
    pass over the domain-invariants pack (constitution V), item by item, recorded in the
    review document.
    **Why**: invariant violations are the one class of defect the gate cannot catch.
-3. **Audit evidence retained** — the gate command + exit code, the `git diff --stat` output,
+3. **Audit evidence retained** — the gate command + exit code, the `scope-check.ps1`
+   verdict and the `git diff --stat` output,
    and both completed review checklists are kept in the feature directory.
    **Why**: "we reviewed it" must be demonstrable later, not remembered.
 4. **Human-executed gates only, one per phase** — the agent-run gate feedback loop
