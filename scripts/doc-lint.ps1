@@ -82,8 +82,17 @@ function Get-PatternSpecificity {
 
 $manifestErrors = @()
 $manifestClassifiedCount = 0
+$manifestSkipped = $false
 $manifestPath = Join-Path $Root 'kit-manifest.json'
-if (Test-Path $manifestPath) {
+# The completeness sweep guards the KIT's own CI (research D7 / 004 FR-002): every
+# kit-shipped file must carry exactly one update class. An ADOPTED project
+# (identified by .kit-version, which update-kit.ps1 writes and the kit repo never
+# has) legitimately grows its own files under the shipped surfaces — docs/domain/
+# invariants packs, product docs — which the kit manifest cannot and should not
+# classify, so the sweep is skipped there.
+if (Test-Path (Join-Path $Root '.kit-version')) {
+    $manifestSkipped = $true
+} elseif (Test-Path $manifestPath) {
     $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
     $manifestEntries = @($manifest.entries)
 
@@ -208,6 +217,8 @@ if ($missingKit.Count -gt 0) {
 if ($manifestErrors.Count -gt 0) {
     Write-Host "ERROR: manifest completeness — $($manifestErrors.Count) issue(s):"
     foreach ($e in $manifestErrors) { Write-Host "  $e" }
+} elseif ($manifestSkipped) {
+    Write-Host 'doc-lint: manifest — completeness sweep skipped (adopted project; kit-CI-only check)'
 } else {
     Write-Host "doc-lint: manifest — $manifestClassifiedCount shipped file(s) classified"
 }
