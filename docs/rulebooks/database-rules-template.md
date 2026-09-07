@@ -20,10 +20,12 @@ call, not a constitutional violation.
 ## Setup
 
 - Before the FIRST migration runs, the connection string's target database MUST be
-  confirmed as dedicated to this project — not a reused local-dev instance and not a
-  shared/production database. **Why**: a connection string silently reused from another
-  project points the first `migration apply` at an existing database, mixing schemas the
-  moment it runs.
+  confirmed as dedicated to this project — not silently inherited from another project's
+  local-dev setup and not a shared/production database. Deliberately sharing a database
+  across services is permitted only as an explicit, plan-approved decision: the rule is
+  confirmation, not a ban on reuse. **Why**: a connection string silently reused from
+  another project points the first `migration apply` at an existing database, mixing
+  schemas the moment it runs.
 
 ## Schema Standards
 
