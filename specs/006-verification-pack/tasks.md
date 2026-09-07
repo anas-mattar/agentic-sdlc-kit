@@ -82,11 +82,18 @@ member fails; pushed violation turns the `ritual-checks` check red; fix turns it
 **Territory**:
 
 - `scripts/ritual-checks.ps1`
-- `.github/workflows/ritual-checks.yml`
+- `.github/workflows/**`
 - `docs/sdlc/branch-protection.md`
 - `adoption/greenfield.md`
 - `adoption/existing-system.md`
 - `kit-manifest.json`
+
+> Territory amended before the phase commit (scope-check remediation path): implementation
+> discovered the kit already ships `.github/workflows/doc-lint.yml` and
+> `.github/workflows/enforcement-pack.yml` (feature 002). The contract's single-check
+> design (`contracts/ritual-checks-ci.md`) supersedes them — keeping both would run every
+> check twice and split the required-check name — so this phase **replaces** them with
+> `ritual-checks.yml`, which needs the directory glob rather than the single file.
 
 - [ ] T015 [US3] Implement `scripts/ritual-checks.ps1` per `contracts/ritual-checks-ci.md`: run doc-lint, enforcement-pack, scope-check `-All`; never short-circuit; per-member verdict block; exit 0 iff all OK
 - [ ] T016 [US3] Create `.github/workflows/ritual-checks.yml` per the contract: push triggers on `[0-9][0-9][0-9]-*`, `fix/**`, `chore/**`, `docs/**` + `pull_request` to main; `ubuntu-latest`; `fetch-depth: 0`; `contents: read`; single step invoking the wrapper
