@@ -101,11 +101,14 @@ try {
     $hasKitVersion = Test-Path (Join-Path $Root '.kit-version')
 
     # --- Decline: the kit template itself (research D5.1) ---
+    # An adoption record VETOES the decline (research D5.3, review F2): a project that
+    # wrote kit-adoption.json is an adoption no matter what its roadmap header says.
     if (-not $hasKitVersion) {
         $roadmapPath = Join-Path $Root 'docs/roadmap.md'
         $isKit = (Test-Path (Join-Path $Root 'kit-manifest.json')) -and
+                 (-not (Test-Path (Join-Path $Root 'kit-adoption.json'))) -and
                  (Test-Path $roadmapPath) -and
-                 ((Get-Content $roadmapPath -TotalCount 1) -match '^#\s*Roadmap\s+—\s+Agentic SDLC Kit')
+                 ("$(Get-Content $roadmapPath -TotalCount 1)" -match '^#\s*Roadmap\s+—\s+Agentic SDLC Kit')
         if ($isKit) {
             Write-Host 'verify-kit: not applicable (this is the kit template, not an adoption)'
             if ($Json) { [pscustomobject]@{ verdict = 'not-applicable'; findings = @() } | ConvertTo-Json | Write-Host }
@@ -142,7 +145,14 @@ try {
         $slotHits = 0
         foreach ($rel in $surfaces) {
             if ((Get-ManifestClass -RelPath $rel -Entries $entries) -ne 'surgical') { continue }
-            $content = Get-Content -LiteralPath (Join-Path $Root $rel) -Raw
+            # Kit-shipped example/menu prose is kept, not filled (review F1; research D3):
+            # tier/stack templates and the tier menu carry instructional markers forever,
+            # and modules/** are worked examples a project replaces (its real invariants
+            # live at the CLAUDE.md-declared path). Instantiated rulebooks stay scanned.
+            if ($rel -match '(^|/)[^/]*-template\.md$' -or
+                $rel -eq 'docs/rulebooks/README.md' -or
+                $rel -match '^modules/') { continue }
+            $content = "$(Get-Content -LiteralPath (Join-Path $Root $rel) -Raw)"
             $m = [regex]::Matches($content, '\{\{[A-Z_]+\}\}|TODO\(')
             if ($m.Count -gt 0) {
                 $slotHits++
@@ -157,8 +167,9 @@ try {
     # --- Dimension 3: constitution ratification ---
     $constPath = Join-Path $Root '.specify/memory/constitution.md'
     if (Test-Path $constPath) {
-        $const = Get-Content -LiteralPath $constPath -Raw
-        $marks = [regex]::Matches($const, 'TODO\(RATIFICATION_DATE\)|TODO\(PROJECT_NAME\)|TODO\(SLOTS\)|\{\{[A-Z_]+\}\}')
+        $const = "$(Get-Content -LiteralPath $constPath -Raw)"
+        # Generic TODO( — speckit.constitution writes deferred fields as TODO(<FIELD>) (review F5).
+        $marks = [regex]::Matches($const, 'TODO\(|\{\{[A-Z_]+\}\}')
         if ($marks.Count -gt 0) {
             Add-Finding FAIL 'constitution' "constitution still carries $($marks.Count) template marker(s), first: $($marks[0].Value)" 'ratify the constitution: fill every slot, set the version and ratification date (adoption step 1/2)'
         } else {
@@ -170,12 +181,12 @@ try {
     $recordPath = Join-Path $Root 'kit-adoption.json'
     $knownTiers = 'backend', 'frontend', 'mobile', 'database', 'integration'
     if (-not (Test-Path $recordPath)) {
-        Add-Finding WARN 'record' 'kit-adoption.json not found (adoption predates the doctor?)' 'create it per adoption/updating.md (shape: specs/007-adoption-doctor/data-model.md) so declared tiers and the gate proof become checkable'
+        Add-Finding WARN 'record' 'kit-adoption.json not found (adoption predates the doctor?)' 'create it per adoption/updating.md so declared tiers and the gate proof (adoption step 3) become checkable'
     } else {
         $record = $null
         try { $record = Get-Content -LiteralPath $recordPath -Raw | ConvertFrom-Json } catch {}
         if (-not $record) {
-            Add-Finding FAIL 'record' 'kit-adoption.json does not parse as JSON' 'repair it against the documented shape (specs/007-adoption-doctor/data-model.md)'
+            Add-Finding FAIL 'record' 'kit-adoption.json does not parse as JSON' 'repair it against the documented shape (adoption/updating.md)'
         } else {
             if ($record.schemaVersion -ne 1) {
                 Add-Finding FAIL 'record' "kit-adoption.json schemaVersion '$($record.schemaVersion)' is not 1 (newer record than this doctor?)" 'update the kit, or set schemaVersion per the documented shape'
@@ -187,7 +198,12 @@ try {
                 Add-Finding FAIL 'record' "kit-adoption.json topology '$($record.topology)' is not single|multi" 'fix the record per the documented shape'
             }
             $tierFail = $false
-            foreach ($tier in @($record.tiers)) {
+            $declaredTiers = @($record.tiers) | Where-Object { $_ }
+            if ($declaredTiers.Count -eq 0) {
+                Add-Finding FAIL 'record' 'kit-adoption.json declares no tiers' 'declare the project''s tiers in the record (review F6; shape: adoption/updating.md)'
+                $tierFail = $true
+            }
+            foreach ($tier in $declaredTiers) {
                 if ($tier -notin $knownTiers) {
                     Add-Finding FAIL 'record' "declared tier '$tier' is not a known tier ($($knownTiers -join ', '))" 'fix the tiers list in kit-adoption.json'
                     $tierFail = $true
@@ -211,11 +227,13 @@ try {
 
     # --- Dimension 5: .kit-version sanity ---
     if ($hasKitVersion) {
-        $kv = (Get-Content -LiteralPath (Join-Path $Root '.kit-version') -Raw).Trim()
-        if ($kv -match '^[0-9a-f]{40}$' -or ($kv -and $kv -notmatch '\s' -and $kv.Length -le 64)) {
+        $kv = "$(Get-Content -LiteralPath (Join-Path $Root '.kit-version') -Raw)".Trim()
+        # Strict plausibility (review F4, flagged for owner ratification): update-kit
+        # writes commit shas, so accept 7-40 hex, or a v-prefixed/dotted tag token.
+        if ($kv -match '^[0-9a-f]{7,40}$' -or $kv -match '^v?\d+(\.[A-Za-z0-9._-]+)*$') {
             Add-Finding ok 'kit-version' ".kit-version present ($($kv.Substring(0, [Math]::Min(12, $kv.Length)))…)" ''
         } else {
-            Add-Finding FAIL 'kit-version' '.kit-version content is not a plausible kit commit/tag (hand-edited?)' 're-run scripts/update-kit.ps1 from a kit clone to rewrite it (adoption/updating.md)'
+            Add-Finding FAIL 'kit-version' '.kit-version content is not a plausible kit commit/tag (hand-edited or empty?)' 're-run scripts/update-kit.ps1 from a kit clone to rewrite it (adoption/updating.md)'
         }
     } else {
         Add-Finding WARN 'kit-version' '.kit-version not found (adopted by copy, never updated?)' 'create it per adoption/updating.md so update-kit and the manifest sweep can classify this project'

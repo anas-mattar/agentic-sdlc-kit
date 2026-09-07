@@ -59,7 +59,7 @@ red); DryRun untouched; owner tier-addition passes.
 - [ ] T007 [US2] Amend `scripts/update-kit.ps1`: after a non-DryRun apply, run the kit clone's `verify-kit.ps1 -Root <target>` and append the verdict to the report; red doctor ⇒ exit 2; DryRun and documented exit codes otherwise unchanged
 - [ ] T008 [P] [US2] Amend `adoption/greenfield.md`: step 3 gains "record the proof in `kit-adoption.json`" (shape + no-secrets caveat); init step notes the record + doctor finish; step 7 names the doctor as the integrity check
 - [ ] T009 [P] [US2] Amend `adoption/existing-system.md`: same touchpoints (gate proof recording, doctor at init/step 8)
-- [ ] T010 [P] [US2] Amend `adoption/updating.md`: the update report ends with the doctor verdict; post-update expectation = green doctor before committing the flow-down; pre-007 projects: how to create `kit-adoption.json` and `.kit-version` by hand (grandfather instructions the doctor's WARNs point at)
+- [ ] T010 [P] [US2] Amend `adoption/updating.md`: the update report ends with the doctor verdict; post-update expectation = green doctor before committing the flow-down; pre-007 projects: how to create `kit-adoption.json` (full documented shape — review F7: the doctor's fix pointers target THIS doc because specs/007 never ships to adopters) and `.kit-version` by hand; note the roadmap-header decline caveat (contract V8)
 - [ ] T011 [US2] Execute quickstart L1–L6 on fresh fixtures; record outputs in this file under Phase 2 validation
 - [ ] T012 [US2] Feedback-run ritual-checks, report output, commit as `phase 2: lifecycle hooks`
 
@@ -152,3 +152,24 @@ shape). All verdicts per `contracts/verify-kit-cli.md`:
 | V10 | V2+V3+V5 simultaneously | all three FAILs named in one run | 1 |
 
 V1 re-run after all restores: OK, exit 0 (fixture restoration clean).
+
+### Phase 1 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The review (`ai-code-review-phase1.md`) returned REQUEST CHANGES: F1/F2/F3 BLOCKING —
+crucially, round 1's healthy V1 was achieved by dummy-filling kit-shipped menu/template
+prose no real adopter edits, so dim 2 would have false-FAILed every realistic adoption.
+All findings dispositioned (fix log in the review). Round 2 ran on a **realism-corrected
+fixture** (`fixture007b`): real `init-kit` run *without* `-DeleteUnusedTemplates`, only
+judgment slots + instantiated rulebooks + surgical sdlc docs filled; tier templates, the
+menu README, and `modules/**` left exactly as shipped.
+
+| # | Scenario | Verdict | Exit |
+|---|---|---|---|
+| V1+V11 | realistic healthy fixture, all kit example/menu prose retained | all 5 dimensions ok, `OK — adoption integrity verified` | 0 |
+| V12a | empty (0-byte) `.kit-version` | `FAIL kit-version … (hand-edited or empty?)` — all other dimensions still reported (crash eliminated; root cause: PowerShell's AutomationNull survives a `[string]` cast in assignment — reads switched to interpolation form) | 1 |
+| V12b | empty `.md` under a surgical surface | scans clean, no crash, `OK` | 0 |
+| V13 | `TODO(LAST_AMENDED_DATE)` in constitution | `FAIL constitution` (generic `TODO\(` — F5) | 1 |
+| V14 | record with `tiers: []` | `FAIL record: kit-adoption.json declares no tiers` (F6) | 1 |
+| V8-strict | `.kit-version` = single token `garbage` | `FAIL kit-version` (F4 strict rule: 7–40 hex or v/dotted tag) | 1 |
+| F2 veto | kit roadmap header kept + record present + no `.kit-version` | **audited** (WARN kit-version, `OK … (1 warning(s))`) — no false decline | 0 |
+| V9 regression | kit repository | decline, zero findings | 0 |

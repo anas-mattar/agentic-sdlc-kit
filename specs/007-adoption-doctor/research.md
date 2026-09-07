@@ -79,6 +79,15 @@ reusing it means a future re-classification automatically retargets the doctor.
 kit-template remnants the project never owned); a hand-kept file list (rejected: second
 source of truth, the exact drift disease).
 
+**Post-review amendment (phase 1 review, F1)**: "every existing surgical file" conflicted
+with the spec's tier-menu edge case — the kit *ships* marker-bearing surgical prose a
+by-the-book adoption keeps (the tier menu `docs/rulebooks/README.md`, every
+`*-template.md`, and `modules/**` worked examples, which projects replace rather than
+fill). Resolution, reported here per constitution II: dim 2 exempts exactly those three
+shapes; **instantiated rulebooks stay scanned** — filling them is existing law (doc-lint
+`-FailOnSlots` posture). A project storing its real domain pack under `modules/` escapes
+the slot scan (accepted: the CLAUDE.md-declared invariants path is the canonical home).
+
 ## D4 — Constitution ratification check
 
 **Decision**: the ratification dimension fails when the constitution still contains
