@@ -123,10 +123,20 @@ exits 0.
 
 **Purpose**: Close out the feature once all three stories are merged-ready.
 
-- [ ] T012 Run all five quickstart.md scenarios end-to-end in one pass and record the result
-- [ ] T013 Run `pwsh -File scripts/doc-lint.ps1` one final time and confirm exit 0
-- [ ] T014 At merge: update `docs/roadmap.md` — GAP-003 row and the field-lesson-harvest
+- [x] T012 Run all five quickstart.md scenarios end-to-end in one pass and record the result
+- [x] T013 Run `pwsh -File scripts/doc-lint.ps1` one final time and confirm exit 0
+- [x] T014 At merge: update `docs/roadmap.md` — GAP-003 row and the field-lesson-harvest
   roadmap row → `shipped`, with this feature's spec path, per FR-007
+
+**Validation record (2026-09-07)**: all five quickstart scenarios re-walked in one pass
+against the committed state of phases 2–4 — each pass condition met (Scenario 1:
+`adoption/greenfield.md` step 3 env-gitignore bullet with `git status --ignored` check;
+Scenario 2: same step, git-init bullet with `git rev-parse --show-toplevel` check; Scenario 3:
+`docs/rulebooks/database-rules-template.md` Setup bullet + both adoption cross-references;
+Scenario 4: `docs/sdlc/gate-command.md` strict-build triage section + step 3 cross-reference;
+Scenario 5: normalization paragraphs in `adoption/greenfield.md` step 2 and
+`adoption/existing-system.md` step 7). Final doc-lint: exit 0. Roadmap row
+(field-lesson-harvest / GAP-003) → `shipped`.
 
 ---
 
