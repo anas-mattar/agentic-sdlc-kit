@@ -115,6 +115,15 @@ amended DoD, work stops and reports per the conflict rule.
 sync list* — not *every script change is constitutional*. Keeping this at the DoD layer keeps
 the constitution stable and the amendment procedure meaningful.
 
+**Post-sweep note (phase 4 review, F4)**: constitution I's numbered workflow — "(6) review
+changes; (7) commit the approved phase" — maps to the owner's **pre-commit intent review**
+(`git diff --stat`), preserved in review-process.md step 2, CLAUDE.md step 6, and flow.md
+row 3c. The machine scope check and the fresh-context AI review are **verification of the
+committed phase** (DoD gates 4–5), an additional layer this feature adds, not a relocation
+of constitution I's step (6). Recorded as the governing reading rather than a constitutional
+amendment; if the owner prefers the constitution to name post-commit verification
+explicitly, that is a PATCH amendment to I as a follow-up.
+
 ## D7 — Skipping `update-agent-context.ps1`
 
 **Decision**: The stock plan flow's agent-context update is skipped, recorded here and in the

@@ -78,7 +78,9 @@ while their first awaits review, under all of these conditions:
 
 With one developer, human review means reviewing your own agent's work. With a team there
 is no excuse: **the human reviewer of a feature MUST NOT be its owner** (constitution IX
-gains teeth). The owner completes the AI review; a different developer completes
+gains teeth). The owner initiates the fresh-context AI review (DoD gate 5 — produced by a
+fresh-context agent or second model, never self-graded, with the Reviewer Provenance
+block); a different developer completes
 `human-pr-review.md` and holds the merge approval.
 
 ## 5. Territory check — before a phase, not at merge

@@ -9,10 +9,11 @@ and **IX. Human Review Requirement**.
 Gates apply at two different points, not uniformly at every phase:
 
 - **Gates 1–5** MUST pass at **every phase commit** — a phase is not Done until items 1–5
-  below are all true. Gates 1–3 hold before the commit; gates 4–5 are verified **against**
-  the committed phase (the scope check reads git history, and the review examines the
-  commit's diff) — a phase commit that fails them is remediated and redone, never carried
-  forward or merged.
+  below are all true. Gates 1–3 hold before the commit (for a declared batch, gate 3's
+  certifying user-run gate lands once at batch end — gate 3, Batched option); gates 4–5
+  are verified **against** the committed phase (the scope check reads git history, and
+  the review examines the commit's diff) — a phase commit that fails them is remediated
+  and redone, never carried forward or merged.
 - **Gate 6** (human review) applies **once per feature**, at the point the feature's final
   phase is ready to merge to `main` — not after every individual phase commit. A 4-phase
   feature owes one human review, not four.

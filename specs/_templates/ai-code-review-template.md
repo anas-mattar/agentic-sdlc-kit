@@ -39,7 +39,7 @@ paragraph: what the change does, why the verdict, and where the residual risk si
 | Feature contract held (no unapproved table/migration/permission/package) | |
 | Constitution / domain invariants | |
 | Security (authn/authz, secrets, sensitive logging) | |
-| Scope guard (`git diff --stat` — only intended files) | |
+| Scope guard (`scope-check.ps1` PASS on the phase commit; `git diff --stat` read for intent) | |
 | Rollback safety (phase reverts cleanly; schema additive?) | |
 
 ## Findings

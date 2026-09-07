@@ -65,12 +65,13 @@ links to prevail).
 5. Implement **one phase only**. UI phase with visual references? Run the Visual
    Compliance Loop (`docs/sdlc/review-process.md`) until the deviation table is empty or
    user-approved. Then stop and ask the user to run the gate.
-6. Commit the phase (`phase N` in the subject), then run the machine scope check
-   (`pwsh -File scripts/scope-check.ps1` — PASS required) and review `git diff --stat`;
-   fix only current-phase issues.
-7. AI review by a fresh-context agent or second model — never self-graded — with the
-   Reviewer Provenance block; then human review. Merge only after approval.
-   CI runs the same checks on every push (`scripts/ritual-checks.ps1`).
+6. Review the working diff for intent (`git diff --stat`), fix only current-phase issues,
+   then commit the phase (`phase N` in the subject).
+7. Run the machine scope check against the commit (`pwsh -File scripts/scope-check.ps1` —
+   PASS required; a failing commit is remediated and redone). AI review by a fresh-context
+   agent or second model — never self-graded — with the Reviewer Provenance block; then
+   human review. Merge only after approval. CI re-runs the same checks on every push
+   (`scripts/ritual-checks.ps1`).
 
 ## Strict Rules
 

@@ -11,7 +11,7 @@ modes that actually sink agent-driven delivery:
 | Agent failure mode | Kit countermeasure |
 |---|---|
 | Claims success without proof | The **user** runs the gate and confirms the exit code; the agent may never self-certify |
-| Scope creep / drive-by refactors | One approved phase at a time; `git diff --stat` after every phase |
+| Scope creep / drive-by refactors | One approved phase at a time; each phase's file territory declared in advance and machine-checked (`scripts/scope-check.ps1`) after every phase commit |
 | Hallucinated requirements or UI | Ordered source-of-truth ladder; on conflict, **stop and report** |
 | "Creative" violations of domain rules | Domain invariants with constitutional force |
 | Big-bang failure | Phase-per-commit; rollback checklist before work starts |
@@ -22,7 +22,7 @@ modes that actually sink agent-driven delivery:
 ```text
 CLAUDE.md                      Thin agent entry point ({{SLOT}}s to fill) — the always-loaded core
 AGENTS.md                      Cross-agent pointer (@CLAUDE.md) so non-Claude agents inherit the same law
-.specify/memory/constitution.md  The constitution template (13 principles; the project's ONLY constitution)
+.specify/memory/constitution.md  The constitution template (10 principles; the project's ONLY constitution)
 .specify/                      Stock Spec Kit 0.4.4: templates, PowerShell scripts, init receipt
 .claude/commands/              Stock /speckit.* commands (specify, plan, tasks, implement, analyze, …)
 docs/sdlc/                     The process law: gate-command, review-process, rollback-process,
