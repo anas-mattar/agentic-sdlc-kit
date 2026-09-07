@@ -27,11 +27,11 @@ declined.
 - `scripts/doc-lint.ps1`
 - `kit-manifest.json`
 
-- [ ] T001 [US1] Implement `scripts/verify-kit.ps1` per `contracts/verify-kit-cli.md` and data-model.md: decline check (research D5.1), five dimensions never short-circuiting, FAIL/WARN/ok lines with fix pointers, summary block, exit 0 iff zero FAILs, `-Root` usable from a different repo (update-kit's calling shape), `-Json` output, UTF-8/quotepath hygiene from day one (006 lessons)
-- [ ] T002 [US1] Add the keep-in-sync cross-note for the structure-essentials list to `scripts/doc-lint.ps1`'s header (research D2) — no behavior change
-- [ ] T003 [US1] Build the scratch adopted fixture per quickstart.md and execute V1–V10, fail paths first; record verdicts + exits in this file under Phase 1 validation
-- [ ] T004 [US1] Verify `kit-manifest.json` classification (existing `scripts/*.ps1` verbatim glob must cover the doctor; doc-lint count +1) — no edit expected
-- [ ] T005 [US1] Feedback-run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 1: adoption doctor script`
+- [x] T001 [US1] Implement `scripts/verify-kit.ps1` per `contracts/verify-kit-cli.md` and data-model.md: decline check (research D5.1), five dimensions never short-circuiting, FAIL/WARN/ok lines with fix pointers, summary block, exit 0 iff zero FAILs, `-Root` usable from a different repo (update-kit's calling shape), `-Json` output, UTF-8/quotepath hygiene from day one (006 lessons) — dimension 2 resolves surgical class through the target's own `kit-manifest.json` with doc-lint's exact glob/specificity rules; constitution excluded from dim 2 (dim 3 owns it)
+- [x] T002 [US1] Add the keep-in-sync cross-note for the structure-essentials list to `scripts/doc-lint.ps1`'s header (research D2) — no behavior change
+- [x] T003 [US1] Build the scratch adopted fixture per quickstart.md and execute V1–V10, fail paths first; record verdicts + exits in this file under Phase 1 validation
+- [x] T004 [US1] Verify `kit-manifest.json` classification — confirmed: `scripts/*.ps1` verbatim glob covers the doctor (doc-lint count 62→63); no edit
+- [x] T005 [US1] Feedback-run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 1: adoption doctor script`
 
 **Checkpoint**: every known adoption-integrity incident class is machine-nameable.
 
@@ -125,3 +125,30 @@ Phase 4 alone. Each phase reverts by its single commit.
 ## Phase validation records
 
 *(Filled during implementation — T003, T011, T015 outputs land here.)*
+
+### Phase 1 validation (T003, 2026-09-08)
+
+Fixture: `git archive HEAD` copy in the session scratchpad, adopted via
+`init-kit.ps1 -ProjectName Demo -Topology single -Tiers backend,database
+-DeleteUnusedTemplates -NonInteractive`, roadmap header renamed to `# Roadmap — Demo`
+(a real adoption's roadmap names the project — keeping the kit header would wrongly
+trigger the decline path in V8b), remaining surgical markers filled with dummies,
+hand-written `kit-adoption.json` (record + one exit-0 gateProof), 40-hex `.kit-version`.
+Doctor invoked from the KIT's working copy with `-Root <fixture>` (update-kit's calling
+shape). All verdicts per `contracts/verify-kit-cli.md`:
+
+| # | Break | Verdict (verbatim head) | Exit |
+|---|---|---|---|
+| V1 | none | `verify-kit: OK — adoption integrity verified` (5 ok dimensions) | 0 |
+| V2 | `.specify/templates` removed | `FAIL structure: required kit path missing: .specify/templates — fix: re-copy the kit …` | 1 |
+| V3 | `{{FRONTEND_GATE}}` re-inserted in gate-command.md | `FAIL slots: docs/sdlc/gate-command.md has 1 unfilled marker(s), first: {{FRONTEND_GATE}}` | 1 |
+| V4 | `TODO(RATIFICATION_DATE)` re-inserted in constitution | `FAIL constitution: … template marker(s) … — fix: ratify …` | 1 |
+| V5 | record declares `frontend`, no rulebook | `FAIL record: declared tier 'frontend' has no instantiated rulebook at docs/rulebooks/frontend-rules.md` | 1 |
+| V6 | `gateProof: []` | `FAIL record: no gate proof with exit code 0 … ("a gate that has never been green is not a gate")` | 1 |
+| V7 | no `kit-adoption.json` | `WARN record: … (adoption predates the doctor?)` + `OK … (1 warning(s))` | 0 |
+| V8a | `.kit-version` = multiline garbage | `FAIL kit-version: … not a plausible kit commit/tag (hand-edited?)` | 1 |
+| V8b | `.kit-version` absent (roadmap = Demo's, so no decline) | `WARN kit-version: … (adopted by copy, never updated?)` + OK | 0 |
+| V9 | kit repository itself | `verify-kit: not applicable (this is the kit template, not an adoption)` | 0 |
+| V10 | V2+V3+V5 simultaneously | all three FAILs named in one run | 1 |
+
+V1 re-run after all restores: OK, exit 0 (fixture restoration clean).
