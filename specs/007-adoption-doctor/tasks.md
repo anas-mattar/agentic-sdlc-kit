@@ -1,0 +1,127 @@
+# Tasks: Adoption Doctor
+
+**Input**: Design documents from `/specs/007-adoption-doctor/`
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md
+
+**Tests**: The doctor is this feature's business-critical logic (constitution VIII); its
+deterministic validation is the seeded-fixture suite (contracts V1–V10, quickstart L/W
+scenarios), fail paths first. No test framework exists or is added (kit convention).
+
+**Organization**: One delivery phase per user story, matching plan.md's phase table.
+**Gate Batching: phases 1-3** (declared in plan.md). Phase commits carry `phase N`
+subjects; each phase declares its Territory below (006 law — one contiguous
+backtick-wrapped list right under the marker).
+
+## Phase 1: The doctor (US1, P1) 🎯 MVP
+
+**Goal**: `scripts/verify-kit.ps1` — five dimensions, decline logic, grandfather
+warnings, fix pointers, `-Json`; validated against V1–V10.
+
+**Independent Test**: contracts/verify-kit-cli.md V1–V10 on a hand-built adopted fixture —
+every seeded break named with a fix pointer, healthy fixture zero findings, kit repo
+declined.
+
+**Territory**:
+
+- `scripts/verify-kit.ps1`
+- `scripts/doc-lint.ps1`
+- `kit-manifest.json`
+
+- [ ] T001 [US1] Implement `scripts/verify-kit.ps1` per `contracts/verify-kit-cli.md` and data-model.md: decline check (research D5.1), five dimensions never short-circuiting, FAIL/WARN/ok lines with fix pointers, summary block, exit 0 iff zero FAILs, `-Root` usable from a different repo (update-kit's calling shape), `-Json` output, UTF-8/quotepath hygiene from day one (006 lessons)
+- [ ] T002 [US1] Add the keep-in-sync cross-note for the structure-essentials list to `scripts/doc-lint.ps1`'s header (research D2) — no behavior change
+- [ ] T003 [US1] Build the scratch adopted fixture per quickstart.md and execute V1–V10, fail paths first; record verdicts + exits in this file under Phase 1 validation
+- [ ] T004 [US1] Verify `kit-manifest.json` classification (existing `scripts/*.ps1` verbatim glob must cover the doctor; doc-lint count +1) — no edit expected
+- [ ] T005 [US1] Feedback-run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 1: adoption doctor script`
+
+**Checkpoint**: every known adoption-integrity incident class is machine-nameable.
+
+---
+
+## Phase 2: Lifecycle hooks (US2, P2)
+
+**Goal**: init writes `kit-adoption.json` and finishes with the doctor; update-kit's
+apply report ends with the target's verdict (exit 2 on red — research D6); adoption docs
+name both moments and the gate-proof recording step.
+
+**Independent Test**: quickstart L1–L6 — init writes the record and ends red-with-to-dos
+at exit 0; filled fixture goes green; update apply ends with the verdict (exit 2 when
+red); DryRun untouched; owner tier-addition passes.
+
+**Territory**:
+
+- `scripts/init-kit.ps1`
+- `scripts/update-kit.ps1`
+- `adoption/greenfield.md`
+- `adoption/existing-system.md`
+- `adoption/updating.md`
+
+- [ ] T006 [US2] Amend `scripts/init-kit.ps1`: write `kit-adoption.json` (data-model shape, `gateProof: []`, `kitVersionAtInit` from the kit clone's HEAD or `copy`); finish by running `verify-kit.ps1` instead of bare doc-lint, printing the verdict as the remaining-work list; init exits 0 regardless of doctor color (research D6)
+- [ ] T007 [US2] Amend `scripts/update-kit.ps1`: after a non-DryRun apply, run the kit clone's `verify-kit.ps1 -Root <target>` and append the verdict to the report; red doctor ⇒ exit 2; DryRun and documented exit codes otherwise unchanged
+- [ ] T008 [P] [US2] Amend `adoption/greenfield.md`: step 3 gains "record the proof in `kit-adoption.json`" (shape + no-secrets caveat); init step notes the record + doctor finish; step 7 names the doctor as the integrity check
+- [ ] T009 [P] [US2] Amend `adoption/existing-system.md`: same touchpoints (gate proof recording, doctor at init/step 8)
+- [ ] T010 [P] [US2] Amend `adoption/updating.md`: the update report ends with the doctor verdict; post-update expectation = green doctor before committing the flow-down; pre-007 projects: how to create `kit-adoption.json` and `.kit-version` by hand (grandfather instructions the doctor's WARNs point at)
+- [ ] T011 [US2] Execute quickstart L1–L6 on fresh fixtures; record outputs in this file under Phase 2 validation
+- [ ] T012 [US2] Feedback-run ritual-checks, report output, commit as `phase 2: lifecycle hooks`
+
+**Checkpoint**: both integrity-changing moments end with a machine verdict.
+
+---
+
+## Phase 3: Wrapper membership (US3, P3)
+
+**Goal**: `ritual-checks.ps1` runs the doctor as a fourth member iff `.kit-version`
+present; contract updated.
+
+**Independent Test**: quickstart W1–W3 — kit repo shows `n/a (kit repository)` with
+unchanged RESULT; adopted fixture goes red/green with the doctor named.
+
+**Territory**:
+
+- `scripts/ritual-checks.ps1`
+- `specs/006-verification-pack/contracts/ritual-checks-ci.md`
+
+- [ ] T013 [US3] Amend `scripts/ritual-checks.ps1`: fourth member `verify-kit` gated on `.kit-version` at `-Root`; `n/a (kit repository)` line excluded from the failure count; verdict-block format otherwise unchanged
+- [ ] T014 [US3] Amend `specs/006-verification-pack/contracts/ritual-checks-ci.md` — it documents the living wrapper, so it gains the fourth member + applicability rule with a "amended by 007" note (declared in this phase's territory; leaving it stale would be exactly the drift the kit hunts)
+- [ ] T015 [US3] Execute quickstart W1–W3; record outputs under Phase 3 validation
+- [ ] T016 [US3] Feedback-run ritual-checks (now 4 members in adopted fixtures, 3+n/a here), report output, commit as `phase 3: wrapper membership` — **batch end: ask the owner to run the certifying gate**
+
+**Checkpoint**: integrity regressions turn adopted-project branches red unattended.
+
+---
+
+## Phase 4: Governance sweep (cross-cutting)
+
+**Goal**: summaries and indexes reflect the doctor; bookkeeping closed.
+
+**Independent Test**: ritual-checks RESULT OK; CLAUDE.md row present; roadmap flipped.
+
+**Territory**:
+
+- `CLAUDE.md`
+- `docs/roadmap.md`
+- `kit-manifest.json`
+
+- [ ] T017 [P] Amend `CLAUDE.md` Task-Scoped Reading: the "Updating an adopted project from the kit" row also points at the doctor (`pwsh -File scripts/verify-kit.ps1` — adoption-integrity verdicts)
+- [ ] T018 Flip `docs/roadmap.md` adoption-doctor row to `in progress` (`shipped` at merge)
+- [ ] T019 Final `kit-manifest.json` verification sweep (expected: zero edits; doctor covered by `scripts/*.ps1`), run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 4: governance sweep` — **owner runs the certifying gate**
+
+---
+
+## Dependencies & Execution Order
+
+- Phases strictly sequential (constitution X); no setup/foundational phases — the
+  repository is the infrastructure. P2's hooks call P1's script; P3 wraps it; P4 sweeps.
+- [P] tasks touch different files and may execute in any order before the phase's single
+  closing commit.
+- AI review per phase: fresh-context reviewer with provenance block
+  (`ai-code-review-phaseN.md`), findings dispositioned in-phase (006 law). Human review
+  once at merge.
+
+## Implementation Strategy
+
+MVP = Phase 1 alone (the audit is the product). Batched certification after Phase 3, then
+Phase 4 alone. Each phase reverts by its single commit.
+
+## Phase validation records
+
+*(Filled during implementation — T003, T011, T015 outputs land here.)*
