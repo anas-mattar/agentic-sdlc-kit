@@ -13,18 +13,23 @@
         its phase heading in specs/NNN-name/tasks.md.
 
     Phase attribution: the commit subject must carry a 'phase N' token (research D2);
-    -Phase overrides. A commit with no parseable phase, or a phase with no territory
-    declaration, produces a NON-BLOCKING warning (compatibility with features specified
-    before the verification pack).
+    -Phase overrides. A commit with no parseable phase token is not a phase commit
+    (claim/specify/review commits) and gets 'not applicable'. A phase with no territory
+    declaration produces a NON-BLOCKING warning (compatibility with features specified
+    before the verification pack); a declared-but-empty or duplicated declaration FAILs.
 
-    Anti-retroactivity (research D3): the declaration is read from the commit's PARENT
-    (<commit>^:tasks.md), falling back to the commit itself only when the parent predates
-    the feature directory (the claim commit). A territory amendment therefore only takes
-    effect for commits made after it lands.
+    Anti-retroactivity (research D3, review F2): the declaration is read from the commit's
+    PARENT (<commit>^:tasks.md), falling back to the commit's own blob only when the parent
+    lacks the entire specs/NNN-name/ directory (a true claim commit). A phase commit that
+    deletes tasks.md FAILs, and a parent missing tasks.md while the feature directory
+    exists FAILs — so a territory amendment only ever takes effect for commits made after
+    it lands.
 
     Matching: PowerShell -like semantics; '*' (and the conventional '**') matches across
-    path separators. The feature's own spec directory (specs/NNN-name/**) is always
-    implicitly in territory. Renames touch both paths; deletes touch the deleted path.
+    path separators; '[', ']' and '?' are matched literally; a trailing '/' means the whole
+    subtree; matching is case-insensitive by design. The feature's own spec directory
+    (specs/NNN-name/**) is always implicitly in territory. Renames touch both paths;
+    deletes touch the deleted path. Territory entries must be backtick-wrapped list items.
 
     Verdicts and exit codes (data-model.md):
       PASS / not-applicable / WARN  -> exit 0
@@ -52,25 +57,28 @@ try {
 function Get-CurrentBranch {
     param([string]$Override)
     if ($Override) { return $Override }
-    (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
+    $b = git rev-parse --abbrev-ref HEAD 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $b) { return '' }
+    return "$b".Trim()
 }
 
 function Get-DiffBase {
     foreach ($c in @('origin/main', 'main')) {
         git rev-parse --verify --quiet $c *> $null
         if ($LASTEXITCODE -eq 0) {
-            $base = (git merge-base HEAD $c 2>$null).Trim()
-            if ($LASTEXITCODE -eq 0 -and $base) { return $base }
+            $base = git merge-base HEAD $c 2>$null
+            if ($LASTEXITCODE -eq 0 -and $base) { return "$base".Trim() }
         }
     }
     return $null
 }
 
 # Paths a commit touches: renames contribute both sides, deletes the deleted path.
+# quotepath=off so non-ASCII paths arrive verbatim, not quoted-octal (review F3).
 function Get-CommitPaths {
     param([string]$Sha)
     $paths = @()
-    $rows = git show --name-status --format='' -M $Sha 2>$null
+    $rows = git -c core.quotepath=off show --name-status --format='' -M $Sha 2>$null
     foreach ($row in $rows) {
         if (-not $row) { continue }
         $parts = $row -split "`t"
@@ -85,25 +93,36 @@ function Get-CommitPaths {
 }
 
 # Territory list for phase N, from a specific blob of tasks.md.
-# Returns @{ Found = bool; Entries = string[]; Invalid = string[] }
+# Entries MUST be backtick-wrapped list items (`- `path``); collection starts at the first
+# entry after the marker and ends at the first blank line or non-entry line once entries
+# have begun — so a following task checklist can never be swallowed as territory (review F1).
+# Returns @{ Found = bool; Duplicate = bool; Entries = string[]; Invalid = string[] }
 function Get-Territory {
     param([string[]]$TasksLines, [int]$PhaseNumber)
-    $result = @{ Found = $false; Entries = @(); Invalid = @() }
+    $result = @{ Found = $false; Duplicate = $false; Entries = @(); Invalid = @() }
     $inPhase = $false
     $collecting = $false
+    $started = $false
     foreach ($line in $TasksLines) {
-        if ($line -match '^##\s+Phase\s+(\d+)') {
+        if ($line -match '^##\s+Phase\s+(\d+)\b') {
             $inPhase = ([int]$matches[1] -eq $PhaseNumber)
             $collecting = $false
             continue
         }
         if (-not $inPhase) { continue }
-        if ($line -match '^\*\*Territory\*\*:') { $result.Found = $true; $collecting = $true; continue }
+        if ($line -match '^\*\*Territory\*\*:') {
+            if ($result.Found) { $result.Duplicate = $true }         # exactly one marker per phase (review F8)
+            $result.Found = $true; $collecting = $true; $started = $false
+            continue
+        }
         if (-not $collecting) { continue }
-        if ($line -match '^\s*$') { continue }                       # blank lines inside the list are fine
-        if ($line -match '^\s*[-*]\s+(.*)$') {
-            $entry = $matches[1].Trim() -replace '^`|`$', ''
-            if ($entry -match '^\s*$') { continue }
+        if ($line -match '^\s*$') {
+            if ($started) { $collecting = $false }                   # blank line after entries ends the list
+            continue                                                 # blank line(s) between marker and list are fine
+        }
+        if ($line -match '^\s*[-*]\s+`([^`]+)`\s*$') {               # backtick-wrapped bare path/glob only
+            $started = $true
+            $entry = $matches[1].Trim()
             if ($entry -match '^([A-Za-z]:|[/\\])' -or $entry -match '(^|[/\\])\.\.([/\\]|$)') {
                 $result.Invalid += $entry
             } else {
@@ -111,7 +130,7 @@ function Get-Territory {
             }
             continue
         }
-        $collecting = $false                                          # first non-list, non-blank line ends the list
+        $collecting = $false                                         # anything else (incl. task checkboxes) ends the list
     }
     return $result
 }
@@ -120,6 +139,9 @@ function Test-InTerritory {
     param([string]$Path, [string[]]$Globs)
     foreach ($g in $Globs) {
         $pattern = $g -replace '\*\*', '*'
+        # D1 promises globs, not -like character classes: match [, ], ? literally (review F7).
+        $pattern = $pattern.Replace('[', '`[').Replace(']', '`]').Replace('?', '`?')
+        if ($pattern.EndsWith('/')) { $pattern += '*' }              # trailing slash = whole subtree
         if ($Path -like $pattern) { return $true }
     }
     return $false
@@ -129,7 +151,12 @@ function Test-InTerritory {
 function Invoke-ScopeCheck {
     param([string]$Sha, [string]$FeatureBranch, [int]$PhaseOverride)
 
-    $sha7 = (git rev-parse --short $Sha 2>$null).Trim()
+    $sha7raw = git rev-parse --short $Sha 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $sha7raw) {
+        Write-Host "scope-check: ERROR '$Sha' does not resolve to a commit"
+        return $false
+    }
+    $sha7 = "$sha7raw".Trim()
 
     # Merge commits are not phase commits.
     $parents = ((git rev-list --parents -n 1 $Sha 2>$null) -split '\s+')
@@ -138,35 +165,65 @@ function Invoke-ScopeCheck {
         return $true
     }
 
-    # Phase attribution (research D2).
+    $tasksRel = "specs/$FeatureBranch/tasks.md"
+
+    # No commit on a feature branch may delete tasks.md — that is the F2 bypass's first
+    # move, and hiding it in a token-less commit must not help, so this check runs BEFORE
+    # phase attribution.
+    $statusRows = git -c core.quotepath=off show --name-status --format='' $Sha 2>$null
+    foreach ($row in $statusRows) {
+        if ($row -match "^D`t" -and ($row -split "`t")[1] -eq $tasksRel) {
+            Write-Host "scope-check: FAIL commit ${sha7}: the commit deletes $tasksRel — the territory declaration must never be deleted on a feature branch (review F2)"
+            return $false
+        }
+    }
+
+    # Phase attribution (research D2). A commit without a phase token is not a phase
+    # commit — claim/specify/review commits are legal and get not-applicable (review F8).
     $phaseN = $PhaseOverride
     if ($phaseN -le 0) {
         $subject = (git log -1 --format=%s $Sha 2>$null)
         if ($subject -match '(?i)\bphase\s+(\d+)\b') { $phaseN = [int]$matches[1] }
     }
     if ($phaseN -le 0) {
-        Write-Host "scope-check: WARN commit ${sha7}: no 'phase N' token in the commit subject (declare territory in tasks.md and name the phase — non-blocking, pre-006 compatibility)"
+        Write-Host "scope-check: not applicable (commit $sha7 carries no 'phase N' token — not a phase commit)"
         return $true
     }
 
-    # Declaration as of the parent (research D3); fall back to the commit itself only when
-    # the parent predates the feature directory (the claim commit).
-    $tasksRel = "specs/$FeatureBranch/tasks.md"
+    # Declaration as of the parent (research D3). Fall back to the commit's own blob ONLY
+    # when the parent lacks the entire feature directory (a true claim commit); a parent
+    # that has the directory but no tasks.md means a prior commit deleted it — FAIL, not
+    # fallback, or the anti-retroactivity rule is bypassable (review F2).
     $tasksBlob = git show "${Sha}^:$tasksRel" 2>$null
-    if ($LASTEXITCODE -ne 0) { $tasksBlob = git show "${Sha}:$tasksRel" 2>$null }
+    if ($LASTEXITCODE -ne 0) {
+        git rev-parse --verify --quiet "${Sha}^:specs/$FeatureBranch" *> $null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: $tasksRel is missing at the parent while specs/$FeatureBranch/ exists — a prior commit deleted the territory declaration; restore tasks.md in its own commit before any phase commit"
+            return $false
+        }
+        $tasksBlob = git show "${Sha}:$tasksRel" 2>$null
+    }
     if ($LASTEXITCODE -ne 0 -or -not $tasksBlob) {
         Write-Host "scope-check: WARN commit ${sha7}: $tasksRel not found at the commit or its parent (declare territory in tasks.md — non-blocking, pre-006 compatibility)"
         return $true
     }
 
     $territory = Get-Territory -TasksLines @($tasksBlob) -PhaseNumber $phaseN
+    if ($territory.Duplicate) {
+        Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: more than one **Territory** marker for phase $phaseN in $tasksRel (exactly one per phase)"
+        return $false
+    }
     if ($territory.Invalid.Count -gt 0) {
         foreach ($bad in $territory.Invalid) {
             Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: invalid territory entry '$bad' (entries must be repo-relative, no '..')"
         }
         return $false
     }
-    if (-not $territory.Found -or $territory.Entries.Count -eq 0) {
+    if ($territory.Found -and $territory.Entries.Count -eq 0) {
+        Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: **Territory** declared for phase $phaseN in $tasksRel but the entry list is empty (declare the paths, or remove the marker)"
+        return $false
+    }
+    if (-not $territory.Found) {
         Write-Host "scope-check: WARN commit ${sha7}: no territory declared for phase $phaseN in $tasksRel (declare territory in tasks.md — non-blocking, pre-006 compatibility)"
         return $true
     }
@@ -189,6 +246,14 @@ function Invoke-ScopeCheck {
 # --- Dispatch ---
 $Branch = Get-CurrentBranch -Override $Branch
 
+if (-not $Branch) {
+    Write-Host "scope-check: ERROR cannot determine the current branch (pass -Branch <NNN-name>)"
+    exit 1
+}
+if ($Branch -eq 'HEAD') {
+    Write-Host "scope-check: WARN detached HEAD — pass -Branch <NNN-name> to classify the lane (CI wrappers must do this explicitly)"
+    exit 0
+}
 if ($Branch -match '^(fix|chore|docs)/') {
     Write-Host "scope-check: not applicable ($($matches[1])/ lane — enforcement-pack's Lite-lane checks apply instead)"
     exit 0

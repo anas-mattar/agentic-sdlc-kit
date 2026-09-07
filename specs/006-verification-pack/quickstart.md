@@ -23,11 +23,15 @@ declaring for Phase 1:
 | S3 | One commit that both adds `demo/stray2.txt` and widens Territory to include it → run | still `FAIL` (declaration read from parent) |
 | S4 | Commit widening Territory alone, then commit `demo/stray2.txt` → run | `PASS` |
 | S5 | On a `fix/anything` branch → run | `not applicable`, exit 0 |
-| S6 | Commit on `999-*` with subject lacking a `phase N` token → run | `WARN`, exit 0 |
+| S6 | Commit on `999-*` with subject lacking a `phase N` token → run | `not applicable` (not a phase commit — review F8), exit 0 |
 | S7 | `git mv demo/allowed/a.txt demo/moved.txt`, commit as phase 1 → run | `FAIL` (rename target undeclared) |
+| S8 | tasks.md in the kit's real layout — territory list followed by a `- [ ] T00x` checklist → phase commit inside territory → run | `PASS`; the checklist is never parsed as territory (review F1) |
+| S9 | Commit `demo/allowed/héllo café.txt` as phase 1 → run | `PASS`, exit 0 (quotepath — review F3) |
+| S10 | Any commit deleting `specs/999-scope-demo/tasks.md` (with or without a `phase N` token) → run; then a phase commit re-adding it widened + a stray file → run `-All` | deleting commit `FAIL`, exit 1 (checked before phase attribution); `-All` over the branch stays red, so the re-add can never launder the stray. The re-add also FAILs in isolation whenever the feature dir survives at the parent — i.e. every real feature, whose dir holds spec.md/plan.md (anti-bypass — review F2) |
+| S11 | `**Territory**:` marker with an empty entry list → phase commit → run | `FAIL`, exit 1 (review F8) |
 
-Also verify backward compatibility: `pwsh -File scripts/scope-check.ps1 -All -Branch 003-flow-efficiency-pack`
-style runs against a pre-006 feature must produce only WARNs, never FAILs.
+Also verify backward compatibility: runs against a pre-006 feature's phase commits
+(e.g. `-Commit <sha> -Branch 003-flow-efficiency-pack`) must produce only WARNs, never FAILs.
 
 ## Review provenance (phase 2)
 

@@ -159,3 +159,26 @@ after the run). Every verdict matched `contracts/scope-check-cli.md`:
 | S6 | subject without `phase N` token | `scope-check: WARN commit 41e33a0: no 'phase N' token in the commit subject … non-blocking, pre-006 compatibility` | 0 |
 | S7 | `git mv demo/allowed/a.txt demo/moved.txt` as phase 1 | `scope-check: FAIL phase 1 commit 61347bf: demo/moved.txt not in territory` | 1 |
 | BC | pre-006 commit `6e5988d` (`003 phase 3`), `-Branch 003-flow-efficiency-pack` | `scope-check: WARN commit 6e5988d: no territory declared for phase 3 in specs/003-flow-efficiency-pack/tasks.md … non-blocking, pre-006 compatibility` | 0 |
+
+### Phase 1 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The fresh-context AI review (`ai-code-review-phase1.md`) returned REQUEST CHANGES (F1
+BLOCKING + F2–F8); all findings were fixed inside phase 1 territory (disposition table in
+the review's fix-response log) and the full suite re-ran on a fresh `999-scope-demo`
+branch whose fixture tasks.md uses the kit's REAL layout (territory list followed by a
+task checklist containing `*`, `[x]`, and `/absolute/path` in prose — the F1 blind spot):
+
+| # | Scenario | Verdict | Exit |
+|---|---|---|---|
+| S1+S8 | in-territory commit, real tasks.md layout with checklist | `PASS phase 1 commit b3733fe (1 file(s))` — checklist not parsed as territory | 0 |
+| S2 | stray file | `FAIL … demo/stray.txt not in territory` | 1 |
+| S3 | stray + same-commit widening | `FAIL` (parent-read) | 1 |
+| S4 | widening in prior commit, then stray | `PASS` | 0 |
+| S5 | `fix/demo` branch | `not applicable (fix/ lane …)` | 0 |
+| S6 | commit without `phase N` token | `not applicable (… not a phase commit)` (was WARN — F8 taxonomy fix) | 0 |
+| S7 | rename out of territory | `FAIL … demo/moved.txt not in territory` | 1 |
+| S9 | unicode path `demo/allowed/héllo café.txt` in territory | `PASS` (quotepath off — F3) | 0 |
+| S10 | tasks.md deleted in a phase commit / token-less commit; re-add + stray | deleting commit `FAIL` (checked before phase attribution); `-All` over the branch exit 1 — sequence cannot stay green (F2) | 1 |
+| S11 | `**Territory**:` marker with empty entry list (checkbox right after marker) | `FAIL … entry list is empty` | 1 |
+| F4 | `-Commit deadbeef123` | `ERROR 'deadbeef123' does not resolve to a commit` (no stack trace) | 1 |
+| BC | `-Commit 6e5988d -Branch 003-flow-efficiency-pack` | `WARN … pre-006 compatibility` (unchanged) | 0 |

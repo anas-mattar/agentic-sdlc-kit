@@ -31,25 +31,24 @@ screenshots to the phase notes — the AI review verifies they exist.
 ## After Each Phase
 
 1. User runs the gate command (`docs/sdlc/gate-command.md`).
-2. Run the machine scope check against the phase commit, and review the diff for intent:
+2. Review the working diff for intent (`git diff --stat`), fix only current-phase issues,
+   and commit the phase — the subject carries the `phase N` token so the scope check can
+   attribute the commit.
+3. Run the machine scope check **against the committed phase** (the script reads git
+   history, not the working tree):
 
 ```bash
 pwsh -File scripts/scope-check.ps1
-git diff --stat
 ```
 
-   The scope check must report `PASS`: every changed file inside the phase's **Territory**
-   from `tasks.md` (a `WARN` is acceptable only for features specified before the
+   It must report `PASS`: every changed file inside the phase's **Territory** from
+   `tasks.md` (a `WARN` is acceptable only for features specified before the
    verification pack — Definition of Done, gate 4).
-3. Fix only current phase issues.
-4. Revert undeclared/unrelated changes. If a change outside the territory is legitimate
-   scope discovery, amend the phase's **Territory** in `tasks.md` (owner approval) in a
-   commit made **before** the phase commit that relies on it, then re-commit the phase —
-   the check reads the declaration from the commit's parent, so same-commit widening
-   never passes.
-5. Commit successful phase (subject carries the `phase N` token so the check can
-   attribute the commit).
-6. Do not start next phase without approval.
+4. On `FAIL`, remediate and redo the phase commit: revert the undeclared change — or, if
+   it is legitimate scope discovery, amend the phase's **Territory** in `tasks.md` (owner
+   approval) in a commit made **before** the re-committed phase. The check reads the
+   declaration from the commit's parent, so same-commit widening never passes.
+5. Do not start next phase without approval.
 
 ## AI Review
 
