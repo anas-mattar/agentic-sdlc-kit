@@ -32,13 +32,13 @@ territory widening still FAILs; Lite lane not-applicable; pre-006 features only 
 - `docs/sdlc/review-process.md`
 - `kit-manifest.json`
 
-- [ ] T001 [US1] Add the per-phase `**Territory**:` declaration (syntax, glob semantics, implicit spec-dir entry, amendment rule per research D3) to `.specify/templates/tasks-template.md`, replacing nothing — additive section in the phase blocks and Notes
-- [ ] T002 [US1] Implement `scripts/scope-check.ps1` per `contracts/scope-check-cli.md`: lane classification, phase attribution from commit subject (`-Phase` override), parent-read of tasks.md (`<commit>^:` fallback `<commit>:`), rename/delete handling, verdicts and exit codes per data-model.md, `-All` mode over merge-base..HEAD
-- [ ] T003 [US1] Execute quickstart scope-check scenarios S1–S7 on a throwaway `999-scope-demo` branch and the backward-compat WARN run against a pre-006 feature branch; record actual outputs in this file under Phase 1 validation
-- [ ] T004 [P] [US1] Amend `docs/sdlc/definition-of-done.md` gate 4: scope check = `scope-check.ps1` verdict (PASS required; WARN allowed only for pre-006 features), owner still approves the phase; remediation path = revert or prior-commit territory amendment
-- [ ] T005 [P] [US1] Amend `docs/sdlc/review-process.md` scope-check section to reference the script and the territory-amendment remediation path
-- [ ] T006 [US1] Classify `scripts/scope-check.ps1` as verbatim in `kit-manifest.json`
-- [ ] T007 [US1] Run `pwsh -File scripts/doc-lint.ps1` and `pwsh -File scripts/enforcement-pack.ps1` (agent feedback run), run `scripts/scope-check.ps1` against this branch's phase 1 commit, report all output, commit as `phase 1: machine scope check`
+- [x] T001 [US1] Add the per-phase `**Territory**:` declaration (syntax, glob semantics, implicit spec-dir entry, amendment rule per research D3) to `.specify/templates/tasks-template.md`, replacing nothing — additive section in the phase blocks and Notes
+- [x] T002 [US1] Implement `scripts/scope-check.ps1` per `contracts/scope-check-cli.md`: lane classification, phase attribution from commit subject (`-Phase` override), parent-read of tasks.md (`<commit>^:` fallback `<commit>:`), rename/delete handling, verdicts and exit codes per data-model.md, `-All` mode over merge-base..HEAD
+- [x] T003 [US1] Execute quickstart scope-check scenarios S1–S7 on a throwaway `999-scope-demo` branch and the backward-compat WARN run against a pre-006 feature branch; record actual outputs in this file under Phase 1 validation
+- [x] T004 [P] [US1] Amend `docs/sdlc/definition-of-done.md` gate 4: scope check = `scope-check.ps1` verdict (PASS required; WARN allowed only for pre-006 features), owner still approves the phase; remediation path = revert or prior-commit territory amendment
+- [x] T005 [P] [US1] Amend `docs/sdlc/review-process.md` scope-check section to reference the script and the territory-amendment remediation path
+- [x] T006 [US1] Classify `scripts/scope-check.ps1` as verbatim in `kit-manifest.json` — verified already covered: the existing `scripts/*.ps1` verbatim glob classifies it (doc-lint manifest count rose 61→62); no manifest edit needed
+- [x] T007 [US1] Run `pwsh -File scripts/doc-lint.ps1` and `pwsh -File scripts/enforcement-pack.ps1` (agent feedback run), run `scripts/scope-check.ps1` against this branch's phase 1 commit, report all output, commit as `phase 1: machine scope check`
 
 **Checkpoint**: scope creep is machine-detectable; feature valuable if stopped here.
 
@@ -143,3 +143,19 @@ checkpoint; each phase reverts cleanly by its single commit.
 ## Phase validation records
 
 *(Filled during implementation — T003, T010, T017 outputs land here.)*
+
+### Phase 1 validation (T003, 2026-09-08)
+
+Executed on throwaway branch `999-scope-demo` (Territory: `demo/allowed/**`; branch deleted
+after the run). Every verdict matched `contracts/scope-check-cli.md`:
+
+| # | Commit under test | Output (verbatim) | Exit |
+|---|---|---|---|
+| S1 | `phase 1: in territory` (adds `demo/allowed/a.txt`) | `scope-check: PASS phase 1 commit 670d4e1 (1 file(s))` | 0 |
+| S2 | `phase 1: stray` (adds `demo/stray.txt`) | `scope-check: FAIL phase 1 commit 8839e48: demo/stray.txt not in territory` + remediation line | 1 |
+| S3 | stray file **and** territory widened in the same commit | `scope-check: FAIL phase 1 commit 03cf2b0: demo/stray2.txt not in territory` (parent-read blocks retroactive legalization) | 1 |
+| S4 | widening committed first, stray committed after | `scope-check: PASS phase 1 commit c36818b (1 file(s))` | 0 |
+| S5 | `fix/demo` branch | `scope-check: not applicable (fix/ lane — enforcement-pack's Lite-lane checks apply instead)` | 0 |
+| S6 | subject without `phase N` token | `scope-check: WARN commit 41e33a0: no 'phase N' token in the commit subject … non-blocking, pre-006 compatibility` | 0 |
+| S7 | `git mv demo/allowed/a.txt demo/moved.txt` as phase 1 | `scope-check: FAIL phase 1 commit 61347bf: demo/moved.txt not in territory` | 1 |
+| BC | pre-006 commit `6e5988d` (`003 phase 3`), `-Branch 003-flow-efficiency-pack` | `scope-check: WARN commit 6e5988d: no territory declared for phase 3 in specs/003-flow-efficiency-pack/tasks.md … non-blocking, pre-006 compatibility` | 0 |

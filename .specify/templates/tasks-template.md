@@ -22,6 +22,35 @@ rather than silently dropping the tests section.
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
 
+## Phase Territory (machine scope check)
+
+Every phase heading MUST be followed by a `**Territory**:` list — the complete set of
+repo-relative paths and/or glob patterns the phase is allowed to touch:
+
+```markdown
+**Territory**:
+
+- `src/services/billing/**`
+- `docs/api/billing.md`
+```
+
+`scripts/scope-check.ps1` compares every phase commit's diff against its phase's territory
+and fails on any undeclared file (Definition of Done gate 4). Rules:
+
+- Wildcards use PowerShell `-like` semantics; `*` (and the conventional `**`) matches across
+  path separators. Entries must be repo-relative — no absolute paths, no `..`.
+- The feature's own spec directory (`specs/NNN-name/**`) is always implicitly in territory —
+  never declare it.
+- Overlap between phases is legal. A rename touches both paths; a delete touches the deleted
+  path — all must be in territory.
+- Territory may be amended only with owner approval and only in a commit made **before** the
+  phase commit that relies on it: the check reads the declaration from the commit's parent,
+  so a stray file can never be legalized in the commit that introduces it.
+- Phase commits MUST carry a `phase N` token in the commit subject (e.g. `phase 2: entry
+  form`) so the check can attribute them.
+- A phase with no declaration produces a non-blocking warning (compatibility with features
+  specified before the verification pack); new features MUST declare territory per phase.
+
 ## Path Conventions
 
 - **Single project**: `src/`, `tests/` at repository root
@@ -82,6 +111,11 @@ Examples of foundational tasks (adjust based on your project):
 **Goal**: [Brief description of what this story delivers]
 
 **Independent Test**: [How to verify this story works on its own]
+
+**Territory**:
+
+- `[src/path/this/phase/may/touch/**]`
+- `[docs/specific-file.md]`
 
 ### Tests for User Story 1 (required for business-critical logic — constitution VIII) ⚠️
 
@@ -248,6 +282,8 @@ With multiple developers:
 
 - [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
+- Every phase declares its **Territory** (see "Phase Territory" above); `scope-check.ps1`
+  fails phase commits that touch undeclared files
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing
 - Commit after each task or logical group

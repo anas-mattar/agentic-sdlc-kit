@@ -37,9 +37,17 @@ Gates apply at two different points, not uniformly at every phase:
    batch's phases by **one** user-run gate at batch end; items 1–2 and 4–5 still
    apply to every phase individually, and each phase keeps its own commit. Critical
    features MUST NOT batch (`scripts/enforcement-pack.ps1` fails the branch).
-4. **Diff reviewed / scope guard** — `git diff --stat` was reviewed and shows only the
-   files this phase intended to change; unrelated changes were reverted
-   (`docs/sdlc/review-process.md`).
+4. **Diff reviewed / scope guard** — the phase commit passes the machine scope check
+   (`pwsh -File scripts/scope-check.ps1`): every changed file falls inside the phase's
+   **Territory** declared in `tasks.md` (`.specify/templates/tasks-template.md`, Phase
+   Territory). A PASS verdict is required; a WARN verdict (no territory declared) is
+   acceptable only for features specified before the verification pack. Undeclared
+   changes are reverted — or, when the scope discovery is legitimate, the territory is
+   amended with owner approval in a commit made **before** the phase commit that relies
+   on it (the check reads the declaration from the commit's parent, so a stray file can
+   never be legalized in the commit that introduces it). The owner still reviews
+   `git diff --stat` for intent; the machine makes a skipped or sloppy scope check
+   visible (`docs/sdlc/review-process.md`).
 5. **AI review complete** — the AI review checklist
    (`specs/_templates/ai-code-review-template.md`) was completed: spec/visual-reference
    match, stack rulebooks, security, tests, migrations, unrelated changes,
