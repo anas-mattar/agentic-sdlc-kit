@@ -87,6 +87,13 @@ wrapping governance around code that already exists), run it past
 `adoption/greenfield.md` step 3's scaffolding-tool traps checklist (env-file gitignore swallow,
 skipped `git init`) before the first commit of that new component.
 
+**Normalizing externally authored rulebook content**: rulebooks in this track are often seeded
+from material written outside this kit (a prior project's rule pack, a team wiki export).
+Normalize it before it lands, or doc-lint fails on paths that don't resolve here: write paths
+that refer to the adopter's code (not kit governance files) in **bold**, not backticks, and
+fill or remove anything that looks like a `{{SLOT}}` placeholder. The authoring convention is
+documented in `scripts/doc-lint.ps1`'s header comment.
+
 ## 8. Keep the framework honest
 
 Same as greenfield step 7: doc-lint in CI (every referenced path exists), CI gate as second

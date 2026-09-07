@@ -46,6 +46,13 @@ instantiates the selected tier rulebooks, wires the Task-Scoped Reading rows, fi
 `{{PROJECT_NAME}}` and the repository slots — then prints the judgment slots that remain
 yours. It never writes rulebook content or ratifies the constitution.
 
+**Normalizing externally authored rulebook content**: when a rulebook is seeded from material
+written outside this kit (a prior project's rule pack, a team wiki export), normalize it
+before it lands, or doc-lint fails on paths that don't resolve here: write paths that refer to
+the adopter's code (not kit governance files) in **bold**, not backticks, and fill or remove
+anything that looks like a `{{SLOT}}` placeholder. The authoring convention is documented in
+`scripts/doc-lint.ps1`'s header comment.
+
 ## 3. Define and PROVE the gate
 
 Fill the gate slots in `docs/sdlc/gate-command.md`, scaffold the empty project(s), and run the
@@ -66,6 +73,10 @@ the first commit:
   nested repo. Run `git status` and `git rev-parse --show-toplevel` right after scaffolding and
   confirm new files appear as untracked additions at the expected parent-repo root, not inside
   a stray nested `.git`.
+- **Strict-build flag fails on a transitive vulnerability**: if proving the gate trips a
+  strict-build flag on a dependency the scaffold pulled in transitively, triage per
+  `docs/sdlc/gate-command.md` ("Strict-build flags vs transitive-dependency
+  vulnerabilities") — never by disabling the flag.
 
 ## 4. Ship `001-solution-scaffold` as a real feature
 

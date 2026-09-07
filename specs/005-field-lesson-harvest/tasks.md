@@ -99,19 +99,19 @@ US1/US2 — each targets a disjoint file/step.
 
 ### Implementation for User Story 3
 
-- [ ] T008 [US3] In `docs/sdlc/gate-command.md`, add a new section after "Minimum Gate"
+- [x] T008 [US3] In `docs/sdlc/gate-command.md`, add a new section after "Minimum Gate"
   documenting the strict-build-vs-transitive-vulnerability triage pattern: upgrade the
   dependency, pin a patched transitive version, or record a narrowly-scoped, reasoned
   suppression — never a blanket disable of the strict flag; name `--warnaserror` as one
   example among stack-agnostic equivalents
-- [ ] T009 [P] [US3] In `adoption/greenfield.md` step 3, add a one-line cross-reference to the
+- [x] T009 [P] [US3] In `adoption/greenfield.md` step 3, add a one-line cross-reference to the
   new `docs/sdlc/gate-command.md` section, alongside the T002/T003 bullets
-- [ ] T010 [P] [US3] In `adoption/greenfield.md` step 2 ("Fill CLAUDE.md" — the tier-rulebook
+- [x] T010 [P] [US3] In `adoption/greenfield.md` step 2 ("Fill CLAUDE.md" — the tier-rulebook
   instantiation step), add a short paragraph on normalizing externally authored rulebook
   content before it is added: repo-code paths written in **bold**, not backticks; any
   `{{SLOT}}`-looking placeholder filled or removed; point at `scripts/doc-lint.ps1`'s header
   comment for the authoring convention
-- [ ] T011 [P] [US3] In `adoption/existing-system.md` step 7 ("Grandfather deliberately"), add
+- [x] T011 [P] [US3] In `adoption/existing-system.md` step 7 ("Grandfather deliberately"), add
   the equivalent short paragraph on normalizing externally authored rulebook content
 
 **Checkpoint**: Quickstart Scenarios 4–5 pass by inspection; `pwsh -File scripts/doc-lint.ps1`
