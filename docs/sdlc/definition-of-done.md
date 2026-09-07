@@ -8,8 +8,11 @@ and **IX. Human Review Requirement**.
 
 Gates apply at two different points, not uniformly at every phase:
 
-- **Gates 1–5** MUST pass at **every phase commit** — a phase is not Done, and MUST NOT be
-  committed, until items 1–5 below are all true.
+- **Gates 1–5** MUST pass at **every phase commit** — a phase is not Done until items 1–5
+  below are all true. Gates 1–3 hold before the commit; gates 4–5 are verified **against**
+  the committed phase (the scope check reads git history, and the review examines the
+  commit's diff) — a phase commit that fails them is remediated and redone, never carried
+  forward or merged.
 - **Gate 6** (human review) applies **once per feature**, at the point the feature's final
   phase is ready to merge to `main` — not after every individual phase commit. A 4-phase
   feature owes one human review, not four.
@@ -70,9 +73,10 @@ Gates apply at two different points, not uniformly at every phase:
    **full feature diff**, and approved the change. **Human review is required before merge**
    (constitution IX; `specs/_templates/human-pr-review-template.md`).
 
-Each phase may be **committed** to the feature branch once items 1–5 are true. The **feature**
-may be **merged** to `main` only after its final phase satisfies items 1–5 and the feature as a
-whole satisfies item 6.
+A phase **stands** on the feature branch once items 1–5 are true (items 4–5 verified against
+its commit — a failing commit is remediated and redone). The **feature** may be **merged** to
+`main` only after its final phase satisfies items 1–5 and the feature as a whole satisfies
+item 6.
 
 ## Conflict rule
 

@@ -23,9 +23,11 @@ owning document, the owning document prevails — and the constitution
 │                                                                     │
 │      implement one phase (UI + visual refs → compliance loop)       │
 │         → owner runs the GATE, confirms the exit code               │
-│         → SCOPE CHECK: git diff --stat = this phase's files only    │
-│         → AI REVIEW checklist                                       │
-│         → commit the phase                                          │
+│         → commit the phase ('phase N' in the subject)               │
+│         → SCOPE CHECK: scope-check.ps1 = declared territory only    │
+│         → AI REVIEW by a fresh-context reviewer (provenance block)  │
+│                                                                     │
+│      ritual-checks CI re-runs the machine checks on every push      │
 │                                                                     │
 │      more approved phases? ── yes ──► loop                          │
 └───────────────────────────────┬─────────────────────────────────────┘
@@ -49,9 +51,9 @@ owning document, the owning document prevails — and the constitution
 | 2 | Specify | **Specification approved**: `spec.md`, then `plan.md`, then `tasks.md`, approved before implementation | `.specify/memory/constitution.md` (I), `docs/sdlc/definition-of-done.md` (gate 1) |
 | 3a | Implement | Exactly one approved phase; UI with visual references runs the Visual Compliance Loop | `.specify/memory/constitution.md` (X), `docs/sdlc/review-process.md` |
 | 3b | Gate | **User-run gate**: the owner runs it and confirms the exit code — agent runs are feedback only | `docs/sdlc/gate-command.md`, `docs/sdlc/definition-of-done.md` (gate 3) |
-| 3c | Scope check | **Diff review**: `git diff --stat` shows only this phase's intended files; revert anything else | `docs/sdlc/review-process.md`, `docs/sdlc/definition-of-done.md` (gate 4) |
-| 3d | AI review | **AI review checklist** completed from `specs/_templates/ai-code-review-template.md` | `docs/sdlc/definition-of-done.md` (gate 5) |
-| 3e | Commit | One commit per phase, so a bad phase reverts cleanly | `docs/sdlc/branch-strategy.md`, `docs/sdlc/rollback-process.md` |
+| 3c | Scope check | **Machine scope check**: `scripts/scope-check.ps1` verifies the phase commit against its declared **Territory** in `tasks.md` (PASS required); the owner still reads `git diff --stat` for intent | `docs/sdlc/review-process.md`, `docs/sdlc/definition-of-done.md` (gate 4) |
+| 3d | AI review | **AI review** completed from `specs/_templates/ai-code-review-template.md` by a **fresh-context agent or second model** (never self-graded), with the Reviewer Provenance block | `docs/sdlc/definition-of-done.md` (gate 5), `docs/sdlc/review-process.md` |
+| 3e | Commit | One commit per phase (`phase N` in the subject), so a bad phase reverts cleanly and the scope check can attribute it; `ritual-checks` CI re-runs the machine checks on every push | `docs/sdlc/branch-strategy.md`, `docs/sdlc/rollback-process.md`, `docs/sdlc/branch-protection.md` |
 | 4 | Feature review | **Human review**, once per feature at merge — in a team the reviewer is never the owner | `.specify/memory/constitution.md` (IX), `docs/sdlc/definition-of-done.md` (gate 6), `specs/_templates/human-pr-review-template.md` |
 | 5 | Merge | Push the branch, merge `--no-ff` into protected `main`; CI on `main` is the cross-feature referee | `docs/sdlc/branch-strategy.md`, `docs/sdlc/team-workflow.md` (rule 8) |
 

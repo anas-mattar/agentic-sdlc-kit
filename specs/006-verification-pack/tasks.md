@@ -130,10 +130,10 @@ summarize gates 4–5; roadmap row flipped; ritual-checks RESULT OK on the branc
 > (a failing commit is redone). Fixing that one clause needs `definition-of-done.md` in
 > this phase's territory.
 
-- [ ] T022 [P] Add a Task-Scoped Reading row (or amend the existing review row) in `CLAUDE.md` pointing at the ritual checks; keep it summary-only per house style
-- [ ] T023 [P] Sync `docs/sdlc/flow.md` step rows 3b–3d wording with the machine-checked gates (summary only, owning docs prevail) and `docs/sdlc/gate-command.md` where it names the scope check
-- [ ] T024 Flip `docs/roadmap.md` verification-pack row to `in progress → shipped` at merge; confirm constitution sync-list needs no addition (research D6) and state that in the commit message
-- [ ] T025 Final manifest sweep in `kit-manifest.json` (all 006 files classified), run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 4: governance sweep` — **ask the owner to run the certifying gate**
+- [x] T022 [P] Add a Task-Scoped Reading row (or amend the existing review row) in `CLAUDE.md` pointing at the ritual checks; keep it summary-only per house style — also synced Workflow steps 6–7 (commit → machine scope check → fresh-context review)
+- [x] T023 [P] Sync `docs/sdlc/flow.md` step rows 3c–3e + phase-loop diagram with the machine-checked gates (summary only, owning docs prevail) and `docs/sdlc/gate-command.md` batched-gates wording — this exposed the stale DoD preamble clause fixed under the amended territory (gates 4–5 verified against the committed phase; both preamble and closing clause corrected)
+- [x] T024 Flip `docs/roadmap.md` verification-pack row to `in progress` (`shipped` at merge); confirmed constitution sync-list needs no addition (research D6: scope-check/ritual-checks encode no constitutional constants — batch cap and cooling-off hours remain enforcement-pack's, already listed)
+- [x] T025 Final manifest sweep in `kit-manifest.json` — verified complete with zero edits: every 006 file is classified by existing globs (`scripts/*.ps1`, `.github/**`, `.specify/templates/**`, `specs/_templates/**`, named docs/sdlc entries, `adoption/**`, `CLAUDE.md`); doc-lint classifies 62 shipped files, ritual-checks RESULT OK — commit as `phase 4: governance sweep`, **owner runs the certifying gate** (batch 1–3 + phase 4)
 
 ---
 

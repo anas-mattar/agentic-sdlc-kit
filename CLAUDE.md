@@ -65,8 +65,12 @@ links to prevail).
 5. Implement **one phase only**. UI phase with visual references? Run the Visual
    Compliance Loop (`docs/sdlc/review-process.md`) until the deviation table is empty or
    user-approved. Then stop and ask the user to run the gate.
-6. User checks `git diff --stat`; fix only current-phase issues.
-7. Commit the successful phase. AI review, then human review. Merge only after approval.
+6. Commit the phase (`phase N` in the subject), then run the machine scope check
+   (`pwsh -File scripts/scope-check.ps1` — PASS required) and review `git diff --stat`;
+   fix only current-phase issues.
+7. AI review by a fresh-context agent or second model — never self-graded — with the
+   Reviewer Provenance block; then human review. Merge only after approval.
+   CI runs the same checks on every push (`scripts/ritual-checks.ps1`).
 
 ## Strict Rules
 
@@ -93,7 +97,7 @@ Read the pack that matches what you are about to touch — not everything, every
 | A feature declared Critical (regulated / high-risk) | `docs/sdlc/critical-delivery.md` |
 | An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution VII) |
 | Frontend UI | {{FRONTEND_RULES_PATH}} + `docs/rulebooks/` compliance checklist for that tier |
-| Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/` |
+| Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/`; verdicts come from `pwsh -File scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check — same command CI runs) |
 | Updating an adopted project from the kit | `adoption/updating.md` |
 
 <!-- Tier rows are a MENU, not a requirement: keep only the tiers this project has, and add
