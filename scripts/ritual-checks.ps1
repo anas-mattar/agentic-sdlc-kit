@@ -30,6 +30,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# A caller's PS 7.4+ profile may set this to $true, which would throw on the first failing
+# member and lose the verdict block — the contract requires all members to run (review F3).
+$PSNativeCommandUseErrorActionPreference = $false
 $Root = (Resolve-Path $Root).Path
 $scriptsDir = Join-Path $Root 'scripts'
 
@@ -45,7 +48,7 @@ $members = [ordered]@{
 $results = [ordered]@{}
 foreach ($name in $members.Keys) {
     Write-Host "=== ritual-checks: $name ==="
-    & pwsh -File @($members[$name])
+    & pwsh -NoProfile -File @($members[$name])
     $results[$name] = $LASTEXITCODE
     Write-Host ''
 }

@@ -10,6 +10,7 @@ name: ritual-checks
 on:
   push:
     branches:
+      - main            # post-merge trunk safety net (doc-lint on main — 002 parity)
       - '[0-9][0-9][0-9]-*'
       - 'fix/**'
       - 'chore/**'
@@ -33,4 +34,9 @@ jobs:
         # pull_request checks out a detached-HEAD merge commit where branch detection
         # returns the literal 'HEAD' — pass the branch explicitly (github.head_ref is
         # empty on push events, where github.ref_name is the branch name).
-        run: ./scripts/ritual-checks.ps1 -Branch "${{ github.head_ref || github.ref_name }}"
+        # The branch name goes through an env var, NEVER interpolated into `run:` —
+        # github.head_ref is attacker-controlled on fork PRs and refnames may contain
+        # shell metacharacters (script-injection hardening; phase 3 review, F2).
+        env:
+          RITUAL_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: ./scripts/ritual-checks.ps1 -Branch $env:RITUAL_BRANCH

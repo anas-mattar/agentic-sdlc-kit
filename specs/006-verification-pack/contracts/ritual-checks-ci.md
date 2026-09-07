@@ -38,7 +38,7 @@ required-check names: `docs/sdlc/branch-protection.md`.
 | Trigger | `push` to branches `[0-9][0-9][0-9]-*`, `fix/**`, `chore/**`, `docs/**`; plus `pull_request` into `main` |
 | Runner | `ubuntu-latest` (pwsh preinstalled; proves cross-platform on every push) |
 | Checkout | `fetch-depth: 0` — merge-base and per-commit parent reads need full history |
-| Steps | checkout → `pwsh -File scripts/ritual-checks.ps1` — nothing else, so CI can never drift from the local command |
+| Steps | checkout → `pwsh -File scripts/ritual-checks.ps1` with `-Branch` passed explicitly through an env var (detached-HEAD attribution; injection-hardened) — nothing else, so CI can never drift from the local command |
 | Permissions | `contents: read` only; no secrets |
 | Status | single check named `ritual-checks`; branch protection SHOULD require it (documented in `docs/sdlc/branch-protection.md`, applied by repository configuration — the kit cannot enforce host settings) |
 
