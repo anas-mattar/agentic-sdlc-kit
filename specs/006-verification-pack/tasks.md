@@ -119,8 +119,16 @@ summarize gates 4–5; roadmap row flipped; ritual-checks RESULT OK on the branc
 - `CLAUDE.md`
 - `docs/sdlc/flow.md`
 - `docs/sdlc/gate-command.md`
+- `docs/sdlc/definition-of-done.md`
 - `docs/roadmap.md`
 - `kit-manifest.json`
+
+> Territory amended before the phase commit: syncing flow.md to the post-review phase
+> order (commit → machine scope check → AI review) exposed a stale clause in the DoD
+> **preamble** ("MUST NOT be committed until items 1–5 are true"), written when gates 4–5
+> were pre-commit eyeball checks. Gates 4–5 are now verified against the committed phase
+> (a failing commit is redone). Fixing that one clause needs `definition-of-done.md` in
+> this phase's territory.
 
 - [ ] T022 [P] Add a Task-Scoped Reading row (or amend the existing review row) in `CLAUDE.md` pointing at the ritual checks; keep it summary-only per house style
 - [ ] T023 [P] Sync `docs/sdlc/flow.md` step rows 3b–3d wording with the machine-checked gates (summary only, owning docs prevail) and `docs/sdlc/gate-command.md` where it names the scope check
