@@ -78,8 +78,9 @@ user-run gate: `**Gate Batching**: phases N-M` (constitution X, Batched gates;
 - The **agent still runs the gate after every phase** for feedback and reports the output;
   a mid-batch agent-run failure pauses the batch at that phase boundary — the owner is
   asked to gate what is committed so far, not to push on.
-- Every phase in the batch still gets its **own commit, `git diff --stat` scope check,
-  and AI review** — a failed batch-end gate localizes to a phase via the per-phase commits.
+- Every phase in the batch still gets its **own commit, machine scope check
+  (`scripts/scope-check.ps1` against the phase's declared territory), and fresh-context
+  AI review** — a failed batch-end gate localizes to a phase via the per-phase commits.
 - **Critical features never batch** (`docs/sdlc/critical-delivery.md`);
   `scripts/enforcement-pack.ps1` fails a Critical branch whose plan declares a batch.
 

@@ -44,7 +44,7 @@ HOW TO WRITE THIS CHECKLIST (then delete this comment):
 ## Process
 
 - [ ] No new packages beyond those approved in the feature's `plan.md` (constitution IV)
-- [ ] Only the approved phase's files changed (`git diff --stat` reviewed)
+- [ ] Only the approved phase's files changed (`scope-check.ps1` PASS on the phase commit; `git diff --stat` reviewed for intent)
 - [ ] Gate run by the user with confirmed exit code 0 (constitution X)
 
 ---

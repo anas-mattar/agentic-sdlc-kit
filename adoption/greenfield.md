@@ -119,9 +119,14 @@ owns it.
 
 From the first week:
 
-- **Doc-lint**: a CI step (or scheduled check) asserting every path referenced by CLAUDE.md
-  and the constitution exists. Drift between docs and reality is the disease that kills
-  rule-based frameworks.
+- **Ritual checks in CI**: the kit ships `.github/workflows/ritual-checks.yml`, which runs
+  `scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check) on every push to a
+  governed branch. **Finishing adoption includes wiring `ritual-checks` as a required status
+  check** (`docs/sdlc/branch-protection.md`); until then, or on a CI host other than GitHub
+  Actions, run the same single command locally or from your CI:
+  `pwsh -File scripts/ritual-checks.ps1` — the wrapper and CI produce identical verdicts by
+  construction. Drift between docs and reality is the disease that kills rule-based
+  frameworks; a check that runs only by discipline eventually doesn't run.
 - **CI gate as second witness**: run the gate on every push. The user-run gate remains the
   trust ritual; CI catches the day someone skips it.
 - **Institutional knowledge lives in the repo**, not in one person's chat memory: deployment

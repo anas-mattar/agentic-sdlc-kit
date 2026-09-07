@@ -96,6 +96,10 @@ documented in `scripts/doc-lint.ps1`'s header comment.
 
 ## 8. Keep the framework honest
 
-Same as greenfield step 7: doc-lint in CI (every referenced path exists), CI gate as second
-witness, and institutional knowledge (deploy residuals, protected data registers, open
-sign-offs) in the repo — not in one person's chat memory.
+Same as greenfield step 7: the ritual checks in CI — the kit's
+`.github/workflows/ritual-checks.yml` runs `scripts/ritual-checks.ps1` (doc-lint +
+enforcement-pack + scope-check) on every governed-branch push, and finishing adoption
+includes requiring the `ritual-checks` status check (`docs/sdlc/branch-protection.md`);
+on other CI hosts, invoke the same wrapper for identical verdicts — plus the CI gate as
+second witness, and institutional knowledge (deploy residuals, protected data registers,
+open sign-offs) in the repo — not in one person's chat memory.
