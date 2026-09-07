@@ -15,7 +15,8 @@ Runs, in order, stopping never (all members always run so one push reports every
 2. `scripts/enforcement-pack.ps1` (which includes the ReviewProvenance check after phase 2)
 3. `scripts/scope-check.ps1 -All` (every phase commit since `merge-base HEAD origin/main`)
 
-Output ends with a verdict block, one line per member:
+Output ends with a verdict block, one line per member (OK/FAIL, derived from the member's
+exit code — member WARNs stay visible in that member's own output above):
 
 ```text
 ritual-checks: doc-lint         OK
@@ -25,6 +26,10 @@ ritual-checks: RESULT FAIL (1 of 3 member(s) failed)
 ```
 
 Exit 0 iff every member exits 0. Read-only; no repository writes.
+
+**Supersession**: `ritual-checks.yml` replaces feature 002's per-check workflows
+(`doc-lint.yml`, `enforcement-pack.yml`) — one check name, one code path. Migration of
+required-check names: `docs/sdlc/branch-protection.md`.
 
 ## Workflow: .github/workflows/ritual-checks.yml
 

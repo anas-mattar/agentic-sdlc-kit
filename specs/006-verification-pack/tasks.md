@@ -95,13 +95,13 @@ member fails; pushed violation turns the `ritual-checks` check red; fix turns it
 > check twice and split the required-check name — so this phase **replaces** them with
 > `ritual-checks.yml`, which needs the directory glob rather than the single file.
 
-- [ ] T015 [US3] Implement `scripts/ritual-checks.ps1` per `contracts/ritual-checks-ci.md`: run doc-lint, enforcement-pack, scope-check `-All`; never short-circuit; per-member verdict block; exit 0 iff all OK
-- [ ] T016 [US3] Create `.github/workflows/ritual-checks.yml` per the contract: push triggers on `[0-9][0-9][0-9]-*`, `fix/**`, `chore/**`, `docs/**` + `pull_request` to main; `ubuntu-latest`; `fetch-depth: 0`; `contents: read`; single step invoking the wrapper
-- [ ] T017 [US3] Execute quickstart R1–R2 locally; push this branch and verify R3–R4 on the actual GitHub check; record outputs/links in this file under Phase 3 validation
-- [ ] T018 [P] [US3] Amend `docs/sdlc/branch-protection.md`: require the `ritual-checks` status check on protected branches (repository configuration step, host-agnostic wording per spec assumption)
-- [ ] T019 [P] [US3] Amend `adoption/greenfield.md` and `adoption/existing-system.md`: wiring `ritual-checks` as a required check (or invoking the wrapper from the project's CI) is part of finishing adoption; local wrapper is the CI-less fallback
-- [ ] T020 [US3] Classify `scripts/ritual-checks.ps1` and `.github/workflows/ritual-checks.yml` as verbatim in `kit-manifest.json`
-- [ ] T021 [US3] Feedback-run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 3: ritual checks as CI` — **batch end: ask the owner to run the certifying gate** (quickstart “Phase gates”)
+- [x] T015 [US3] Implement `scripts/ritual-checks.ps1` per `contracts/ritual-checks-ci.md`: run doc-lint, enforcement-pack, scope-check `-All`; never short-circuit; per-member verdict block; exit 0 iff all OK (members run as child pwsh processes because each terminates with `exit`)
+- [x] T016 [US3] Create `.github/workflows/ritual-checks.yml` per the contract: push triggers on `[0-9][0-9][0-9]-*`, `fix/**`, `chore/**`, `docs/**` + `pull_request` to main; `ubuntu-latest`; `fetch-depth: 0`; `contents: read`; single step invoking the wrapper with `-Branch "${{ github.head_ref || github.ref_name }}"` (detached-HEAD note from the phase 1 review) — **supersedes and deletes 002's `doc-lint.yml` + `enforcement-pack.yml`** (territory amendment note above)
+- [x] T017 [US3] Execute quickstart R1–R2 locally; push this branch and verify R3–R4 on the actual GitHub check; record outputs/links in this file under Phase 3 validation
+- [x] T018 [P] [US3] Amend `docs/sdlc/branch-protection.md`: require the `ritual-checks` status check on protected branches (repository configuration step, host-agnostic wording per spec assumption) — includes the migration note for repos requiring the old 002 check names
+- [x] T019 [P] [US3] Amend `adoption/greenfield.md` and `adoption/existing-system.md`: wiring `ritual-checks` as a required check (or invoking the wrapper from the project's CI) is part of finishing adoption; local wrapper is the CI-less fallback
+- [x] T020 [US3] Classify `scripts/ritual-checks.ps1` and `.github/workflows/ritual-checks.yml` as verbatim in `kit-manifest.json` — verified covered by the existing `scripts/*.ps1` and `.github/**` verbatim globs (no manifest edit; file count stays 62: two added, two superseded files deleted)
+- [x] T021 [US3] Feedback-run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 3: ritual checks as CI` — **batch end: ask the owner to run the certifying gate** (quickstart "Phase gates")
 
 **Checkpoint**: a branch that skipped the ritual is mechanically distinguishable from one that passed.
 
