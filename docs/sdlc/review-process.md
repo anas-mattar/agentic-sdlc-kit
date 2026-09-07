@@ -52,6 +52,24 @@ pwsh -File scripts/scope-check.ps1
 
 ## AI Review
 
+**Reviewer separation is mandatory** (Definition of Done gate 5): the review is produced
+by a reviewer that did not write the code, and the implementing agent never grades its own
+diff. Procedure:
+
+1. The implementing agent (or the owner) starts a **fresh-context reviewer** — a new agent
+   session with no implementation context, or a second model. Fresh context is the
+   minimum; a second model is encouraged where available.
+2. The reviewer is given: the phase diff (commit sha), `spec.md`, `plan.md`, and the
+   feature's contracts — never the implementer's conversation or reasoning. Read-only
+   verification (running checks, replicating logic) is allowed and encouraged.
+3. The reviewer completes `specs/_templates/ai-code-review-template.md` **including the
+   Reviewer Provenance block** (reviewer identity, inputs supplied, verbatim
+   non-implementer attestation). `scripts/enforcement-pack.ps1` fails the branch when a
+   review added on it lacks the block or names the implementer as reviewer.
+4. The implementer acts on the findings and records each finding's disposition (fixed /
+   deferred-where / rejected-why) — appended to the review file, never edited into the
+   reviewer's text.
+
 Complete `specs/_templates/ai-code-review-template.md`. Check:
 
 - Spec match

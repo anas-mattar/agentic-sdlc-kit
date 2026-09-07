@@ -48,11 +48,21 @@ Gates apply at two different points, not uniformly at every phase:
    never be legalized in the commit that introduces it). The owner still reviews
    `git diff --stat` for intent; the machine makes a skipped or sloppy scope check
    visible (`docs/sdlc/review-process.md`).
-5. **AI review complete** — the AI review checklist
-   (`specs/_templates/ai-code-review-template.md`) was completed: spec/visual-reference
-   match, stack rulebooks, security, tests, migrations, unrelated changes,
+5. **AI review complete — by a reviewer that did not write the code** — the AI review
+   checklist (`specs/_templates/ai-code-review-template.md`) was completed: spec/visual-
+   reference match, stack rulebooks, security, tests, migrations, unrelated changes,
    rollback safety. For phases touching a tier with a compliance checklist
    (`docs/rulebooks/`), this includes passing that checklist — any FAIL blocks the phase.
+   The review MUST be produced by a **fresh-context agent session or a second model** —
+   never self-graded by the implementing agent in the same context — and MUST carry the
+   template's **Reviewer Provenance** block (reviewer identity, inputs supplied, and the
+   verbatim attestation that the reviewer did not produce the diff).
+   `scripts/enforcement-pack.ps1` fails the branch when a review file added on it lacks
+   the block or attests the implementer as reviewer; reviews committed before the
+   verification pack are grandfathered (only files added in the branch's diff are
+   checked). The machine verifies the block's presence and consistency; the truth of the
+   attestation remains the owner's to audit — but it is now a falsifiable written
+   statement, not an unstated assumption.
 6. **Human review approved (once per feature, at merge)** — after the feature's final phase
    passes gates 1–5, a human reviewer verified business requirements, domain correctness,
    security implications, visual-reference compliance, and architectural compliance across the

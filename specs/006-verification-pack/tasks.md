@@ -60,13 +60,13 @@ FAILs; branch adding no reviews passes; `main` (001–005 reviews) passes untouc
 - `docs/sdlc/review-process.md`
 - `kit-manifest.json`
 
-- [ ] T008 [US2] Add the mandatory `## Reviewer Provenance` block (data-model.md shape: Reviewer, Implementer, Inputs provided, verbatim attestation sentence) to `specs/_templates/ai-code-review-template.md`
-- [ ] T009 [US2] Add `ReviewProvenance` check to `scripts/enforcement-pack.ps1`: on `NNN-*` branches, for each review file **added** in the diff vs base (`--diff-filter=A`, research D4), require the section, a non-empty `Reviewer:` not equal to `implementer`, and the attestation sentence; failure names the file and rule
-- [ ] T010 [US2] Execute quickstart provenance scenarios P1–P5; record actual outputs in this file under Phase 2 validation
-- [ ] T011 [P] [US2] Amend `docs/sdlc/definition-of-done.md` gate 5: AI review must be produced by a fresh-context agent or second model with the provenance block; self-graded reviews are invalid; grandfather clause stated
-- [ ] T012 [P] [US2] Amend `docs/sdlc/review-process.md`: reviewer-separation procedure (what the reviewer is given, fresh context as minimum, second model encouraged)
-- [ ] T013 [US2] Verify `kit-manifest.json` classifications for the amended template and script remain correct (no new rows expected)
-- [ ] T014 [US2] Feedback-run doc-lint + enforcement-pack + scope-check on this branch, report output, commit as `phase 2: reviewer separation`
+- [x] T008 [US2] Add the mandatory `## Reviewer Provenance` block (data-model.md shape: Reviewer, Implementer, Inputs provided, verbatim attestation sentence) to `specs/_templates/ai-code-review-template.md`
+- [x] T009 [US2] Add `ReviewProvenance` check to `scripts/enforcement-pack.ps1`: on `NNN-*` branches, for each review file **added** in the diff vs base (`--diff-filter=A`, research D4), require the section, a non-empty `Reviewer:` not equal to `implementer`, and the attestation sentence; failure names the file and rule — plus two hardening cases: unfilled template placeholders (`[…]` reviewer value) fail, and `specs/_templates/` is exempt
+- [x] T010 [US2] Execute quickstart provenance scenarios P1–P5; record actual outputs in this file under Phase 2 validation
+- [x] T011 [P] [US2] Amend `docs/sdlc/definition-of-done.md` gate 5: AI review must be produced by a fresh-context agent or second model with the provenance block; self-graded reviews are invalid; grandfather clause stated
+- [x] T012 [P] [US2] Amend `docs/sdlc/review-process.md`: reviewer-separation procedure (what the reviewer is given, fresh context as minimum, second model encouraged)
+- [x] T013 [US2] Verify `kit-manifest.json` classifications for the amended template and script remain correct (no new rows expected) — verified: `specs/_templates/**` and `scripts/*.ps1` globs already cover both, doc-lint still classifies 62 files
+- [x] T014 [US2] Feedback-run doc-lint + enforcement-pack + scope-check on this branch, report output, commit as `phase 2: reviewer separation`
 
 **Checkpoint**: a self-graded review can no longer be filed undetected.
 
@@ -182,3 +182,22 @@ task checklist containing `*`, `[x]`, and `/absolute/path` in prose — the F1 b
 | S11 | `**Territory**:` marker with empty entry list (checkbox right after marker) | `FAIL … entry list is empty` | 1 |
 | F4 | `-Commit deadbeef123` | `ERROR 'deadbeef123' does not resolve to a commit` (no stack trace) | 1 |
 | BC | `-Commit 6e5988d -Branch 003-flow-efficiency-pack` | `WARN … pre-006 compatibility` (unchanged) | 0 |
+
+### Phase 2 validation (T010, 2026-09-08)
+
+Executed on throwaway branch `999-prov-demo` (minimal valid structure: spec.md with
+`Delivery Level: Standard`, plan.md with `Gate Batching: none`, tasks.md; branch deleted
+after the run). `scripts/enforcement-pack.ps1` verdicts:
+
+| # | Setup | Result | Exit |
+|---|---|---|---|
+| P1 | Added review from the amended template, provenance filled, `Reviewer: fresh-context agent — Claude Fable 5 (subagent)` | OK — no ReviewProvenance failure | 0 |
+| P2 | Added review with no `## Reviewer Provenance` section | `FAIL … has no '## Reviewer Provenance' section` naming the file | 1 |
+| P3 | Added review with `Reviewer: implementer` | `FAIL … attests 'implementer' as reviewer` | 1 |
+| P3b | Added review with the unfilled template placeholder as Reviewer | `FAIL … template placeholders must be filled` | 1 |
+| P3c | Added review with a reworded attestation sentence | `FAIL … missing the verbatim attestation sentence` | 1 |
+| P4 | Bad reviews deleted in a later commit (endpoint diff adds no review files) | OK | 0 |
+| P5 | Run on `006-verification-pack` itself: 001–005 reviews exist at base (grandfathered by construction); this branch's added `ai-code-review-phase1.md` passes via its retrofitted provenance block | OK | 0 |
+
+P2/P3/P3b/P3c ran as one commit adding four bad reviews: enforcement-pack reported all
+four failures in a single run (each check independent, none short-circuits).

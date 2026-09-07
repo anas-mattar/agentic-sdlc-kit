@@ -7,6 +7,21 @@
 **Feature contract**: [the headline constraints from plan.md, e.g. "read-only; no new
 table / migration / permission / package"]
 
+## Reviewer Provenance
+
+<!-- MANDATORY (Definition of Done gate 5): the review MUST be produced by a reviewer that
+  did not write the code — a fresh-context agent session or a second model. A review
+  self-graded by the implementing agent in the same context is invalid.
+  scripts/enforcement-pack.ps1 fails the branch when a review file added on it lacks this
+  section, leaves the Reviewer line unfilled, names the implementer as reviewer, or omits
+  the attestation sentence verbatim. Reviews committed before the verification pack are
+  grandfathered (only files ADDED in the branch's diff are checked). -->
+
+- **Reviewer**: [fresh-context agent — model id | second model — model id]
+- **Implementer**: [model id / session that produced the diff under review]
+- **Inputs provided**: [e.g. phase N diff, spec.md, plan.md, contracts/]
+- **Attestation**: This reviewer did not produce the diff under review.
+
 ## Verdict
 
 [**APPROVE** / **APPROVE with follow-ups** / **REQUEST CHANGES** / **BLOCKED**] — one

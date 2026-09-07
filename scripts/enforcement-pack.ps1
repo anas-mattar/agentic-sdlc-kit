@@ -3,7 +3,7 @@
     Enforcement pack: mechanically checks the kit's delivery-level non-negotiables.
 
 .DESCRIPTION
-    Converts five previously-prose rules into CI-agnostic checks, run against the current
+    Converts previously-prose rules into CI-agnostic checks, run against the current
     branch's diff versus main:
 
       - Structure       (NNN-* branches): spec.md/plan.md/tasks.md exist; Delivery Level
@@ -18,6 +18,12 @@
                          and was first committed at least $Config.CoolingOffHours ago.
       - PhaseSizeWarning (NNN-* branches): non-blocking warning when a single commit's
                          diff exceeds the configured line/file thresholds.
+      - ReviewProvenance (NNN-* branches): every ai-code-review*.md ADDED in the branch's
+                         diff must carry a '## Reviewer Provenance' section, a filled
+                         Reviewer line that is not the implementer or an unfilled
+                         placeholder, and the verbatim non-implementer attestation
+                         (DoD gate 5, feature 006). Pre-existing reviews are grandfathered
+                         by construction (only added files are inspected).
       - GateBatching     (NNN-* branches): the plan.md '**Gate Batching**' declaration,
                          when present, must be 'none' or 'phases N-M' spanning at most
                          $Config.MaxBatchPhases consecutive phases, and is prohibited
@@ -212,6 +218,37 @@ function Invoke-GateBatchingCheck {
     }
 }
 
+# --- Review-provenance check (006 FR-006: DoD gate 5, reviewer separation) ---
+# Inspects only AI-review files ADDED in the branch's diff vs base (--diff-filter=A), so
+# reviews shipped before the verification pack — and every adopted project's history —
+# are grandfathered automatically (006 research D4). Templates are exempt.
+function Invoke-ReviewProvenanceCheck {
+    param([string]$Branch, [string]$Base)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    if (-not $Base) { return }
+    $added = (git diff --name-only --diff-filter=A $Base HEAD 2>$null) |
+        Where-Object { $_ -match '^specs/' -and $_ -notmatch '^specs/_templates/' -and $_ -match 'ai-code-review[^/]*\.md$' }
+    $attestation = 'This reviewer did not produce the diff under review.'
+    foreach ($file in $added) {
+        if (-not (Test-Path $file)) { continue }
+        $content = Get-Content $file -Raw
+        if ($content -notmatch '(?m)^##\s+Reviewer Provenance') {
+            $script:failures += "ReviewProvenance: $file has no '## Reviewer Provenance' section — the AI review must be produced by a fresh-context agent or second model and say so (DoD gate 5; specs/_templates/ai-code-review-template.md)"
+            continue
+        }
+        $reviewerLine = $content -split "`n" | Where-Object { $_ -match '^\s*[-*]?\s*\*\*Reviewer\*\*:\s*(\S.*)$' } | Select-Object -First 1
+        $reviewerValue = if ($reviewerLine -match '\*\*Reviewer\*\*:\s*(.+)$') { $matches[1].Trim() } else { '' }
+        if (-not $reviewerValue) {
+            $script:failures += "ReviewProvenance: $file has no filled '**Reviewer**:' line in its provenance"
+        } elseif ($reviewerValue -match '^(?i)implementer\b' -or $reviewerValue -match '^\[') {
+            $script:failures += "ReviewProvenance: $file attests '$reviewerValue' as reviewer — the implementing agent must not review its own diff, and template placeholders must be filled (DoD gate 5)"
+        }
+        if ($content -notmatch [regex]::Escape($attestation)) {
+            $script:failures += "ReviewProvenance: $file is missing the verbatim attestation sentence '$attestation'"
+        }
+    }
+}
+
 # --- Phase-commit diff-size warning (FR-006, non-blocking) ---
 function Invoke-PhaseSizeWarningCheck {
     param([string]$Branch, [string]$Base)
@@ -250,6 +287,7 @@ if ($Branch -in @('main', 'master')) {
     Invoke-StructureCheck -Branch $Branch
     Invoke-CriticalEvidenceCheck -Branch $Branch
     Invoke-GateBatchingCheck -Branch $Branch
+    Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles

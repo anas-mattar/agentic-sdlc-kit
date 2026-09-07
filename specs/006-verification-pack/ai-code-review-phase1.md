@@ -6,6 +6,17 @@
 **Scope reviewed**: full diff of `b0df0fa` (`git show`); `scripts/scope-check.ps1` read line by line (all 229 lines); `docs/sdlc/definition-of-done.md` gate 4; `docs/sdlc/review-process.md` (whole file); `.specify/templates/tasks-template.md` (Territory sections + all phase blocks); `specs/006-verification-pack/` spec.md (US1/FR-001..004), plan.md, research.md (D1–D3), data-model.md, quickstart.md, tasks.md incl. Phase 1 validation record; `kit-manifest.json` glob rows. Script executed read-only against `b0df0fa`, `-All` mode, an invalid sha, and seeded scenarios in a scratch repository (unicode paths, tasks.md delete/re-add, trailing-slash entries); `Get-Territory`/`Test-InTerritory` replicated verbatim in a probe harness and fed the real parent blob of `b0df0fa`.
 **Feature contract**: doc+script phases only, no application code, no new dependencies (plan.md Technical Context: PowerShell 7 + git CLI only, no modules).
 
+## Reviewer Provenance
+
+<!-- Retrofitted in phase 2 when the provenance block became mandatory: this review WAS
+  produced by a fresh-context subagent (see Reviewer header) — the block records what was
+  already true. -->
+
+- **Reviewer**: fresh-context agent — Claude Fable 5 (subagent spawned with no implementation context)
+- **Implementer**: Claude Fable 5 (main session that produced commit `b0df0fa`)
+- **Inputs provided**: phase 1 diff (`git show b0df0fa`), spec.md, plan.md, research.md D1–D3, data-model.md, quickstart.md, tasks.md, contracts/scope-check-cli.md; read-only script execution permitted
+- **Attestation**: This reviewer did not produce the diff under review.
+
 ## Verdict
 
 **REQUEST CHANGES** — The phase delivers what tasks T001–T007 name: the Territory syntax in the template, a working `scope-check.ps1` whose S1–S7 verdicts I could reproduce, and mutually-referencing DoD/review-process amendments, all inside the declared territory. But the territory extractor demonstrably mis-parses the kit's own canonical `tasks.md` layout — it collects the task checklist as territory entries (F1), so the boundary the machine enforces is a silent superset of the boundary the owner approved, with a live false-FAIL path through the invalid-entry rule. Two further defects undercut the feature's core guarantees: the parent-read fallback can be sidestepped by deleting `tasks.md` in a prior in-territory commit (F2, defeats FR-004/SC-001), and non-ASCII paths false-FAIL via git quotepath (F3, relevant on the ubuntu CI this must run on). Residual risk sits entirely in the parser and matcher — the docs and template are sound apart from one sequencing drift (F5).
