@@ -129,6 +129,19 @@ summarize gates 4–5; roadmap row flipped; ritual-checks RESULT OK on the branc
 > were pre-commit eyeball checks. Gates 4–5 are now verified against the committed phase
 > (a failing commit is redone). Fixing that one clause needs `definition-of-done.md` in
 > this phase's territory.
+>
+> Second amendment (before the `phase 4 fixes` commit): the phase 4 fresh-context review
+> (F5–F7) found sweep-goal stragglers outside the declared list — stale `git diff --stat`
+> / self-completed-review wording in `docs/sdlc/team-workflow.md`,
+> `specs/_templates/ai-code-review-template.md`, `README.md`,
+> `docs/sdlc/critical-delivery.md`, and `docs/rulebooks/compliance-checklist-template.md`.
+> Named files added (least-territory per that review's own F5 guidance):
+
+- `docs/sdlc/team-workflow.md`
+- `specs/_templates/ai-code-review-template.md`
+- `README.md`
+- `docs/sdlc/critical-delivery.md`
+- `docs/rulebooks/compliance-checklist-template.md`
 
 - [x] T022 [P] Add a Task-Scoped Reading row (or amend the existing review row) in `CLAUDE.md` pointing at the ritual checks; keep it summary-only per house style — also synced Workflow steps 6–7 (commit → machine scope check → fresh-context review)
 - [x] T023 [P] Sync `docs/sdlc/flow.md` step rows 3c–3e + phase-loop diagram with the machine-checked gates (summary only, owning docs prevail) and `docs/sdlc/gate-command.md` batched-gates wording — this exposed the stale DoD preamble clause fixed under the amended territory (gates 4–5 verified against the committed phase; both preamble and closing clause corrected)
