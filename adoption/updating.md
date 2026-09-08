@@ -101,6 +101,23 @@ project copied the kit's version string or its SYNC IMPACT text:
 - **Human approval**: each project owner reviewed the resulting diff and merged it as a
   normal governance change before the amendment counted as adopted.
 
+### Flow-down note: the 2026-09-08 CI-held certification amendment (kit 0.4.1 → 0.5.0)
+
+The kit's constitution X gained a CI-held certification clause: a Lite/Standard feature's
+approved plan MAY declare `**Gate Certification**: ci-held`, making certification the
+owner's recorded approval on the CI evidence triplet (run URL + green conclusion + exact
+phase-commit sha) instead of a live user-run gate. Like every amendment, it arrives here
+by **re-expression** (this section's procedure), never by copy:
+
+- Adopting it is a **MINOR bump of your own version** — a principle materially expanded.
+  What you adopt is the clause's six boundaries (Lite/Standard only; declared before the
+  first phase it governs; approval on the triplet; agent obligations unchanged; Critical
+  excluded; absent = `user-run`) plus its mirrors in your own DoD, gate-command,
+  critical-delivery, plan template, and CLAUDE.md.
+- **Nothing changes until you ratify it.** The user-run gate remains your project's law —
+  and stays lawful for every feature even after adoption; ci-held is an opt-in per
+  feature, per plan, never a default.
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
@@ -109,7 +126,12 @@ Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.m
 project-filled content (your gate commands, your repository layout, your customizations)
 that an update must never overwrite. `docs/rulebooks/` and `modules/` are the same story
 at a larger scale — instantiated tier rules and worked examples, replaced with your own
-content at adoption.
+content at adoption. **`.github/workflows/project-gate.yml.template`** (deletable) is
+surgical for the same reason: your copy is `project-gate.yml`, filled with your gate
+chain. Updates only *report* changes to surgical paths — they never write them — so a
+changed template is refreshed by hand into your filled copy; a project adopted before
+the template existed (pre-008) never receives it through the update channel at all and
+installs it the first time by copying it from a kit clone.
 
 For these, read the commits the report names, and re-apply by hand only what's relevant:
 most kit-side changes to these files are structural or illustrative and don't require any

@@ -10,7 +10,9 @@ Gates apply at two different points, not uniformly at every phase:
 
 - **Gates 1–5** MUST pass at **every phase commit** — a phase is not Done until items 1–5
   below are all true. Gates 1–3 hold before the commit (for a declared batch, gate 3's
-  certifying user-run gate lands once at batch end — gate 3, Batched option); gates 4–5
+  certifying user-run gate lands once at batch end — gate 3, Batched option; under a
+  declared `ci-held` mode, gate 3's certification necessarily lands **after** the
+  phase/batch-end commit, on its CI evidence — gate 3, CI-held option); gates 4–5
   are verified **against** the committed phase (the scope check reads git history, and
   the review examines the commit's diff) — a phase commit that fails them is remediated
   and redone, never carried forward or merged.
@@ -29,7 +31,7 @@ Gates apply at two different points, not uniformly at every phase:
    unrelated changes are bundled in (constitution X), and the phase itself satisfies the
    phase-sizing rule (`.specify/templates/plan-template.md`, Controlled Delivery check):
    independently revertible, one meaningfully independent and testable slice.
-3. **Gate passed with user-confirmed exit code** — the user (not AI) ran the gate
+3. **Gate passed with user-held certification** — by default the user (not AI) ran the gate
    (`docs/sdlc/gate-command.md`) and confirmed the exit code. AI MUST NOT claim
    success without that confirmation (constitution X). The AI MAY run the gate
    during implementation for fast feedback, but an agent-run gate never satisfies
@@ -41,6 +43,16 @@ Gates apply at two different points, not uniformly at every phase:
    batch's phases by **one** user-run gate at batch end; items 1–2 and 4–5 still
    apply to every phase individually, and each phase keeps its own commit. Critical
    features MUST NOT batch (`scripts/enforcement-pack.ps1` fails the branch).
+   **CI-held option (Lite/Standard only)**: when the feature's `plan.md` declares
+   `**Gate Certification**: ci-held` (constitution X, CI-held certification), this
+   item is satisfied by the **owner's recorded approval on the evidence triplet** —
+   the CI run of the project gate on the exact phase commit, cited by run URL, green
+   conclusion, and commit sha, in the feature's phase record (`docs/sdlc/gate-command.md`,
+   CI-held certification — worked example there). Approval is per phase; with a declared
+   batch it composes to one approval on the batch-end commit's evidence. A run on any
+   other commit certifies nothing; the agent still never claims success — it reports the
+   evidence and requests the approval. The user-run gate remains lawful always. Critical
+   features MUST NOT declare ci-held (`scripts/enforcement-pack.ps1` fails the branch).
 4. **Diff reviewed / scope guard** — the phase commit passes the machine scope check
    (`pwsh -File scripts/scope-check.ps1`): every changed file falls inside the phase's
    **Territory** declared in `tasks.md` (`.specify/templates/tasks-template.md`, Phase

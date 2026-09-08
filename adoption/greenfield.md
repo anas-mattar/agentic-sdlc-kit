@@ -137,7 +137,9 @@ From the first week:
   `pwsh -File scripts/ritual-checks.ps1` — the wrapper and CI produce identical verdicts by
   construction. Drift between docs and reality is the disease that kills rule-based
   frameworks; a check that runs only by discipline eventually doesn't run.
-- **CI gate as second witness**: run the gate on every push. The user-run gate remains the
-  trust ritual; CI catches the day someone skips it.
+- **CI gate as second witness**: run the gate on every push. The owner-held certifying
+  gate (user-run — or plan-declared `ci-held`, where the CI run itself becomes the
+  approved evidence; `docs/sdlc/gate-command.md`) remains the trust ritual; CI catches
+  the day someone skips it.
 - **Institutional knowledge lives in the repo**, not in one person's chat memory: deployment
   residuals, protected test data, open sign-offs get a home under `docs/`.

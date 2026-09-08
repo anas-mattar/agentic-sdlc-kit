@@ -10,7 +10,7 @@ modes that actually sink agent-driven delivery:
 
 | Agent failure mode | Kit countermeasure |
 |---|---|
-| Claims success without proof | The **user** runs the gate and confirms the exit code; the agent may never self-certify |
+| Claims success without proof | The **user** holds gate certification — a confirmed exit code, or (plan-declared `ci-held`, Lite/Standard only) recorded approval on the CI evidence triplet; the agent may never self-certify |
 | Scope creep / drive-by refactors | One approved phase at a time; each phase's file territory declared in advance and machine-checked (`scripts/scope-check.ps1`) after every phase commit |
 | Hallucinated requirements or UI | Ordered source-of-truth ladder; on conflict, **stop and report** |
 | "Creative" violations of domain rules | Domain invariants with constitutional force |
@@ -69,8 +69,9 @@ Everything else adapts to your stack; these five do not:
 
 1. **Spec before code** — spec.md, plan.md, tasks.md exist and are approved first.
 2. **One phase at a time** — the agent stops after each phase and waits for approval.
-3. **The user holds the gate** — the agent never claims success without the user-confirmed
-   exit code.
+3. **The user holds the gate** — the agent never claims success without the user-held
+   certification: a confirmed exit code, or (plan-declared `ci-held`, Lite/Standard
+   only) the owner's recorded approval on the CI evidence triplet.
 4. **Stop and report on conflict** — the agent never silently chooses between conflicting
    sources of truth.
 5. **Human review before merge** — AI review is necessary but never sufficient.
