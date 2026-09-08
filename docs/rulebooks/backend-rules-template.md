@@ -59,7 +59,7 @@ HOW TO FILL THIS RULEBOOK (then delete this comment):
 
 - {{BACKEND_TEST_STANDARDS}} <!-- e.g. "xUnit; every endpoint has an API test; every business calculation has a golden-fixture test with hand-worked expected values" -->
 - The gate (`docs/sdlc/gate-command.md`) is run by the user; a phase is not done before
-  the user confirms exit code 0 — or, under a plan-declared `ci-held` (Lite/Standard
+  the user confirms exit code 0 — or, under a declared `ci-held` (Lite/Micro/Standard
   only, constitution X), before the owner records approval on the CI evidence triplet.
 
 ## Security
