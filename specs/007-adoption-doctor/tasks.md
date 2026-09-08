@@ -55,13 +55,13 @@ red); DryRun untouched; owner tier-addition passes.
 - `adoption/existing-system.md`
 - `adoption/updating.md`
 
-- [ ] T006 [US2] Amend `scripts/init-kit.ps1`: write `kit-adoption.json` (data-model shape, `gateProof: []`, `kitVersionAtInit` from the kit clone's HEAD or `copy`); finish by running `verify-kit.ps1` instead of bare doc-lint, printing the verdict as the remaining-work list; init exits 0 regardless of doctor color (research D6)
-- [ ] T007 [US2] Amend `scripts/update-kit.ps1`: after a non-DryRun apply, run the kit clone's `verify-kit.ps1 -Root <target>` and append the verdict to the report; red doctor ⇒ exit 2; DryRun and documented exit codes otherwise unchanged
-- [ ] T008 [P] [US2] Amend `adoption/greenfield.md`: step 3 gains "record the proof in `kit-adoption.json`" (shape + no-secrets caveat); init step notes the record + doctor finish; step 7 names the doctor as the integrity check
-- [ ] T009 [P] [US2] Amend `adoption/existing-system.md`: same touchpoints (gate proof recording, doctor at init/step 8)
-- [ ] T010 [P] [US2] Amend `adoption/updating.md`: the update report ends with the doctor verdict; post-update expectation = green doctor before committing the flow-down; pre-007 projects: how to create `kit-adoption.json` (full documented shape — review F7: the doctor's fix pointers target THIS doc because specs/007 never ships to adopters) and `.kit-version` by hand; note the roadmap-header decline caveat (contract V8)
-- [ ] T011 [US2] Execute quickstart L1–L6 on fresh fixtures; record outputs in this file under Phase 2 validation
-- [ ] T012 [US2] Feedback-run ritual-checks, report output, commit as `phase 2: lifecycle hooks`
+- [x] T006 [US2] Amend `scripts/init-kit.ps1`: write `kit-adoption.json` (data-model shape, `gateProof: []`, `kitVersionAtInit` from the constitution's kit version string — an adopted copy has no kit clone to ask, so the constitution's `**Version**:` line is the available truth, falling back to `copy`); finish by running `verify-kit.ps1` (child pwsh — it terminates with `exit`) instead of bare doc-lint, printing the verdict as the remaining-work list; init exits 0 regardless of doctor color (research D6)
+- [x] T007 [US2] Amend `scripts/update-kit.ps1`: after a non-DryRun, non-Json apply, run the kit clone's `verify-kit.ps1 -Root <target>` (child pwsh) and end the report with the verdict; red doctor ⇒ exit 2 (documented "attention needed"); DryRun untouched; `-Json` callers run the doctor themselves (documented in updating.md)
+- [x] T008 [P] [US2] Amend `adoption/greenfield.md`: step 3 gains "record the proof in `kit-adoption.json`" (shape pointer + no-secrets caveat); machine-assist paragraph notes the record + doctor finish (step 7 already names the doctor since 006's ritual-checks wiring)
+- [x] T009 [P] [US2] Amend `adoption/existing-system.md`: step 1's "record the command + exit code" now lands in `kit-adoption.json` as the gateProof entry
+- [x] T010 [P] [US2] Amend `adoption/updating.md`: report table gains the Adoption-doctor row (verdict ends the apply run; red = exit 2; green before committing the flow-down); new section 4 documents the doctor, the full `kit-adoption.json` shape (review F7 — the doctor's fix pointers target this doc), hand-creating `.kit-version`, and the roadmap-header decline caveat (contract V8)
+- [x] T011 [US2] Execute quickstart L1–L6 on fresh fixtures; record outputs in this file under Phase 2 validation
+- [x] T012 [US2] Feedback-run ritual-checks, report output, commit as `phase 2: lifecycle hooks`
 
 **Checkpoint**: both integrity-changing moments end with a machine verdict.
 
@@ -173,3 +173,29 @@ menu README, and `modules/**` left exactly as shipped.
 | V8-strict | `.kit-version` = single token `garbage` | `FAIL kit-version` (F4 strict rule: 7–40 hex or v/dotted tag) | 1 |
 | F2 veto | kit roadmap header kept + record present + no `.kit-version` | **audited** (WARN kit-version, `OK … (1 warning(s))`) — no false decline | 0 |
 | V9 regression | kit repository | decline, zero findings | 0 |
+
+### Phase 1 addendum (discovered during phase 2, fixed in commit `8b033b7`)
+
+`.kit-version` is NOT a bare sha: `update-kit.ps1` writes JSON
+(`{kitVersion, kitCommit, updatedOn}`). Rounds 1–2 validated dim 5 against a bare-sha
+fixture update-kit never writes — the strict F4 rule would have FAILed every genuinely
+updated project. Fixed: healthy = the JSON record with a 7–40-hex `kitCommit`, or a bare
+hex token (hand-created per updating.md); contract V8 corrected. Validated: real JSON ok /
+bare sha ok / JSON without hex kitCommit FAIL — and end-to-end in L3, where the doctor
+reads the `.kit-version` update-kit itself just wrote.
+
+### Phase 2 validation (T011, 2026-09-08)
+
+Fixture `fixture007c`: fresh `git archive` copy + current scripts, then a real
+`init-kit.ps1 -ProjectName Demo2 -Topology single -Tiers backend,database
+-DeleteUnusedTemplates -NonInteractive` run; later made a clean git repo for update-kit's
+preflight.
+
+| # | Scenario | Result |
+|---|---|---|
+| L1 | init on fresh copy | `kit-adoption.json` written exactly (tiers backend+database, `kitVersionAtInit: "0.4.1"`, `gateProof: []`); init output ends with the doctor verdict — 11 FAILs + 1 WARN, precisely the open judgment slots + missing proof; **init exit 0** with the "remaining human work, not an init failure" note |
+| L2 | judgment slots + rulebooks filled, proof recorded | doctor `OK … (1 warning(s))` — only the `.kit-version` WARN remains (created by the first update run) |
+| L5 | `update-kit -DryRun` | report only; **no doctor run, no `.kit-version` written** |
+| L3 | apply run | report ends with `--- adoption doctor ---` + `verify-kit: OK`; `.kit-version` written as the JSON record and dim 5 reads it green end-to-end; committed re-run: clean + green ⇒ **exit 0** |
+| L4 | declared-tier rulebook deleted, committed; re-run | report ends with `verify-kit: FAIL record: declared tier 'database' …`; **exit 2** with no conflicts/surgical pending — the doctor alone drives "attention needed" |
+| L6 | owner adds `frontend` to the record + instantiates the rulebook | doctor `ok record — tiers: frontend, backend, database; gate proven` → OK (record is owner-editable) |

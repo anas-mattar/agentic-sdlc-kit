@@ -25,6 +25,7 @@ there.
 | Surgical | Files that changed upstream but were never touched — see step 2/3 below. |
 | Conflicts | A verbatim file your project has locally modified. Not overwritten. |
 | Result | The kit version now recorded, or "up to date" if nothing was pending. |
+| Adoption doctor | An apply run ends with `scripts/verify-kit.ps1`'s verdict for your project — flow-down damage surfaces in the same session that caused it. A red verdict exits 2 ("attention needed"); get the doctor green before committing the flow-down. `-DryRun` skips it; `-Json` callers run `verify-kit.ps1 -Json -Root <project>` themselves. |
 
 **Resolving a conflict**: a verbatim file only conflicts when someone edited kit-owned
 prose or a kit script directly, which normally shouldn't happen — verbatim files exist to
@@ -115,6 +116,46 @@ most kit-side changes to these files are structural or illustrative and don't re
 action in your project at all. When one does apply — a new required section, a changed
 convention — add it to your own version the same way you'd make any other governance
 edit: reviewed, committed, no different from hand-written project documentation.
+
+## 4. The adoption doctor and its records
+
+`pwsh -File scripts/verify-kit.ps1` audits your project's kit integrity any time (structure
+essentials, unfilled slots in project-owned files, constitution ratification, declared-tier
+rulebooks + gate proof, `.kit-version`). It runs automatically at the end of `init-kit.ps1`
+and of every `update-kit.ps1` apply, and as part of the `ritual-checks` CI in adopted
+projects. It is read-only: it reports, you repair.
+
+**kit-adoption.json** (project root) is its source of truth for what you declared.
+`init-kit.ps1` writes it; you own it afterwards — adding a tier later means adding it here
+*and* instantiating the rulebook. Projects adopted before the doctor existed create it by
+hand:
+
+```json
+{
+  "schemaVersion": 1,
+  "projectName": "your project",
+  "topology": "single",
+  "tiers": ["backend", "database"],
+  "initDate": "2026-09-08",
+  "kitVersionAtInit": "copy",
+  "gateProof": [
+    { "gate": "default", "command": "your gate chain", "exitCode": 0,
+      "date": "2026-09-08", "recordedBy": "you" }
+  ]
+}
+```
+
+`topology` is `single` or `multi`; `tiers` come from the menu (backend, frontend, mobile,
+database, integration); `gateProof` is your attestation that the gate has been green at
+least once (adoption step 3) — record the exact command (never with secrets in it), the
+exit code, the date, and who ran it. No tool writes proof entries for you.
+
+**.kit-version** is written by `update-kit.ps1` (a JSON record of the kit version/commit
+you're on). A project adopted by copy that has never run an update can create it as a bare
+kit commit sha, or simply run `update-kit.ps1` once. One caveat while both files are
+absent: if your `docs/roadmap.md` still carries the kit's own title line, the doctor
+cannot tell your project from the kit template and declines to audit — creating either
+file (or retitling your roadmap) makes you auditable.
 
 ## Partial-install note
 

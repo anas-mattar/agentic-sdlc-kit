@@ -43,8 +43,12 @@ the file thin; rules live in rulebooks, CLAUDE.md holds pointers.
 
 Machine assist: `pwsh -File scripts/init-kit.ps1` does the mechanical part of steps 1–2 —
 instantiates the selected tier rulebooks, wires the Task-Scoped Reading rows, fills
-`{{PROJECT_NAME}}` and the repository slots — then prints the judgment slots that remain
-yours. It never writes rulebook content or ratifies the constitution.
+`{{PROJECT_NAME}}` and the repository slots, and writes **kit-adoption.json** (the durable
+record of your name/topology/tier choices — the adoption doctor's source of truth,
+owner-editable if tiers change later) — then prints the judgment slots that remain yours
+and finishes by running `scripts/verify-kit.ps1`, whose red verdict at that moment is your
+remaining to-do list, not a failure. It never writes rulebook content or ratifies the
+constitution.
 
 **Normalizing externally authored rulebook content**: when a rulebook is seeded from material
 written outside this kit (a prior project's rule pack, a team wiki export), normalize it
@@ -59,6 +63,12 @@ Fill the gate slots in `docs/sdlc/gate-command.md`, scaffold the empty project(s
 gate until it exits 0 on the empty scaffold. **A gate that has never been green is not a
 gate.** Do this before any feature — otherwise the first feature debugs the toolchain and the
 feature at once.
+
+**Record the proof** in **kit-adoption.json** (written by `init-kit.ps1`; shape documented in
+`adoption/updating.md`): add a `gateProof` entry with the exact command, its exit code (0),
+the date, and who ran it — never paste secrets into the command line. This is your
+attestation; no tool writes it for you, and `scripts/verify-kit.ps1` (the adoption doctor)
+fails until at least one exit-0 proof exists.
 
 **Scaffolding-tool traps** — check these immediately after each scaffolding CLI runs, before
 the first commit:
