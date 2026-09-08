@@ -51,9 +51,9 @@ recorded; ritual checks green.
 
 - `scripts/enforcement-pack.ps1`
 
-- [ ] T008 [US3] Add `Invoke-GateCertificationCheck` to `scripts/enforcement-pack.ps1` (GateBatching parser idiom: comment-strip, absent = user-run; malformed FAIL naming legal values; ci-held + Critical FAIL citing X's exclusion); wire into the `NNN-*` dispatch; header .DESCRIPTION updated
-- [ ] T009 [US3] Execute contract G1–G6 on seeded fixture plans + 001–007 regression; record under Phase 2 validation
-- [ ] T010 [US3] Feedback-run ritual-checks, report, commit as `phase 2: GateCertification enforcement`
+- [x] T008 [US3] Add `Invoke-GateCertificationCheck` to `scripts/enforcement-pack.ps1` (GateBatching parser idiom: comment-strip, absent = user-run; malformed FAIL naming legal values; ci-held + Critical FAIL citing X's exclusion); wire into the `NNN-*` dispatch; header .DESCRIPTION updated
+- [x] T009 [US3] Execute contract G1–G6 on seeded fixture plans + regression (this branch, 003, 007); record under Phase 2 validation — also made this feature's own plan declare `**Gate Certification**: user-run` explicitly (D7 dogfooding, the field's first real use)
+- [x] T010 [US3] Feedback-run ritual-checks, report, commit as `phase 2: GateCertification enforcement`
 
 **Checkpoint**: a Critical feature can no longer quietly adopt ci-held.
 
@@ -168,3 +168,18 @@ review). Re-validation adds the reviewer's prescribed absence check:
 | F7/F9/F11 | plan-template timing sentence · strict-rule batch variant · `<owner>, <date>` example | present |
 | Absence sweep | `grep -n "user-confirmed exit code\|user's exit code\|gate run by the user" ` over the six amended files | zero un-qualified categorical statements remain (every hit sits inside a both-arms sentence) |
 | L8 regression | ritual-checks after fixes | RESULT OK |
+
+### Phase 2 validation (T009, 2026-09-08)
+
+Seeded fixture feature `specs/999-gc-demo` (spec + plan + tasks, deleted after);
+`enforcement-pack.ps1 -Branch 999-gc-demo` per scenario:
+
+| # | Plan/spec state | Verdict |
+|---|---|---|
+| G1 | no declaration line | OK (user-run default) |
+| G2 | `user-run` | OK |
+| G3 | `ci-held` + Delivery Level Standard | OK |
+| G4 | `ci-held` + Delivery Level Critical | `FAIL … Critical features MUST NOT use CI-held certification … (constitution X …; critical-delivery.md item 4)` |
+| G5 | `ci-hold` (malformed) | `FAIL … must be 'user-run' or 'ci-held'` |
+| G6 | `ci-held <!-- comment -->` | OK (comment stripped, value parsed) |
+| Regression | this branch (explicit `user-run` after the D7 dogfood edit), 003, 007 (absent lines) | all OK |

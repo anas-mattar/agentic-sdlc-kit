@@ -18,6 +18,12 @@
                          and was first committed at least $Config.CoolingOffHours ago.
       - PhaseSizeWarning (NNN-* branches): non-blocking warning when a single commit's
                          diff exceeds the configured line/file thresholds.
+      - GateCertification (NNN-* branches): the plan.md '**Gate Certification**'
+                         declaration, when present, must be 'user-run' or 'ci-held', and
+                         'ci-held' is prohibited on Critical features (constitution X,
+                         CI-held certification; docs/sdlc/critical-delivery.md item 4).
+                         An absent line means 'user-run' — plans from before the clause
+                         remain valid.
       - ReviewProvenance (all recognized lanes): every specs/**/ai-code-review*.md ADDED
                          (or arriving as a rename target) in the branch's diff must carry
                          a '## Reviewer Provenance' section whose OWN Reviewer line is
@@ -222,6 +228,38 @@ function Invoke-GateBatchingCheck {
     }
 }
 
+# --- Gate-certification check (008: constitution X, CI-held certification) ---
+# Legal values are constitutional constants (sync-listed): 'user-run' | 'ci-held'.
+# Absent line means 'user-run' (plans from before the clause remain valid). Critical
+# features MUST NOT declare ci-held (constitution X; docs/sdlc/critical-delivery.md item 4).
+function Invoke-GateCertificationCheck {
+    param([string]$Branch)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    $dir = "specs/$Branch"
+    $planPath = Join-Path $dir 'plan.md'
+    if (-not (Test-Path $planPath)) { return }   # missing plan.md is StructureCheck's failure
+
+    $line = (Get-Content $planPath | Where-Object { $_ -match '^\*\*Gate Certification\*\*:' } | Select-Object -First 1)
+    if (-not $line) { return }                   # absent line means 'user-run' (backward compatible)
+
+    # Strip any trailing HTML comment (the template ships one) before parsing the value.
+    $value = ($line -replace '^\*\*Gate Certification\*\*:\s*', '' -replace '<!--.*$', '').Trim()
+    if ($value -eq '' -or $value -eq 'user-run') { return }
+
+    if ($value -ne 'ci-held') {
+        $script:failures += "GateCertification: $dir/plan.md declares '**Gate Certification**: $value' — must be 'user-run' or 'ci-held' (constitution X, CI-held certification)"
+        return
+    }
+
+    $specPath = Join-Path $dir 'spec.md'
+    if (Test-Path $specPath) {
+        $level = (Get-Content $specPath | Where-Object { $_ -match '^\*\*Delivery Level\*\*:' } | Select-Object -First 1)
+        if ($level -match '^\*\*Delivery Level\*\*:\s*Critical\b') {
+            $script:failures += "GateCertification: $dir declares '**Gate Certification**: ci-held' on a Critical feature — Critical features MUST NOT use CI-held certification; every certifying gate stays human-executed, locally (constitution X, CI-held certification; docs/sdlc/critical-delivery.md item 4)"
+        }
+    }
+}
+
 # --- Review-provenance check (006 FR-006: DoD gate 5, reviewer separation) ---
 # Inspects only AI-review files ADDED in the branch's diff vs base (--diff-filter=A), so
 # reviews shipped before the verification pack — and every adopted project's history —
@@ -310,6 +348,7 @@ if ($Branch -in @('main', 'master')) {
     Invoke-StructureCheck -Branch $Branch
     Invoke-CriticalEvidenceCheck -Branch $Branch
     Invoke-GateBatchingCheck -Branch $Branch
+    Invoke-GateCertificationCheck -Branch $Branch
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {

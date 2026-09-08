@@ -5,6 +5,8 @@
 **Gate Batching**: phases 1-3 <!-- Standard feature, doc+script phases with a seconds-long
   gate and disjoint file sets — 005/006/007 precedent. Phase 4 gates alone. Every phase
   keeps its own commit, machine scope check, and fresh-context AI review. -->
+**Gate Certification**: user-run <!-- research D7: this feature does not certify itself
+  under the mode it introduces; declared explicitly once the field existed (phase 2). -->
 
 ## Summary
 
