@@ -37,7 +37,7 @@ Keep this in sync by hand if that template changes — no templating engine exis
       code, or (plan-declared `ci-held`, Lite/Standard only) recorded approval on the CI
       evidence triplet (`docs/sdlc/gate-command.md`)
 
-**Gate exit code**: `EXIT: ___` — or ci-held: run URL + commit sha: `___`
+**Gate exit code**: `EXIT: ___` — or ci-held: run URL + green conclusion + commit sha: `___`
 
 ## Approval
 

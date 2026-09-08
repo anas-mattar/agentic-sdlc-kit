@@ -243,3 +243,14 @@ phases 1-3** / **Gate Certification: user-run**.
 | Roadmap | GAP-012 row `specified` → `in progress` | done |
 | Manifest sweep | `git diff caf5fcc..HEAD -- kit-manifest.json` shows exactly one added row (phase 3's project-gate template surgical row) — phase 4 needs none | done |
 | Ritual checks | feedback run after the sweep | doc-lint OK (64 classified) · enforcement-pack OK · scope-check OK (all six prior phase commits PASS) · verify-kit n/a · RESULT OK |
+
+### Phase 4 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The review (`ai-code-review-phase4.md`) returned APPROVE with follow-ups — no edited
+sentence misstates a constitution X boundary; no false tool-behavior claims. Dispositions
+in the fix-response log: F1 fixed (diagram ci-held timing now AFTER the phase commit,
+alignment preserved), F2 fixed (both review-template fields prompt for the full triplet
+incl. green conclusion), F4 fixed (README lines restore "Lite/Standard only"), F5 accepted
+(pre-existing Lite-declaration nuance → GAP-013 input). F3 (three categorical sentences in
+team-workflow.md and adoption/greenfield.md, outside phase 4 territory) is CONFIRM,
+awaiting the owner's disposition: follow-up sweep vs recorded residue.

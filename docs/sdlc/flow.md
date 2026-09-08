@@ -22,8 +22,8 @@ owning document, the owning document prevails — and the constitution
 │ 3 PHASE LOOP   one approved phase at a time                         │
 │                                                                     │
 │      implement one phase (UI + visual refs → compliance loop)       │
-│         → owner certifies the GATE (exit code — or ci-held          │
-│           evidence approval, when the plan declares it)             │
+│         → owner certifies the GATE (exit code — or, plan-declared   │
+│           ci-held, evidence approval AFTER the phase commit below)  │
 │         → commit the phase ('phase N' in the subject)               │
 │         → SCOPE CHECK: scope-check.ps1 = declared territory only    │
 │         → AI REVIEW by a fresh-context reviewer (provenance block)  │

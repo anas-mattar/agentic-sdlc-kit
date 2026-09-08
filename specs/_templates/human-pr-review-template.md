@@ -26,7 +26,8 @@ BLOCKING/CONFIRM findings were resolved, don't re-derive them]
 ## Gate Result
 
 - [ ] Gate certified **by the reviewer or user** (not the AI); exit code: `EXIT: ___` —
-      or ci-held (plan-declared, Lite/Standard only): run URL + commit sha: `___`
+      or ci-held (plan-declared, Lite/Standard only): run URL + green conclusion +
+      commit sha: `___`
       (`docs/sdlc/gate-command.md`)
 
 ## Approval
