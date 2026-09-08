@@ -177,7 +177,7 @@ via `-Root`/`-Branch`/`-Commit`.
 | M9 | PASS | ci-held declared in the mini-spec: "enforcement-pack: OK", exit 0 (GateCertification reads spec.md on Micro) |
 | M10 | PASS | "Structure: … **Delivery Level** header is unfilled or invalid: 'Micr0' (legal values: Lite, Micro, Standard, Critical — constitution X)", exit 1 (plus fail-closed missing-plan/tasks failures, since a malformed level is not Micro) |
 | M11 | PASS | Micro-era commit against old spec territory: "PASS phase 1 commit 517df6a (1 file(s), Micro territory from spec.md)"; post-promotion "PASS phase 2 commit b7e227f"; "enforcement-pack: OK" (Standard rules from the promotion commit onward) |
-| M12 | PASS | "MicroLane: phase commit b43f0e1 changes 401 line(s) — a Micro phase commit changes at most 400 lines, a hard bound on this lane …", exit 1 |
+| M12 | PASS | Original run: "MicroLane: phase commit b43f0e1 changes 401 line(s) …", exit 1. **Re-validated 2026-09-09 under the owner-resolved sum semantics (phase 2 review F1)** on fresh fixtures (deleted after): single 401-line commit → "MicroLane: the phase's 1 commit(s) change 401 line(s) in total — a Micro phase changes at most 400 lines across all its commits …", exit 1; split 300+300 across `phase 1` + `phase 1 fixes` commits → "the phase's 2 commit(s) change 600 line(s) in total …", exit 1 (the split loophole is closed); compliant 200+150 → "enforcement-pack: OK", exit 0 |
 | M13 | PASS | Commented-out `**Delivery Level**: Micro` decoy above a visible `Standard`: "enforcement-pack: OK", exit 0 — not Micro (comment-stripped parsing; no MicroLane failure despite plan.md/tasks.md present) |
 | Lite | PASS | `fix/demo-lite`: "enforcement-pack: OK"; "scope-check: not applicable (fix/ lane …)" |
 

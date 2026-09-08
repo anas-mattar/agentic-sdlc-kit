@@ -41,7 +41,7 @@ count against the cap.
 | Constant | Proposed value | Enforced as |
 |---|---|---|
 | MicroTerritoryMaxFiles | 5 | FAIL when the declared Territory lists more entries/expands to more files |
-| MicroPhaseMaxLines | 400 | FAIL (not warn) when the single phase commit exceeds it |
+| MicroPhaseMaxLines | 400 | FAIL (not warn) when the phase's commits exceed it in total (summed across every commit carrying the phase token — owner-resolved phase 2 review F1) |
 | MicroMaxPhases | 1 | FAIL on a second `phase N` commit while the branch is Micro |
 
 Non-measurable bounds (no schema/migration, no new packages, no architecture change, no
@@ -57,7 +57,7 @@ and human-reviewed — parity with how plan.md's package/architecture promises a
 | Micro + `**Gate Batching**` line in spec.md | FAIL — one phase, nothing to batch |
 | Micro + >1 `phase N` commit on the branch | FAIL — promote to Standard before further phases |
 | Micro + Territory over MicroTerritoryMaxFiles | FAIL naming the cap and promotion |
-| Micro + phase commit over MicroPhaseMaxLines | FAIL (hard bound on Micro; warning elsewhere unchanged) |
+| Micro + the phase's commits over MicroPhaseMaxLines in total | FAIL (hard bound on Micro; per-commit warning elsewhere unchanged) |
 | Malformed Delivery Level value | FAIL naming legal values |
 | Micro, all bounds held | OK |
 

@@ -16,9 +16,11 @@
                          'phase N' numbers on the branch), no plan.md/tasks.md in the
                          tree (promotion is all-or-nothing), a **Territory** block of at
                          most $Config.MicroTerritoryMaxFiles literal file entries (no
-                         globs — a glob defeats the cap), every phase commit at most
-                         $Config.MicroPhaseMaxLines changed lines (a hard failure where
-                         other lanes get PhaseSizeWarning), and no '**Gate Batching**'
+                         globs — a glob defeats the cap), at most
+                         $Config.MicroPhaseMaxLines changed lines in TOTAL across the
+                         phase's commits (a hard failure where other lanes get a
+                         per-commit PhaseSizeWarning — summed so remediation commits
+                         cannot split the bound), and no '**Gate Batching**'
                          declaration (one phase — nothing to batch). Every failure names
                          the promotion remediation (constitution X, Micro lane).
       - LiteAndAbuse     (fix/*, chore/* branches): no changed file matches a prohibited
@@ -357,30 +359,34 @@ function Invoke-MicroLaneCheck {
         }
     }
 
-    # Exactly one phase (M6) + the hard per-commit size bound (M12 — PhaseSizeWarning
-    # stays a non-blocking warning on every other lane). Distinct phase NUMBERS are
+    # Exactly one phase (M6) + the hard size bound (M12 — PhaseSizeWarning stays a
+    # non-blocking per-commit warning on every other lane). Distinct phase NUMBERS are
     # counted, not commits, so in-phase remediation commits ('phase 1 fixes: …') stay
-    # legal exactly as they are on Standard features.
+    # legal exactly as they are on Standard features — but their lines COUNT: the bound
+    # is the phase's TOTAL across every commit carrying its token, so splitting a change
+    # over remediation commits cannot defeat it (phase 2 review, F1 — owner-resolved
+    # 2026-09-09; constitution X wording matches).
     if (-not $Base) { return }
     $phaseNums = @{}
+    $phaseTotal = 0
+    $phaseCommitCount = 0
     $commits = (git rev-list --no-merges "$Base..HEAD" 2>$null) | Where-Object { $_ }
     foreach ($commit in $commits) {
         $subject = (git log -1 --format=%s $commit 2>$null)
         if ($subject -notmatch '(?i)\bphase\s+(\d+)\b') { continue }
         $phaseNums[[int]$matches[1]] = $true
+        $phaseCommitCount++
         $numstat = git show --numstat --format='' $commit 2>$null
-        $lineCount = 0
         foreach ($row in $numstat) {
             if (-not $row) { continue }
             $parts = $row -split "`t"
             if ($parts.Count -lt 3) { continue }
-            if ($parts[0] -match '^\d+$') { $lineCount += [int]$parts[0] }
-            if ($parts[1] -match '^\d+$') { $lineCount += [int]$parts[1] }
+            if ($parts[0] -match '^\d+$') { $phaseTotal += [int]$parts[0] }
+            if ($parts[1] -match '^\d+$') { $phaseTotal += [int]$parts[1] }
         }
-        if ($lineCount -gt $Config.MicroPhaseMaxLines) {
-            $short = $commit.Substring(0, 7)
-            $script:failures += "MicroLane: phase commit $short changes $lineCount line(s) — a Micro phase commit changes at most $($Config.MicroPhaseMaxLines) lines, a hard bound on this lane (constitution X, Micro lane); shrink the change, or $promote"
-        }
+    }
+    if ($phaseTotal -gt $Config.MicroPhaseMaxLines) {
+        $script:failures += "MicroLane: the phase's $phaseCommitCount commit(s) change $phaseTotal line(s) in total — a Micro phase changes at most $($Config.MicroPhaseMaxLines) lines across all its commits, a hard bound on this lane (constitution X, Micro lane); shrink the change, or $promote"
     }
     if ($phaseNums.Keys.Count -gt $Config.MicroMaxPhases) {
         $nums = ($phaseNums.Keys | Sort-Object) -join ', '

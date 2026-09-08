@@ -25,7 +25,7 @@ and re-verified by the fresh-context review.
 | M9 | Micro spec.md carrying `**Gate Certification**: ci-held`, Standard-legal otherwise | GateCertification OK — declaration read from spec.md on Micro |
 | M10 | `Delivery Level: Micr0` (malformed) | enforcement-pack FAIL naming legal values |
 | M11 | Promotion commit (full spec.md level Standard + plan.md + tasks.md), then `phase 2` commit in tasks.md territory | all checks OK — Standard rules from the promotion commit onward; M2-era `phase 1` commit still attributed against the old spec.md Territory (parent-read) |
-| M12 | Micro, single phase commit over MicroPhaseMaxLines (400) | enforcement-pack FAIL (hard bound on Micro; PhaseSizeWarning behavior elsewhere unchanged) |
+| M12 | Micro, the phase's commits over MicroPhaseMaxLines (400) in total — one oversized commit, or a compliant commit plus remediation commits that push the sum over | enforcement-pack FAIL (hard bound on Micro, summed so remediation commits cannot split it — owner-resolved phase 2 review F1; PhaseSizeWarning behavior elsewhere unchanged) |
 | M13 | Commented-out `Delivery Level: Micro` decoy inside an HTML comment block | not Micro — shared comment-stripping parser (008 G7–G9 precedent) |
 
 ## Error-message contract
