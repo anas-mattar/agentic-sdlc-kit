@@ -80,10 +80,10 @@ unchanged RESULT; adopted fixture goes red/green with the doctor named.
 - `scripts/ritual-checks.ps1`
 - `specs/006-verification-pack/contracts/ritual-checks-ci.md`
 
-- [ ] T013 [US3] Amend `scripts/ritual-checks.ps1`: fourth member `verify-kit` gated on `.kit-version` at `-Root`; `n/a (kit repository)` line excluded from the failure count; verdict-block format otherwise unchanged
-- [ ] T014 [US3] Amend `specs/006-verification-pack/contracts/ritual-checks-ci.md` — it documents the living wrapper, so it gains the fourth member + applicability rule with a "amended by 007" note (declared in this phase's territory; leaving it stale would be exactly the drift the kit hunts)
-- [ ] T015 [US3] Execute quickstart W1–W3; record outputs under Phase 3 validation
-- [ ] T016 [US3] Feedback-run ritual-checks (now 4 members in adopted fixtures, 3+n/a here), report output, commit as `phase 3: wrapper membership` — **batch end: ask the owner to run the certifying gate**
+- [x] T013 [US3] Amend `scripts/ritual-checks.ps1`: fourth member `verify-kit` gated on `.kit-version` at `-Root`; `n/a (kit repository)` line excluded from the failure count; verdict-block format otherwise unchanged (F9 JSON-shape alignment stays deferred: the wrapper consumes the exit code, never the JSON)
+- [x] T014 [US3] Amend `specs/006-verification-pack/contracts/ritual-checks-ci.md` — it documents the living wrapper, so it gains the fourth member + applicability rule with an "amended by 007" note (declared in this phase's territory; leaving it stale would be exactly the drift the kit hunts)
+- [x] T015 [US3] Execute quickstart W1–W3; record outputs under Phase 3 validation
+- [x] T016 [US3] Feedback-run ritual-checks (now 4 members in adopted fixtures, 3+n/a here), report output, commit as `phase 3: wrapper membership` — **batch end: ask the owner to run the certifying gate**
 
 **Checkpoint**: integrity regressions turn adopted-project branches red unattended.
 
@@ -199,3 +199,11 @@ preflight.
 | L3 | apply run | report ends with `--- adoption doctor ---` + `verify-kit: OK`; `.kit-version` written as the JSON record and dim 5 reads it green end-to-end; committed re-run: clean + green ⇒ **exit 0** |
 | L4 | declared-tier rulebook deleted, committed; re-run | report ends with `verify-kit: FAIL record: declared tier 'database' …`; **exit 2** with no conflicts/surgical pending — the doctor alone drives "attention needed" |
 | L6 | owner adds `frontend` to the record + instantiates the rulebook | doctor `ok record — tiers: frontend, backend, database; gate proven` → OK (record is owner-editable) |
+
+### Phase 3 validation (T015, 2026-09-08)
+
+| # | Scenario | Result |
+|---|---|---|
+| W1 | wrapper in the kit repo | verdict block: 3 member OKs + `verify-kit       n/a (kit repository)` + `RESULT OK` — kit CI behavior unchanged except the explicit n/a line |
+| W2 | wrapper in the healthy adopted fixture (`-Root`, current scripts copied in) | 4 member OKs, `RESULT OK` |
+| W3 | declared-tier rulebook deleted in the fixture | `verify-kit FAIL` named in the block, all members still ran, `RESULT FAIL (2 of 4 member(s) failed)`, exit 1 — doc-lint ALSO failed because the deletion broke a CLAUDE.md path reference: the two checkers catch the same incident from their respective angles |

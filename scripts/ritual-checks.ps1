@@ -10,6 +10,10 @@
       1. scripts/doc-lint.ps1
       2. scripts/enforcement-pack.ps1   (includes the ReviewProvenance check)
       3. scripts/scope-check.ps1 -All   (every phase commit since merge-base with main)
+      4. scripts/verify-kit.ps1         (the adoption doctor — ADOPTED PROJECTS ONLY,
+                                         gated on .kit-version at -Root; the kit repo
+                                         shows an explicit n/a line instead, excluded
+                                         from the failure count — 007 US3)
 
     Each member runs as a child pwsh process (the member scripts terminate with `exit`),
     and the wrapper ends with a verdict block, one line per member, then
@@ -45,6 +49,14 @@ $members = [ordered]@{
     'scope-check'      = @((Join-Path $scriptsDir 'scope-check.ps1'), '-All', '-Root', $Root) + $branchArgs
 }
 
+# The adoption doctor joins only for adopted projects (.kit-version is the discriminator —
+# 007 research D7); the kit repo gets an explicit n/a line, never a silent omission.
+$doctorNA = $true
+if (Test-Path (Join-Path $Root '.kit-version')) {
+    $members['verify-kit'] = @((Join-Path $scriptsDir 'verify-kit.ps1'), '-Root', $Root)
+    $doctorNA = $false
+}
+
 $results = [ordered]@{}
 foreach ($name in $members.Keys) {
     Write-Host "=== ritual-checks: $name ==="
@@ -57,6 +69,9 @@ $failedCount = 0
 foreach ($name in $results.Keys) {
     $verdict = if ($results[$name] -eq 0) { 'OK' } else { $failedCount++; 'FAIL' }
     Write-Host ('ritual-checks: {0,-16} {1}' -f $name, $verdict)
+}
+if ($doctorNA) {
+    Write-Host ('ritual-checks: {0,-16} {1}' -f 'verify-kit', 'n/a (kit repository)')
 }
 if ($failedCount -gt 0) {
     Write-Host "ritual-checks: RESULT FAIL ($failedCount of $($results.Count) member(s) failed)"

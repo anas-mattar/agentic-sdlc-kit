@@ -14,6 +14,9 @@ Runs, in order, stopping never (all members always run so one push reports every
 1. `scripts/doc-lint.ps1`
 2. `scripts/enforcement-pack.ps1` (which includes the ReviewProvenance check after phase 2)
 3. `scripts/scope-check.ps1 -All` (every phase commit since `merge-base HEAD origin/main`)
+4. `scripts/verify-kit.ps1` *(amended by feature 007)* — the adoption doctor, run only when
+   `.kit-version` marks an adopted project; in the kit repository the verdict block shows
+   an explicit `verify-kit  n/a (kit repository)` line, excluded from the failure count
 
 Output ends with a verdict block, one line per member (OK/FAIL, derived from the member's
 exit code — member WARNs stay visible in that member's own output above):
