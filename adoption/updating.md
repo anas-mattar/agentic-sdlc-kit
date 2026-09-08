@@ -145,9 +145,12 @@ arrives by **re-expression** (this section's procedure), never by copy:
   gate-command, branch-strategy, critical-delivery, spec template, and CLAUDE.md.
 - The **machine half and the template arrive verbatim** through the normal update
   channel: `scripts/scope-check.ps1`, `scripts/enforcement-pack.ps1`, and
-  `.specify/templates/micro-spec-template.md`. The new checks are inert until a feature's
-  `spec.md` declares `**Delivery Level**: Micro`, so taking the scripts before (or
-  without) ratifying the amendment changes nothing for your existing features.
+  `.specify/templates/micro-spec-template.md`. The Micro checks are inert until a
+  feature's `spec.md` declares `**Delivery Level**: Micro`, so taking the scripts before
+  (or without) ratifying the amendment leaves your existing features' verdicts unchanged —
+  with one general hardening that rides along: scope-check now also FAILs a commit that
+  deletes or renames away a feature's `spec.md` or `tasks.md` on any numbered branch
+  (never a legitimate move; previously only tasks.md deletion was guarded).
 - **Nothing changes until you ratify it.** Absent a declaration, every numbered feature
   is Standard — exactly as before.
 

@@ -11,7 +11,8 @@ Keep this in sync by hand if that template changes — no templating engine exis
 
 **Feature/branch**: `[NNN-name | fix/name | chore/name | docs/name]`
 **Spec / plan / tasks**: [link, if this is a numbered `NNN-` feature — for a Micro
-feature, the mini-spec `spec.md` alone (constitution X, Micro lane)]
+feature, the mini-spec `spec.md` alone; verify its eligibility checklist still holds
+against the diff (constitution X, Micro lane)]
 **AI review**: [link to the completed ai-code-review.md — read it first]
 
 ## Business Review

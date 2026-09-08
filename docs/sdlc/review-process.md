@@ -68,7 +68,8 @@ diff. Procedure:
    session with no implementation context, or a second model. Fresh context is the
    minimum; a second model is encouraged where available.
 2. The reviewer is given: the phase diff (commit sha), `spec.md`, `plan.md`, and the
-   feature's contracts — never the implementer's conversation or reasoning. Read-only
+   feature's contracts — for a Micro feature, the mini-spec `spec.md` alone, which is all
+   the lane has — never the implementer's conversation or reasoning. Read-only
    verification (running checks, replicating logic) is allowed and encouraged.
 3. The reviewer completes `specs/_templates/ai-code-review-template.md` **including the
    Reviewer Provenance block** (reviewer identity, inputs supplied, verbatim

@@ -17,12 +17,13 @@ owning document, the owning document prevails — and the constitution
 └───────────────────────────────┬─────────────────────────────────────┘
 ┌───────────────────────────────▼─────────────────────────────────────┐
 │ 2 SPECIFY      spec.md → plan.md → tasks.md · approved before code  │
+│                (Micro: a single-page mini-spec spec.md alone)       │
 └───────────────────────────────┬─────────────────────────────────────┘
 ┌───────────────────────────────▼─────────────────────────────────────┐
 │ 3 PHASE LOOP   one approved phase at a time                         │
 │                                                                     │
 │      implement one phase (UI + visual refs → compliance loop)       │
-│         → owner certifies the GATE (exit code — or, plan-declared   │
+│         → owner certifies the GATE (exit code — or, declared        │
 │           ci-held, evidence approval AFTER the phase commit below)  │
 │         → commit the phase ('phase N' in the subject)               │
 │         → SCOPE CHECK: scope-check.ps1 = declared territory only    │
