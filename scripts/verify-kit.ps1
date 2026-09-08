@@ -228,12 +228,20 @@ try {
     # --- Dimension 5: .kit-version sanity ---
     if ($hasKitVersion) {
         $kv = "$(Get-Content -LiteralPath (Join-Path $Root '.kit-version') -Raw)".Trim()
-        # Strict plausibility (review F4, flagged for owner ratification): update-kit
-        # writes commit shas, so accept 7-40 hex, or a v-prefixed/dotted tag token.
-        if ($kv -match '^[0-9a-f]{7,40}$' -or $kv -match '^v?\d+(\.[A-Za-z0-9._-]+)*$') {
-            Add-Finding ok 'kit-version' ".kit-version present ($($kv.Substring(0, [Math]::Min(12, $kv.Length)))…)" ''
+        # update-kit.ps1 writes JSON: { kitVersion, kitCommit, updatedOn } — kitCommit is
+        # the kit HEAD sha. Healthy = that JSON with a 7-40-hex kitCommit; a bare hex
+        # token is accepted for hand-created files (adoption/updating.md instructions).
+        # Anything else FAILs (review F4 strict rule, corrected to the REAL file shape —
+        # phase 1 round 1/2 validated against a bare-sha fixture that update-kit never
+        # writes).
+        $kvCommit = $null
+        try { $kvCommit = ("$kv" | ConvertFrom-Json).kitCommit } catch {}
+        if ("$kvCommit" -match '^[0-9a-f]{7,40}$') {
+            Add-Finding ok 'kit-version' ".kit-version present (kit commit $("$kvCommit".Substring(0, 12))…)" ''
+        } elseif ($kv -match '^[0-9a-f]{7,40}$') {
+            Add-Finding ok 'kit-version' ".kit-version present (bare commit token $($kv.Substring(0, [Math]::Min(12, $kv.Length)))…)" ''
         } else {
-            Add-Finding FAIL 'kit-version' '.kit-version content is not a plausible kit commit/tag (hand-edited or empty?)' 're-run scripts/update-kit.ps1 from a kit clone to rewrite it (adoption/updating.md)'
+            Add-Finding FAIL 'kit-version' '.kit-version is neither update-kit''s JSON record nor a bare commit sha (hand-edited or empty?)' 're-run scripts/update-kit.ps1 from a kit clone to rewrite it (adoption/updating.md)'
         }
     } else {
         Add-Finding WARN 'kit-version' '.kit-version not found (adopted by copy, never updated?)' 'create it per adoption/updating.md so update-kit and the manifest sweep can classify this project'
