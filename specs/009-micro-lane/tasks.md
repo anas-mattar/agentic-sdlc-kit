@@ -31,28 +31,28 @@ recorded; ritual checks green.
 - `docs/sdlc/gate-command.md`
 - `CLAUDE.md`
 
-- [ ] T001 [US1] Amend `.specify/memory/constitution.md`: I gains the Micro arm (approved
+- [x] T001 [US1] Amend `.specify/memory/constitution.md`: I gains the Micro arm (approved
       mini-spec satisfies specification-first, no plan/tasks); X gains the Micro clause
       (one phase, verification unchanged, bounds with both constants, Critical excluded,
       absent = Standard, promotion procedure) and widens CI-held eligibility to "Lite,
       Micro, or Standard" (batching stays Lite/Standard); SYNC IMPACT (0.5.0 → 0.6.0
       MINOR, rationale, mirror list, machine half next-phase-same-branch, human-adoption
       note); sync list gains the Micro constants beside the batch cap; footer bumped
-- [ ] T002 [P] [US1] Create `.specify/templates/micro-spec-template.md` per data-model
+- [x] T002 [P] [US1] Create `.specify/templates/micro-spec-template.md` per data-model
       (header/Intent/Acceptance/Eligibility checklist/Territory/Rollback — one page);
       amend `.specify/templates/spec-template.md` Delivery Level comment (Micro named,
       pointer to the micro template)
-- [ ] T003 [P] [US1] Amend `docs/sdlc/definition-of-done.md`: gate 1 mini-spec arm; gate 4
+- [x] T003 [P] [US1] Amend `docs/sdlc/definition-of-done.md`: gate 1 mini-spec arm; gate 4
       names spec.md as the Micro territory source; gate 3's CI-held option reads "Lite,
       Micro, or Standard"
-- [ ] T004 [P] [US1] Amend `docs/sdlc/branch-strategy.md` (level menu Lite < Micro <
+- [x] T004 [P] [US1] Amend `docs/sdlc/branch-strategy.md` (level menu Lite < Micro <
       Standard < Critical, Micro/Lite and Micro/Standard boundaries) and
       `docs/sdlc/critical-delivery.md` (exclusion restated: Critical never uses Micro,
       batching, or ci-held)
-- [ ] T005 [P] [US1] Amend `docs/sdlc/gate-command.md` (CI-held section eligibility +
+- [x] T005 [P] [US1] Amend `docs/sdlc/gate-command.md` (CI-held section eligibility +
       mini-spec as the declaration home on Micro) and `CLAUDE.md` (structure note, strict
       rules, reading-table row for Micro)
-- [ ] T006 [US1] Execute quickstart L1–L8; record under Phase 1 validation; commit as
+- [x] T006 [US1] Execute quickstart L1–L8; record under Phase 1 validation; commit as
       `phase 1: constitution I+X micro lane (0.6.0) + mirrors + mini-spec template`
 
 **Checkpoint**: the lane exists in law; nothing enforces or summarizes it yet.
@@ -135,4 +135,19 @@ declared mode).
 
 ## Phase validation records
 
-*(Filled during implementation — T006, T009, T013 outputs land here.)*
+### Phase 1 (T006) — quickstart L1–L8, executed 2026-09-09
+
+| # | Verdict | Evidence (quote) |
+|---|---|---|
+| L1 | PASS | Constitution I, Micro arm: "a feature declared **Micro** (Principle X, Micro lane) satisfies this principle with an approved **single-page mini-spec** — its `spec.md`, authored from `.specify/templates/micro-spec-template.md` — alone: steps (2) and (3) are skipped" |
+| L2 | PASS | Constitution X, Micro lane: "A Micro feature has **exactly one phase**"; "Every verification layer is unchanged: user-held gate certification, the machine scope check (Territory read from `spec.md`), fresh-context AI review, and human review at merge"; "at most **5 files** (the feature's own `specs/NNN-name/**` excluded)"; "at most **400 lines** — a failure for Micro where other lanes get a warning"; "Critical features MUST NOT use the Micro lane"; "Absent a `**Delivery Level**` declaration, a numbered feature is Standard"; "**promoted in place to Standard** … in a commit made **before** any further phase commit; promotion is one-way and all-or-nothing" |
+| L3 | PASS | X CI-held clause: "for a Lite, Micro, or Standard feature … (for a Micro feature: in its approved mini-spec `spec.md`, the lane's only specification document)"; gate-command.md section header "CI-held certification (Lite, Micro, or Standard only)"; Batched gates unchanged "for a Lite or Standard feature"; gate-command.md: "**Micro features never batch either** — the lane is exactly one phase, so there is nothing to batch" |
+| L4 | PASS | SYNC IMPACT: "Version change: 0.5.0 → 0.6.0 (kit template …)", MINOR rationale with GAP-013; full mirror list ("micro-spec-template.md (new), spec-template.md, definition-of-done.md (gates 1, 3, 4), gate-command.md, branch-strategy.md, critical-delivery.md, CLAUDE.md"); machine half: "lands in this same feature's next phase on the same branch"; human adoption: "the owner's spec/plan approval (2026-09-09) plus the feature's gate-6 human review at merge"; footer "**Version**: 0.6.0"; sync list gains "the Micro-lane bounds (territory-file cap 5, phase-line hard bound 400, single-phase rule) and the Delivery Level legal values" |
+| L5 | PASS | `.specify/templates/micro-spec-template.md` created with all data-model sections (header + optional Gate Certification / Intent / Acceptance checks / Eligibility checklist / Territory / Rollback, one page); spec-template.md field now "[Lite \| Micro \| Standard \| Critical]" with the micro-template pointer; doc-lint: "manifest - 65 shipped file(s) classified" (was 64) |
+| L6 | PASS | DoD gate 1: "**Micro arm**: … the approved single-page mini-spec … alone satisfies this item"; gate 3: "**CI-held option (Lite, Micro, or Standard only)** … on a Micro feature the declaration lives in the mini-spec `spec.md`"; gate 4: "for a Micro feature, the feature-global **Territory** block in its mini-spec `spec.md`"; branch-strategy: "**Lite < Micro < Standard < Critical**" with both boundary paragraphs; critical-delivery: four-level table, Critical row "**never** Micro, gate batching, or ci-held", item 4 names the Micro exclusion |
+| L7 | PASS | CLAUDE.md: "**Micro exception** (constitution X, Micro lane): … holds `spec.md` alone"; strict rule "A Micro feature is exactly one phase inside hard bounds (≤5 territory files, ≤400 lines) … never stretch the lane"; reading-table row "A feature declared Micro (small, bounded, one phase)" |
+| L8 | PASS | `ritual-checks.ps1` on the fully amended tree: doc-lint OK (65 files), enforcement-pack OK (pre-existing non-blocking PhaseSizeWarning on specify commit bcf436e only), scope-check OK, **RESULT OK** |
+
+### Phase 2 & 3
+
+*(T009, T013 outputs land here.)*

@@ -57,11 +57,27 @@ requires the user-run gate, the `git diff --stat` scope check, and human review 
 If a "fix" grows into behavior change or schema change, stop and promote it to a numbered
 feature.
 
-**Delivery levels**: the two lanes above are the kit's first two delivery levels — **Lite**
-(the lightweight lane) and **Standard** (the numbered-feature workflow). High-risk work uses
-**Critical**: a numbered feature plus the addendum in `docs/sdlc/critical-delivery.md`,
-declared in the feature's `spec.md` at creation. The level is chosen per feature, not per
-project.
+**Delivery levels**: the kit has four, in ascending ceremony — **Lite < Micro < Standard <
+Critical**. **Lite** is the lightweight lane above (`fix/`, `chore/`, `docs/` — no spec
+directory). **Micro** is a numbered feature whose entire specification is a single-page
+mini-spec (`spec.md` from `.specify/templates/micro-spec-template.md`, declaring
+`**Delivery Level**: Micro`) delivered in exactly one phase inside hard bounds — at most
+5 territory files and 400 changed lines, machine-enforced (constitution X, Micro lane).
+**Standard** is the full numbered-feature workflow; it is the default for any numbered
+feature without a declared level. High-risk work uses **Critical**: a numbered feature
+plus the addendum in `docs/sdlc/critical-delivery.md` — Critical MUST NOT use the Micro
+lane. The level is chosen per feature, not per project, declared in the feature's
+`spec.md` at creation.
+
+Boundaries between neighbors: **Lite vs Micro** — Lite is for work with no behavior
+change (tooling, docs, straightforward bug corrections); the moment a small change alters
+behavior and deserves written, approved intent, it is at least Micro. **Micro vs
+Standard** — Micro requires fitting every bound (one phase, ≤5 files, ≤400 lines, and the
+mini-spec's eligibility checklist: no schema/packages/architecture/domain-invariant/
+visual-reference surface); anything larger, or any feature needing phases or planning, is
+Standard. A Micro feature that outgrows its bounds mid-flight is **promoted in place to
+Standard** (full spec + plan.md + tasks.md, committed before any further phase commit) —
+exactly like promoting a `fix/` branch that grew into a feature.
 
 ## Rules
 
