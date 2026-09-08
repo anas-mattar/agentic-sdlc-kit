@@ -10,8 +10,13 @@ declare, what evidence certifies, what the machine rejects (spec FR-001–FR-005
 **Gate Certification**: ci-held
 ```
 
-- Absent line ⇒ `user-run`. Legal values exactly those two (case-sensitive, comment
-  stripped). Declared in the approved plan before the first governed phase.
+- Absent line ⇒ `user-run`; a present-but-empty value is treated as absent. Legal values
+  exactly those two, matched case-insensitively (the Gate Batching parser idiom; any
+  casing of `ci-held` still trips the Critical exclusion). Comment stripped — including
+  whole HTML comment *blocks*: a declaration hidden inside `<!-- … -->` is invisible to
+  the parser and can never shadow the rendered one (phase 2 review, F1 hardening; applies
+  to Gate Batching identically). Declared in the approved plan before the first governed
+  phase.
 - Composes with `**Gate Batching**`: under `ci-held`, a batch is certified by one owner
   approval on the batch-end commit's evidence.
 
@@ -37,6 +42,9 @@ of declaration; approval is per phase (or per declared batch), never blanket.
 | G4 Critical spec, plan declares `ci-held` | FAIL citing constitution X's CI-held exclusion |
 | G5 plan declares `ci-hold` (malformed) | FAIL naming legal values `user-run`/`ci-held` |
 | G6 declaration with trailing HTML comment | value parsed correctly (Gate Batching idiom) |
+| G7 commented-out decoy `user-run` above a real `ci-held`, Critical spec | FAIL — the decoy is invisible; the rendered declaration governs (F1 hardening) |
+| G8 commented-out `ci-held` above a real `user-run` | pass — no false FAIL from hidden text |
+| G9 same decoy shapes against `**Gate Batching**` | identical behavior (shared visible-lines parser) |
 
 ## Project-gate workflow template
 

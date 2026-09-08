@@ -183,3 +183,21 @@ Seeded fixture feature `specs/999-gc-demo` (spec + plan + tasks, deleted after);
 | G5 | `ci-hold` (malformed) | `FAIL … must be 'user-run' or 'ci-held'` |
 | G6 | `ci-held <!-- comment -->` | OK (comment stripped, value parsed) |
 | Regression | this branch (explicit `user-run` after the D7 dogfood edit), 003, 007 (absent lines) | all OK |
+
+### Phase 2 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The review (`ai-code-review-phase2.md`) returned APPROVE with follow-ups; F1 (decoy
+declarations hidden in HTML comment blocks defeat first-match parsing — a pre-008
+GateBatching weakness this phase would have propagated into the new Critical exclusion)
+resolved with the hardening option: shared `Get-VisiblePlanLines` strips closed comment
+blocks before line-matching in BOTH checks.
+
+| # | Scenario | Verdict |
+|---|---|---|
+| G7 | commented-out `user-run` decoy above a real `ci-held`, Critical spec | `FAIL … Critical features MUST NOT use CI-held certification` — decoy invisible |
+| G8 | commented-out `ci-held` above a real `user-run` | no GateCertification failure (no false FAIL from hidden text) |
+| G9 | commented-out `**Gate Batching**: phases 1-9` decoy above a real `none` | no GateBatching failure — shared parser hardening covers both fields |
+| Template regression | this branch's own plan (both fields with the template's multi-line comment shape) | enforcement-pack OK; ritual-checks RESULT OK |
+
+F2/F3 fixed in the contract (case-insensitive per the idiom; empty value = absent);
+F4/F5 accepted per review.

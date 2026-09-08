@@ -98,6 +98,18 @@ function Get-ChangedFiles {
     (git diff --name-only $Base HEAD 2>$null) | Where-Object { $_ }
 }
 
+# Plan-header declarations must be parsed from VISIBLE text only: a declaration hidden in
+# an HTML comment block must never win first-match over the rendered one (008 phase 2
+# review, F1 — a commented-out decoy could otherwise defeat the Critical exclusions of
+# both Gate Batching and Gate Certification). Closed comment blocks are removed wholesale;
+# the per-line trailing strip in each parser still handles the template's own same-line
+# comment openings.
+function Get-VisiblePlanLines {
+    param([string]$PlanPath)
+    $raw = "$(Get-Content -LiteralPath $PlanPath -Raw)"
+    return ([regex]::Replace($raw, '(?s)<!--.*?-->', '')) -split "`r?`n"
+}
+
 function Test-GlobAny {
     param([string]$Path, [string[]]$Globs)
     foreach ($g in $Globs) {
@@ -198,7 +210,7 @@ function Invoke-GateBatchingCheck {
     $planPath = Join-Path $dir 'plan.md'
     if (-not (Test-Path $planPath)) { return }   # missing plan.md is StructureCheck's failure
 
-    $line = (Get-Content $planPath | Where-Object { $_ -match '^\*\*Gate Batching\*\*:' } | Select-Object -First 1)
+    $line = (Get-VisiblePlanLines -PlanPath $planPath | Where-Object { $_ -match '^\*\*Gate Batching\*\*:' } | Select-Object -First 1)
     if (-not $line) { return }                   # absent line means 'none' (backward compatible)
 
     # Strip any trailing HTML comment (the template ships one) before parsing the value.
@@ -239,7 +251,7 @@ function Invoke-GateCertificationCheck {
     $planPath = Join-Path $dir 'plan.md'
     if (-not (Test-Path $planPath)) { return }   # missing plan.md is StructureCheck's failure
 
-    $line = (Get-Content $planPath | Where-Object { $_ -match '^\*\*Gate Certification\*\*:' } | Select-Object -First 1)
+    $line = (Get-VisiblePlanLines -PlanPath $planPath | Where-Object { $_ -match '^\*\*Gate Certification\*\*:' } | Select-Object -First 1)
     if (-not $line) { return }                   # absent line means 'user-run' (backward compatible)
 
     # Strip any trailing HTML comment (the template ships one) before parsing the value.
