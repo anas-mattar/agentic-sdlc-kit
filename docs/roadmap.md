@@ -50,7 +50,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Verification pack (per-phase file territory declared in `tasks.md` + machine scope check; fresh-context/second-model AI review separation; ritual checks wired as required CI on feature branches) | GAP-008, GAP-009, GAP-010 | P1 | shipped | anas.m | `specs/006-verification-pack/` |
 | Adoption doctor (`verify-kit.ps1`: audits slots, structure, gate proof, tier rulebooks, `.kit-version`; runs post-init, post-update, and in adopted-project CI) | GAP-011 | P2 | shipped | anas.m | `specs/007-adoption-doctor/` |
 | CI-held certifying gate for Lite/Standard (gate evidence = unforgeable CI run on the branch; owner approves on evidence asynchronously; user-run gate stays law for Critical) | GAP-012 | P2 | shipped | anas.m | `specs/008-ci-held-gate/` |
-| Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane forces re-claim as Standard) | GAP-013 | P3 | idea | — | — |
+| Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane forces re-claim as Standard) | GAP-013 | P3 | specified | anas.m | `specs/009-micro-lane/` |
 | Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | idea | — | — |
 
 ## Decisions log *(authored)*
