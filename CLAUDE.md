@@ -23,7 +23,8 @@ Package manager: yarn 4.x (corepack)
   It is the project's ONLY constitution.
 - Definition of Done: `docs/sdlc/definition-of-done.md` — the six gates every phase must pass.
 - Gate command: `docs/sdlc/gate-command.md` — certification is held by the user: the
-  user-confirmed exit code, or (Lite/Standard, plan-declared `ci-held` — constitution X)
+  user-confirmed exit code, or (Lite/Micro/Standard, `ci-held` declared in the plan — or
+  the Micro mini-spec — constitution X)
   the owner's recorded approval on the CI evidence triplet. You never claim success.
 
 ## Source of Truth
@@ -67,7 +68,8 @@ links to prevail).
 1. Check current branch and working tree; stop if unrelated uncommitted changes exist.
 2. Run the baseline gate on untouched code.
 3. One feature branch per feature (`docs/sdlc/branch-strategy.md`).
-4. Create/update `spec.md`, then `plan.md`, then `tasks.md` (the `/speckit.*` commands do this).
+4. Create/update `spec.md`, then `plan.md`, then `tasks.md` (the `/speckit.*` commands do
+   this). Micro features: the approved mini-spec `spec.md` alone (constitution X, Micro lane).
 5. Implement **one phase only**. UI phase with visual references? Run the Visual
    Compliance Loop (`docs/sdlc/review-process.md`) until the deviation table is empty or
    user-approved. Then stop and ask the user to run the gate.

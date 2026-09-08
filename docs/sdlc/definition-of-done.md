@@ -34,7 +34,9 @@ Gates apply at two different points, not uniformly at every phase:
 2. **Single-phase scope respected** — only the one approved phase was implemented; no
    unrelated changes are bundled in (constitution X), and the phase itself satisfies the
    phase-sizing rule (`.specify/templates/plan-template.md`, Controlled Delivery check):
-   independently revertible, one meaningfully independent and testable slice.
+   independently revertible, one meaningfully independent and testable slice. For a
+   Micro feature (no `plan.md`) the sizing rule is constitution X's Micro bounds — one
+   phase, at most 400 changed lines, enforced as a hard failure.
 3. **Gate passed with user-held certification** — by default the user (not AI) ran the gate
    (`docs/sdlc/gate-command.md`) and confirmed the exit code. AI MUST NOT claim
    success without that confirmation (constitution X). The AI MAY run the gate

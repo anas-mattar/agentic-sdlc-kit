@@ -6,8 +6,9 @@ workflow, never instead of it.
 
 ## Delivery levels
 
-The kit has four delivery levels. Three already exist under other names; this file defines
-only the last:
+The kit has four delivery levels. The first three are defined elsewhere — Lite and
+Standard under other names in `docs/sdlc/branch-strategy.md`, Micro in constitution X
+(Micro lane); this file defines only the last:
 
 | Level | Lane | Requirements |
 |---|---|---|

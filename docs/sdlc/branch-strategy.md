@@ -45,7 +45,7 @@ The rest of the multi-developer rules live in `docs/sdlc/team-workflow.md`.
 
 | Pattern | Use for | Spec dir? | Example |
 |---------|---------|-----------|---------|
-| `NNN-<name>` | New functionality / a deliverable feature (full spec workflow) | `specs/NNN-<name>/` | `007-user-invitations` |
+| `NNN-<name>` | New functionality / a deliverable feature (full spec workflow — or a single-page mini-spec alone when declared Micro) | `specs/NNN-<name>/` | `007-user-invitations` |
 | `fix/<name>` | Bug fix or correction (incl. post-merge reverts) | no (lightweight lane) | `fix/aging-rounding` |
 | `chore/<name>` | Tooling, config, maintenance (no behavior change) | no (lightweight lane) | `chore/upgrade-orm` |
 | `docs/<name>` | Documentation / governance only | no (lightweight lane) | `docs/onboarding-guide` |
@@ -71,7 +71,7 @@ lane. The level is chosen per feature, not per project, declared in the feature'
 
 Boundaries between neighbors: **Lite vs Micro** — Lite is for work with no behavior
 change (tooling, docs, straightforward bug corrections); the moment a small change alters
-behavior and deserves written, approved intent, it is at least Micro. **Micro vs
+behavior, it is at least Micro — behavior change always gets written, approved intent. **Micro vs
 Standard** — Micro requires fitting every bound (one phase, ≤5 files, ≤400 lines, and the
 mini-spec's eligibility checklist: no schema/packages/architecture/domain-invariant/
 visual-reference surface); anything larger, or any feature needing phases or planning, is
@@ -115,6 +115,10 @@ specs/NNN-<name>/
 ├─ human-pr-review.md     (per-feature; from specs/_templates/)
 └─ rollback.md            (per-feature; from specs/_templates/)
 ```
+
+A **Micro** feature's directory holds `spec.md` (the mini-spec) plus the per-feature
+review files only — no `plan.md`/`tasks.md` until promoted to Standard (constitution X,
+Micro lane).
 
 ## Cross-Repository Features
 

@@ -4,9 +4,10 @@
 **Created**: [DATE]
 **Status**: Draft <!-- Draft → Approved (owner) before the phase begins — constitution I, Micro arm -->
 **Delivery Level**: Micro
-**Gate Certification**: [user-run | ci-held] <!-- OPTIONAL line — delete for the default
-  (user-run). ci-held is lawful on Micro (constitution X, CI-held certification); on a
-  Micro feature this mini-spec is the declaration's home, since the lane has no plan.md. -->
+**Gate Certification**: user-run <!-- prefilled default — keep, or change the value to
+  ci-held (lawful on Micro — constitution X, CI-held certification; this mini-spec is the
+  declaration's home, since the lane has no plan.md), or delete the whole line (absent =
+  user-run). Never leave a bracketed placeholder here — it is a malformed value. -->
 
 <!-- ONE PAGE. A Micro feature is exactly ONE phase inside hard bounds: Territory of at
   most 5 files (this spec directory excluded) and at most 400 changed lines in the phase
@@ -40,11 +41,12 @@ documented intent, no more.]
 - [ ] No domain-invariant surface (constitution V)
 - [ ] No UI with visual references (`screenshots/`)
 
-## Territory
-
 <!-- The complete set of files the ONE phase commit may touch — at most 5; this feature's
   own specs/###-feature-name/** is implicitly in territory and does not count.
-  scripts/scope-check.ps1 reads this block from the commit's parent (anti-widening). -->
+  scripts/scope-check.ps1 reads this block from the commit's parent (anti-widening).
+  Keep the exact `**Territory**:` marker below — it is what the machine parses. -->
+
+**Territory**:
 
 - `path/to/file-one`
 - `path/to/file-two`
