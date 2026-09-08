@@ -104,12 +104,19 @@ tells adopters how the amendment flows down; roadmap flipped.
 - `docs/rulebooks/backend-rules-template.md`
 - `docs/rulebooks/mobile-rules-template.md`
 - `docs/rulebooks/compliance-checklist-template.md`
+- `docs/sdlc/team-workflow.md`
+- `adoption/greenfield.md`
 
 > Territory widened at specify-stage fix time (phase 1 review, F4 — owner disposition:
 > sweep, not accept-as-residue): the un-swept instruments still stating the categorical
 > user-run rule — above all the PR/human-review templates whose mandatory exit-code field
 > a ci-held feature cannot truthfully fill — are phase 4's job, declared here before any
 > phase-4 commit.
+>
+> Territory widened again post phase-4 review (F3 — owner disposition 2026-09-08: sweep,
+> consistent with the phase-1 F4 precedent): `docs/sdlc/team-workflow.md` and
+> `adoption/greenfield.md` carry the last three categorical user-run sentences the
+> reviewer's absence sweep found; declared here, in this commit, before the sweep commit.
 
 - [x] T015 [P] Amend `docs/sdlc/flow.md`: row 3b (gate) carries the ci-held option — AND the phase-loop diagram's gate line AND the Lane-variations list (a ci-held sibling bullet beside Batched gates) — phase 1 review F5's widened scope
 - [x] T016 [P] Amend `adoption/updating.md`: flow-down note — the X amendment arrives via re-expression (§2), what an adopting project's own MINOR bump adopts, and that nothing changes until they ratify it; AND (phase 3 review F1) name **.github/workflows/project-gate.yml.template** among the §3 surgical files, with the hand-refresh/first-install-by-copy instruction for pre-008 adoptions
