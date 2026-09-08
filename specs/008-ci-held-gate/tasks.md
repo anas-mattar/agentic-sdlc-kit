@@ -111,10 +111,10 @@ tells adopters how the amendment flows down; roadmap flipped.
 > a ci-held feature cannot truthfully fill — are phase 4's job, declared here before any
 > phase-4 commit.
 
-- [ ] T015 [P] Amend `docs/sdlc/flow.md`: row 3b (gate) carries the ci-held option — AND the phase-loop diagram's gate line AND the Lane-variations list (a ci-held sibling bullet beside Batched gates) — phase 1 review F5's widened scope
-- [ ] T016 [P] Amend `adoption/updating.md`: flow-down note — the X amendment arrives via re-expression (§2), what an adopting project's own MINOR bump adopts, and that nothing changes until they ratify it; AND (phase 3 review F1) name **.github/workflows/project-gate.yml.template** among the §3 surgical files, with the hand-refresh/first-install-by-copy instruction for pre-008 adoptions
-- [ ] T016b [P] Sweep the F4 instruments (phase 1 review): `.github/PULL_REQUEST_TEMPLATE.md` + `specs/_templates/human-pr-review-template.md` gate fields gain the ci-held alternative ("EXIT: ___ — or ci-held: run URL + commit sha"); `docs/sdlc/branch-strategy.md` merge condition and `docs/sdlc/review-process.md` step 1 qualified; `README.md` countermeasure row, the two rulebook-template gate items, and `specs/_templates/rollback-template.md` qualified the same way
-- [ ] T017 Flip `docs/roadmap.md` GAP-012 row to `in progress`; final manifest sweep (expect: only phase 3's row); run ritual-checks, report, commit as `phase 4: governance sweep` — **owner runs the certifying gate**
+- [x] T015 [P] Amend `docs/sdlc/flow.md`: row 3b (gate) carries the ci-held option — AND the phase-loop diagram's gate line AND the Lane-variations list (a ci-held sibling bullet beside Batched gates) — phase 1 review F5's widened scope
+- [x] T016 [P] Amend `adoption/updating.md`: flow-down note — the X amendment arrives via re-expression (§2), what an adopting project's own MINOR bump adopts, and that nothing changes until they ratify it; AND (phase 3 review F1) name **.github/workflows/project-gate.yml.template** among the §3 surgical files, with the hand-refresh/first-install-by-copy instruction for pre-008 adoptions
+- [x] T016b [P] Sweep the F4 instruments (phase 1 review): `.github/PULL_REQUEST_TEMPLATE.md` + `specs/_templates/human-pr-review-template.md` gate fields gain the ci-held alternative ("EXIT: ___ — or ci-held: run URL + commit sha"); `docs/sdlc/branch-strategy.md` merge condition and `docs/sdlc/review-process.md` step 1 qualified; `README.md` countermeasure row, the two rulebook-template gate items, and `specs/_templates/rollback-template.md` qualified the same way
+- [x] T017 Flip `docs/roadmap.md` GAP-012 row to `in progress`; final manifest sweep (expect: only phase 3's row); run ritual-checks, report, commit as `phase 4: governance sweep` — **owner runs the certifying gate**
 
 ---
 
@@ -223,3 +223,23 @@ the file through the update channel at all. Dispositions in the fix-response log
 | F1 | template header + gate-command step 1 state report-only/hand-refresh truth; research D4 corrected; T016 extended (updating.md §3 names the template) | wording matches update-kit's actual surgical contract |
 | F4/F5/F6 | trigger notes (main = post-merge net; push+PR double-run), push-event-run citation rule in both texts, header slot mentions de-braced | template re-read; blind sed-fill now leaves header instructions intact |
 | Regression | doc-lint + ritual-checks after fixes | 64 classified · RESULT OK |
+
+### Batch 1–3 certifying gate (user-run, 2026-09-08)
+
+The owner ran `pwsh -File scripts/ritual-checks.ps1` at batch end (tree at `dc11b12`) and
+confirmed: doc-lint OK (64 classified) · enforcement-pack OK (one non-blocking
+PhaseSizeWarning on the specify-stage commit `07dc07f`, not a phase commit) · scope-check
+PASS on all six phase commits (`aad06e1`, `583f573`, `31467cc`, `45a924e`, `c72b54c`,
+`dc11b12`) · RESULT OK. Batch 1–3 certified per the plan's declared **Gate Batching:
+phases 1-3** / **Gate Certification: user-run**.
+
+### Phase 4 validation (T017, 2026-09-08)
+
+| # | Check | Result |
+|---|---|---|
+| flow.md | row 3b carries both certification arms; phase-loop diagram gate line reworded (owner certifies: exit code — or ci-held evidence approval); Lane variations gains the **CI-held certification** bullet beside Batched gates | done |
+| updating.md | §2 flow-down note (re-expression, adopter's own MINOR bump, six boundaries, nothing changes until ratified); §3 names **project-gate.yml.template** with report-only/hand-refresh + pre-008 first-install-by-copy | done |
+| F4 sweep | PR template + human-review template gate fields carry `EXIT: ___ — or ci-held: run URL + commit sha`; branch-strategy merge condition, review-process step 1, README countermeasure row + non-negotiable 3, backend/mobile rulebook gate items, compliance-checklist gate item, rollback-template gate item all qualified with the ci-held arm | done |
+| Roadmap | GAP-012 row `specified` → `in progress` | done |
+| Manifest sweep | `git diff caf5fcc..HEAD -- kit-manifest.json` shows exactly one added row (phase 3's project-gate template surgical row) — phase 4 needs none | done |
+| Ritual checks | feedback run after the sweep | doc-lint OK (64 classified) · enforcement-pack OK · scope-check OK (all six prior phase commits PASS) · verify-kit n/a · RESULT OK |

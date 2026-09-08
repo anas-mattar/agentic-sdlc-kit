@@ -65,7 +65,8 @@ HOW TO FILL THIS RULEBOOK (then delete this comment):
 
 - {{MOBILE_TEST_STANDARDS}} <!-- e.g. "widget tests for every screen state; unit tests for the API client's error mapping; golden tests for visual-reference screens" -->
 - The gate (`docs/sdlc/gate-command.md`) is run by the user; a phase is not done before
-  the user confirms exit code 0.
+  the user confirms exit code 0 — or, under a plan-declared `ci-held` (Lite/Standard
+  only, constitution X), before the owner records approval on the CI evidence triplet.
 
 ## Release & Build
 

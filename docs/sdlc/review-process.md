@@ -30,7 +30,10 @@ screenshots to the phase notes — the AI review verifies they exist.
 
 ## After Each Phase
 
-1. User runs the gate command (`docs/sdlc/gate-command.md`).
+1. User runs the gate command (`docs/sdlc/gate-command.md`) — or, when the approved plan
+   declares `**Gate Certification**: ci-held` (Lite/Standard only), the agent reports the
+   CI evidence triplet and the owner records approval on it; on a declared batch this
+   certification lands once, at batch end.
 2. Review the working diff for intent (`git diff --stat`), fix only current-phase issues,
    and commit the phase — the subject carries the `phase N` token so the scope check can
    attribute the commit.
