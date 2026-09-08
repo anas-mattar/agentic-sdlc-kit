@@ -29,13 +29,13 @@ recorded; ritual checks green.
 - `docs/sdlc/critical-delivery.md`
 - `CLAUDE.md`
 
-- [ ] T001 [US1] Amend `.specify/memory/constitution.md`: CI-held certification clause appended to X (boundaries per research D2: Lite/Standard + declaration + owner approval on the evidence triplet + agent obligations unchanged + Critical excluded + absent = user-run); SYNC IMPACT entry (0.4.1 → 0.5.0 MINOR, rationale, mirror list naming the phase-2 enforcement half as landing next phase same branch); version footer bumped
-- [ ] T002 [P] [US1] Amend `.specify/templates/plan-template.md`: `**Gate Certification**: user-run` header field (comment documenting values/exclusion) + Constitution Check X row mentions the certification mode
-- [ ] T003 [P] [US1] Amend `docs/sdlc/definition-of-done.md` gate 3: the ci-held option with identical boundaries; batching composition stated (one batch-end evidence approval)
-- [ ] T004 [P] [US1] Amend `docs/sdlc/gate-command.md`: new "CI-held certification (Lite/Standard)" section — evidence triplet, worked approval-record example, kit's-own-evidence note (`ritual-checks`), red-then-green re-run visibility rule, user-run always lawful
-- [ ] T005 [P] [US1] Amend `docs/sdlc/critical-delivery.md`: explicit CI-held exclusion mirror (beside the no-agent-gates and no-batching items)
-- [ ] T006 [P] [US1] Amend `CLAUDE.md` strict rule: "Do not claim success until the user runs the gate and confirms the exit code" gains the ci-held arm (report the triplet, request the owner's approval on it — never claim success)
-- [ ] T007 [US1] Execute quickstart L1–L8 (read-verification with quotes + green runs); record under Phase 1 validation; commit as `phase 1: constitution X CI-held clause (0.5.0) + mirrors`
+- [x] T001 [US1] Amend `.specify/memory/constitution.md`: CI-held certification clause appended to X (boundaries per research D2: Lite/Standard + declaration + owner approval on the evidence triplet + agent obligations unchanged + Critical excluded + absent = user-run); SYNC IMPACT entry (0.4.1 → 0.5.0 MINOR, rationale, mirror list naming the phase-2 enforcement half as landing next phase same branch, human-adoption note recording the owner's 2026-09-08 approval); version footer bumped; Rationale paragraph extended (trust boundary stays human, asynchronously)
+- [x] T002 [P] [US1] Amend `.specify/templates/plan-template.md`: `**Gate Certification**: user-run` header field (comment documenting values/exclusion) + Constitution Check X row carries both the batched and ci-held arms
+- [x] T003 [P] [US1] Amend `docs/sdlc/definition-of-done.md` gate 3: the ci-held option with identical boundaries; batching composition stated (one batch-end evidence approval)
+- [x] T004 [P] [US1] Amend `docs/sdlc/gate-command.md`: new "CI-held certification (Lite/Standard only)" section — evidence triplet, worked approval-record example, kit's-own-evidence note (`ritual-checks`), red-then-green re-run visibility rule, user-run always lawful, Critical exclusion cross-ref
+- [x] T005 [P] [US1] Amend `docs/sdlc/critical-delivery.md` item 4: CI-held exclusion beside the no-agent-gates and no-batching rules ("both gate frequency and gate *execution* are part of that boundary")
+- [x] T006 [P] [US1] Amend `CLAUDE.md` strict rule: the ci-held arm (report the triplet, request the owner's approval — never claim success yourself)
+- [x] T007 [US1] Execute quickstart L1–L8; record under Phase 1 validation; commit as `phase 1: constitution X CI-held clause (0.5.0) + mirrors`
 
 **Checkpoint**: the law exists, complete and self-consistent; nothing enforces or uses it yet.
 
@@ -119,3 +119,19 @@ certification after phase 3, then phase 4 alone — both under the CURRENT user-
 ## Phase validation records
 
 *(Filled during implementation — T007, T009, T014 outputs land here.)*
+
+### Phase 1 validation (T007, 2026-09-08)
+
+| # | Assertion | Verified |
+|---|---|---|
+| L1 | X clause carries all six boundaries: "Lite or Standard feature … MAY declare", "before the first phase it governs", "owner's **recorded approval on the evidence triplet**", "the agent's obligations are unchanged — it MUST NOT claim success", "Critical features MUST NOT declare or use", "Absent a declaration, the value is `user-run`" | constitution X, CI-held certification clause |
+| L2 | SYNC IMPACT: 0.4.1 → 0.5.0 MINOR, rationale, full mirror list (plan-template, DoD, gate-command, critical-delivery, CLAUDE.md), enforcement half named as next-phase-same-branch, human adoption recorded (owner approval 2026-09-08 + gate-6 review at merge); footer `**Version**: 0.5.0` | constitution header + line 279 |
+| L3 | Gate 3 "CI-held option (Lite/Standard only)": triplet, per-phase approval, batch composition ("one approval on the batch-end commit's evidence"), any-other-commit-certifies-nothing, agent never claims success, user-run always lawful, Critical exclusion + enforcement pointer | definition-of-done.md |
+| L4 | gate-command.md section: numbered triplet, worked example record ("Gate 3 certified (ci-held): run …, conclusion success, commit `abc1234` …"), kit's-own-evidence = `ritual-checks`, red-then-green re-run rule with visibility, boundaries paragraph | gate-command.md |
+| L5 | critical-delivery item 4 excludes both `**Gate Batching**` and `**Gate Certification**: ci-held`, enforcement named | critical-delivery.md |
+| L6 | plan-template: `**Gate Certification**: user-run` field with values/exclusion comment; Constitution Check X row carries both arms | plan-template.md |
+| L7 | CLAUDE.md strict rule: ci-held arm, "you still never claim success yourself" | CLAUDE.md |
+| L8 | ritual-checks after the full amendment: doc-lint OK · enforcement-pack OK · scope-check OK · verify-kit n/a · RESULT OK | live run |
+
+`CI-held certification` present in all five law files (grep counts 5/2/3/1/2) +
+`Gate Certification` in CLAUDE.md and plan-template.

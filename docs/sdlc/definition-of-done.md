@@ -41,6 +41,16 @@ Gates apply at two different points, not uniformly at every phase:
    batch's phases by **one** user-run gate at batch end; items 1–2 and 4–5 still
    apply to every phase individually, and each phase keeps its own commit. Critical
    features MUST NOT batch (`scripts/enforcement-pack.ps1` fails the branch).
+   **CI-held option (Lite/Standard only)**: when the feature's `plan.md` declares
+   `**Gate Certification**: ci-held` (constitution X, CI-held certification), this
+   item is satisfied by the **owner's recorded approval on the evidence triplet** —
+   the CI run of the project gate on the exact phase commit, cited by run URL, green
+   conclusion, and commit sha, in the feature's phase record (`docs/sdlc/gate-command.md`,
+   CI-held certification — worked example there). Approval is per phase; with a declared
+   batch it composes to one approval on the batch-end commit's evidence. A run on any
+   other commit certifies nothing; the agent still never claims success — it reports the
+   evidence and requests the approval. The user-run gate remains lawful always. Critical
+   features MUST NOT declare ci-held (`scripts/enforcement-pack.ps1` fails the branch).
 4. **Diff reviewed / scope guard** — the phase commit passes the machine scope check
    (`pwsh -File scripts/scope-check.ps1`): every changed file falls inside the phase's
    **Territory** declared in `tasks.md` (`.specify/templates/tasks-template.md`, Phase

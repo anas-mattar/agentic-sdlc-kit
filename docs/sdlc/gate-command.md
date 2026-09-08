@@ -84,6 +84,37 @@ user-run gate: `**Gate Batching**: phases N-M` (constitution X, Batched gates;
 - **Critical features never batch** (`docs/sdlc/critical-delivery.md`);
   `scripts/enforcement-pack.ps1` fails a Critical branch whose plan declares a batch.
 
+## CI-held certification (Lite/Standard only)
+
+When the feature's approved `plan.md` declares `**Gate Certification**: ci-held`
+(constitution X, CI-held certification; the default absent the line is `user-run`), gate
+certification moves from "the owner runs the command" to "the owner approves on
+unforgeable evidence" — asynchronously, at the owner's own moment. What certifies is the
+**evidence triplet**, all three elements, cited in the owner's recorded approval:
+
+1. **Run URL** — the CI run of the *project gate* on the branch. For adopted projects
+   that's the project-gate workflow (this document's wiring section); for the kit
+   repository itself the project gate IS the ritual checks, so the `ritual-checks` run
+   is the evidence.
+2. **Green conclusion** — the run succeeded. A red run followed by a green re-run on the
+   same commit certifies (a deterministic gate is the project's own law), and both runs
+   are visible on the run page — the owner approves knowingly.
+3. **Exact commit sha** — the run executed on the phase commit itself (for a declared
+   batch: the batch-end commit). A run on any other commit certifies nothing.
+
+The approval is recorded where phase approvals already live — the feature's PR
+conversation or phase notes. Worked example:
+
+> Gate 3 certified (ci-held): run https://github.com/…/actions/runs/12345, conclusion
+> success, commit `abc1234` (phase 2) — approved, anas.m, 2026-09-08.
+
+Boundaries: per-phase (or per declared batch) approval, never blanket; the agent's
+obligations are unchanged — it MUST NOT claim success, and under this mode it reports the
+triplet and requests the owner's approval on it; the user-run gate above remains lawful
+always (CI outage, fork PRs, or simple preference); **Critical features MUST NOT use
+CI-held certification** (`docs/sdlc/critical-delivery.md`;
+`scripts/enforcement-pack.ps1` fails a Critical plan declaring it).
+
 ## Minimum Gate
 
 When the full gate is too slow for a quick sanity check, define a minimum gate (typically the

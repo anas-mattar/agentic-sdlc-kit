@@ -79,7 +79,11 @@ links to prevail).
 - Do not refactor unrelated files or change unrelated features.
 - Do not add packages unless approved in `plan.md`.
 - Do not change architecture unless approved in `plan.md`.
-- Do not claim success until the user runs the gate and confirms the exit code.
+- Do not claim success until the user runs the gate and confirms the exit code — or, on a
+  Lite/Standard feature whose approved plan declares `**Gate Certification**: ci-held`,
+  until the owner records approval on the evidence triplet (CI run URL + green conclusion
+  + exact phase-commit sha; `docs/sdlc/gate-command.md`). Under ci-held you report the
+  evidence and request that approval; you still never claim success yourself.
 - Domain invariants (`{{DOMAIN_INVARIANTS_PATH}}`) carry constitutional force.
 
 ## Task-Scoped Reading

@@ -1,7 +1,26 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.4.0 → 0.4.1 (kit template — not yet ratified by a project)
+Version change: 0.4.1 → 0.5.0 (kit template — not yet ratified by a project)
+Bump rationale: MINOR — CI-held certification clause added to Principle X (feature 008,
+  ci-held-gate; roadmap GAP-012). For Lite and Standard features only, the approved plan
+  MAY declare `**Gate Certification**: ci-held`, under which gate certification is the
+  owner's recorded approval on the evidence triplet — the CI run's URL, its green
+  conclusion, and the exact phase-commit sha it ran on (for a declared batch: the
+  batch-end commit) — instead of a locally-run gate. The agent's obligations are
+  unchanged: it never claims success; under ci-held it reports the evidence and requests
+  the owner's approval on it. Critical features MUST NOT declare or use CI-held
+  certification (docs/sdlc/critical-delivery.md); scripts/enforcement-pack.ps1 fails a
+  Critical plan declaring it (the amendment's machine half, landing in this same
+  feature's next phase on the same branch). The default absent any declaration remains
+  the per-phase user-run gate, so every existing plan stays compliant unchanged.
+  Human adoption of this amendment: the owner's explicit phase approval (2026-09-08)
+  plus the feature's gate-6 human review at merge. Mirrors synced in the same change:
+  plan-template.md (Gate Certification field + Constitution Check X), definition-of-done.md
+  (gate 3), gate-command.md (CI-held certification section), critical-delivery.md
+  (exclusion), CLAUDE.md (strict rule).
+
+Prior version history (0.4.0 → 0.4.1):
 Bump rationale: PATCH — sync-list bookkeeping only, no rule change (003 phase 4 AI
   review, finding F3): scripts/enforcement-pack.ps1 added to the "Templates requiring
   updates" list below, because it encodes constitutional constants (the batch-phase cap
@@ -214,10 +233,25 @@ certification moves to batch end. Critical features MUST NOT declare batches —
 user-run gate obligation is unchanged. Absent a declaration, the per-phase user-run gate above
 applies in full.
 
+**CI-held certification**: for a Lite or Standard feature, the approved plan MAY declare —
+as `**Gate Certification**: ci-held` in `plan.md`, before the first phase it governs — that
+gate certification is satisfied by the owner's **recorded approval on the evidence triplet**:
+the CI run of the project gate on the **exact phase commit** (for a declared batch, the
+batch-end commit), cited by run URL, green conclusion, and commit sha, recorded in the
+feature's phase record. The approval is per phase (or per declared batch), never blanket;
+a run on any other commit certifies nothing; the agent's obligations are unchanged — it
+MUST NOT claim success, and under this mode it reports the evidence and requests the
+owner's approval on it. The user-run gate remains lawful always. Critical features MUST NOT
+declare or use CI-held certification. Absent a declaration, the value is `user-run` — the
+gate law above applies in full.
+
 **Rationale**: Small, gated increments keep changes reviewable, reversible, and low-risk; the
 user-held exit code keeps the trust boundary human. Batching trades gate frequency — never
 per-phase revertibility or review — for fewer owner interruptions on low-risk work, and only
-when declared in an approved plan.
+when declared in an approved plan. CI-held certification moves the owner's approval input
+from "I ran it" to "I read unforgeable evidence" — the agent cannot mint a green run on a
+host it does not control — without ever removing the human approval itself; the trust
+boundary stays human, asynchronously.
 
 ## Governance
 
@@ -242,4 +276,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.4.1 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.5.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
