@@ -73,10 +73,10 @@ manifest resolves the template surgical.
 - `docs/sdlc/gate-command.md`
 - `docs/sdlc/branch-protection.md`
 
-- [ ] T011 [US2] Create `.github/workflows/project-gate.yml.template`: governed-branch push triggers, `{{GATE_CHAIN}}`/`{{GATE_WORKDIR}}` slots, minimal permissions, injection-safe (env indirection — 006 lesson), header comment (copy → fill → secrets live in the CI store, never in the file/evidence)
-- [ ] T012 [US2] Add the specific surgical row for the template to `kit-manifest.json` (out-ranks `.github/**` verbatim; verify with doc-lint's resolution)
-- [ ] T013 [P] [US2] Amend `docs/sdlc/gate-command.md`: wiring instructions (copy, fill, push, where the triplet reads off the run page); amend `docs/sdlc/branch-protection.md`: recommend requiring the project-gate check where wired (never mandated)
-- [ ] T014 [US2] Execute quickstart W-G1–W-G3; record under Phase 3 validation; feedback-run ritual-checks, report, commit as `phase 3: project-gate workflow template` — **batch end: ask the owner to run the certifying gate (user-run — research D7)**
+- [x] T011 [US2] Create `.github/workflows/project-gate.yml.template`: governed-branch push triggers, `{{GATE_CHAIN}}`/`{{GATE_WORKDIR}}` slots, minimal permissions (`contents: read`), header comment (copy → fill → secrets live in the CI store, never in the file/evidence; multi-gate and non-Linux notes; branch-protection recommendation) — no injection surface: the slots are owner-filled, no attacker-controlled context is interpolated
+- [x] T012 [US2] Add the specific surgical row for the template to `kit-manifest.json` (out-ranks `.github/**` verbatim under most-specific-wins; tier-rulebook pattern, deletable like the menu) — doc-lint resolution verified (63 → 64 classified)
+- [x] T013 [P] [US2] Amend `docs/sdlc/gate-command.md`: "Wiring the project gate in CI" section (resolves phase 1 review F10's dangling reference), template referenced in **bold** per the GAP-007 deletable-file convention; `docs/sdlc/branch-protection.md`: recommended `project-gate` required check where wired (never mandated)
+- [x] T014 [US2] Execute quickstart W-G1–W-G3; record under Phase 3 validation; feedback-run ritual-checks, report, commit as `phase 3: project-gate workflow template` — **batch end: ask the owner to run the certifying gate (user-run — research D7)**
 
 **Checkpoint**: adopters have a paved road from "my gate is a build chain" to "evidence exists".
 
@@ -201,3 +201,12 @@ blocks before line-matching in BOTH checks.
 
 F2/F3 fixed in the contract (case-insensitive per the idiom; empty value = absent);
 F4/F5 accepted per review.
+
+### Phase 3 validation (T014, 2026-09-08)
+
+| # | Scenario | Result |
+|---|---|---|
+| W-G1 | template copied to a scratch dir, both slots sed-filled with a real chain | zero `{{` markers remain; `working-directory: '.'` and the filled chain present in the run step (note: a blind fill also replaces the slot mention inside the header comment — harmless in the copy, template untouched) |
+| W-G2 | kit repository | `gh workflow list` shows no project-gate — the `.template` suffix keeps it inert |
+| W-G3 | manifest resolution | doc-lint classifies 64 shipped files (was 63): the new surgical row wins most-specific resolution over the `.github/**` verbatim glob; every referenced path resolves (bold references for the deletable template per GAP-007) |
+| Regression | ritual-checks on the branch | doc-lint OK · enforcement-pack OK · scope-check OK · verify-kit n/a · RESULT OK |

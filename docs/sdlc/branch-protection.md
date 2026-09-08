@@ -68,6 +68,14 @@ Open a PR from a branch you know will fail a check (e.g. a `NNN-*` branch missin
 should show the `ritual-checks` check as failing/red, and the merge button should be
 disabled with a message naming the required check.
 
+## Recommended addition: the project gate (adopted projects)
+
+Where the project-gate workflow is wired (**.github/workflows/project-gate.yml**, copied
+from the kit's template — `docs/sdlc/gate-command.md`, "Wiring the project gate in CI"),
+also select **project-gate** as a required status check in step 5. Recommended, never
+mandated by the kit: it makes the CI-held evidence (constitution X) a merge gate too, but
+projects whose gates cannot run in CI keep the user-run gate as their lawful path.
+
 ## What this does NOT cover
 
 - Cross-repository features (`docs/sdlc/repository-strategy.md`) need this rule applied in

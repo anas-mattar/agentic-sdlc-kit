@@ -98,7 +98,7 @@ unforgeable evidence" — asynchronously, at the owner's own moment. What certif
 **evidence triplet**, all three elements, cited in the owner's recorded approval:
 
 1. **Run URL** — the CI run of the *project gate* on the branch. For adopted projects
-   that's the project-gate workflow (this document's wiring section); for the kit
+   that's the project-gate workflow ("Wiring the project gate in CI", below); for the kit
    repository itself the project gate IS the ritual checks, so the `ritual-checks` run
    is the evidence.
 2. **Green conclusion** — the run succeeded. A red run followed by a green re-run on the
@@ -119,6 +119,26 @@ triplet and requests the owner's approval on it; the user-run gate above remains
 always (CI outage, fork PRs, or simple preference); **Critical features MUST NOT use
 CI-held certification** (`docs/sdlc/critical-delivery.md`;
 `scripts/enforcement-pack.ps1` fails a Critical plan declaring it).
+
+## Wiring the project gate in CI
+
+The kit ships a workflow template, **.github/workflows/project-gate.yml.template** (a
+deletable slot-bearing template, like the tier rulebooks — written in bold per the
+authoring convention). To wire your gate:
+
+1. Copy the template to **.github/workflows/project-gate.yml** — the copy is
+   project-owned; the template stays untouched and is refreshed by kit updates.
+2. Fill the two slots: the working directory the gate runs in, and your exact gate chain
+   from this document's slots above. Secrets go in your CI secret store, referenced via
+   `env:` — never in the file, the chain, or any recorded evidence.
+3. Push a governed branch. The run page carries the command, the conclusion, and the
+   commit sha — the evidence triplet.
+4. Multi-repo topologies: one copy per repository, each running that repository's gate
+   (`docs/sdlc/repository-strategy.md`).
+5. Recommended once the check has run at least once: require `project-gate` on `main`
+   (`docs/sdlc/branch-protection.md`) — recommended, never mandated; a gate that cannot
+   run in CI (licensed toolchains, local hardware) loses nothing, because the user-run
+   gate is always lawful.
 
 ## Minimum Gate
 
