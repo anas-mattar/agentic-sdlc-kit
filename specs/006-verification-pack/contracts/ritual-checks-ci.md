@@ -14,6 +14,11 @@ Runs, in order, stopping never (all members always run so one push reports every
 1. `scripts/doc-lint.ps1`
 2. `scripts/enforcement-pack.ps1` (which includes the ReviewProvenance check after phase 2)
 3. `scripts/scope-check.ps1 -All` (every phase commit since `merge-base HEAD origin/main`)
+4. `scripts/verify-kit.ps1` *(amended by feature 007)* — the adoption doctor, run when
+   `.kit-version` OR `kit-adoption.json` marks an adopted project (the doctor's own
+   discriminator); a tree with neither marker shows an explicit
+   `verify-kit       n/a (no adoption markers — kit repository or unadopted tree)` line,
+   excluded from the failure count
 
 Output ends with a verdict block, one line per member (OK/FAIL, derived from the member's
 exit code — member WARNs stay visible in that member's own output above):
@@ -22,8 +27,13 @@ exit code — member WARNs stay visible in that member's own output above):
 ritual-checks: doc-lint         OK
 ritual-checks: enforcement-pack OK
 ritual-checks: scope-check      FAIL
+ritual-checks: verify-kit       n/a (no adoption markers — kit repository or unadopted tree)
 ritual-checks: RESULT FAIL (1 of 3 member(s) failed)
 ```
+
+*(The `verify-kit` line — amended by 007 — shows `OK`/`FAIL` in adopted projects, where it
+counts toward RESULT like any member; the `n/a` form appears only where neither
+`.kit-version` nor `kit-adoption.json` exists and never touches the failure count.)*
 
 Exit 0 iff every member exits 0. Read-only; no repository writes.
 
