@@ -73,9 +73,12 @@ keeps GitHub from executing it in the kit repo (the kit's gate is `ritual-checks
 US2 scenario 3). Adopters copy to `project-gate.yml`, fill `{{GATE_CHAIN}}` (and a
 `{{GATE_WORKDIR}}` slot for nested-repo topologies), per instructions in gate-command.md.
 `kit-manifest.json` gains a specific **surgical** row for the template path — it out-ranks
-the `.github/**` verbatim glob under most-specific-wins, so update-kit reports rather than
-clobbers a filled copy… and the template itself, being kit-owned prose, still flows down
-verbatim in practice because adopters fill the *copy*, never the template.
+the `.github/**` verbatim glob under most-specific-wins. **Corrected by the phase 3 review
+(F1)**: surgical class means update-kit only *reports* upstream template changes and never
+rewrites (or first-delivers) the file — an adoption gets the template with the whole-kit
+copy at adoption time, and refreshes it by hand per adoption/updating.md §3. That is the
+intended trade: verbatim class would resurrect a deleted template on every update,
+defeating the menu-style deletability.
 
 **Rationale**: mirrors the tier-rulebook pattern exactly (template shipped, instance
 project-owned); inertness in the kit repo avoids a permanently-red or vacuous kit check.

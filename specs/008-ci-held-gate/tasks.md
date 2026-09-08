@@ -112,7 +112,7 @@ tells adopters how the amendment flows down; roadmap flipped.
 > phase-4 commit.
 
 - [ ] T015 [P] Amend `docs/sdlc/flow.md`: row 3b (gate) carries the ci-held option — AND the phase-loop diagram's gate line AND the Lane-variations list (a ci-held sibling bullet beside Batched gates) — phase 1 review F5's widened scope
-- [ ] T016 [P] Amend `adoption/updating.md`: flow-down note — the X amendment arrives via re-expression (§2), what an adopting project's own MINOR bump adopts, and that nothing changes until they ratify it
+- [ ] T016 [P] Amend `adoption/updating.md`: flow-down note — the X amendment arrives via re-expression (§2), what an adopting project's own MINOR bump adopts, and that nothing changes until they ratify it; AND (phase 3 review F1) name **.github/workflows/project-gate.yml.template** among the §3 surgical files, with the hand-refresh/first-install-by-copy instruction for pre-008 adoptions
 - [ ] T016b [P] Sweep the F4 instruments (phase 1 review): `.github/PULL_REQUEST_TEMPLATE.md` + `specs/_templates/human-pr-review-template.md` gate fields gain the ci-held alternative ("EXIT: ___ — or ci-held: run URL + commit sha"); `docs/sdlc/branch-strategy.md` merge condition and `docs/sdlc/review-process.md` step 1 qualified; `README.md` countermeasure row, the two rulebook-template gate items, and `specs/_templates/rollback-template.md` qualified the same way
 - [ ] T017 Flip `docs/roadmap.md` GAP-012 row to `in progress`; final manifest sweep (expect: only phase 3's row); run ritual-checks, report, commit as `phase 4: governance sweep` — **owner runs the certifying gate**
 
@@ -210,3 +210,16 @@ F4/F5 accepted per review.
 | W-G2 | kit repository | `gh workflow list` shows no project-gate — the `.template` suffix keeps it inert |
 | W-G3 | manifest resolution | doc-lint classifies 64 shipped files (was 63): the new surgical row wins most-specific resolution over the `.github/**` verbatim glob; every referenced path resolves (bold references for the deletable template per GAP-007) |
 | Regression | ritual-checks on the branch | doc-lint OK · enforcement-pack OK · scope-check OK · verify-kit n/a · RESULT OK |
+
+### Phase 3 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The review (`ai-code-review-phase3.md`) returned REQUEST CHANGES: F1 BLOCKING — two
+shipped sentences claimed kit updates "refresh" the template, but update-kit never writes
+surgical-class paths (reports only; `-Force` refused), and pre-008 adoptions never receive
+the file through the update channel at all. Dispositions in the fix-response log:
+
+| # | Fix | Verified |
+|---|---|---|
+| F1 | template header + gate-command step 1 state report-only/hand-refresh truth; research D4 corrected; T016 extended (updating.md §3 names the template) | wording matches update-kit's actual surgical contract |
+| F4/F5/F6 | trigger notes (main = post-merge net; push+PR double-run), push-event-run citation rule in both texts, header slot mentions de-braced | template re-read; blind sed-fill now leaves header instructions intact |
+| Regression | doc-lint + ritual-checks after fixes | 64 classified · RESULT OK |

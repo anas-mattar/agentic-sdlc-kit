@@ -127,12 +127,16 @@ deletable slot-bearing template, like the tier rulebooks — written in bold per
 authoring convention). To wire your gate:
 
 1. Copy the template to **.github/workflows/project-gate.yml** — the copy is
-   project-owned; the template stays untouched and is refreshed by kit updates.
+   project-owned. The template itself is surgical-class: kit updates **report** upstream
+   changes to it but never rewrite it — refresh it (or first-install it, in an adoption
+   that predates it) by copying from the kit clone by hand (`adoption/updating.md`,
+   section 3).
 2. Fill the two slots: the working directory the gate runs in, and your exact gate chain
    from this document's slots above. Secrets go in your CI secret store, referenced via
    `env:` — never in the file, the chain, or any recorded evidence.
 3. Push a governed branch. The run page carries the command, the conclusion, and the
-   commit sha — the evidence triplet.
+   commit sha — the evidence triplet. Cite the **push-event** run: a pull_request-event
+   run executes a merge preview, not the phase commit, and certifies nothing.
 4. Multi-repo topologies: one copy per repository, each running that repository's gate
    (`docs/sdlc/repository-strategy.md`).
 5. Recommended once the check has run at least once: require `project-gate` on `main`
