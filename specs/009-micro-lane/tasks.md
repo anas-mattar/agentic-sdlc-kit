@@ -199,5 +199,10 @@ uncounted). scope-check also now protects spec.md from deletion on any numbered 
 
 ### Batch-end certification record (ci-held — plan declaration)
 
-*(Filled at owner approval: run URL + green conclusion + batch-end commit sha, with the
-owner's recorded approval.)*
+> Gate 3 certified (ci-held, batch phases 1–3): run
+> https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34261052895 (push-event
+> ritual-checks), conclusion success, commit `ba32a24` (batch end — phases 1–3 plus all
+> owner-approved review fixes, including the F1 sum-bound resolution and the F3+F7
+> territory-amended sweep) — **approved, anas.m, 2026-09-09** (owner's reply "approved"
+> to the reported triplet; first use of constitution X's CI-held certification clause,
+> per this feature's plan declaration).
