@@ -195,6 +195,6 @@ gate 6 human review at merge.
 |---|---|
 | F1 | **Fixed** — diagram gate lines now read "owner certifies the GATE (exit code — or, plan-declared ci-held, evidence approval AFTER the phase commit below)"; timing matches DoD's ci-held arm; box alignment preserved (69-char interiors). |
 | F2 | **Fixed** — both fill-in fields (`.github/PULL_REQUEST_TEMPLATE.md`, `specs/_templates/human-pr-review-template.md`) now prompt for the full triplet: run URL + green conclusion + commit sha. |
-| F3 | **CONFIRM — pending owner disposition** — team-workflow.md:9–10/:127–128 and adoption/greenfield.md:140–141 sit outside phase 4's declared territory; fixing in-phase would fail the scope check. Owner chooses: follow-up sweep (territory amendment + fixes commit) or record as accepted residue. |
+| F3 | **Fixed (owner disposition 2026-09-08: sweep)** — Territory amended in its own prior commit (`18b4749`) to add team-workflow.md and adoption/greenfield.md; the three categorical sentences (team-workflow.md ownership definition + rule 8, greenfield.md CI-second-witness bullet) now carry both certification arms with the Lite/Standard qualifier and gate-command pointer. |
 | F4 | **Fixed** — both README lines restore the "Lite/Standard only" qualifier. |
 | F5 | **Accepted** — pre-existing constitutional nuance (Lite has no plan.md to declare in); no phase-4 action; candidate input for the micro-lane feature (GAP-013). |

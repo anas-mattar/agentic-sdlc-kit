@@ -259,5 +259,6 @@ in the fix-response log: F1 fixed (diagram ci-held timing now AFTER the phase co
 alignment preserved), F2 fixed (both review-template fields prompt for the full triplet
 incl. green conclusion), F4 fixed (README lines restore "Lite/Standard only"), F5 accepted
 (pre-existing Lite-declaration nuance → GAP-013 input). F3 (three categorical sentences in
-team-workflow.md and adoption/greenfield.md, outside phase 4 territory) is CONFIRM,
-awaiting the owner's disposition: follow-up sweep vs recorded residue.
+team-workflow.md and adoption/greenfield.md, outside phase 4 territory) — owner disposed:
+**sweep**. Territory amended in its own commit (`18b4749`), then the three sentences
+qualified with both certification arms in the F3 sweep commit.
