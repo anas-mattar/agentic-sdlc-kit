@@ -226,3 +226,14 @@ dispositions in its fix-response log. Re-validation:
 | F3 | init on unratified kit constitution → `kitVersionAtInit: "0.4.1"`; rule: constitution version trusted only while `TODO(RATIFICATION_DATE)` present, else `copy` | research D1 / data-model / updating.md amended to define the field (informational, never doctor-validated) |
 | F4 | 004 contract | step 7 + extended exit-2 + idempotence caveat added, "amended by 007", under the named-file territory amendment |
 | F5 | init doctor invocation | `Test-Path`-guarded; explicit partial-install message replaces the misleading to-do note |
+
+### Phase 3 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The phase 3 review (`ai-code-review-phase3.md`) returned APPROVE with follow-ups; F1
+(CONFIRM, owner decision) resolved as option (a) and F2 fixed:
+
+| # | Scenario | Result |
+|---|---|---|
+| F1 fix | `kit-adoption.json` present, NO `.kit-version` | wrapper now RUNS the doctor (`verify-kit OK`, 4 members) — the wrapper/direct-run divergence pair converges |
+| F1 label | tree with neither marker | `verify-kit       n/a (no adoption markers — kit repository or unadopted tree)` — no false "kit repository" claim about unadopted trees |
+| Kit repo regression | wrapper on this repo | 3 OKs + truthful n/a line + `RESULT OK` |

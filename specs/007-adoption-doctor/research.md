@@ -144,6 +144,13 @@ documented set).
 
 ## D7 — ritual-checks membership
 
+**Post-review amendment (phase 3 review, F1)**: the wrapper's gate is `.kit-version` OR
+`kit-adoption.json` — the doctor's own discriminator (D5.3), not `.kit-version` alone. A
+record-bearing copy adoption without `.kit-version` was invisible to CI (green wrapper,
+red direct doctor, false "kit repository" label) — exactly the population D5.3 protects.
+The n/a label now names the real condition ("no adoption markers"). Original decision text
+below kept for the record.
+
 **Decision**: the wrapper adds `verify-kit` as a fourth member. Applicability: if
 `.kit-version` exists at root → run `verify-kit.ps1 -Root $Root`; else print
 `ritual-checks: verify-kit       n/a (kit repository)` and exclude it from the
