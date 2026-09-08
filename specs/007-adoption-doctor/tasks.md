@@ -54,6 +54,12 @@ red); DryRun untouched; owner tier-addition passes.
 - `adoption/greenfield.md`
 - `adoption/existing-system.md`
 - `adoption/updating.md`
+- `specs/004-kit-update-channel/contracts/update-kit-cli.md`
+
+> Territory amended before the `phase 2 fixes` commit (phase 2 review, F4): update-kit's
+> living contract is 004's — the doctor step, the extended exit-2 meaning, and the
+> idempotence caveat must land there or the contract lies about the shipped script
+> (same argument T014 applied to 006's wrapper contract).
 
 - [x] T006 [US2] Amend `scripts/init-kit.ps1`: write `kit-adoption.json` (data-model shape, `gateProof: []`, `kitVersionAtInit` from the constitution's kit version string — an adopted copy has no kit clone to ask, so the constitution's `**Version**:` line is the available truth, falling back to `copy`); finish by running `verify-kit.ps1` (child pwsh — it terminates with `exit`) instead of bare doc-lint, printing the verdict as the remaining-work list; init exits 0 regardless of doctor color (research D6)
 - [x] T007 [US2] Amend `scripts/update-kit.ps1`: after a non-DryRun, non-Json apply, run the kit clone's `verify-kit.ps1 -Root <target>` (child pwsh) and end the report with the verdict; red doctor ⇒ exit 2 (documented "attention needed"); DryRun untouched; `-Json` callers run the doctor themselves (documented in updating.md)
