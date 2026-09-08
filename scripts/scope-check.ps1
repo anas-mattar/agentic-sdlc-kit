@@ -205,10 +205,18 @@ function Invoke-ScopeCheck {
     $specRel = "specs/$FeatureBranch/spec.md"
     $statusRows = git -c core.quotepath=off show --name-status --format='' $Sha 2>$null
     foreach ($row in $statusRows) {
+        $parts = $row -split "`t"
         if ($row -match "^D`t") {
-            $deleted = ($row -split "`t")[1]
+            $deleted = $parts[1]
             if ($deleted -eq $tasksRel -or $deleted -eq $specRel) {
                 Write-Host "scope-check: FAIL commit ${sha7}: the commit deletes $deleted — a feature's declaration files must never be deleted on its branch (review F2)"
+                return $false
+            }
+        } elseif ($row -match '^R' -and $parts.Count -ge 3) {
+            # A rename away is a delete wearing a costume (phase 2 review, F3).
+            $source = $parts[1]
+            if ($source -eq $tasksRel -or $source -eq $specRel) {
+                Write-Host "scope-check: FAIL commit ${sha7}: the commit renames $source away — a feature's declaration files must never be deleted or renamed on its branch (review F2)"
                 return $false
             }
         }
@@ -242,18 +250,20 @@ function Invoke-ScopeCheck {
     }
     if (Test-IsMicro -SpecLines @($specBlob)) {
         $territory = Get-Territory -TasksLines (Get-VisibleLines -Lines @($specBlob)) -Global
+        # Every Micro FAIL names the promotion remediation (contract, error-message rule).
+        $microPromote = "fix the declaration in a commit made BEFORE the phase commit — or promote to Standard: expand spec.md to the full template, add plan.md + tasks.md (Territory moves there), in a commit before the next phase commit (constitution X, Micro lane)"
         if ($territory.Duplicate) {
-            Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: more than one **Territory** marker in $specRel (a Micro feature declares exactly one feature-global block)"
+            Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: more than one **Territory** marker in $specRel (a Micro feature declares exactly one feature-global block); $microPromote"
             return $false
         }
         if ($territory.Invalid.Count -gt 0) {
             foreach ($bad in $territory.Invalid) {
-                Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: invalid territory entry '$bad' (entries must be repo-relative, no '..')"
+                Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: invalid territory entry '$bad' (entries must be repo-relative, no '..'); $microPromote"
             }
             return $false
         }
         if (-not $territory.Found -or $territory.Entries.Count -eq 0) {
-            Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: this Micro feature declares no usable **Territory** block in $specRel — the mini-spec template requires one (constitution X, Micro lane; no pre-Micro feature exists to grandfather)"
+            Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: this Micro feature declares no usable **Territory** block in $specRel — the mini-spec template requires one (no pre-Micro feature exists to grandfather); $microPromote"
             return $false
         }
         $globs = @("specs/$FeatureBranch/**") + $territory.Entries  # implicit spec-dir entry
@@ -266,7 +276,7 @@ function Invoke-ScopeCheck {
         foreach ($s in $strays) {
             Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: $s not in territory"
         }
-        Write-Host "scope-check: remediation — revert the undeclared change; or amend the **Territory** in $specRel (owner approval, at most 5 entries — constitution X, Micro lane) in a commit made BEFORE the phase commit; or promote to Standard: expand spec.md to the full template, add plan.md + tasks.md (Territory moves there), in a commit before the next phase commit"
+        Write-Host "scope-check: remediation — revert the undeclared change; or amend the **Territory** in $specRel (owner approval, kept within the Micro territory cap that enforcement-pack.ps1 checks — constitution X, Micro lane) in a commit made BEFORE the phase commit; or promote to Standard: expand spec.md to the full template, add plan.md + tasks.md (Territory moves there), in a commit before the next phase commit"
         return $false
     }
 

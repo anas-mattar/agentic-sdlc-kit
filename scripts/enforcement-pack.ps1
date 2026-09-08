@@ -334,13 +334,19 @@ function Invoke-MicroLaneCheck {
     # Territory cap (M5). Same block grammar scope-check parses; entries must be literal
     # file paths — one glob or subtree entry would defeat the file cap outright.
     $tEntries = @()
+    $tMarkers = 0
     $collecting = $false; $started = $false
     foreach ($line in (Get-VisiblePlanLines -PlanPath $specPath)) {
-        if ($line -match '^\*\*Territory\*\*:') { $collecting = $true; $started = $false; continue }
+        if ($line -match '^\*\*Territory\*\*:') { $tMarkers++; $collecting = $true; $started = $false; continue }
         if (-not $collecting) { continue }
         if ($line -match '^\s*$') { if ($started) { $collecting = $false }; continue }
         if ($line -match '^\s*[-*]\s+`([^`]+)`\s*$') { $started = $true; $tEntries += $matches[1].Trim(); continue }
         $collecting = $false
+    }
+    if ($tMarkers -gt 1) {
+        # scope-check FAILs duplicates too — kept aligned so the two scripts never diverge
+        # on the same spec (phase 2 review, F7).
+        $script:failures += "MicroLane: $dir/spec.md carries $tMarkers **Territory** markers — a Micro feature declares exactly one feature-global block; merge them, or $promote"
     }
     if ($tEntries.Count -gt $Config.MicroTerritoryMaxFiles) {
         $script:failures += "MicroLane: $dir/spec.md declares $($tEntries.Count) territory entries — a Micro feature's Territory covers at most $($Config.MicroTerritoryMaxFiles) files (constitution X, Micro lane); shrink the territory, or $promote"
