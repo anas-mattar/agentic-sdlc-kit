@@ -30,7 +30,13 @@ Bump rationale: MINOR — Micro delivery lane added (feature 009, micro-lane; ro
   (Delivery Level values + pointer), definition-of-done.md (gates 1, 3, 4),
   gate-command.md (CI-held eligibility + declaration home), branch-strategy.md (level
   menu), critical-delivery.md (level table + exclusion), CLAUDE.md (structure note,
-  strict rule, reading-table row).
+  strict rule, reading-table row); swept later on the same branch (owner-approved
+  territory amendment, phase 1 review F3 + phase 3 review F7): plan-template.md
+  (Gate Certification comment + Constitution Check X), team-workflow.md (owner
+  certification + territory source), backend-rules-template.md and
+  mobile-rules-template.md (gate bullets), plus the phase-3 summaries (flow.md,
+  review-process.md, PR + human-review templates, updating.md flow-down note,
+  roadmap).
 
 Prior version history (0.4.1 → 0.5.0):
 Bump rationale: MINOR — CI-held certification clause added to Principle X (feature 008,
