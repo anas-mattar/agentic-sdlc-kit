@@ -106,6 +106,15 @@ unchanged RESULT; adopted fixture goes red/green with the doctor named.
 - `CLAUDE.md`
 - `docs/roadmap.md`
 - `kit-manifest.json`
+- `adoption/greenfield.md`
+- `adoption/existing-system.md`
+- `adoption/updating.md`
+- `docs/sdlc/branch-protection.md`
+
+> Territory amended before the `phase 4 fixes` commit (phase 4 review, F1/F2): the sweep
+> missed four kit-shipped docs still enumerating ritual-checks as three members — the
+> exact drift class this feature exists to end. Named files added (least-territory);
+> updating.md also carries the tier-menu prose the F3 resolution changes.
 
 - [x] T017 [P] Amend `CLAUDE.md` Task-Scoped Reading: the "Updating an adopted project from the kit" row also points at the doctor (`pwsh -File scripts/verify-kit.ps1` — runs at init end, update end, and in adopted-project CI)
 - [x] T018 Flip `docs/roadmap.md` adoption-doctor row to `in progress` (`shipped` at merge)
