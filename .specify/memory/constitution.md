@@ -10,8 +10,9 @@ Bump rationale: MINOR — Micro delivery lane added (feature 009, micro-lane; ro
   clause: exactly one phase; every verification layer unchanged (user-held gate
   certification, machine scope check with Territory read from spec.md, fresh-context AI
   review, human review at merge); hard eligibility bounds — declared Territory of at most
-  5 files (the feature's own specs/NNN-name/** excluded) and a single phase commit of at
-  most 400 changed lines (a hard failure for Micro, where other lanes get a warning) —
+  5 files (the feature's own specs/NNN-name/** excluded) and a phase total of at most
+  400 changed lines, summed across every commit carrying the phase's token (a hard
+  failure for Micro, where other lanes get a per-commit warning) —
   plus checklist-affirmed non-measurable bounds (no schema/migration, no new packages, no
   architecture change, no domain-invariant surface, no visual-reference UI); no
   **Gate Batching** declaration (one phase — nothing to batch); Critical features MUST
@@ -293,8 +294,10 @@ phase**; its specification is the approved single-page mini-spec (Principle I, M
 which carries the feature-global **Territory** block and, optionally, a
 `**Gate Certification**` declaration; it MUST NOT declare `**Gate Batching**` (one phase —
 nothing to batch). The measurable bounds are hard: the declared Territory covers at most
-**5 files** (the feature's own `specs/NNN-name/**` excluded), and the single phase commit
-changes at most **400 lines** — a failure for Micro where other lanes get a warning. The
+**5 files** (the feature's own `specs/NNN-name/**` excluded), and the phase changes at
+most **400 lines in total** — counted across every commit carrying its `phase N` token,
+so remediation commits cannot split the bound — a failure for Micro where other lanes
+get a per-commit warning. The
 non-measurable bounds — no schema or migration, no new packages, no architecture change,
 no domain-invariant surface, no visual-reference UI — are affirmed in the mini-spec's
 eligibility checklist and verified in human review. Every verification layer is unchanged:

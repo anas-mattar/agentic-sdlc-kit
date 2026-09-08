@@ -36,7 +36,8 @@ Gates apply at two different points, not uniformly at every phase:
    phase-sizing rule (`.specify/templates/plan-template.md`, Controlled Delivery check):
    independently revertible, one meaningfully independent and testable slice. For a
    Micro feature (no `plan.md`) the sizing rule is constitution X's Micro bounds — one
-   phase, at most 400 changed lines, enforced as a hard failure.
+   phase, at most 400 changed lines in total across the phase's commits, enforced as a
+   hard failure.
 3. **Gate passed with user-held certification** — by default the user (not AI) ran the gate
    (`docs/sdlc/gate-command.md`) and confirmed the exit code. AI MUST NOT claim
    success without that confirmation (constitution X). The AI MAY run the gate

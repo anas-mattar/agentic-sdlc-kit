@@ -10,9 +10,9 @@
   user-run). Never leave a bracketed placeholder here — it is a malformed value. -->
 
 <!-- ONE PAGE. A Micro feature is exactly ONE phase inside hard bounds: Territory of at
-  most 5 files (this spec directory excluded) and at most 400 changed lines in the phase
-  commit — machine-enforced failures, not warnings (constitution X, Micro lane;
-  scripts/enforcement-pack.ps1). NEVER declare `**Gate Batching**` here. If the work
+  most 5 files (this spec directory excluded) and at most 400 changed lines in total
+  across the phase's commits — machine-enforced failures, not warnings (constitution X,
+  Micro lane; scripts/enforcement-pack.ps1). NEVER declare `**Gate Batching**` here. If the work
   outgrows any bound, promote in place to Standard: expand this file to the full
   spec-template, add plan.md + tasks.md (Territory moves there), in a commit BEFORE any
   further phase commit. Critical work MUST NOT use this lane. -->
