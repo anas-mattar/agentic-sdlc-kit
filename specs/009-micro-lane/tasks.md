@@ -102,6 +102,14 @@ GateCertification source extension; contract M1–M13 validated.
 - `specs/_templates/human-pr-review-template.md`
 - `adoption/updating.md`
 - `docs/roadmap.md`
+- `.specify/templates/plan-template.md`
+- `docs/sdlc/team-workflow.md`
+- `docs/rulebooks/backend-rules-template.md`
+- `docs/rulebooks/mobile-rules-template.md`
+
+*(The last four were added by owner-approved amendment, 2026-09-09 — phase 1 review F3 +
+phase 3 review F7: shipped instruments carrying stale "Lite/Standard" ci-held eligibility
+or unqualified plan.md bindings, outside every original phase territory.)*
 
 - [x] T010 [P] Amend `docs/sdlc/flow.md` (lane-variations Micro bullet) and
       `docs/sdlc/review-process.md` (after-each-phase wording where it assumes tasks.md
