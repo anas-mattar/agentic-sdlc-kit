@@ -262,3 +262,13 @@ incl. green conclusion), F4 fixed (README lines restore "Lite/Standard only"), F
 team-workflow.md and adoption/greenfield.md, outside phase 4 territory) — owner disposed:
 **sweep**. Territory amended in its own commit (`18b4749`), then the three sentences
 qualified with both certification arms in the F3 sweep commit.
+
+### Phase 4 certifying gate (user-run, 2026-09-08)
+
+The owner ran `pwsh -File scripts/ritual-checks.ps1` on the final tree (`4429624`) and
+confirmed: doc-lint OK (64 classified) · enforcement-pack OK (36 changed files; the one
+non-blocking PhaseSizeWarning is on the specify-stage commit `07dc07f`, not a phase
+commit) · scope-check PASS on all ten attributed phase commits, including all four
+phase-4 commits (`63fed28`, `1fa3a04`, `18b4749`, `4429624`) · RESULT OK. Phase 4
+certified user-run per the plan's declaration; the feature is implementation-complete
+and awaits gate 6 human review at merge.
