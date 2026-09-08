@@ -32,11 +32,19 @@ pwsh -File scripts/update-kit.ps1 -Target <adopted-project-root> [-Kit <kit-root
 5. **Record**: on any non-dry-run without execution error, write `.kit-version`
    (kit constitution version + kit HEAD sha + date).
 6. **Report** per data-model; exit `0` clean / `2` attention needed / `1` error.
+7. **Adoption doctor** *(amended by feature 007)*: a non-DryRun, non-Json apply run ends
+   with the target's `scripts/verify-kit.ps1` verdict; a red verdict is "attention
+   needed" — exit `2` also covers it. `-DryRun` skips the doctor (nothing changed to
+   audit); `-Json` output stays pure JSON and machine callers run
+   `verify-kit.ps1 -Json -Root <target>` themselves.
 
 ## Idempotence
 
 A second run immediately after a clean run reports "up to date", writes nothing
-byte-identical, and exits 0 (SC-005).
+byte-identical, and exits 0 (SC-005) — **provided the target's adoption doctor is green**
+*(amended by feature 007)*: an up-to-date target with a red doctor verdict keeps exiting
+`2` until the integrity findings are fixed, by design (the report is identical; the
+attention is real).
 
 ## Non-goals
 

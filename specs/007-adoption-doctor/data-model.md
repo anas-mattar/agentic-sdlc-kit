@@ -11,7 +11,7 @@ All state is repository files; "entities" are record shapes and verdict structur
 | `topology` | string | `single` \| `multi` |
 | `tiers` | string[] | subset of `backend, frontend, mobile, database, integration`; unknown value ⇒ finding, not crash (spec edge case) |
 | `initDate` | string | ISO date |
-| `kitVersionAtInit` | string | kit commit sha, or `copy` when init ran on a hand-copied kit |
+| `kitVersionAtInit` | string | the kit constitution's version string (e.g. `0.4.1`) when init ran against the unratified kit-shipped constitution, else `copy` (research D1 post-review amendment — an adopted copy has no kit clone to ask for a sha); informational only, never validated by the doctor |
 | `gateProof` | object[] | may be empty (init writes `[]`); see below |
 
 **gateProof entry**: `gate` (label, e.g. `backend` or `default`), `command` (the exact

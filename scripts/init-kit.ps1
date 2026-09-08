@@ -229,24 +229,37 @@ Write-Host "fill:   {{PROJECT_NAME}} -> $ProjectName; {{REPOSITORY_LIST}}$(($Bac
 # Durable, machine-readable, owner-editable record of the decisions init asked for — the
 # doctor's source of truth for "declared". gateProof stays empty: recording the proof is a
 # human attestation (adoption step 3), never tool-written.
-$constPath = Join-Path $Root '.specify/memory/constitution.md'
-$kitVersionAtInit = 'copy'
-if (Test-Path $constPath) {
-    $constText = [IO.File]::ReadAllText($constPath)
-    if ($constText -match '\*\*Version\*\*:\s*([0-9]+\.[0-9]+\.[0-9]+)') { $kitVersionAtInit = $Matches[1] }
-}
-$adoptionRecord = [ordered]@{
-    schemaVersion    = 1
-    projectName      = $ProjectName
-    topology         = $Topology
-    tiers            = @($Tiers)
-    initDate         = (Get-Date -Format 'yyyy-MM-dd')
-    kitVersionAtInit = $kitVersionAtInit
-    gateProof        = @()
-}
 $recordPath = Join-Path $Root 'kit-adoption.json'
-[IO.File]::WriteAllText($recordPath, (($adoptionRecord | ConvertTo-Json -Depth 4) + "`n"))
-Write-Host "record: kit-adoption.json written (tiers: $($Tiers -join ', ')); gateProof is yours to record (adoption step 3)"
+if (Test-Path $recordPath) {
+    # NEVER overwrite: the record carries the owner's gate-proof attestation and any
+    # hand-declared tiers — destroying those would violate the human-attestation rule
+    # (007 data-model; phase 2 review F2). Same "keep" semantics as instantiated rulebooks.
+    Write-Host 'keep:   kit-adoption.json already exists — not overwritten (owner-edited record; delete it first to regenerate)'
+} else {
+    # kitVersionAtInit: trust the constitution's version line only while it is still the
+    # kit-shipped, unratified constitution — after ratification that line is the PROJECT's
+    # own semver, the wrong datum (phase 2 review F3; flagged for owner ratification).
+    $constPath = Join-Path $Root '.specify/memory/constitution.md'
+    $kitVersionAtInit = 'copy'
+    if (Test-Path $constPath) {
+        $constText = [IO.File]::ReadAllText($constPath)
+        if ($constText -match 'TODO\(RATIFICATION_DATE\)' -and
+            $constText -match '\*\*Version\*\*:\s*([0-9]+\.[0-9]+\.[0-9]+)') {
+            $kitVersionAtInit = $Matches[1]
+        }
+    }
+    $adoptionRecord = [ordered]@{
+        schemaVersion    = 1
+        projectName      = $ProjectName
+        topology         = $Topology
+        tiers            = @($Tiers)
+        initDate         = (Get-Date -Format 'yyyy-MM-dd')
+        kitVersionAtInit = $kitVersionAtInit
+        gateProof        = @()
+    }
+    [IO.File]::WriteAllText($recordPath, (($adoptionRecord | ConvertTo-Json -Depth 4) + "`n"))
+    Write-Host "record: kit-adoption.json written (tiers: $($Tiers -join ', ')); gateProof is yours to record (adoption step 3)"
+}
 
 # --- 4. Report the judgment slots that remain for a human -----------------------------------
 Write-Host ''
@@ -274,10 +287,15 @@ if ($remaining) {
 # judgment slots and the gate proof are deliberately still open; the findings above are
 # the to-do list. Init's own success is "mechanical work done", so it exits 0 regardless.
 Write-Host ''
-& pwsh -NoProfile -File (Join-Path $PSScriptRoot 'verify-kit.ps1') -Root $Root
-if ($LASTEXITCODE -ne 0) {
-    Write-Host ''
-    Write-Host 'init-kit: the doctor findings above are the remaining human work, not an init failure.'
-    Write-Host 'init-kit: re-run  pwsh -File scripts/verify-kit.ps1  after each step until it reports OK.'
+$doctorScript = Join-Path $PSScriptRoot 'verify-kit.ps1'
+if (Test-Path $doctorScript) {
+    & pwsh -NoProfile -File $doctorScript -Root $Root
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ''
+        Write-Host 'init-kit: the doctor findings above are the remaining human work, not an init failure.'
+        Write-Host 'init-kit: re-run  pwsh -File scripts/verify-kit.ps1  after each step until it reports OK.'
+    }
+} else {
+    Write-Host 'init-kit: scripts/verify-kit.ps1 missing (partial install? — adoption step 0: re-copy the kit including all files)'
 }
 exit 0

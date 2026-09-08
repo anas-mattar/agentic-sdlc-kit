@@ -22,9 +22,10 @@ Your first "feature" writes documents only:
 
 - Inventory the stack, repositories, build/test commands, environments.
 - Get the gate green **on untouched code** and record the command + exit code as a
-  `gateProof` entry in **kit-adoption.json** (written by `init-kit.ps1`; shape in
-  `adoption/updating.md`; never paste secrets into the recorded command) — the adoption
-  doctor (`scripts/verify-kit.ps1`) fails until at least one exit-0 proof exists. If the
+  `gateProof` entry in **kit-adoption.json** (shape in `adoption/updating.md`; create the
+  file by hand if `init-kit.ps1` hasn't run yet — init preserves an existing record, so
+  your attestation survives; never paste secrets into the recorded command) — the
+  adoption doctor (`scripts/verify-kit.ps1`) fails until at least one exit-0 proof exists. If the
   gate can't go green as-is, fixing that is the first (and only) code change — nothing
   else ships over a red baseline.
 - Write down the architecture as it actually is (a short technical-handover doc), including

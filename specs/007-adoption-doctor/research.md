@@ -32,6 +32,13 @@ thing to grandfather. `gateProof` is an array (multi-repo projects prove per gat
 Owner-editable-by-hand is the kit philosophy (judgment stays human — recording a gate
 proof is an attestation, so no helper writes it for you).
 
+**Post-review amendments (phase 2 review)**: `kitVersionAtInit` = the kit constitution's
+version string when init runs against the still-unratified kit-shipped constitution, else
+`copy` (F3 — an adopted copy has no kit clone to ask for a sha, and after ratification the
+constitution's version line is the *project's* semver, the wrong datum). Init **never
+overwrites** an existing `kit-adoption.json` (F2 — the record carries the owner's
+attestation; re-init keeps it, same semantics as instantiated rulebooks).
+
 **Alternatives considered**: extending `.kit-version` (rejected: update-kit owns that file
 wholesale and rewrites it every flow-down — owner edits would be clobbered); a markdown
 record (rejected: the doctor must parse it reliably; prose invites drift); separate

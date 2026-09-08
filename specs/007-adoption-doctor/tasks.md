@@ -213,3 +213,16 @@ preflight.
 | W1 | wrapper in the kit repo | verdict block: 3 member OKs + `verify-kit       n/a (kit repository)` + `RESULT OK` — kit CI behavior unchanged except the explicit n/a line |
 | W2 | wrapper in the healthy adopted fixture (`-Root`, current scripts copied in) | 4 member OKs, `RESULT OK` |
 | W3 | declared-tier rulebook deleted in the fixture | `verify-kit FAIL` named in the block, all members still ran, `RESULT FAIL (2 of 4 member(s) failed)`, exit 1 — doc-lint ALSO failed because the deletion broke a CLAUDE.md path reference: the two checkers catch the same incident from their respective angles |
+
+### Phase 2 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The phase 2 review (`ai-code-review-phase2.md`) returned REQUEST CHANGES (F1/F2 BLOCKING);
+dispositions in its fix-response log. Re-validation:
+
+| # | Scenario | Result |
+|---|---|---|
+| F1 | `.kit-version` = JSON with 7-char `kitCommit` (`8f43d74`) | `ok kit-version — .kit-version present (kit commit 8f43d74…)`, no crash, OK exit 0 |
+| F2 | re-run init on a fixture whose record carries a gateProof entry + hand-declared `frontend` tier | `keep: kit-adoption.json already exists — not overwritten …`; record byte-identical (md5 compared), proof survived |
+| F3 | init on unratified kit constitution → `kitVersionAtInit: "0.4.1"`; rule: constitution version trusted only while `TODO(RATIFICATION_DATE)` present, else `copy` | research D1 / data-model / updating.md amended to define the field (informational, never doctor-validated) |
+| F4 | 004 contract | step 7 + extended exit-2 + idempotence caveat added, "amended by 007", under the named-file territory amendment |
+| F5 | init doctor invocation | `Test-Path`-guarded; explicit partial-install message replaces the misleading to-do note |
