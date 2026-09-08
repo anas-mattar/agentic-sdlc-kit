@@ -71,15 +71,15 @@ GateCertification source extension; contract M1–M13 validated.
 - `scripts/scope-check.ps1`
 - `scripts/enforcement-pack.ps1`
 
-- [ ] T007 [US2] Amend `scripts/scope-check.ps1`: detect Micro via spec.md's comment-
+- [x] T007 [US2] Amend `scripts/scope-check.ps1`: detect Micro via spec.md's comment-
       stripped Delivery Level at the commit's parent; read the feature-global Territory
       block from spec.md; verdict the phase commit with unchanged semantics (implicit
       spec-dir entry, anti-widening, remediation text naming promotion)
-- [ ] T008 [US2] Amend `scripts/enforcement-pack.ps1`: `Invoke-MicroLaneCheck` per the
+- [x] T008 [US2] Amend `scripts/enforcement-pack.ps1`: `Invoke-MicroLaneCheck` per the
       contract (single-phase, no plan/tasks, territory cap, hard line bound, no batching
       line, malformed level values) with constants in $Config; GateCertification reads
       spec.md on Micro branches; header .DESCRIPTION updated
-- [ ] T009 [US2] Execute contract M1–M13 on seeded fixtures (fixture spec dir + branches,
+- [x] T009 [US2] Execute contract M1–M13 on seeded fixtures (fixture spec dir + branches,
       deleted after); regression run (this branch, 003, 007, 008, one Lite name); record
       under Phase 2 validation; feedback-run ritual-checks; commit as
       `phase 2: micro-lane machine checks`
@@ -148,6 +148,38 @@ declared mode).
 | L7 | PASS | CLAUDE.md: "**Micro exception** (constitution X, Micro lane): … holds `spec.md` alone"; strict rule "A Micro feature is exactly one phase inside hard bounds (≤5 territory files, ≤400 lines) … never stretch the lane"; reading-table row "A feature declared Micro (small, bounded, one phase)" |
 | L8 | PASS | `ritual-checks.ps1` on the fully amended tree: doc-lint OK (65 files), enforcement-pack OK (pre-existing non-blocking PhaseSizeWarning on specify commit bcf436e only), scope-check OK, **RESULT OK** |
 
-### Phase 2 & 3
+### Phase 2 (T009) — contract M1–M13 on seeded fixtures, executed 2026-09-09
 
-*(T009, T013 outputs land here.)*
+Fixtures: a scratch clone of this repo (deleted after) with branches `998-micro-demo`
+(M2–M4), `997-micro-cap`, `996-micro-twophase`, `995-micro-halfpromo`, `994-micro-batch`,
+`993-micro-ciheld`, `992-micro-malformed`, `991-micro-promo`, `990-micro-oversize`,
+`989-micro-decoy`, `fix/demo-lite`; the kit's own (amended) scripts run against the clone
+via `-Root`/`-Branch`/`-Commit`.
+
+| # | Verdict | Evidence (quote) |
+|---|---|---|
+| M1 | PASS | Regression, absent Delivery Level ⇒ unchanged verdicts: this branch "scope-check: PASS phase 1 commit 66b3dff (9 file(s))" + "PASS phase 1 commit 310e4ad", enforcement-pack OK; 008 "PASS phase 4 commit 63fed28 (13 file(s))", "PASS phase 3 commit c72b54c", "PASS phase 4 commit 4429624"; 007 "PASS phase 1 commit 6410ffb"; pre-006 WARN unchanged: 003 "WARN commit 6e5988d: no territory declared for phase 3 … non-blocking, pre-006 compatibility", 005 "WARN commit 42b9cd9: … tasks.md not found …" |
+| M2 | PASS | "scope-check: PASS phase 1 commit 1451bd8 (2 file(s), Micro territory from spec.md)", exit 0; "enforcement-pack: OK", exit 0 |
+| M3 | PASS | "scope-check: FAIL phase 1 commit 6742577: demo/d.txt not in territory" + Micro remediation naming the 5-entry cap and promotion, exit 1 |
+| M4 | PASS | Territory widened + used in the same commit: "FAIL phase 1 commit 8ba72d9: demo/e.txt not in territory" — declaration read from the parent (anti-widening), exit 1 |
+| M5 | PASS | "MicroLane: … declares 6 territory entries — a Micro feature's Territory covers at most 5 files … shrink the territory, or promote to Standard …", exit 1 |
+| M6 | PASS | "MicroLane: the branch carries commits for phases 1, 2 — a Micro feature has exactly 1 phase; promote to Standard …", exit 1 (distinct phase NUMBERS counted — 'phase 1 fixes' remediation commits stay legal) |
+| M7 | PASS | "MicroLane: specs/995-micro-halfpromo/plan.md exists while spec.md still declares Micro — promotion is all-or-nothing …", exit 1 |
+| M8 | PASS | "MicroLane: … declares '**Gate Batching**' — a Micro feature is exactly one phase; there is nothing to batch …", exit 1 |
+| M9 | PASS | ci-held declared in the mini-spec: "enforcement-pack: OK", exit 0 (GateCertification reads spec.md on Micro) |
+| M10 | PASS | "Structure: … **Delivery Level** header is unfilled or invalid: 'Micr0' (legal values: Lite, Micro, Standard, Critical — constitution X)", exit 1 (plus fail-closed missing-plan/tasks failures, since a malformed level is not Micro) |
+| M11 | PASS | Micro-era commit against old spec territory: "PASS phase 1 commit 517df6a (1 file(s), Micro territory from spec.md)"; post-promotion "PASS phase 2 commit b7e227f"; "enforcement-pack: OK" (Standard rules from the promotion commit onward) |
+| M12 | PASS | "MicroLane: phase commit b43f0e1 changes 401 line(s) — a Micro phase commit changes at most 400 lines, a hard bound on this lane …", exit 1 |
+| M13 | PASS | Commented-out `**Delivery Level**: Micro` decoy above a visible `Standard`: "enforcement-pack: OK", exit 0 — not Micro (comment-stripped parsing; no MicroLane failure despite plan.md/tasks.md present) |
+| Lite | PASS | `fix/demo-lite`: "enforcement-pack: OK"; "scope-check: not applicable (fix/ lane …)" |
+
+Design note (recorded for review): on Micro, territory entries must be **literal file
+paths** — a glob or trailing-slash subtree entry fails the MicroLane check, because one
+`src/**` entry would defeat the 5-file cap outright (data-model: "lists more
+entries/expands to more files"). The spec-dir exclusion is unchanged (implicit entry,
+uncounted). scope-check also now protects spec.md from deletion on any numbered branch
+(it is the Micro lane's declaration file; deleting it was never legitimate).
+
+### Phase 3 (T013)
+
+*(Output lands here.)*
