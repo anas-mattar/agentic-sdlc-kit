@@ -23,7 +23,8 @@ Package manager: yarn 4.x (corepack)
   It is the project's ONLY constitution.
 - Definition of Done: `docs/sdlc/definition-of-done.md` — the six gates every phase must pass.
 - Gate command: `docs/sdlc/gate-command.md` — certification is held by the user: the
-  user-confirmed exit code, or (Lite/Standard, plan-declared `ci-held` — constitution X)
+  user-confirmed exit code, or (Lite/Micro/Standard, `ci-held` declared in the plan — or
+  the Micro mini-spec — constitution X)
   the owner's recorded approval on the CI evidence triplet. You never claim success.
 
 ## Source of Truth
@@ -54,6 +55,11 @@ unavailable (kit partially installed), do NOT invent a different layout: create 
 structure manually from the templates in `.specify/templates/`, and report the incomplete
 install so the user can finish it (see `adoption/`, step 0).
 
+**Micro exception** (constitution X, Micro lane): a feature whose `spec.md` declares
+`**Delivery Level**: Micro` holds `spec.md` alone — a single-page mini-spec from
+`.specify/templates/micro-spec-template.md`; no `plan.md`/`tasks.md` until promoted to
+Standard.
+
 ## Workflow
 
 The whole ritual on one page: `docs/sdlc/flow.md` (summary only — the documents it
@@ -62,7 +68,8 @@ links to prevail).
 1. Check current branch and working tree; stop if unrelated uncommitted changes exist.
 2. Run the baseline gate on untouched code.
 3. One feature branch per feature (`docs/sdlc/branch-strategy.md`).
-4. Create/update `spec.md`, then `plan.md`, then `tasks.md` (the `/speckit.*` commands do this).
+4. Create/update `spec.md`, then `plan.md`, then `tasks.md` (the `/speckit.*` commands do
+   this). Micro features: the approved mini-spec `spec.md` alone (constitution X, Micro lane).
 5. Implement **one phase only**. UI phase with visual references? Run the Visual
    Compliance Loop (`docs/sdlc/review-process.md`) until the deviation table is empty or
    user-approved. Then stop and ask the user to run the gate.
@@ -81,11 +88,15 @@ links to prevail).
 - Do not add packages unless approved in `plan.md`.
 - Do not change architecture unless approved in `plan.md`.
 - Do not claim success until the user runs the gate and confirms the exit code — or, on a
-  Lite/Standard feature whose approved plan declares `**Gate Certification**: ci-held`,
+  Lite/Micro/Standard feature whose approved plan (Micro: mini-spec) declares
+  `**Gate Certification**: ci-held`,
   until the owner records approval on the evidence triplet (CI run URL + green conclusion
   + exact phase-commit sha — for a declared batch, the batch-end commit;
   `docs/sdlc/gate-command.md`). Under ci-held you report the evidence and request that
   approval; you still never claim success yourself.
+- A Micro feature is exactly one phase inside hard bounds (≤5 territory files, ≤400
+  lines). If it outgrows them, stop and promote in place to Standard (full spec + plan +
+  tasks, committed before any further phase) — never stretch the lane.
 - Domain invariants (`{{DOMAIN_INVARIANTS_PATH}}`) carry constitutional force.
 
 ## Task-Scoped Reading
@@ -101,6 +112,7 @@ Read the pack that matches what you are about to touch — not everything, every
 | Backend / service logic | {{BACKEND_RULES_PATH}} |
 | A schema / migration | {{DATABASE_RULES_PATH}} + `docs/sdlc/rollback-process.md` |
 | Domain-critical logic | `{{DOMAIN_INVARIANTS_PATH}}` |
+| A feature declared Micro (small, bounded, one phase) | `.specify/templates/micro-spec-template.md` + `docs/sdlc/branch-strategy.md` (level menu) |
 | A feature declared Critical (regulated / high-risk) | `docs/sdlc/critical-delivery.md` |
 | An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution VII) |
 | Frontend UI | {{FRONTEND_RULES_PATH}} + `docs/rulebooks/` compliance checklist for that tier |
