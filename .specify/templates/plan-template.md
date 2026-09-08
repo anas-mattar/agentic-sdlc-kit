@@ -11,7 +11,8 @@
   CI-held certification). Under ci-held, gate 3 is satisfied by the owner's recorded
   approval on the evidence triplet — CI run URL + green conclusion + exact phase-commit
   sha (batch: the batch-end commit). Lite/Standard only — a Critical feature declaring
-  ci-held fails scripts/enforcement-pack.ps1. An absent line means user-run. -->
+  ci-held fails scripts/enforcement-pack.ps1. Declare BEFORE the first phase it governs;
+  never retroactively. An absent line means user-run. -->
 
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.

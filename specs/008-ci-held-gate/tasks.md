@@ -95,9 +95,25 @@ tells adopters how the amendment flows down; roadmap flipped.
 - `adoption/updating.md`
 - `docs/roadmap.md`
 - `kit-manifest.json`
+- `docs/sdlc/branch-strategy.md`
+- `docs/sdlc/review-process.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `specs/_templates/human-pr-review-template.md`
+- `specs/_templates/rollback-template.md`
+- `README.md`
+- `docs/rulebooks/backend-rules-template.md`
+- `docs/rulebooks/mobile-rules-template.md`
+- `docs/rulebooks/compliance-checklist-template.md`
 
-- [ ] T015 [P] Amend `docs/sdlc/flow.md` row 3b (gate): the ci-held option named, owning docs cited (summary only)
+> Territory widened at specify-stage fix time (phase 1 review, F4 — owner disposition:
+> sweep, not accept-as-residue): the un-swept instruments still stating the categorical
+> user-run rule — above all the PR/human-review templates whose mandatory exit-code field
+> a ci-held feature cannot truthfully fill — are phase 4's job, declared here before any
+> phase-4 commit.
+
+- [ ] T015 [P] Amend `docs/sdlc/flow.md`: row 3b (gate) carries the ci-held option — AND the phase-loop diagram's gate line AND the Lane-variations list (a ci-held sibling bullet beside Batched gates) — phase 1 review F5's widened scope
 - [ ] T016 [P] Amend `adoption/updating.md`: flow-down note — the X amendment arrives via re-expression (§2), what an adopting project's own MINOR bump adopts, and that nothing changes until they ratify it
+- [ ] T016b [P] Sweep the F4 instruments (phase 1 review): `.github/PULL_REQUEST_TEMPLATE.md` + `specs/_templates/human-pr-review-template.md` gate fields gain the ci-held alternative ("EXIT: ___ — or ci-held: run URL + commit sha"); `docs/sdlc/branch-strategy.md` merge condition and `docs/sdlc/review-process.md` step 1 qualified; `README.md` countermeasure row, the two rulebook-template gate items, and `specs/_templates/rollback-template.md` qualified the same way
 - [ ] T017 Flip `docs/roadmap.md` GAP-012 row to `in progress`; final manifest sweep (expect: only phase 3's row); run ritual-checks, report, commit as `phase 4: governance sweep` — **owner runs the certifying gate**
 
 ---
@@ -135,3 +151,20 @@ certification after phase 3, then phase 4 alone — both under the CURRENT user-
 
 `CI-held certification` present in all five law files (grep counts 5/2/3/1/2) +
 `Gate Certification` in CLAUDE.md and plan-template.
+
+### Phase 1 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The law review (`ai-code-review-phase1.md`) returned REQUEST CHANGES: F1–F3 BLOCKING —
+the amendment added the new rule everywhere but left three OLD categorical statements
+standing inside the amended files themselves. All dispositioned (fix-response log in the
+review). Re-validation adds the reviewer's prescribed absence check:
+
+| # | Check | Result |
+|---|---|---|
+| F1 | CLAUDE.md Law bullet | both certification arms; "You never claim success" categorical |
+| F2 | gate-command preamble + Agent-run-gates | both arms in the preamble; agent-run sentence narrowed to "an agent-run gate NEVER certifies in either mode" |
+| F3 | DoD preamble | ci-held timing arm present ("necessarily lands **after** the phase/batch-end commit") |
+| F6 | constitution sync list | names the Gate Certification legal values + Critical exclusion |
+| F7/F9/F11 | plan-template timing sentence · strict-rule batch variant · `<owner>, <date>` example | present |
+| Absence sweep | `grep -n "user-confirmed exit code\|user's exit code\|gate run by the user" ` over the six amended files | zero un-qualified categorical statements remain (every hit sits inside a both-arms sentence) |
+| L8 regression | ritual-checks after fixes | RESULT OK |

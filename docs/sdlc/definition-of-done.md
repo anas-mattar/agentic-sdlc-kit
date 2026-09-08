@@ -10,7 +10,9 @@ Gates apply at two different points, not uniformly at every phase:
 
 - **Gates 1–5** MUST pass at **every phase commit** — a phase is not Done until items 1–5
   below are all true. Gates 1–3 hold before the commit (for a declared batch, gate 3's
-  certifying user-run gate lands once at batch end — gate 3, Batched option); gates 4–5
+  certifying user-run gate lands once at batch end — gate 3, Batched option; under a
+  declared `ci-held` mode, gate 3's certification necessarily lands **after** the
+  phase/batch-end commit, on its CI evidence — gate 3, CI-held option); gates 4–5
   are verified **against** the committed phase (the scope check reads git history, and
   the review examines the commit's diff) — a phase commit that fails them is remediated
   and redone, never carried forward or merged.
@@ -29,7 +31,7 @@ Gates apply at two different points, not uniformly at every phase:
    unrelated changes are bundled in (constitution X), and the phase itself satisfies the
    phase-sizing rule (`.specify/templates/plan-template.md`, Controlled Delivery check):
    independently revertible, one meaningfully independent and testable slice.
-3. **Gate passed with user-confirmed exit code** — the user (not AI) ran the gate
+3. **Gate passed with user-held certification** — by default the user (not AI) ran the gate
    (`docs/sdlc/gate-command.md`) and confirmed the exit code. AI MUST NOT claim
    success without that confirmation (constitution X). The AI MAY run the gate
    during implementation for fast feedback, but an agent-run gate never satisfies

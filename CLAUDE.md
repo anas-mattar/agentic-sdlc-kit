@@ -22,8 +22,9 @@ Package manager: yarn 4.x (corepack)
 - Constitution: `.specify/memory/constitution.md` — supersedes everything, including this file.
   It is the project's ONLY constitution.
 - Definition of Done: `docs/sdlc/definition-of-done.md` — the six gates every phase must pass.
-- Gate command: `docs/sdlc/gate-command.md` — the user runs it; you never claim success
-  without the user-confirmed exit code.
+- Gate command: `docs/sdlc/gate-command.md` — certification is held by the user: the
+  user-confirmed exit code, or (Lite/Standard, plan-declared `ci-held` — constitution X)
+  the owner's recorded approval on the CI evidence triplet. You never claim success.
 
 ## Source of Truth
 
@@ -82,8 +83,9 @@ links to prevail).
 - Do not claim success until the user runs the gate and confirms the exit code — or, on a
   Lite/Standard feature whose approved plan declares `**Gate Certification**: ci-held`,
   until the owner records approval on the evidence triplet (CI run URL + green conclusion
-  + exact phase-commit sha; `docs/sdlc/gate-command.md`). Under ci-held you report the
-  evidence and request that approval; you still never claim success yourself.
+  + exact phase-commit sha — for a declared batch, the batch-end commit;
+  `docs/sdlc/gate-command.md`). Under ci-held you report the evidence and request that
+  approval; you still never claim success yourself.
 - Domain invariants (`{{DOMAIN_INVARIANTS_PATH}}`) carry constitutional force.
 
 ## Task-Scoped Reading

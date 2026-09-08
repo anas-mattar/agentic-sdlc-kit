@@ -97,7 +97,8 @@ Templates requiring updates when this file changes:
   - .specify/templates/tasks-template.md (test-policy language must not contradict Principle VIII)
   - CLAUDE.md (strict rules must not contradict this file)
   - scripts/enforcement-pack.ps1 (encodes constitutional constants — batch-phase cap,
-    Critical cooling-off hours — its $Config MUST change in lockstep with amendments
+    Critical cooling-off hours, the Gate Certification legal values `user-run`/`ci-held`
+    and the Critical ci-held exclusion — these MUST change in lockstep with amendments
     touching them)
 
 Follow-up TODOs (resolve before ratification):

@@ -1,8 +1,12 @@
 # Gate Command
 
-The user must run the gate locally. AI must not claim success without the user's exit code.
-In a team, "the user" means **the feature's owner** — the developer driving this feature's
-agent (`docs/sdlc/team-workflow.md`).
+Certification is held by the user: by default the user runs the gate locally and confirms
+the exit code; on a Lite/Standard feature whose approved plan declares
+`**Gate Certification**: ci-held`, certification is the owner's recorded approval on the
+CI evidence triplet (the "CI-held certification" section below). AI must not claim success
+without the user-held certification, whichever form it takes. In a team, "the user" means
+**the feature's owner** — the developer driving this feature's agent
+(`docs/sdlc/team-workflow.md`).
 
 ## Define this project's gates
 
@@ -61,10 +65,11 @@ echo EXIT: %ERRORLEVEL%
 
 During a phase, the AI agent MAY run the gate itself to get fast feedback, and MUST report
 the exact command and its full output when it does. This changes nothing about who certifies:
-a phase is only **Done** against a gate run by the user, with the exit code confirmed by the
-user (`docs/sdlc/definition-of-done.md`, item 3). The agent MUST NOT present its own gate run
-as that confirmation, and MUST NOT skip asking the user to run the gate because its own run
-passed. **Critical** features go further: agent-run gates are not used at all
+a phase is only **Done** against a certification held by the owner — the user-run gate's
+confirmed exit code, or, under a declared `ci-held` mode, the owner's recorded approval on
+the CI evidence (`docs/sdlc/definition-of-done.md`, item 3). An agent-run gate NEVER
+certifies in either mode: the agent MUST NOT present its own gate run as that confirmation,
+and MUST NOT skip requesting the owner's certification because its own run passed. **Critical** features go further: agent-run gates are not used at all
 (`docs/sdlc/critical-delivery.md`).
 
 ## Batched gates (Lite/Standard only)
@@ -106,7 +111,7 @@ The approval is recorded where phase approvals already live — the feature's PR
 conversation or phase notes. Worked example:
 
 > Gate 3 certified (ci-held): run https://github.com/…/actions/runs/12345, conclusion
-> success, commit `abc1234` (phase 2) — approved, anas.m, 2026-09-08.
+> success, commit `abc1234` (phase 2) — approved, <owner>, <date>.
 
 Boundaries: per-phase (or per declared batch) approval, never blanket; the agent's
 obligations are unchanged — it MUST NOT claim success, and under this mode it reports the
