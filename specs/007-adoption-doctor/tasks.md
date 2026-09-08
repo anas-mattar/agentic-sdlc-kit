@@ -107,9 +107,9 @@ unchanged RESULT; adopted fixture goes red/green with the doctor named.
 - `docs/roadmap.md`
 - `kit-manifest.json`
 
-- [ ] T017 [P] Amend `CLAUDE.md` Task-Scoped Reading: the "Updating an adopted project from the kit" row also points at the doctor (`pwsh -File scripts/verify-kit.ps1` — adoption-integrity verdicts)
-- [ ] T018 Flip `docs/roadmap.md` adoption-doctor row to `in progress` (`shipped` at merge)
-- [ ] T019 Final `kit-manifest.json` verification sweep (expected: zero edits; doctor covered by `scripts/*.ps1`), run `pwsh -File scripts/ritual-checks.ps1`, report output, commit as `phase 4: governance sweep` — **owner runs the certifying gate**
+- [x] T017 [P] Amend `CLAUDE.md` Task-Scoped Reading: the "Updating an adopted project from the kit" row also points at the doctor (`pwsh -File scripts/verify-kit.ps1` — runs at init end, update end, and in adopted-project CI)
+- [x] T018 Flip `docs/roadmap.md` adoption-doctor row to `in progress` (`shipped` at merge)
+- [x] T019 Final `kit-manifest.json` verification sweep — zero edits confirmed: verify-kit covered by the `scripts/*.ps1` verbatim glob (doc-lint classifies 63), `kit-adoption.json` deliberately unclassified (never kit-shipped, research D1); ritual-checks RESULT OK; commit as `phase 4: governance sweep` — **owner runs the certifying gate**
 
 ---
 
