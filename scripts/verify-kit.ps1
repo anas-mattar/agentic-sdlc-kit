@@ -237,7 +237,7 @@ try {
         $kvCommit = $null
         try { $kvCommit = ("$kv" | ConvertFrom-Json).kitCommit } catch {}
         if ("$kvCommit" -match '^[0-9a-f]{7,40}$') {
-            Add-Finding ok 'kit-version' ".kit-version present (kit commit $("$kvCommit".Substring(0, 12))…)" ''
+            Add-Finding ok 'kit-version' ".kit-version present (kit commit $("$kvCommit".Substring(0, [Math]::Min(12, "$kvCommit".Length)))…)" ''
         } elseif ($kv -match '^[0-9a-f]{7,40}$') {
             Add-Finding ok 'kit-version' ".kit-version present (bare commit token $($kv.Substring(0, [Math]::Min(12, $kv.Length)))…)" ''
         } else {
