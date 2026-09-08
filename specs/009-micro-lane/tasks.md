@@ -103,16 +103,16 @@ GateCertification source extension; contract M1–M13 validated.
 - `adoption/updating.md`
 - `docs/roadmap.md`
 
-- [ ] T010 [P] Amend `docs/sdlc/flow.md` (lane-variations Micro bullet) and
+- [x] T010 [P] Amend `docs/sdlc/flow.md` (lane-variations Micro bullet) and
       `docs/sdlc/review-process.md` (after-each-phase wording where it assumes tasks.md
       Territory; promotion named as the FAIL remediation for Micro)
-- [ ] T011 [P] Amend `.github/PULL_REQUEST_TEMPLATE.md` +
+- [x] T011 [P] Amend `.github/PULL_REQUEST_TEMPLATE.md` +
       `specs/_templates/human-pr-review-template.md`: spec/plan/tasks link lines gain the
       Micro arm (mini-spec only)
-- [ ] T012 [P] Amend `adoption/updating.md`: flow-down note for the 0.6.0 amendment
+- [x] T012 [P] Amend `adoption/updating.md`: flow-down note for the 0.6.0 amendment
       (re-expression per §2, adopter's own MINOR bump, template + scripts arrive verbatim,
       nothing changes until ratified)
-- [ ] T013 Flip `docs/roadmap.md` GAP-013 row to `in progress`; W4 absence sweep; run
+- [x] T013 Flip `docs/roadmap.md` GAP-013 row to `in progress`; W4 absence sweep; run
       ritual-checks, report; commit as `phase 3: micro-lane governance sweep` — **batch
       end: report the ci-held evidence triplet (push-event ritual-checks run on this
       commit) and request the owner's recorded approval (plan declaration, research D7)**
@@ -180,6 +180,11 @@ entries/expands to more files"). The spec-dir exclusion is unchanged (implicit e
 uncounted). scope-check also now protects spec.md from deletion on any numbered branch
 (it is the Micro lane's declaration file; deleting it was never legitimate).
 
-### Phase 3 (T013)
+### Phase 3 (T013) — quickstart W1–W4, executed 2026-09-09
 
-*(Output lands here.)*
+| # | Verdict | Evidence |
+|---|---|---|
+| W1 | PASS | flow.md Lane variations gains the **Micro** bullet (mini-spec, one phase, bounds, promotion — summary-only, pointing at constitution X and branch-strategy); steps 2/3b/3d gain the Micro arms; review-process "After Each Phase" items 1/3/4 now read correctly for a Micro feature (territory in spec.md; promotion named as the standing FAIL remediation) |
+| W2 | PASS | PULL_REQUEST_TEMPLATE.md spec/plan/tasks link line + Gate Result checkbox carry the Micro arm; human-pr-review-template.md gains the spec/plan/tasks line (mini-spec alone, eligibility re-verified) and the ci-held Gate Result arm |
+| W3 | PASS | updating.md "Flow-down note: the 2026-09-09 Micro-lane amendment (kit 0.5.0 → 0.6.0)" added (re-expression, adopter's own MINOR bump, machine half + template verbatim but inert until ratified); roadmap GAP-013 row flipped to `in progress` |
+| W4 | PASS with known holds | Sweep greps ("then \`plan.md\`, then \`tasks.md\`" and non-batching "Lite/Standard"): every hit is either fixed in this batch, a historical record left as written (constitution SYNC IMPACT prior-history, updating.md's 0.5.0 note, roadmap gap description), or one of the four out-of-territory instruments held for owner approval since phase 1 review F3 (plan-template.md Constitution Check X ci-held arm, team-workflow.md, backend-rules-template.md, mobile-rules-template.md); ritual-checks RESULT OK (recorded below) |
