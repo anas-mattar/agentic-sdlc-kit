@@ -145,8 +145,10 @@ hand:
 }
 ```
 
-`topology` is `single` or `multi`; `tiers` come from the menu (backend, frontend, mobile,
-database, integration); `kitVersionAtInit` is informational — the kit's constitution
+`topology` is `single` or `multi`; `tiers` are the menu tiers (backend, frontend, mobile,
+database, integration) **or any custom tier** (lowercase name — worker, cli, …; custom
+tiers are first-class, `docs/rulebooks/README.md`) — every declared tier must have its
+instantiated `docs/rulebooks/<tier>-rules.md`; `kitVersionAtInit` is informational — the kit's constitution
 version at init time, or `copy` (the doctor never validates it); `gateProof` is your
 attestation that the gate has been green at least once (adoption step 3) — record the
 exact command (never with secrets in it), the exit code, the date, and who ran it. No

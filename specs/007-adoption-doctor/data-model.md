@@ -9,7 +9,7 @@ All state is repository files; "entities" are record shapes and verdict structur
 | `schemaVersion` | int | `1`; unknown versions ⇒ doctor finding ("newer record than doctor") |
 | `projectName` | string | non-empty |
 | `topology` | string | `single` \| `multi` |
-| `tiers` | string[] | subset of `backend, frontend, mobile, database, integration`; unknown value ⇒ finding, not crash (spec edge case) |
+| `tiers` | string[] | menu tiers (`backend, frontend, mobile, database, integration`) or custom tiers (lowercase `[a-z][a-z0-9-]*` — first-class per `docs/rulebooks/README.md`); every declared tier requires `docs/rulebooks/<tier>-rules.md` (phase 4 review F3, option a); malformed name ⇒ finding, not crash |
 | `initDate` | string | ISO date |
 | `kitVersionAtInit` | string | the kit constitution's version string (e.g. `0.4.1`) when init ran against the unratified kit-shipped constitution, else `copy` (research D1 post-review amendment — an adopted copy has no kit clone to ask for a sha); informational only, never validated by the doctor |
 | `gateProof` | object[] | may be empty (init writes `[]`); see below |

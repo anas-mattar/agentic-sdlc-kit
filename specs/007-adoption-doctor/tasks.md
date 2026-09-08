@@ -246,3 +246,17 @@ The phase 3 review (`ai-code-review-phase3.md`) returned APPROVE with follow-ups
 | F1 fix | `kit-adoption.json` present, NO `.kit-version` | wrapper now RUNS the doctor (`verify-kit OK`, 4 members) — the wrapper/direct-run divergence pair converges |
 | F1 label | tree with neither marker | `verify-kit       n/a (no adoption markers — kit repository or unadopted tree)` — no false "kit repository" claim about unadopted trees |
 | Kit repo regression | wrapper on this repo | 3 OKs + truthful n/a line + `RESULT OK` |
+
+### Phase 4 validation, round 2 (post fresh-context review, 2026-09-08)
+
+The phase 4 review (`ai-code-review-phase4.md`) returned REQUEST CHANGES (F1/F2 BLOCKING —
+four kit-shipped docs still enumerated the wrapper as three members; F3 CONFIRM — closed
+tier set vs custom-tier law); dispositions in its fix-response log.
+
+| # | Scenario | Result |
+|---|---|---|
+| F1/F2 | grep for three-member enumerations after fixes | zero remaining; all four docs name the doctor member |
+| F3a | custom tier `worker` declared WITH `docs/rulebooks/worker-rules.md` | `ok record — … tiers: worker, frontend, backend, database; gate proven` |
+| F3b | custom tier declared WITHOUT rulebook | `FAIL record: declared tier 'worker' has no instantiated rulebook … author it from the custom-tier skeleton (docs/rulebooks/README.md — custom tiers are first-class)` |
+| F5a | `kit-adoption.json` = malformed JSON | `FAIL record: kit-adoption.json does not parse as JSON` — a named finding, not a crash |
+| F5b | `schemaVersion: 2` | `FAIL record: … schemaVersion '2' is not 1 (newer record than this doctor?)` |
