@@ -203,15 +203,21 @@ try {
                 Add-Finding FAIL 'record' 'kit-adoption.json declares no tiers' 'declare the project''s tiers in the record (review F6; shape: adoption/updating.md)'
                 $tierFail = $true
             }
+            # Custom tiers are first-class (docs/rulebooks/README.md; phase 4 review F3,
+            # option a — owner-ratified): ANY declared tier passes iff its instantiated
+            # rulebook exists; the menu is a hint, not a wall.
             foreach ($tier in $declaredTiers) {
-                if ($tier -notin $knownTiers) {
-                    Add-Finding FAIL 'record' "declared tier '$tier' is not a known tier ($($knownTiers -join ', '))" 'fix the tiers list in kit-adoption.json'
+                if ("$tier" -notmatch '^[a-z][a-z0-9-]*$') {
+                    Add-Finding FAIL 'record' "declared tier '$tier' is not a valid tier name (lowercase letters/digits/hyphens)" 'fix the tiers list in kit-adoption.json'
                     $tierFail = $true
                     continue
                 }
                 $rulebook = "docs/rulebooks/$tier-rules.md"
                 if (-not (Test-Path (Join-Path $Root $rulebook))) {
-                    Add-Finding FAIL 'record' "declared tier '$tier' has no instantiated rulebook at $rulebook" 'instantiate it from the tier template (docs/rulebooks/README.md), or remove the tier from kit-adoption.json'
+                    $hint = ($tier -in $knownTiers) `
+                        ? 'instantiate it from the tier template (docs/rulebooks/README.md), or remove the tier from kit-adoption.json' `
+                        : 'author it from the custom-tier skeleton (docs/rulebooks/README.md — custom tiers are first-class), or remove the tier from kit-adoption.json'
+                    Add-Finding FAIL 'record' "declared tier '$tier' has no instantiated rulebook at $rulebook" $hint
                     $tierFail = $true
                 }
             }
