@@ -69,6 +69,10 @@ function Get-DeclaredRepos {
         Write-Line "WARN kit-adoption.json is not valid JSON — no code repositories read (fix the record; scripts/verify-kit.ps1 explains the shape)"
         return @()
     }
+    if ($null -ne $record.codeRepos -and $record.codeRepos -isnot [Array]) {
+        Write-Line "WARN kit-adoption.json codeRepos is not an array — ignoring it (shape: adoption/updating.md)"
+        return @()
+    }
     $entries = @($record.codeRepos | Where-Object { $_ })
     # Entries are single directory names (D2). A path, a traversal or a drive prefix would
     # address a directory outside the governance root — read-only here, but it grades the
@@ -76,7 +80,7 @@ function Get-DeclaredRepos {
     # because a code repository's CI may never run the doctor (phase 1 review, F7).
     $clean = @()
     foreach ($e in $entries) {
-        if ("$e" -notmatch '^[A-Za-z0-9._-]+$' -or "$e" -in @('.', '..')) {
+        if ("$e" -notmatch '^(?!\.+$)[A-Za-z0-9._-]+$') {
             Write-Line "WARN ignoring codeRepos entry '$e' — entries are plain directory names under this repository, not paths (scripts/verify-kit.ps1 explains the shape)"
             continue
         }
@@ -85,12 +89,17 @@ function Get-DeclaredRepos {
     return $clean
 }
 
-# The governance ref whose history carries the declaration: the feature branch when it
-# exists locally, else HEAD (a detached CI checkout of the governance repo).
+# The governance ref whose history carries the declaration. A CI job that clones the
+# governance repository gets its DEFAULT branch, where an in-flight feature's declaration
+# does not exist as a local head — only as refs/remotes/origin/<branch>. Falling straight
+# through to HEAD there reads main, finds no declaration, and degrades a real FAIL into a
+# non-blocking WARN: green, and blind (phases 2-3 review, F1).
 function Get-GovernanceRef {
     param([string]$FeatureBranch)
-    git -C $Root rev-parse --verify --quiet "refs/heads/$FeatureBranch" *> $null
-    if ($LASTEXITCODE -eq 0) { return $FeatureBranch }
+    foreach ($candidate in @("refs/heads/$FeatureBranch", "refs/remotes/origin/$FeatureBranch")) {
+        git -C $Root rev-parse --verify --quiet $candidate *> $null
+        if ($LASTEXITCODE -eq 0) { return $candidate }
+    }
     return 'HEAD'
 }
 
@@ -110,6 +119,31 @@ function Get-BlobAsOf {
     $blob = git -C $Root show "$("$sha".Trim()):$RelPath" 2>$null
     if ($LASTEXITCODE -ne 0) { return $null }
     return $blob
+}
+
+# The declaration as it stands NOW at the governance ref — used only to tell the two
+# no-declaration cases apart (FR-004): a declaration that exists today but not as of the code
+# commit POST-DATES that commit and must FAIL, while one that exists nowhere is a genuine
+# pre-feature history and stays a non-blocking WARN.
+function Get-BlobAtRef {
+    param([string]$GovRef, [string]$RelPath)
+    $blob = git -C $Root show "${GovRef}:$RelPath" 2>$null
+    if ($LASTEXITCODE -ne 0) { return $null }
+    return $blob
+}
+
+# Is there a usable territory declaration for this phase at the governance ref tip?
+function Test-DeclaredAtTip {
+    param([string]$GovRef, [string]$FeatureBranch, [int]$PhaseNumber)
+    $tipSpec = Get-BlobAtRef -GovRef $GovRef -RelPath "specs/$FeatureBranch/spec.md"
+    if (Test-IsMicro -SpecLines @($tipSpec)) {
+        $t = Get-Territory -TasksLines (Get-VisibleLines -Lines @($tipSpec)) -Global
+        return @{ Found = ($t.Found -and $t.Entries.Count -gt 0); Source = "specs/$FeatureBranch/spec.md" }
+    }
+    $tipTasks = Get-BlobAtRef -GovRef $GovRef -RelPath "specs/$FeatureBranch/tasks.md"
+    if (-not $tipTasks) { return @{ Found = $false; Source = "specs/$FeatureBranch/tasks.md" } }
+    $t = Get-Territory -TasksLines @($tipTasks) -PhaseNumber $PhaseNumber
+    return @{ Found = ($t.Found -and $t.Entries.Count -gt 0); Source = "specs/$FeatureBranch/tasks.md" }
 }
 
 # Entries whose first segment names neither a declared repository nor anything that exists
@@ -185,11 +219,9 @@ function Invoke-RepoScopeCheck {
         }
     } else {
         $tasksBlob = Get-BlobAsOf -GovRef $govRef -When $when -RelPath $tasksRel
-        if (-not $tasksBlob) {
-            Write-Line "${RepoName}: WARN phase $phaseN commit ${sha7}: no $tasksRel in the governance repository as of $when (declare the phase's territory before committing the code — non-blocking)"
-            return 'SKIP'
-        }
-        $territory = Get-Territory -TasksLines @($tasksBlob) -PhaseNumber $phaseN
+        $territory = $tasksBlob `
+            ? (Get-Territory -TasksLines @($tasksBlob) -PhaseNumber $phaseN) `
+            : @{ Found = $false; Duplicate = $false; Entries = @(); Invalid = @() }
     }
 
     $remediation = "revert the undeclared change, or amend the phase's **Territory** in $source (owner approval) in a governance commit made BEFORE the code phase commit, then re-commit the phase"
@@ -209,7 +241,16 @@ function Invoke-RepoScopeCheck {
         return 'FAIL'
     }
     if (-not $territory.Found) {
-        Write-Line "${RepoName}: WARN phase $phaseN commit ${sha7}: no territory declared for phase $phaseN in $source as of $when (non-blocking)"
+        # FR-004: a declaration only governs code committed after it lands. If one exists now
+        # but did not when this commit was made, the ordering itself is the violation — FAILing
+        # it is what stops "commit the code, declare the territory afterwards" from being a
+        # permanently green gate (phase 1 review, F2; owner adjudication 2026-09-09).
+        $tip = Test-DeclaredAtTip -GovRef $govRef -FeatureBranch $FeatureBranch -PhaseNumber $phaseN
+        if ($tip.Found) {
+            Write-Line "${RepoName}: FAIL phase $phaseN commit ${sha7}: the phase $phaseN **Territory** in $($tip.Source) POST-DATES this commit ($when) — a declaration only governs code committed after it lands; re-commit the phase on top of the declaration (or declare the territory first, then re-commit)"
+            return 'FAIL'
+        }
+        Write-Line "${RepoName}: WARN phase $phaseN commit ${sha7}: no territory declared for phase $phaseN in $source, at this commit's date or since (non-blocking — a history predating the declaration)"
         return 'SKIP'
     }
 

@@ -46,14 +46,20 @@ with the repository name, so a multi-repo run reads top to bottom.
    `` `fitforge-api/src/Training/**` ``. Each code repository's touched paths are prefixed
    with its declared directory name before matching.
 2. The declaration is read **as of the code commit** (D4): the newest governance commit whose
-   committer date is not after the code commit's, via `git rev-list -1 --before=`. Widening the
-   declaration later is invisible to an earlier commit's verdict.
-3. Source file: `specs/<branch>/tasks.md` under the phase heading; on a feature whose `spec.md`
+   committer date is not after the code commit's **and which touched the declaration file**,
+   via `git rev-list -1 --before= <ref> -- <path>`. The path filter is load-bearing: without
+   it a merged `main` commit answers instead and the verdict degrades to WARN.
+   Widening the declaration later is invisible to an earlier commit's verdict; a declaration
+   that exists now but did not then **FAILs** the commit (FR-004).
+3. The governance ref searched is `refs/heads/<branch>`, then `refs/remotes/origin/<branch>`,
+   then `HEAD` — a CI clone of the governance repository sits on its default branch, where an
+   in-flight feature's declaration exists only as a remote-tracking ref.
+4. Source file: `specs/<branch>/tasks.md` under the phase heading; on a feature whose `spec.md`
    declares `**Delivery Level**: Micro`, the feature-global block in `spec.md` (the lane has no
    `tasks.md`).
-4. The governance check's implicit `specs/<branch>/**` entry is **not** added here: a code
+5. The governance check's implicit `specs/<branch>/**` entry is **not** added here: a code
    repository never contains the governance repo's spec directory, so it would be unreachable.
-5. `-Commit` defaults to the feature branch's tip in each code repository, not to its `HEAD` —
+6. `-Commit` defaults to the feature branch's tip in each code repository, not to its `HEAD` —
    a repository parked on another feature's branch must not be graded as this feature.
 
 ## FAIL message shapes
@@ -88,7 +94,9 @@ deterministic. Verdicts recorded on the 2026-09-09 run, phase 1.
 | C6 | commit without a `phase N` token | not applicable, exit 0 | **not applicable** — `carries no 'phase N' token` |
 | C7 | Micro feature — territory from `spec.md` | graded, PASS and FAIL both reachable | **PASS** (`Micro territory from spec.md`) and **FAIL** (`src/Outside.cs`) both reached |
 | C8 | declaration widened after the code commit | FAIL, exit 1 | **FAIL, exit 1** — declaration widened at 2026-09-04 is invisible to the 2026-09-03 commit |
-| C9 | no declaration as of the code commit | WARN, exit 0 | **WARN, exit 0** — no `tasks.md` in the governance repo as of 2026-09-01T11:00 |
+| C9 | the declaration exists now but post-dates the code commit | FAIL, exit 1 | **FAIL, exit 1** — "the phase 1 **Territory** … POST-DATES this commit" (FR-004; owner adjudication of phase 1 review F2) |
+| C9b | no declaration in governance history at all | WARN, exit 0 | **WARN, exit 0** — a history predating the declaration, non-blocking |
+| C15 | governance cloned at its default branch, feature branch only remote-tracking (the CI shape) | same verdict as a local run | **FAIL, exit 1** — identical to the developer's verdict (phases 2-3 review, F1) |
 | C10 | territory names an undeclared repo prefix | config warning, grading continues | **WARN, graded on** — `demo_api/typo/**` reported once per run |
 | C11 | detached HEAD without `-Branch` | WARN, exit 0 | **WARN, exit 0** — detached governance HEAD without `-Branch` |
 | C7b | Micro feature whose `spec.md` has no Territory block | FAIL, exit 1 | **FAIL, exit 1** — same rule as the in-repo grader, promotion remediation named (phase 1 review, F3) |
