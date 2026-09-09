@@ -240,6 +240,36 @@ Status is not `idea`. **No constitutional change is involved** (the kit's consti
   the row exists without deadlocking itself; every *other* visible claim still has to have
   a row for the branch to go green.
 
+### Flow-down note: the 2026-09-09 cross-repo scope check (kit feature 012 — no constitution amendment)
+
+Machine gate 4 reaches the nested code repositories. **No constitutional change is involved**
+(the kit's constitution stayed 0.6.0); this note is the whole adoption story, and it matters
+most to projects in the nested multi-repo layout — until now, every phase commit containing
+code was outside the scope check's reach (GAP-016).
+
+- **What arrives verbatim**: `scripts/scope-lib.ps1` (new — the parsing/matching helpers, now
+  shared), `scripts/scope-check-repos.ps1` (new — the cross-repo grader),
+  `scripts/scope-check.ps1` (unchanged behavior, now dot-sourcing the library),
+  `scripts/ritual-checks.ps1` (new `scope-repos` member), `scripts/init-kit.ps1` and
+  `scripts/verify-kit.ps1` (the `codeRepos` field), and
+  `.github/workflows/code-repo-scope-check.yml.template` (surgical — you copy it).
+- **It is inert until you declare something.** With no `codeRepos` in `kit-adoption.json`, the
+  member reports `n/a` and your CI verdict is unchanged. A single-repo project never declares
+  it and is unaffected.
+- **What a multi-repo project does**: add `codeRepos` to the record (§4), write this feature's
+  **Territory** entries repo-prefixed from the governance root
+  (`` `your-api/src/**` ``), and copy the code-repo workflow template into each code repository,
+  filling its governance-repository and directory slots. The doctor WARNs until the field is
+  there — absent and empty count the same.
+- **Two rules that bite immediately**: the code repository must carry the same `NNN-name`
+  branch as the governance repository (the Cross-Repository Feature Rule), and the territory
+  must be declared **before** the code is committed — a declaration that post-dates a code
+  phase commit FAILs it, which is the same anti-retroactivity rule the in-repo check has
+  always applied to its own commits.
+- **Reading a code-repo CI run**: PASS or FAIL means it graded. A run showing only WARN or
+  `n/a` graded nothing — a mismatched directory name, a missing branch, or a code repository
+  whose trunk is not `main` (pass `-BaseRef`). Do not accept that as a green gate.
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
