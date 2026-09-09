@@ -93,9 +93,13 @@ freshness.
 
 1. **Given** an adopted project with project-filled law documents, **When** the generator
    runs there, **Then** each digest line quotes the project's own text.
-2. **Given** a kit update delivering the generator, **When** the project has not yet
-   generated digests, **Then** nothing fails — the check activates only once digests (or
-   markers) exist (backward compatible, opt-in by generating).
+2. **Given** a kit update delivering the generator to a tree with no digest markers,
+   **When** the project has not yet generated digests, **Then** nothing fails — the check
+   activates only once markers (or digests) exist. *(Amended at phase 3 review F1, for
+   owner ratification at batch-end approval: a post-010 update also delivers the kit's
+   marker-bearing **verbatim** pack documents, so the flow-down itself includes running
+   the generator and committing the digests with the update — skipping that step FAILs
+   ritual-checks loudly, naming the exact files and fix command, never silently.)*
 
 ### Edge Cases
 
@@ -168,8 +172,12 @@ freshness.
   FAIL ritual-checks with a message naming the digest and the fix command.
 - **SC-003**: Regeneration is one command with zero required arguments in both the kit
   and adopted projects, and produces byte-identical output on repeated runs.
-- **SC-004**: Existing behavior unchanged where the feature is unused: an adopted project
-  without markers/digests passes ritual-checks exactly as before the update.
+- **SC-004**: Existing behavior unchanged where no markers are present: an adopted
+  project without markers/digests passes ritual-checks exactly as before the update. A
+  post-010 flow-down delivers marked verbatim law and therefore pairs it with generated
+  digests in the same flow-down commit — the check enforces the pairing, never fails
+  silently. *(Scope clarified at phase 3 review F1, for owner ratification at batch-end
+  approval.)*
 
 ## Assumptions
 

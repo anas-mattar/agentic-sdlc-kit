@@ -182,12 +182,20 @@ note is the whole adoption story:
   `generated`-class (neither copied nor reported; see the report table in step 1). A
   digest summarizes the law of the repository it lives in, so each project generates its
   own.
-- **Everything is inert until you opt in**: with no markers in your documents and no
-  digest files, the `digests` member reports `n/a (no digest markers)` and changes no
-  verdict. Opt in by adding markers beside the binding rules of **your own** documents
-  (the shipped `digest-packs.json` names the kit-standard pack members — gate-command,
-  review-process, and rollback-process are your surgical copies, so you are marking your
-  own law), then run the generator and commit the digests with the markers:
+- **The flow-down includes generating your digests.** The kit's verbatim pack documents
+  (DoD, flow, branch-strategy, team-workflow, critical-delivery, and this file) now carry
+  digest markers, and the update copies them in — so the moment the marked law lands, the
+  `digests` member demands the digests it produces. Run
+  `pwsh -File scripts/build-digests.ps1` and **commit the generated digests together with
+  the update**; skipping the step fails ritual-checks loudly, naming exactly those digest
+  files and that command — never silently. The `n/a (no digest markers)` inert state
+  belongs only to a tree with no markers anywhere (a pre-010 copy adoption that never
+  updates, or a project that deletes the markers — they are ordinary comment lines in
+  your law, yours to keep or remove).
+- **Marking your own law (optional)**: add markers beside the binding rules of your own
+  documents — gate-command, review-process, rollback-process, and repository-strategy are
+  your surgical copies, so markers there summarize *your* filled-in law — then
+  regenerate:
 
   ```markdown
   <!-- digest: <one-line rule statement, at most 120 chars> -->
@@ -196,8 +204,12 @@ note is the whole adoption story:
   A marker counts only as a standalone line, in exact lowercase grammar, outside HTML
   comment blocks and code fences (this example is safely inside one); a near-miss line
   fails the check rather than vanishing. Bounds: at most 40 lines per pack digest,
-  120 chars per one-liner. From the first commit, CI fails on any drift between a rule
-  and its digest — regenerate with `pwsh -File scripts/build-digests.ps1`.
+  120 chars per one-liner. CI fails on any drift between a rule and its digest —
+  regenerate with `pwsh -File scripts/build-digests.ps1`.
+- **Mirror by hand (surgical)**: the CLAUDE.md Task-Scoped Reading "Orientation first"
+  paragraph — the pointer that sends agents to a pack's digest before the full read —
+  is surgical-class; copy the kit's wording into your own CLAUDE.md, as with the 008/009
+  mirrors above. Without it your digests exist but nothing points agents at them.
 - **Digests are orientation only**: never a source-of-truth rung, never a substitute for
   reading the full document before acting on its area (each digest's header says so).
 

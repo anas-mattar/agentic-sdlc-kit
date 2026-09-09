@@ -244,3 +244,18 @@ The unrendered-markdown defect class (F1's) is added to phase 3's W4 sweep.
   instruments: the CLAUDE.md paragraph sits between the section intro and the table
   (table intact); the updating.md note is its own `###` subsection (report table intact
   after the phase-2 F1 fix, verified in the current file).
+
+### Phase 3 fixes (fresh-context AI review F1–F7) — 2026-09-09
+
+F1 (blocking): the reviewer proved on a seeded target that a post-010 flow-down delivers
+the kit's marker-bearing **verbatim** pack docs, so ritual-checks demands digests before
+any "opt-in" — the note's inertness claim was false on the very path it governs. Fixed:
+the note now makes **generate + commit the digests part of the flow-down step** (loud,
+exact-command FAIL if skipped), scopes `n/a` to marker-free trees, and the spec's
+US3-AS2 + SC-004 are amended in place, **marked for owner ratification at batch-end
+approval**. F2 repository-strategy.md added to the surgical list; F4 new "Mirror by
+hand" bullet (CLAUDE.md orientation paragraph is a surgical mirror); F5 CLAUDE.md points
+at digest-packs.json instead of restating composition; F6 "always current" softened to
+green-branch wording; F3/F7 rejected/accepted with rationale (dispositions in
+`ai-code-review-phase3.md`). Post-fix: digests byte-unchanged (`digests: OK`),
+ritual-checks `RESULT OK`.

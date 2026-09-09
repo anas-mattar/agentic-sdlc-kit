@@ -104,14 +104,13 @@ links to prevail).
 Read the pack that matches what you are about to touch — not everything, every time:
 
 **Orientation first (optional)**: five packs of the table below have a generated one-page
-digest — `docs/digests/delivery-digest.md` (DoD + gate-command + flow),
-`branching-digest.md` (branch/repository strategy + team workflow), `review-digest.md`
-(review + rollback process), `critical-digest.md`, and `adoption-digest.md`
-(updating.md). A digest orients; it is **never a source-of-truth rung and never satisfies
-a "read first" obligation** — before acting on an area, read the full document. Digests
-are written only by `scripts/build-digests.ps1` and CI fails on any drift, so a digest is
-always current with its law. The always-load row (this file + the Definition of Done) is
-unchanged — digests never replace it.
+digest in `docs/digests/` — delivery, branching, review, critical, adoption (member
+documents per pack: `docs/digests/digest-packs.json`, the single source of composition).
+A digest orients; it is **never a source-of-truth rung and never satisfies a "read first"
+obligation** — before acting on an area, read the full document. Digests are written only
+by `scripts/build-digests.ps1`, and CI fails on any drift — on a green branch a digest
+matches its law. The always-load row (this file + the Definition of Done) is unchanged —
+digests never replace it.
 
 | Touching… | Read first |
 |---|---|
