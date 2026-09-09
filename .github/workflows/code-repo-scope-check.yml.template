@@ -1,0 +1,89 @@
+# code-repo-scope-check.yml.template — kit-shipped CI recipe for a NESTED CODE REPOSITORY
+# (kit feature 012, GAP-016; docs/sdlc/repository-strategy.md, "Territory across
+# repositories"). Its sibling, project-gate.yml.template, runs your gate; this one runs
+# Definition of Done gate 4 — the machine scope check — over this repository's phase
+# commits.
+#
+# WHY IT EXISTS: in the nested layout the Territory declaration lives in the GOVERNANCE
+# repository (specs/NNN-name/tasks.md) while the code lives here. Governance CI clones the
+# governance repository alone and reports `n/a` for this repository; this workflow closes
+# that gap from the other side by checking out the governance repository as a sibling and
+# running its checker against this repository's commits.
+#
+# The `.template` suffix keeps this file inert — GitHub never runs it. To use it:
+#
+#   1. COPY it into THIS CODE REPOSITORY as .github/workflows/code-repo-scope-check.yml.
+#      Leave the template untouched in the governance repository: it is surgical-class, so
+#      kit updates report upstream changes but never rewrite your filled copy.
+#   2. Fill GOVERNANCE_REPO with `owner/name` of the governance repository, and
+#      CODE_REPO_DIR with this repository's directory name EXACTLY as it is declared in
+#      the governance repository's kit-adoption.json `codeRepos` — the check prefixes this
+#      repository's paths with that name before matching territory entries, so a mismatch
+#      grades nothing.
+#   3. Private governance repository: create a read-only token (a fine-grained PAT with
+#      Contents: read, or a GitHub App token) and store it as the GOVERNANCE_TOKEN secret.
+#      Public governance repository: delete the `token:` line. NEVER inline a credential.
+#   4. Feature branches must share the same NNN-name in both repositories (the
+#      Cross-Repository Feature Rule) — that is what lets the check find the declaration.
+#
+# What a run means: PASS/not applicable/WARN exit 0; FAIL (an undeclared path) exits 1 and
+# names the file. A repository with no matching branch, or a phase with no declaration yet,
+# is reported and does not fail the run. Recommended once it has run: require the
+# `code-repo-scope-check` status check on this repository's main
+# (docs/sdlc/branch-protection.md).
+
+name: code-repo-scope-check
+
+# PUSH EVENTS ONLY, deliberately: actions/checkout gives a real local branch on a push,
+# while a pull_request checkout is a detached merge preview with no NNN-name branch — the
+# checker would report 'no branch here' and pass without grading anything. The push-event
+# run is also the one CI-held certification cites (docs/sdlc/gate-command.md).
+on:
+  push:
+    branches:
+      - '[0-9][0-9][0-9]-*'
+
+permissions:
+  contents: read
+
+jobs:
+  code-repo-scope-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this code repository
+        uses: actions/checkout@v4
+        with:
+          # the checker walks this branch's history back to its merge base with main
+          fetch-depth: 0
+          path: '{{CODE_REPO_DIR}}'
+
+      - name: Check out the governance repository as the parent
+        uses: actions/checkout@v4
+        with:
+          repository: '{{GOVERNANCE_REPO}}'
+          # delete this line when the governance repository is public
+          token: ${{ secrets.GOVERNANCE_TOKEN }}
+          # the declaration is read as of each code commit's date — full history required
+          fetch-depth: 0
+          path: governance
+
+      - name: Nest the code repository inside the governance checkout
+        shell: bash
+        env:
+          CODE_REPO_DIR: '{{CODE_REPO_DIR}}'
+        run: mv "$CODE_REPO_DIR" "governance/$CODE_REPO_DIR"
+
+      - name: Machine scope check against the declared territory
+        shell: pwsh
+        working-directory: governance
+        # The branch name goes through an env var, NEVER interpolated into `run:` —
+        # github.head_ref is attacker-controlled on fork PRs and refnames may contain
+        # shell metacharacters (same hardening as ritual-checks.yml).
+        env:
+          SCOPE_BRANCH: ${{ github.ref_name }}
+          CODE_REPO_DIR: '{{CODE_REPO_DIR}}'
+        run: >
+          ./scripts/scope-check-repos.ps1
+          -Repo $env:CODE_REPO_DIR
+          -Branch $env:SCOPE_BRANCH
+          -All

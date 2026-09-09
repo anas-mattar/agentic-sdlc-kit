@@ -15,6 +15,8 @@
 - Push the feature branch before merging; merge --no-ff so the merge commit survives; one commit per phase. (`docs/sdlc/branch-strategy.md`)
 - Every deployable project has its own repository; never mix tiers in one repository unless approved in plan.md. (`docs/sdlc/repository-strategy.md`)
 - Nested layout: code repos cloned inside the governance repo, ignored by it — independent repos, never git submodules. (`docs/sdlc/repository-strategy.md`)
+- Multi-repo Territory entries are repo-prefixed from the governance root; scope-check-repos.ps1 grades code repos. (`docs/sdlc/repository-strategy.md`)
+- A code commit is graded against the declaration as of its own date — later widening never turns FAIL into PASS. (`docs/sdlc/repository-strategy.md`)
 - Cross-repo features: contract in contracts/ before any consumer implements; the providing tier gates and merges first. (`docs/sdlc/repository-strategy.md`)
 - Always confirm which repository is active before changing files. (`docs/sdlc/repository-strategy.md`)
 - Every feature has exactly one owner — "the user" means the feature's owner, never a teammate and never the agent. (`docs/sdlc/team-workflow.md`)

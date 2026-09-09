@@ -130,14 +130,20 @@ owns it.
 From the first week:
 
 - **Ritual checks in CI**: the kit ships `.github/workflows/ritual-checks.yml`, which runs
-  `scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check + digests +
-  roadmap-claims + the adoption doctor in adopted projects) on every push to a governed
-  branch. **Finishing adoption includes wiring `ritual-checks` as a required status
+  `scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check + scope-repos +
+  digests + roadmap-claims + the adoption doctor in adopted projects) on every push to a
+  governed branch. **Finishing adoption includes wiring `ritual-checks` as a required status
   check** (`docs/sdlc/branch-protection.md`); until then, or on a CI host other than GitHub
   Actions, run the same single command locally or from your CI:
   `pwsh -File scripts/ritual-checks.ps1` — the wrapper and CI produce identical verdicts by
   construction. Drift between docs and reality is the disease that kills rule-based
   frameworks; a check that runs only by discipline eventually doesn't run.
+- **Multi-repo: give gate 4 reach into the code.** Declare the nested code repositories in
+  **kit-adoption.json**'s `codeRepos` array (`init-kit.ps1` writes it for a `multi`
+  topology) and copy **.github/workflows/code-repo-scope-check.yml.template** into each code
+  repository, filling its two slots. Skip this and the scope check governs only the
+  governance repository, leaving every code phase commit's territory reviewer-verified prose
+  (`docs/sdlc/repository-strategy.md`, "Territory across repositories").
 - **CI gate as second witness**: run the gate on every push. The owner-held certifying
   gate (user-run — or plan-declared `ci-held`, where the CI run itself becomes the
   approved evidence; `docs/sdlc/gate-command.md`) remains the trust ritual; CI catches
