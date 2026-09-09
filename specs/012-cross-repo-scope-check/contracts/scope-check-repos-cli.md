@@ -7,7 +7,7 @@ semantics (parsing, matching, verdicts) — they run the same code (`scripts/sco
 ## Surface
 
 ```powershell
-pwsh -File scripts/scope-check-repos.ps1                        # HEAD of each declared repo
+pwsh -File scripts/scope-check-repos.ps1                        # each declared repo's branch tip
 pwsh -File scripts/scope-check-repos.ps1 -All                   # every phase commit since merge-base (CI mode)
 pwsh -File scripts/scope-check-repos.ps1 -Repo fitforge-api     # one declared repository only
 pwsh -File scripts/scope-check-repos.ps1 -Branch 012-x -All     # explicit branch (detached HEAD / CI)
@@ -18,7 +18,7 @@ pwsh -File scripts/scope-check-repos.ps1 -Root D:\solutions\fitforge
 |---|---|---|
 | `-Root` | governance repository root (holds `specs/`, `kit-adoption.json`) | the script's parent directory |
 | `-Branch` | feature branch name, in both the governance and code repositories | current branch of the governance repository |
-| `-Commit` | grade this one commit in each code repository | `HEAD` |
+| `-Commit` | grade this one commit in each code repository | the feature branch's tip in each repository (§6) |
 | `-Phase` | override phase attribution | parsed from the commit subject |
 | `-All` | grade every non-merge commit since the merge base with `main` | off |
 | `-Repo` | restrict to one declared repository (a code repo's own CI) | all declared |
@@ -97,6 +97,7 @@ deterministic. Verdicts recorded on the 2026-09-09 run, phase 1.
 | C9 | the declaration exists now but post-dates the code commit | FAIL, exit 1 | **FAIL, exit 1** — "the phase 1 **Territory** … POST-DATES this commit" (FR-004; owner adjudication of phase 1 review F2) |
 | C9b | no declaration in governance history at all | WARN, exit 0 | **WARN, exit 0** — a history predating the declaration, non-blocking |
 | C15 | governance cloned at its default branch, feature branch only remote-tracking (the CI shape) | same verdict as a local run | **FAIL, exit 1** — identical to the developer's verdict (phases 2-3 review, F1) |
+| C16 | a run whose every commit is `not applicable` (no phase token) | run-level `n/a`, exit 0 | **n/a, exit 0** — the counter counts gradings, not attempts (re-review N3) |
 | C10 | territory names an undeclared repo prefix | config warning, grading continues | **WARN, graded on** — `demo_api/typo/**` reported once per run |
 | C11 | detached HEAD without `-Branch` | WARN, exit 0 | **WARN, exit 0** — detached governance HEAD without `-Branch` |
 | C7b | Micro feature whose `spec.md` has no Territory block | FAIL, exit 1 | **FAIL, exit 1** — same rule as the in-repo grader, promotion remediation named (phase 1 review, F3) |

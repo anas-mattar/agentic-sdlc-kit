@@ -33,7 +33,7 @@
     or checks out.
 
 .EXAMPLE
-    pwsh -File scripts/scope-check-repos.ps1                     # HEAD of each declared repo
+    pwsh -File scripts/scope-check-repos.ps1                     # each declared repo's branch tip
     pwsh -File scripts/scope-check-repos.ps1 -All                # every phase commit since merge-base
     pwsh -File scripts/scope-check-repos.ps1 -Repo fitforge-api -Branch 014-plans -All
 #>
@@ -375,9 +375,9 @@ foreach ($repoName in $toGrade) {
     }
 
     foreach ($c in $commits) {
-        $graded++
         $verdict = Invoke-RepoScopeCheck -RepoName $repoName -RepoPath $repoPath -Sha $c `
             -FeatureBranch $Branch -PhaseOverride $Phase -Declared $declared
+        if ($verdict -in @('PASS', 'FAIL')) { $graded++ }   # SKIP graded nothing (re-review N3)
         if ($verdict -eq 'FAIL') { $failed = $true }
     }
 }
