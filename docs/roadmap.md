@@ -58,7 +58,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane promotes it in place to Standard) | GAP-013 | P3 | shipped | anas.m | `specs/009-micro-lane/` |
 | Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | shipped | anas.m | `specs/010-law-digests/` |
 | Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
-| Code-repo scope-check reach (thin scripts/ shipped into code repos at adoption, or governance-side check reads sibling working trees; decide shape before adopting a multi-repo project) | GAP-016 | P1 | in progress | anas.m | `specs/012-cross-repo-scope-check/` |
+| Code-repo scope-check reach (thin scripts/ shipped into code repos at adoption, or governance-side check reads sibling working trees; decide shape before adopting a multi-repo project) | GAP-016 | P1 | in progress | anas.m | `[specs/012-cross-repo-scope-check/]` |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
 
 ## Decisions log *(authored)*
@@ -130,3 +130,11 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   sync ratchet GAP-006/GAP-007 already cost two flow-downs, and the territory declaration
   it must read lives in the governance repo either way. The claim's spec carries the
   reasoning; this row exists so a teammate orienting from main sees the work is live.
+- 2026-09-09 Claim-time roadmap flips must write the Spec cell **bracketed**
+  (`` `[specs/NNN-name/]` ``) until the feature merges. Fixed directly on this docs branch
+  rather than promoted to a feature (GAP-002 precedent — one line of governance
+  bookkeeping): feature 011's flip rule and doc-lint's resolvable-path rule collide by
+  construction at claim time, because the spec directory exists only on the feature branch
+  while the flip commit lands on main. CI caught it on the first claim made under the new
+  rule (this one). `docs/sdlc/branch-strategy.md` now states it; the `specified` example row
+  in `specs/_templates/roadmap-template.md` already used the bracketed form.
