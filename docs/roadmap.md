@@ -14,9 +14,10 @@ session findings; the roadmap is authored and never regenerated.
 **Generated from**: adoption flow-back session findings (2026-09-01), feature 003 AI
 reviews, adoption field-lesson candidates (expense-tracker, flowboard), first kit-update
 flow-down findings (2026-09-07, kit 005 → both adopted projects), framework
-self-assessment — pros/cons review (2026-09-07)
-**Generated on**: 2026-09-07 — **by**: manual audit during the 005 flow-down + same-day
-self-assessment session
+self-assessment — pros/cons review (2026-09-07), feature 010 phase-2 AI review
+**Generated on**: 2026-09-09 — **by**: manual audit during the 005 flow-down + same-day
+self-assessment session (2026-09-07), extended with the feature 010 review harvest
+(2026-09-09)
 
 | Inv # | Gap / lesson | Source |
 |---|---|---|
@@ -34,6 +35,7 @@ self-assessment session
 | GAP-012 | Owner is the synchronous bottleneck: every Standard phase (or batch) blocks on the owner running the gate live; no CI-held certification path exists for Lite/Standard even though CI evidence is equally unforgeable | 2026-09-07 self-assessment |
 | GAP-013 | No lane between Lite and Standard: a small-but-real feature (a few files, no schema/dependency/domain risk) pays the full spec/plan/tasks ritual or squeezes illegitimately into `fix/` | 2026-09-07 self-assessment |
 | GAP-014 | Governance context cost: agents load large law documents per session; no generated per-pack digest exists, and a hand-written digest would drift (drift is what kills rule-based frameworks — README) | 2026-09-07 self-assessment |
+| GAP-015 | No check sees a document's *rendered* structure: nothing in the kit renders markdown, so an inline HTML comment (e.g. a `digest:` marker) or a stray blank line placed inside a GFM block — between a table's rows, inside a list continuation — silently severs that block while doc-lint, the digest check and the whole ritual-checks chain stay green. The law still says the right thing and displays the wrong thing; only a human or fresh-context reviewer reading the diff catches it | 010 phase 2 AI review, finding F1 |
 
 ## Roadmap *(authored — humans only, never regenerated)*
 
@@ -88,3 +90,13 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   templates: the tier templates/menu stay deletable (the tier-menu philosophy — an adopted
   project sees only what it picked); verbatim kit docs reference them in bold, and the
   authoring convention in `scripts/doc-lint.ps1`'s header states the rule.
+- 2026-09-09 GAP-015 recorded in the inventory only — **no roadmap row, no feature
+  planned**. It has been observed exactly once (010 phase 2, caught by the fresh-context
+  reviewer before merge, cost one fix commit), and the 2026-09-01 GAP-004 precedent
+  applies: encode enforcement after the field shows the problem recurs, not after its
+  first sighting. Promote it if it appears a second time, or if a rendering break ever
+  reaches `main`. Interim mitigation is the existing ritual, which already worked: review
+  gates 5 and 6 read the diff, and the phase-3 W4 sweep re-read every marked document's
+  rendered structure by eye. A future implementation would most likely be a
+  block-structure lint in `doc-lint.ps1` (assert tables and list blocks are
+  uninterrupted), not a full markdown renderer.
