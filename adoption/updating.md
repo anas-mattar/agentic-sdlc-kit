@@ -267,7 +267,7 @@ edit: reviewed, committed, no different from hand-written project documentation.
 
 `pwsh -File scripts/verify-kit.ps1` audits your project's kit integrity any time (structure
 essentials, unfilled slots in project-owned files, constitution ratification, declared-tier
-rulebooks + gate proof, `.kit-version`). It runs automatically at the end of `init-kit.ps1`
+rulebooks + gate proof, declared code repositories, `.kit-version`). It runs automatically at the end of `init-kit.ps1`
 and of every `update-kit.ps1` apply, and as part of the `ritual-checks` CI in adopted
 projects. It is read-only: it reports, you repair.
 
@@ -307,15 +307,16 @@ tool writes proof entries for you, and `init-kit.ps1` never overwrites an existi
 record — your attestation survives a re-init.
 
 **Multi-repo projects adopted before feature 012** add `codeRepos` by hand — one line, no
-migration tool:
+migration tool. Put it after `topology`, keeping the record valid JSON:
 
 ```json
+  "topology": "multi",
   "codeRepos": ["your-api", "your-web"],
 ```
 
 Until it is there, the doctor WARNs and `scripts/scope-check-repos.ps1` reports `n/a`: the
 code phase commits in those repositories are graded by a reviewer's eye, not by a machine
-(GAP-016). A single-repo project omits the field entirely — its code lives in this
+(GAP-016). An empty array counts as "not there" — same WARN, same silence. A single-repo project omits the field entirely — its code lives in this
 repository, where `scripts/scope-check.ps1` already reaches it.
 
 <!-- digest: kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. -->

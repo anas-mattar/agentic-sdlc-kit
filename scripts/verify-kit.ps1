@@ -227,9 +227,14 @@ try {
             # exactly the silence this field exists to break.
             $repoFail = $false
             $declaredRepos = @($record.codeRepos) | Where-Object { $_ }
-            if ($record.PSObject.Properties.Name -contains 'codeRepos') {
+            if ($null -ne $record.codeRepos -and $record.codeRepos -isnot [Array]) {
+                Add-Finding FAIL 'record' "kit-adoption.json codeRepos is not an array" 'declare it as a JSON array of directory names, e.g. ["your-api", "your-web"] (adoption/updating.md)'
+                $repoFail = $true
+                $declaredRepos = @()
+            }
+            if ($declaredRepos.Count -gt 0) {
                 foreach ($cr in $declaredRepos) {
-                    if ("$cr" -notmatch '^[A-Za-z0-9._-]+$') {
+                    if ("$cr" -notmatch '^(?!\.+$)[A-Za-z0-9._-]+$') {
                         Add-Finding FAIL 'record' "declared codeRepos entry '$cr' is not a plain directory name (no paths, no '..', no drive letters)" 'each entry names a code repository directly under this repository (docs/sdlc/repository-strategy.md, Nested Layout)'
                         $repoFail = $true
                         continue
@@ -239,8 +244,8 @@ try {
                         Add-Finding WARN 'record' "declared codeRepos entry '$cr' is not present here" 'clone it beside this repository (the nested layout), or remove it from kit-adoption.json — a governance-only checkout is a legitimate reason to see this'
                     }
                 }
-            } elseif ($record.topology -eq 'multi') {
-                Add-Finding WARN 'record' 'multi-repo adoption declares no codeRepos' 'declare the nested code repositories so the machine scope check reaches the code (scripts/scope-check-repos.ps1; adoption/updating.md) — without it, code phase commits are reviewer-verified only'
+            } elseif ($record.topology -eq 'multi' -and -not $repoFail) {
+                Add-Finding WARN 'record' 'multi-repo adoption declares no codeRepos (absent, empty, or all entries unusable)' 'declare the nested code repositories so the machine scope check reaches the code (scripts/scope-check-repos.ps1; adoption/updating.md) — without it, code phase commits are reviewer-verified only'
             }
 
             $proofOk = @($record.gateProof) | Where-Object { $_.exitCode -eq 0 }
