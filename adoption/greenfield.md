@@ -25,8 +25,8 @@ exist and exits non-zero on a partial install.
 
 Copy the kit, then fill every `{{SLOT}}` and `TODO(...)` in `.specify/memory/constitution.md`:
 project name, PK standard, audit fields, repository names (or delete principle III for
-single-repo). Write the domain-invariants pack (`modules/finance/finance-invariants.md` is the
-model) and point principle V at it. Bump to v1.0.0 with today's ratification date. Keep it
+single-repo). Write the domain-invariants pack (**modules/finance/finance-invariants.md** is the
+model — bold because you replace or delete it; `modules/**` is surgical) and point principle V at it. Bump to v1.0.0 with today's ratification date. Keep it
 under ~20 principles — a constitution that says everything governs nothing.
 
 ## 2. Fill CLAUDE.md
