@@ -259,3 +259,28 @@ at digest-packs.json instead of restating composition; F6 "always current" softe
 green-branch wording; F3/F7 rejected/accepted with rationale (dispositions in
 `ai-code-review-phase3.md`). Post-fix: digests byte-unchanged (`digests: OK`),
 ritual-checks `RESULT OK`.
+
+### Batch-end certification (gate 3, ci-held — phases 1–3)
+
+Mode declared in `plan.md` before phase 1: **Gate Batching: phases 1-3** and
+**Gate Certification: ci-held** (constitution X; `docs/sdlc/gate-command.md`, CI-held
+certification). The kit repository's project gate IS the ritual checks, so the
+`ritual-checks` push-event run is the evidence. Evidence triplet, as reported to the
+owner and approved by them:
+
+> Gate 3 certified (ci-held): run
+> https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34306506727, conclusion
+> success, commit `2d1c691` (batch end, phases 1–3) — approved, anas.m, 2026-09-09.
+
+The same approval **ratifies the phase 3 review F1 amendment** to `spec.md` (US3-AS2 and
+SC-004): a post-010 flow-down delivers the kit's marker-bearing verbatim pack documents,
+so generating and committing the receiving project's own digests is part of the flow-down
+step; the `n/a (no digest markers)` inert state is scoped to marker-free trees. The
+machine was not changed by that finding — it already failed loudly, naming the exact
+files and the fix command.
+
+Gates 1–5 now stand for every phase in the batch (specification approved before phase 1;
+one approved phase per commit; this certification; `scope-check` PASS on each of
+`dc6bbd6`, `374163c`, `040dbd2`, `0b0627c`, `0f4da69`, `2d1c691`; a fresh-context AI
+review per phase with every finding dispositioned). Gate 6 (human review of the full
+feature diff) remains, at merge.
