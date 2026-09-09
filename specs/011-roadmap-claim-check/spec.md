@@ -2,7 +2,7 @@
 
 **Feature Branch**: `011-roadmap-claim-check`
 **Created**: 2026-09-09
-**Status**: Draft <!-- Draft → Approved (owner) before the phase begins — constitution I, Micro arm -->
+**Status**: Approved (owner, 2026-09-09)
 **Delivery Level**: Micro
 **Gate Certification**: ci-held
 
