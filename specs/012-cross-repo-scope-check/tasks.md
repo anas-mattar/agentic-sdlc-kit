@@ -121,3 +121,38 @@ listed in the adoption docs.
       and declare `codeRepos`
 - [ ] T017 Regenerate digests (`pwsh -File scripts/build-digests.ps1`) — never hand-edited —
       and confirm `ritual-checks.ps1` green
+
+## Phase 4: The enumerations the sweep missed (review F4 + F9)
+
+**Added after the phase 1–3 fresh-context reviews, with owner approval recorded 2026-09-09**
+(constitution X: a Territory amendment lands in a commit BEFORE the work it governs).
+
+**Goal**: close the member-set drift in the two verbatim files that flow down to adopted
+projects, and tell existing adopters what greenfield adopters were told. Durable form: the
+verbatim files stop restating the member list and point at the wrapper, so member number
+eight needs no sweep at all.
+
+**Independent Test**: no kit-shipped file enumerates the ritual-checks members except
+`scripts/ritual-checks.ps1`'s own header and the places that name `scope-repos` correctly;
+`adoption/existing-system.md` carries the multi-repo instruction; `doc-lint` and the
+`digests` check stay green.
+
+**Territory**:
+
+- `.github/workflows/ritual-checks.yml`
+- `docs/sdlc/branch-protection.md`
+- `adoption/existing-system.md`
+- `adoption/updating.md`
+- `docs/digests/`
+
+- [ ] T018 Modify `.github/workflows/ritual-checks.yml`: replace the parenthetical member
+      list in the header comment with a pointer to `scripts/ritual-checks.ps1` (the wrapper
+      is the list) — verbatim class, so this stops the drift flowing down
+- [ ] T019 Modify `docs/sdlc/branch-protection.md`: same treatment — name the single
+      required check and point at the wrapper for its members
+- [ ] T020 Modify `adoption/existing-system.md`: the multi-repo instruction greenfield step 7
+      gained (declare `codeRepos`, install the code-repo CI template), and the corrected
+      member wording
+- [ ] T021 Modify `adoption/updating.md` §2: the feature 012 flow-down note, per the
+      008/009/010/011 precedent — what an adopted project must do on receiving this feature
+- [ ] T022 Regenerate digests and confirm `ritual-checks.ps1` green
