@@ -14,10 +14,11 @@ session findings; the roadmap is authored and never regenerated.
 **Generated from**: adoption flow-back session findings (2026-09-01), feature 003 AI
 reviews, adoption field-lesson candidates (expense-tracker, flowboard), first kit-update
 flow-down findings (2026-09-07, kit 005 → both adopted projects), framework
-self-assessment — pros/cons review (2026-09-07), feature 010 phase-2 AI review
+self-assessment — pros/cons review (2026-09-07), feature 010 phase-2 AI review, first
+post-010 field use (expense-tracker session, 2026-09-09)
 **Generated on**: 2026-09-09 — **by**: manual audit during the 005 flow-down + same-day
-self-assessment session (2026-09-07), extended with the feature 010 review harvest
-(2026-09-09)
+self-assessment session (2026-09-07), extended with the feature 010 review harvest and
+the first post-010 field-use lessons (2026-09-09)
 
 | Inv # | Gap / lesson | Source |
 |---|---|---|
@@ -36,6 +37,8 @@ self-assessment session (2026-09-07), extended with the feature 010 review harve
 | GAP-013 | No lane between Lite and Standard: a small-but-real feature (a few files, no schema/dependency/domain risk) pays the full spec/plan/tasks ritual or squeezes illegitimately into `fix/` | 2026-09-07 self-assessment |
 | GAP-014 | Governance context cost: agents load large law documents per session; no generated per-pack digest exists, and a hand-written digest would drift (drift is what kills rule-based frameworks — README) | 2026-09-07 self-assessment |
 | GAP-015 | No check sees a document's *rendered* structure: nothing in the kit renders markdown, so an inline HTML comment (e.g. a `digest:` marker) or a stray blank line placed inside a GFM block — between a table's rows, inside a list continuation — silently severs that block while doc-lint, the digest check and the whole ritual-checks chain stay green. The law still says the right thing and displays the wrong thing; only a human or fresh-context reviewer reading the diff catches it | 010 phase 2 AI review, finding F1 |
+| GAP-016 | The machine scope check (gate 4) cannot reach nested code repos: in the nested-repo layout the code repositories carry no kit scripts, and `docs/sdlc/repository-strategy.md` is silent on it — so `scripts/scope-check.ps1` only ever governs the governance repo, while every phase commit that contains code lives in a repo the check cannot see. Territory declarations for code phases are reviewer-verified prose, not machine-verified. Candidate fix shapes: ship a thin scripts/ set into code repos at adoption, or a governance-side check that reads the code repos as sibling working trees | 2026-09-09 first post-010 field use (expense-tracker) |
+| GAP-017 | A paused feature branch makes main's roadmap lie, and nothing checks it: an adopted project's feature 003 sat 13 days with an approved spec and a delivered, gated, AI-reviewed phase 1 on an unmerged branch while main's roadmap row still read idea with no spec link — any agent orienting from main would have concluded the feature was unstarted and re-specced it. The status flip lives on the branch, invisible until merge | 2026-09-09 first post-010 field use (expense-tracker) |
 
 ## Roadmap *(authored — humans only, never regenerated)*
 
@@ -54,6 +57,9 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | CI-held certifying gate for Lite/Standard (gate evidence = unforgeable CI run on the branch; owner approves on evidence asynchronously; user-run gate stays law for Critical) | GAP-012 | P2 | shipped | anas.m | `specs/008-ci-held-gate/` |
 | Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane promotes it in place to Standard) | GAP-013 | P3 | shipped | anas.m | `specs/009-micro-lane/` |
 | Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | shipped | anas.m | `specs/010-law-digests/` |
+| Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | idea | — | — |
+| Code-repo scope-check reach (thin scripts/ shipped into code repos at adoption, or governance-side check reads sibling working trees; decide shape before adopting a multi-repo project) | GAP-016 | P2 | idea | — | — |
+| Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
 
 ## Decisions log *(authored)*
 
@@ -100,3 +106,18 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   rendered structure by eye. A future implementation would most likely be a
   block-structure lint in `doc-lint.ps1` (assert tables and list blocks are
   uninterrupted), not a full markdown renderer.
+- 2026-09-09 **GAP-015's promotion trigger was met the same day it was recorded.** The
+  entry above says "promote it if it appears a second time"; sighting #2 arrived hours
+  later in an adopted project's phase-1 review record — two inline-code spans holding
+  unescaped pipe characters turned a 2-column evidence row into 9 cells, scrambling the
+  domain-invariants evidence a human reviewer had to read. Same mechanism, both sightings
+  caught only by hand while every machine check stayed green. Roadmap row added
+  (rendered-structure lint, P2); the implementation sketch in the entry above stands.
+- 2026-09-09 First post-010 field use recorded GAP-016 and GAP-017 (this docs commit —
+  record before fixing, per the GAP-002/GAP-015 precedent). Sequenced as the pre-test bar
+  for the first multi-developer adoption: GAP-017's check is P1 because a stale roadmap
+  actively misleads any teammate orienting from main (the only recorded edge that
+  produces wrong decisions rather than missing enforcement); GAP-016 is P2 because it
+  bites only nested-repo projects — its fix shape must be decided before adopting one,
+  but a single-repo adoption is unaffected. GAP-004 stays deferred: a multi-developer
+  test is exactly the field that will show whether pipelining abuse is real.
