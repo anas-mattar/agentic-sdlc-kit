@@ -57,7 +57,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | CI-held certifying gate for Lite/Standard (gate evidence = unforgeable CI run on the branch; owner approves on evidence asynchronously; user-run gate stays law for Critical) | GAP-012 | P2 | shipped | anas.m | `specs/008-ci-held-gate/` |
 | Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane promotes it in place to Standard) | GAP-013 | P3 | shipped | anas.m | `specs/009-micro-lane/` |
 | Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | shipped | anas.m | `specs/010-law-digests/` |
-| Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | in progress | anas.m | `specs/011-roadmap-claim-check/` |
+| Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
 | Code-repo scope-check reach (thin scripts/ shipped into code repos at adoption, or governance-side check reads sibling working trees; decide shape before adopting a multi-repo project) | GAP-016 | P2 | idea | — | — |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
 
