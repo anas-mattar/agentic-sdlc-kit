@@ -58,7 +58,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane promotes it in place to Standard) | GAP-013 | P3 | shipped | anas.m | `specs/009-micro-lane/` |
 | Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | shipped | anas.m | `specs/010-law-digests/` |
 | Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
-| Code-repo scope-check reach (thin scripts/ shipped into code repos at adoption, or governance-side check reads sibling working trees; decide shape before adopting a multi-repo project) | GAP-016 | P1 | in progress | anas.m | `[specs/012-cross-repo-scope-check/]` |
+| Code-repo scope-check reach (governance-side `scope-check-repos.ps1` reads the nested code repos as sibling working trees and grades their phase commits against repo-prefixed Territory, resolved as of each code commit; `codeRepos` in the adoption record; code-repo CI template) | GAP-016 | P1 | shipped | anas.m | `specs/012-cross-repo-scope-check/` |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
 
 ## Decisions log *(authored)*
@@ -138,3 +138,14 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   while the flip commit lands on main. CI caught it on the first claim made under the new
   rule (this one). `docs/sdlc/branch-strategy.md` now states it; the `specified` example row
   in `specs/_templates/roadmap-template.md` already used the bracketed form.
+- 2026-09-09 Feature 012 shipped; GAP-016 closed. Gate 4 now reaches the nested code
+  repositories: `scripts/scope-check-repos.ps1` grades each declared code repo's phase
+  commits against repo-prefixed Territory read from the governance repo, resolved **as of
+  the code commit's committer date and filtered by path** so a later `git merge main`
+  cannot backdate a declaration. One asymmetry is deliberate and recorded in the Definition
+  of Done: a missing in-repo declaration WARNs (pre-006 compatibility), while a code commit
+  that predates its declaration FAILs — cross-repo territory has no legacy to protect.
+  Three fresh-context reviews found four blocking defects the implementing session missed,
+  and **every one was the same shape: a silent downgrade to WARN/exit 0** — green and
+  blind. That is the failure mode to hunt for in any check this kit adds next; a check that
+  cannot fail is worse than no check, because it also buys false confidence.
