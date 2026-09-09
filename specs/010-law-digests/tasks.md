@@ -100,14 +100,14 @@ them yet.
 - `adoption/updating.md`
 - `docs/roadmap.md`
 
-- [ ] T009 [P] Amend CLAUDE.md Task-Scoped Reading: per-pack digest offered as the
+- [x] T009 [P] Amend CLAUDE.md Task-Scoped Reading: per-pack digest offered as the
       orientation read (`docs/digests/<pack>-digest.md`), full documents remain the
       acting read; always-load row untouched; authority note (digest never a ladder rung
       — FR-009)
-- [ ] T010 [P] Amend adoption/updating.md: flow-down note for 010 (generator + manifest
+- [x] T010 [P] Amend adoption/updating.md: flow-down note for 010 (generator + manifest
       verbatim; digests generated per project, never synced; opt-in by marking own docs;
       inert until then — SC-004)
-- [ ] T011 Flip roadmap GAP-014 → in progress; W4 authority sweep; ritual-checks; commit
+- [x] T011 Flip roadmap GAP-014 → in progress; W4 authority sweep; ritual-checks; commit
       as `phase 3: digest pointers + flow-down note` — **batch end: report the ci-held
       evidence triplet (push-event ritual-checks run on this commit) and request the
       owner's recorded approval**
@@ -220,3 +220,27 @@ to mirror their rules' actual scope (final-phase rebase wording; pipelining's
 acknowledged, no change (dispositions in `ai-code-review-phase2.md`). Post-fix:
 regenerate + `digests: OK (5 digest(s) fresh, 68 marker(s))`, ritual-checks `RESULT OK`.
 The unrendered-markdown defect class (F1's) is added to phase 3's W4 sweep.
+
+### Phase 3 (T011) — 2026-09-09, quickstart W1–W4
+
+- **W1**: CLAUDE.md Task-Scoped Reading gained an "Orientation first (optional)"
+  paragraph naming all five digests as the orientation read; it states the digest "is
+  never a source-of-truth rung and never satisfies a 'read first' obligation — before
+  acting on an area, read the full document"; the always-load row is untouched and
+  explicitly declared unchanged.
+- **W2**: updating.md gained the 010 flow-down note ("no constitution amendment" —
+  nothing to re-express): generator + digest-packs.json + ritual-checks arrive verbatim;
+  the kit's digests never flow (`generated` class, report-table row); opt-in by marking
+  the project's OWN documents, with the marker syntax shown safely inside a code fence
+  (fence exclusion — phase 1 F3 fix); inert until then (`n/a (no digest markers)`,
+  SC-004).
+- **W3**: roadmap GAP-014 → `in progress`; ritual-checks `RESULT OK` (doc-lint,
+  enforcement-pack, scope-check, digests all OK).
+- **W4** (authority sweep + the phase-2 F1 render class): grep of every shipped
+  instrument for "digest" — every mention presents digests as generated,
+  orientation-only, non-authoritative (CLAUDE.md pointer, digest headers, updating.md
+  note); no instrument presents a digest as a ladder rung or as satisfying a read-first
+  obligation; constitution II untouched. Render spot-check of the two amended
+  instruments: the CLAUDE.md paragraph sits between the section intro and the table
+  (table intact); the updating.md note is its own `###` subsection (report table intact
+  after the phase-2 F1 fix, verified in the current file).

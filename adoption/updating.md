@@ -168,6 +168,39 @@ arrives by **re-expression** (this section's procedure), never by copy:
 - **Nothing changes until you ratify it.** Absent a declaration, every numbered feature
   is Standard — exactly as before.
 
+### Flow-down note: the 2026-09-09 law digests (kit feature 010 — no constitution amendment)
+
+The kit grew a per-pack law-digest machine: curated one-line markers beside binding rules,
+a deterministic generator, and a CI freshness check. **No constitutional change is
+involved** (the kit's constitution stayed 0.6.0) — there is nothing to re-express; this
+note is the whole adoption story:
+
+- **What arrives verbatim**: `scripts/build-digests.ps1` (generator + `-Check`),
+  `docs/digests/digest-packs.json` (pack composition), and the updated
+  `scripts/ritual-checks.ps1` with its `digests` member.
+- **What never arrives**: the kit's own `docs/digests/*-digest.md` files — they are
+  `generated`-class (neither copied nor reported; see the report table in step 1). A
+  digest summarizes the law of the repository it lives in, so each project generates its
+  own.
+- **Everything is inert until you opt in**: with no markers in your documents and no
+  digest files, the `digests` member reports `n/a (no digest markers)` and changes no
+  verdict. Opt in by adding markers beside the binding rules of **your own** documents
+  (the shipped `digest-packs.json` names the kit-standard pack members — gate-command,
+  review-process, and rollback-process are your surgical copies, so you are marking your
+  own law), then run the generator and commit the digests with the markers:
+
+  ```markdown
+  <!-- digest: <one-line rule statement, at most 120 chars> -->
+  ```
+
+  A marker counts only as a standalone line, in exact lowercase grammar, outside HTML
+  comment blocks and code fences (this example is safely inside one); a near-miss line
+  fails the check rather than vanishing. Bounds: at most 40 lines per pack digest,
+  120 chars per one-liner. From the first commit, CI fails on any drift between a rule
+  and its digest — regenerate with `pwsh -File scripts/build-digests.ps1`.
+- **Digests are orientation only**: never a source-of-truth rung, never a substitute for
+  reading the full document before acting on its area (each digest's header says so).
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
