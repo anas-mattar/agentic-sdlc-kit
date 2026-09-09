@@ -51,7 +51,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Adoption doctor (`verify-kit.ps1`: audits slots, structure, gate proof, tier rulebooks, `.kit-version`; runs post-init, post-update, and in adopted-project CI) | GAP-011 | P2 | shipped | anas.m | `specs/007-adoption-doctor/` |
 | CI-held certifying gate for Lite/Standard (gate evidence = unforgeable CI run on the branch; owner approves on evidence asynchronously; user-run gate stays law for Critical) | GAP-012 | P2 | shipped | anas.m | `specs/008-ci-held-gate/` |
 | Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane promotes it in place to Standard) | GAP-013 | P3 | shipped | anas.m | `specs/009-micro-lane/` |
-| Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | in progress | anas.m | `specs/010-law-digests/` |
+| Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | shipped | anas.m | `specs/010-law-digests/` |
 
 ## Decisions log *(authored)*
 
@@ -73,6 +73,15 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   gates (GAP-012, which relies on the verification pack's checks existing), then micro lane
   (GAP-013) and law digests (GAP-014). Deliberately NOT planned: removing human review or the
   Critical lane's synchronous user-run gate — those are the framework's identity.
+- 2026-09-09 **The 2026-09-07 self-assessment roadmap is closed**: GAP-014 (law digests)
+  shipped via PR #23, the last of the seven gaps that assessment opened. The digest
+  machinery answers the gap's own objection — "a hand-written digest would drift" — by
+  never letting a human write the digest: curated one-liners live beside the rules,
+  `scripts/build-digests.ps1` assembles them, and `ritual-checks`' `digests` member fails
+  the branch on any divergence. Digests are orientation only, never a source-of-truth
+  rung; no constitutional amendment was needed (0.6.0 stands). Remaining open inventory
+  row: GAP-004 (pipelining WIP check), still deliberately deferred — see the 2026-09-01
+  entry.
 - 2026-09-07 GAP-006 and GAP-007 fixed directly on `fix/flow-down-gaps` (GAP-002 precedent).
   GAP-006: init-kit's slot fill now resolves targets through `kit-manifest.json` and never
   touches verbatim files. GAP-007 resolved as the **bold-reference rule**, not undeletable
