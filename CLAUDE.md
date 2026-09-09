@@ -103,6 +103,15 @@ links to prevail).
 
 Read the pack that matches what you are about to touch — not everything, every time:
 
+**Orientation first (optional)**: five packs of the table below have a generated one-page
+digest in `docs/digests/` — delivery, branching, review, critical, adoption (member
+documents per pack: `docs/digests/digest-packs.json`, the single source of composition).
+A digest orients; it is **never a source-of-truth rung and never satisfies a "read first"
+obligation** — before acting on an area, read the full document. Digests are written only
+by `scripts/build-digests.ps1`, and CI fails on any drift — on a green branch a digest
+matches its law. The always-load row (this file + the Definition of Done) is unchanged —
+digests never replace it.
+
 | Touching… | Read first |
 |---|---|
 | Any phase (always) | This file + `docs/sdlc/definition-of-done.md` |
