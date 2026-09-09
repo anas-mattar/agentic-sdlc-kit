@@ -22,6 +22,7 @@ pwsh -File scripts/scope-check-repos.ps1 -Root D:\solutions\fitforge
 | `-Phase` | override phase attribution | parsed from the commit subject |
 | `-All` | grade every non-merge commit since the merge base with `main` | off |
 | `-Repo` | restrict to one declared repository (a code repo's own CI) | all declared |
+| `-BaseRef` | the code repository's trunk, for the `-All` merge base | tried in order: `origin/main`, `main`, `origin/master`, `master`, `origin/HEAD` |
 
 Read-only: the script never writes, fetches, or checks out.
 
@@ -33,7 +34,8 @@ Read-only: the script never writes, fetches, or checks out.
 | not applicable | nothing to grade (no matching branch, no phase token, merge commit, trunk) | 0 |
 | n/a | the check cannot apply here (no `codeRepos`, tree absent, not a git repo) | 0 |
 | WARN | no declaration as of the code commit; detached HEAD without `-Branch` | 0 |
-| FAIL | an undeclared path, or a malformed/duplicated declaration | 1 |
+| FAIL | an undeclared path, a malformed/duplicated declaration, or a Micro feature with no usable Territory block | 1 |
+| ERROR | the run cannot proceed: an unresolvable commit, an unreadable committer date, or `-Repo` naming an undeclared repository | 1 |
 
 Overall exit is 1 iff at least one repository FAILs. One verdict block per repository, prefixed
 with the repository name, so a multi-repo run reads top to bottom.
@@ -49,8 +51,10 @@ with the repository name, so a multi-repo run reads top to bottom.
 3. Source file: `specs/<branch>/tasks.md` under the phase heading; on a feature whose `spec.md`
    declares `**Delivery Level**: Micro`, the feature-global block in `spec.md` (the lane has no
    `tasks.md`).
-4. The feature's own spec directory is implicitly in territory, as in the governance check —
-   it never appears in a code repository, so it is inert here.
+4. The governance check's implicit `specs/<branch>/**` entry is **not** added here: a code
+   repository never contains the governance repo's spec directory, so it would be unreachable.
+5. `-Commit` defaults to the feature branch's tip in each code repository, not to its `HEAD` —
+   a repository parked on another feature's branch must not be graded as this feature.
 
 ## FAIL message shapes
 
@@ -87,6 +91,10 @@ deterministic. Verdicts recorded on the 2026-09-09 run, phase 1.
 | C9 | no declaration as of the code commit | WARN, exit 0 | **WARN, exit 0** — no `tasks.md` in the governance repo as of 2026-09-01T11:00 |
 | C10 | territory names an undeclared repo prefix | config warning, grading continues | **WARN, graded on** — `demo_api/typo/**` reported once per run |
 | C11 | detached HEAD without `-Branch` | WARN, exit 0 | **WARN, exit 0** — detached governance HEAD without `-Branch` |
+| C7b | Micro feature whose `spec.md` has no Territory block | FAIL, exit 1 | **FAIL, exit 1** — same rule as the in-repo grader, promotion remediation named (phase 1 review, F3) |
+| C12 | governance branch that merged `main` between the declaration and the code commit | FAIL, exit 1 | **FAIL, exit 1** — the declaring commit is resolved by path, so an unrelated merged commit cannot mask the stray (phase 1 review, F1) |
+| C13 | code repository parked on a different feature's branch | grade the feature branch | **PASS on the feature branch's tip**, exit 0 — the other branch's commit is never graded (phase 1 review, F4) |
+| C14 | code repository whose trunk is `develop`, `-All` | loud WARN, then graded with `-BaseRef` | **WARN naming that nothing was graded**, exit 0; with `-BaseRef develop` the stray **FAILs**, exit 1 (phase 1 review, F5) |
 
 Behavior preservation: after the `scope-lib.ps1` extraction, the 006 contract scenarios re-run
 against `scripts/scope-check.ps1` must produce identical verdicts.

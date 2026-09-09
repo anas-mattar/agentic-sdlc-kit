@@ -43,12 +43,14 @@ param(
     [int]$Phase = 0,
     [string]$Branch,
     [string]$Repo,
+    [string]$BaseRef,
     [switch]$All,
     [string]$Root = (Split-Path -Parent $PSScriptRoot)
 )
 
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path $Root).Path
+$explicitCommit = $PSBoundParameters.ContainsKey('Commit')
 
 . (Join-Path $PSScriptRoot 'scope-lib.ps1')   # shared territory parsing / matching (D6)
 
@@ -67,7 +69,20 @@ function Get-DeclaredRepos {
         Write-Line "WARN kit-adoption.json is not valid JSON — no code repositories read (fix the record; scripts/verify-kit.ps1 explains the shape)"
         return @()
     }
-    return @($record.codeRepos | Where-Object { $_ })
+    $entries = @($record.codeRepos | Where-Object { $_ })
+    # Entries are single directory names (D2). A path, a traversal or a drive prefix would
+    # address a directory outside the governance root — read-only here, but it grades the
+    # wrong tree. The doctor FAILs these (feature 012 phase 2); the grader refuses them too,
+    # because a code repository's CI may never run the doctor (phase 1 review, F7).
+    $clean = @()
+    foreach ($e in $entries) {
+        if ("$e" -notmatch '^[A-Za-z0-9._-]+$' -or "$e" -in @('.', '..')) {
+            Write-Line "WARN ignoring codeRepos entry '$e' — entries are plain directory names under this repository, not paths (scripts/verify-kit.ps1 explains the shape)"
+            continue
+        }
+        $clean += "$e"
+    }
+    return $clean
 }
 
 # The governance ref whose history carries the declaration: the feature branch when it
@@ -80,11 +95,17 @@ function Get-GovernanceRef {
 }
 
 # The declaration as it stood at $When (D4): blob text of $RelPath from the newest
-# governance commit not after that instant. Returns $null when there is no such commit or
-# the file did not exist yet.
+# governance commit not after that instant THAT TOUCHED THAT PATH. The path filter is not an
+# optimization — without it rev-list answers with the newest commit anywhere in the reachable
+# graph, so merging main into the governance branch (or a pull_request merge HEAD) returns a
+# commit that never carried the declaration, and a real FAIL silently becomes a WARN
+# (phase 1 review, F1). The blob only changes at commits that touch the path, so the newest
+# such commit at or before the date IS the state as of that date.
+# Returns $null when no such commit exists (the file never existed yet, or the newest
+# touching commit deleted it) — the caller's WARN path.
 function Get-BlobAsOf {
     param([string]$GovRef, [string]$When, [string]$RelPath)
-    $sha = git -C $Root rev-list -1 --before="$When" $GovRef 2>$null
+    $sha = git -C $Root rev-list -1 --before="$When" $GovRef -- $RelPath 2>$null
     if ($LASTEXITCODE -ne 0 -or -not $sha) { return $null }
     $blob = git -C $Root show "$("$sha".Trim()):$RelPath" 2>$null
     if ($LASTEXITCODE -ne 0) { return $null }
@@ -155,6 +176,13 @@ function Invoke-RepoScopeCheck {
 
     if ($isMicro) {
         $territory = Get-Territory -TasksLines (Get-VisibleLines -Lines @($specBlob)) -Global
+        # Same rule as the in-repo grader: the mini-spec template requires a Territory block
+        # and the lane has no pre-existing features to grandfather, so its absence is a FAIL,
+        # not the Standard lane's compatibility WARN (phase 1 review, F3).
+        if (-not $territory.Found -or $territory.Entries.Count -eq 0) {
+            Write-Line "${RepoName}: FAIL phase $phaseN commit ${sha7}: this Micro feature declares no usable **Territory** block in $specRel — fix the declaration in a governance commit made BEFORE the code phase commit, or promote to Standard: expand spec.md to the full template, add plan.md + tasks.md (Territory moves there), before the next phase commit (constitution X, Micro lane)"
+            return 'FAIL'
+        }
     } else {
         $tasksBlob = Get-BlobAsOf -GovRef $govRef -When $when -RelPath $tasksRel
         if (-not $tasksBlob) {
@@ -277,8 +305,12 @@ foreach ($repoName in $toGrade) {
 
     $commits = @()
     if ($All) {
+        # Code repositories are pre-existing independent repositories: their trunk is often
+        # master or develop, unlike the kit-created governance repo (phase 1 review, F5).
         $base = $null
-        foreach ($c in @('origin/main', 'main')) {
+        $candidates = @('origin/main', 'main', 'origin/master', 'master', 'origin/HEAD')
+        if ($BaseRef) { $candidates = @($BaseRef) }
+        foreach ($c in $candidates) {
             git -C $repoPath rev-parse --verify --quiet $c *> $null
             if ($LASTEXITCODE -eq 0) {
                 $b = git -C $repoPath merge-base $Branch $c 2>$null
@@ -286,7 +318,7 @@ foreach ($repoName in $toGrade) {
             }
         }
         if (-not $base) {
-            Write-Line "${repoName}: WARN could not resolve a merge base with main — nothing checked"
+            Write-Line "${repoName}: WARN could not resolve a merge base with a trunk ($($candidates -join ', ')) — NOTHING WAS GRADED in this repository; pass -BaseRef <ref> naming its trunk"
             continue
         }
         $commits = @((git -C $repoPath rev-list --reverse --no-merges "$base..$Branch" 2>$null) | Where-Object { $_ })
@@ -295,7 +327,10 @@ foreach ($repoName in $toGrade) {
             continue
         }
     } else {
-        $commits = @($Commit)
+        # HEAD may sit on an entirely different feature's branch — grading it produces a
+        # verdict about work this feature never did (phase 1 review, F4). Default to the
+        # feature branch's tip; honour -Commit only when the caller passed it.
+        $commits = @($explicitCommit ? $Commit : $Branch)
     }
 
     foreach ($c in $commits) {
@@ -306,6 +341,8 @@ foreach ($repoName in $toGrade) {
     }
 }
 
-if ($graded -eq 0) { Write-Line 'nothing to grade in the declared code repositories' }
+# An n/a-shaped line so scripts/ritual-checks.ps1 lifts the reason into its summary instead
+# of printing a bare OK for a run that graded nothing (phase 1 review, F6).
+if ($graded -eq 0) { Write-Line "n/a (nothing was graded in the declared code repositories for '$Branch' — the reason is on the line(s) above)" }
 if ($failed) { exit 1 }
 exit 0
