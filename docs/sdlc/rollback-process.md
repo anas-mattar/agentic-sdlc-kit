@@ -3,6 +3,8 @@
 Prefer `git revert`. Each implementation phase is its own commit precisely so that a bad phase
 reverts cleanly (see `docs/sdlc/branch-strategy.md`).
 
+<!-- digest: Prefer git revert — each phase is its own commit so a bad phase reverts cleanly. -->
+
 ## Rollback Checklist
 
 - Can this phase be reverted by commit?
@@ -27,6 +29,9 @@ Some domain data must never be physically deleted as a rollback mechanism — se
   If a rollback would require touching protected data, **stop and report**; resolve it through
   a correcting entry, not a delete.
 - A rollback that cannot preserve protected-data immutability is not approved.
+
+<!-- digest: Never DELETE or DROP protected domain records to undo a change — correct through additive, auditable mechanisms. -->
+<!-- digest: A rollback that cannot preserve protected-data immutability is not approved — stop and report. -->
 
 *(Worked example: in a financial system, posted journals are append-only; corrections are
 reversals, never edits or deletes — see `modules/finance/finance-invariants.md`.)*

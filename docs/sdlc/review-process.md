@@ -6,6 +6,8 @@ Required for any phase that touches UI when the feature has visual references
 (`specs/[feature]/screenshots/`). The agent MUST NOT ask the user to run the gate while
 this loop is open. "Looks close" is not a resolution.
 
+<!-- digest: Never ask for the gate while the Visual Compliance Loop is open — "looks close" is not a resolution. -->
+
 1. **Render the real output.** Start the app and capture a screenshot of the implemented
    screen at the **same viewport size** as the reference — web via browser automation;
    mobile via the emulator (`adb exec-out screencap -p` / `xcrun simctl io booted screenshot`).
@@ -27,6 +29,8 @@ this loop is open. "Looks close" is not a resolution.
 
 Exit rule: empty table, or user-approved rows only. Attach the final table and both
 screenshots to the phase notes — the AI review verifies they exist.
+
+<!-- digest: Visual loop exit: deviation table empty, or every remaining row user-approved; attach table + both screenshots. -->
 
 ## After Each Phase
 
@@ -58,6 +62,9 @@ pwsh -File scripts/scope-check.ps1
    + `plan.md` + `tasks.md` in a commit before the next phase commit).
 5. Do not start next phase without approval.
 
+<!-- digest: After each phase: certify the gate, review git diff --stat, commit with the "phase N" token, scope-check must PASS. -->
+<!-- digest: Territory amendments land in a commit BEFORE the re-committed phase — same-commit widening never passes. -->
+
 ## AI Review
 
 **Reviewer separation is mandatory** (Definition of Done gate 5): the review is produced
@@ -80,6 +87,9 @@ diff. Procedure:
    deferred-where / rejected-why) — appended to the review file, never edited into the
    reviewer's text.
 
+<!-- digest: The AI review is produced by a fresh-context agent or second model — the implementer never grades its own diff. -->
+<!-- digest: The reviewer gets diff + spec/plan/contracts, never the implementer's conversation; dispositions are appended. -->
+
 Complete `specs/_templates/ai-code-review-template.md`. Check:
 
 - Spec match
@@ -97,6 +107,8 @@ Complete `specs/_templates/ai-code-review-template.md`. Check:
 
 AI review alone is insufficient. **Human review is required before merge**, and a
 change MUST NOT be merged until a human reviewer approves it (constitution IX).
+
+<!-- digest: Human review is required before merge — a change is never merged until a human reviewer approves (constitution IX). -->
 
 Human reviewer checks (record in `specs/_templates/human-pr-review-template.md`):
 

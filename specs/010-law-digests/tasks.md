@@ -70,16 +70,16 @@ generated and committed under the live check.
 - `adoption/updating.md`
 - `docs/digests/**`
 
-- [ ] T005 [P] [US1] Author digest markers beside the binding rules: delivery pack (DoD
+- [x] T005 [P] [US1] Author digest markers beside the binding rules: delivery pack (DoD
       gates 1–6 essentials, gate-command certification law, flow checkpoints)
-- [ ] T006 [P] [US1] Author markers: branching pack (taxonomy, levels incl. Micro,
+- [x] T006 [P] [US1] Author markers: branching pack (taxonomy, levels incl. Micro,
       claim/number rules, merge rules; team-workflow ownership/territory/pipelining;
       repository-strategy cross-repo rule)
-- [ ] T007 [P] [US1] Author markers: review pack (visual loop exit rule, after-each-phase
+- [x] T007 [P] [US1] Author markers: review pack (visual loop exit rule, after-each-phase
       steps, reviewer separation, human review), critical pack (the five additions +
       exclusions), adoption pack (verbatim/surgical/generated classes, re-expression
       rule, once-only surgical report)
-- [ ] T008 [US1] Run the generator; commit digests with the markers; execute quickstart
+- [x] T008 [US1] Run the generator; commit digests with the markers; execute quickstart
       L1–L4 (including the live drift tripwire); record under Phase 2 validation; commit
       as `phase 2: kit law digests — markers + generated digests`
 
@@ -182,3 +182,30 @@ scratch fixtures:
 **Regression**: full C1–C12 harness re-run after the fixes — every exit code and the
 C2 byte-stability + C7 decoy + C12 CRLF results unchanged. Kit self-run of ritual-checks:
 `RESULT OK` with `digests n/a (no digest markers)`.
+
+### Phase 2 (T008) — 2026-09-09, quickstart L1–L4
+
+Markers authored beside the binding rules of all ten pack documents; the generator wrote
+all five digests: `build-digests: OK (5 digest(s), 68 marker(s))`. Six first-draft
+one-liners exceeded the 120-char bound and were FAILed by the generator naming each
+file:line and the bound — tightened; the bound worked as designed before any digest
+existed.
+
+- **L1** (quote pairs, two per pack, marker ↔ adjacent rule):
+  - *delivery*: "AI MUST NOT claim success without that confirmation" ↔ `Gate 3: the user runs the gate and confirms the exit code — the AI never claims success on its own runs.`; "Cite the **push-event** run: a pull_request-event run executes a merge preview" ↔ `Cite the push-event CI run — a pull_request run executes a merge preview, not the phase commit, and certifies nothing.`
+  - *branching*: "the number belongs to whichever branch reaches the remote first" ↔ `Claim with scripts/claim-feature.ps1: remote-aware number allocation and an immediate push — the remote is the ledger.`; "the human reviewer of a feature MUST NOT be its owner" ↔ `Cross-review: the human reviewer of a feature must not be its owner.`
+  - *review*: "Exit rule: empty table, or user-approved rows only." ↔ `Visual loop exit: deviation table empty, or every remaining row user-approved; attach table + both screenshots.`; "Never `DELETE` or `DROP` protected records to undo a change." ↔ `Never DELETE or DROP protected domain records to undo a change — correct through additive, auditable mechanisms.`
+  - *critical*: "filled for this feature **before phase 1 begins**, not at review time" ↔ `Critical 1: the rollback plan is filled before phase 1 begins, not at review time.`; "Every phase's gate run that counts toward Done is executed by a human, locally." ↔ `Critical 4: human-executed gates only, one per phase — never agent-run gates, batching, ci-held, or the Micro lane.`
+  - *adoption*: "An amendment never gets copied in. It gets **re-expressed**" ↔ `Constitution amendments are re-expressed, never copied: your own version bump, your own SYNC IMPACT, citation sweep.`; "The surgical report is delivered **once**" ↔ `The surgical report is delivered once — handle it in the session that produced it; the record advances to kit HEAD.`
+- **L2**: five digests generated and committed; every pack under the 40-content-line
+  bound (largest: delivery); header carries the generated notice, the regeneration
+  command, the non-authoritative statement, and the full-read rule; every bullet carries
+  its backticked source path (adoption digest quoted in full during validation).
+- **L3**: `digests: OK (5 digest(s) fresh, 68 marker(s))`; regenerate re-run byte-stable
+  (`byte-stable: True` on SHA-256); full ritual-checks `RESULT OK` with
+  `ritual-checks: digests          OK` (no longer n/a).
+- **L4** (live drift tripwire on the kit itself): one marker in
+  `docs/sdlc/rollback-process.md` mutated → `digests: FAIL — stale or hand-edited digest:
+  docs/digests/review-digest.md does not match its sources — regenerate: pwsh -File
+  scripts/build-digests.ps1` (exit 1); reverted → `digests: OK (5 digest(s) fresh,
+  68 marker(s))` (exit 0).

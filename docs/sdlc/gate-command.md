@@ -9,6 +9,8 @@ without the user-held certification, whichever form it takes. In a team, "the us
 **the feature's owner** — the developer driving this feature's agent
 (`docs/sdlc/team-workflow.md`).
 
+<!-- digest: Certification is held by the user (the feature's owner); the AI must not claim success without it, in either mode. -->
+
 ## Define this project's gates
 
 Fill these two slots when adopting the kit; everything else in this document is generic.
@@ -73,6 +75,8 @@ certifies in either mode: the agent MUST NOT present its own gate run as that co
 and MUST NOT skip requesting the owner's certification because its own run passed. **Critical** features go further: agent-run gates are not used at all
 (`docs/sdlc/critical-delivery.md`).
 
+<!-- digest: Agent-run gates are feedback only — they never certify; Critical features do not use them at all. -->
+
 ## Batched gates (Lite/Standard only)
 
 A Lite or Standard feature MAY declare, in its approved `plan.md` **before the batch's
@@ -92,6 +96,9 @@ user-run gate: `**Gate Batching**: phases N-M` (constitution X, Batched gates;
   **Micro features never batch either** — the lane is exactly one phase, so there is
   nothing to batch; a `**Gate Batching**` line in a mini-spec fails the branch
   (constitution X, Micro lane).
+
+<!-- digest: Batching is declared in plan.md before the batch's first phase; per-phase commits, scope checks, and AI reviews stay. -->
+<!-- digest: Critical features never batch; Micro features never batch — the lane is exactly one phase. -->
 
 ## CI-held certification (Lite, Micro, or Standard only)
 
@@ -113,6 +120,9 @@ unforgeable evidence" — asynchronously, at the owner's own moment. What certif
 3. **Exact commit sha** — the run executed on the phase commit itself (for a declared
    batch: the batch-end commit). A run on any other commit certifies nothing.
 
+   <!-- digest: The ci-held evidence triplet: CI run URL + green conclusion + exact phase-commit sha (batch: the batch-end commit). -->
+
+
 The approval is recorded where phase approvals already live — the feature's PR
 conversation or phase notes. Worked example:
 
@@ -125,6 +135,8 @@ triplet and requests the owner's approval on it; the user-run gate above remains
 always (CI outage, fork PRs, or simple preference); **Critical features MUST NOT use
 CI-held certification** (`docs/sdlc/critical-delivery.md`;
 `scripts/enforcement-pack.ps1` fails a Critical plan declaring it).
+
+<!-- digest: ci-held approval is recorded per phase (or per declared batch), never blanket; Critical never uses ci-held. -->
 
 ## Wiring the project gate in CI
 
@@ -143,6 +155,9 @@ authoring convention). To wire your gate:
 3. Push a governed branch. The run page carries the command, the conclusion, and the
    commit sha — the evidence triplet. Cite the **push-event** run: a pull_request-event
    run executes a merge preview, not the phase commit, and certifies nothing.
+
+   <!-- digest: Cite the push-event CI run — a pull_request run executes a merge preview, not the phase commit, and certifies nothing. -->
+
 4. Multi-repo topologies: one copy per repository, each running that repository's gate
    (`docs/sdlc/repository-strategy.md`).
 5. Recommended once the check has run at least once: require `project-gate` on `main`
@@ -155,6 +170,8 @@ authoring convention). To wire your gate:
 When the full gate is too slow for a quick sanity check, define a minimum gate (typically the
 build step alone, e.g. `yarn build` or `dotnet build`) — but a phase is only **Done** against
 the full gate (`docs/sdlc/definition-of-done.md`).
+
+<!-- digest: A phase is Done only against the full gate — a minimum gate is for quick sanity checks only. -->
 
 ## Strict-build flags vs transitive-dependency vulnerabilities
 
@@ -177,3 +194,5 @@ Triage in this order — the strict flag itself is never the thing that yields:
 Blanket-disabling the strict flag to get past one advisory is prohibited: it silently
 removes the gate's ability to catch every future warning, which is the opposite of a
 narrowly-scoped fix.
+
+<!-- digest: Never blanket-disable a strict-build flag: upgrade, pin the patched transitive, or record a scoped suppression. -->

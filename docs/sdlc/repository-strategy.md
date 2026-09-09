@@ -7,6 +7,8 @@ explicitly approved in `plan.md`. *(Single-repo projects: delete this file's mul
 sections and constitution principle III, and keep everything in one repository — the rest of
 the kit works unchanged.)*
 
+<!-- digest: Every deployable project has its own repository; never mix tiers in one repository unless approved in plan.md. -->
+
 One repository per tier the project has — the tier set mirrors the rulebook menu
 (`docs/rulebooks/README.md`): keep a repository (and a section below) for each tier you
 actually have — backend, web frontend, mobile app, worker, … — and delete the rest. The two
@@ -69,6 +71,8 @@ them in its `.gitignore` (the kit's `.gitignore` ships commented-out lines for e
 They remain fully independent repositories — **never git submodules** (pinned SHAs and detached
 HEADs are chronic friction, especially for AI agents).
 
+<!-- digest: Nested layout: code repos cloned inside the governance repo, ignored by it — independent repos, never git submodules. -->
+
 ```text
 {{SPECS_REPO}}/                # governance repo
 ├── CLAUDE.md  .specify/  docs/  specs/  scripts/
@@ -103,5 +107,8 @@ When a feature spans repositories:
 4. Merge the provider after its gate passes and human review approves.
 5. Merge each consuming tier after the contract is stable (or it was mocked against the
    agreed contract), its own gate passes, and human review approves.
+
+<!-- digest: Cross-repo features: contract in contracts/ before any consumer implements; the providing tier gates and merges first. -->
+<!-- digest: Always confirm which repository is active before changing files. -->
 
 Always confirm which repository is active before changing files.
