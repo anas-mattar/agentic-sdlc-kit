@@ -28,19 +28,19 @@ n/a; D7 update-kit class behavior recorded.
 - `kit-manifest.json`
 - `adoption/updating.md`
 
-- [ ] T001 [US2] Create `scripts/build-digests.ps1`: manifest load; per-doc marker
+- [x] T001 [US2] Create `scripts/build-digests.ps1`: manifest load; per-doc marker
       extraction (standalone line, in-comment state exclusion — D6; empty-text FAIL);
       deterministic assembly (data-model header + bullets, LF); bounds constants
       MaxDigestContentLines=40 / MaxDigestLineLength=120 (D4, FAIL); `-Check` mode
       (normalized compare; stale/hand-edit/missing/orphan/absent-doc FAILs; n/a
       inertness — D5); `-Root` portability; error-message contract
-- [ ] T002 [P] [US2] Create `docs/digests/digest-packs.json` per data-model (five packs,
+- [x] T002 [P] [US2] Create `docs/digests/digest-packs.json` per data-model (five packs,
       D2)
-- [ ] T003 [P] [US2] Wire ritual-checks member `digests` (n/a distinct from OK);
+- [x] T003 [P] [US2] Wire ritual-checks member `digests` (n/a distinct from OK);
       kit-manifest.json: verbatim entries for the script + manifest, `generated` class
       for `docs/digests/*-digest.md`; adoption/updating.md gains the `generated` class
       one-liner in its class table (full flow-down note is phase 3)
-- [ ] T004 [US2] Execute contract C1–C12 on seeded fixtures (scratch clone, deleted
+- [x] T004 [US2] Execute contract C1–C12 on seeded fixtures (scratch clone, deleted
       after); verify D7 (update-kit run against a fixture target — `generated` never
       copied; record actual handling); kit self-run n/a; record under Phase 1
       validation; commit as `phase 1: digest generator + freshness check`
@@ -129,4 +129,36 @@ the plan's declared mode).
 
 ## Phase validation records
 
-*(Filled during implementation — T004, T008, T011 outputs land here.)*
+### Phase 1 (T004) — 2026-09-09, contract C1–C12 on seeded fixtures + D7 + kit self-run
+
+Fixtures: scratch trees outside the repo (deleted after), fixture manifest with packs
+`alpha`/`beta`, two fixture docs; each contract row's mutation applied and the verdict
+quoted from the actual run.
+
+| # | Verdict (quoted) | Exit |
+|---|---|---|
+| C1 | `digests: n/a (no digest markers)` | 0 |
+| C2 | generate wrote both digests; re-run byte-stable (`C2 byte-stable: True`); `digests: OK (2 digest(s) fresh, 3 marker(s))` | 0 |
+| C3 | `digests: FAIL — stale or hand-edited digest: docs/digests/alpha-digest.md does not match its sources — regenerate: pwsh -File scripts/build-digests.ps1` | 1 |
+| C4 | same FAIL shape as C3 (hand-edited digest) | 1 |
+| C5 | `digests: FAIL — missing digest: docs/digests/alpha-digest.md — its pack's documents carry markers; regenerate: …` | 1 |
+| C6 | `digests: FAIL — orphan digest: docs/digests/rogue-digest.md — no manifest pack with markers produces it; delete it or add markers to its pack's documents` | 1 |
+| C7 | decoy inside comment block NOT extracted (digest carries only `- Live rule after the block.`); check OK | 0 |
+| C8 | `… FAIL — empty digest marker: docs/alpha.md:3 — write the one-line rule statement or remove the marker` (check AND generate; generate wrote nothing) | 1 |
+| C9 | `digests: FAIL — missing document: docs/beta.md is named by docs/digests/digest-packs.json but does not exist on disk — fix the manifest or restore the file` | 1 |
+| C10 | generate AND check: `FAIL — digest too long: pack 'alpha' has 41 content lines (bound: MaxDigestContentLines = 40) — tighten or drop markers until the digest is one page` | 1 |
+| C11 | `digests: FAIL — digest line too long: docs/alpha.md:3 is 121 chars (bound: MaxDigestLineLength = 120) — tighten the one-liner` | 1 |
+| C12 | digest rewritten with CRLF endings; `digests: OK (2 digest(s) fresh, 3 marker(s))` — normalized compare, no false drift | 0 |
+
+**D7 (update-kit `generated`-class handling, recorded)**: scratch kit clone (phase-1 files
+overlaid + a fake committed `docs/digests/delivery-digest.md`) run against a clean scratch
+target clone. Actual handling: the `generated` entry is **silently skipped by
+construction** — update-kit builds its work lists by filtering classes `verbatim` and
+`surgical`, so a `generated` path is never copied, never reported, never conflict-checked.
+Observed: report showed `Applied (2): docs/digests/digest-packs.json … scripts/build-digests.ps1`
+(both verbatim, copied); `delivery-digest.md` appeared in NO section and
+`target has docs/digests/delivery-digest.md: False` after the run.
+
+**Kit self-run**: `ritual-checks` verdict block shows the new member as
+`ritual-checks: digests          n/a (no digest markers)` (distinct from OK) with
+`ritual-checks: RESULT OK` — no digest content exists until phase 2 (SC-004 inertness).

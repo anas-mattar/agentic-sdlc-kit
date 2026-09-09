@@ -25,6 +25,7 @@ there.
 | Surgical | Files that changed upstream but were never touched — see step 2/3 below. This report is delivered **once**, at the update that carries it: handle it in the same session. |
 | Conflicts | A verbatim file your project has locally modified. Not overwritten. |
 | Result | The kit version now recorded, or "up to date" if nothing was pending. |
+| (never listed) | `generated`-class paths — `docs/digests/*-digest.md` — are neither copied nor reported: each project generates its own digests from its **own** law with `scripts/build-digests.ps1` (the generator and `docs/digests/digest-packs.json` arrive verbatim). |
 | Adoption doctor | An apply run ends with `scripts/verify-kit.ps1`'s verdict for your project — flow-down damage surfaces in the same session that caused it. A red verdict exits 2 ("attention needed"); get the doctor green before committing the flow-down. `-DryRun` skips it; `-Json` callers run `verify-kit.ps1 -Json -Root <project>` themselves. |
 
 **Resolving a conflict**: a verbatim file only conflicts when someone edited kit-owned
