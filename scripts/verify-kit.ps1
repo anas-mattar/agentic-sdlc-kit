@@ -221,12 +221,35 @@ try {
                     $tierFail = $true
                 }
             }
+            # codeRepos (012): the nested code repositories gate 4 reaches through
+            # scripts/scope-check-repos.ps1. Optional — but a multi-repo adoption that
+            # declares none has no machine scope check over its code (GAP-016), which is
+            # exactly the silence this field exists to break.
+            $repoFail = $false
+            $declaredRepos = @($record.codeRepos) | Where-Object { $_ }
+            if ($record.PSObject.Properties.Name -contains 'codeRepos') {
+                foreach ($cr in $declaredRepos) {
+                    if ("$cr" -notmatch '^[A-Za-z0-9._-]+$') {
+                        Add-Finding FAIL 'record' "declared codeRepos entry '$cr' is not a plain directory name (no paths, no '..', no drive letters)" 'each entry names a code repository directly under this repository (docs/sdlc/repository-strategy.md, Nested Layout)'
+                        $repoFail = $true
+                        continue
+                    }
+                    $crPath = Join-Path $Root "$cr"
+                    if (-not (Test-Path $crPath)) {
+                        Add-Finding WARN 'record' "declared codeRepos entry '$cr' is not present here" 'clone it beside this repository (the nested layout), or remove it from kit-adoption.json — a governance-only checkout is a legitimate reason to see this'
+                    }
+                }
+            } elseif ($record.topology -eq 'multi') {
+                Add-Finding WARN 'record' 'multi-repo adoption declares no codeRepos' 'declare the nested code repositories so the machine scope check reaches the code (scripts/scope-check-repos.ps1; adoption/updating.md) — without it, code phase commits are reviewer-verified only'
+            }
+
             $proofOk = @($record.gateProof) | Where-Object { $_.exitCode -eq 0 }
             if (-not $proofOk) {
                 Add-Finding FAIL 'record' 'no gate proof with exit code 0 recorded in kit-adoption.json' 'prove the gate green and record command/exitCode/date/recordedBy (adoption step 3 — "a gate that has never been green is not a gate")'
             }
-            if (-not $tierFail -and $proofOk -and $record.projectName -and $record.schemaVersion -eq 1 -and $record.topology -in @('single', 'multi')) {
-                Add-Finding ok 'record' "adoption record valid — tiers: $(@($record.tiers) -join ', '); gate proven" ''
+            if (-not $tierFail -and -not $repoFail -and $proofOk -and $record.projectName -and $record.schemaVersion -eq 1 -and $record.topology -in @('single', 'multi')) {
+                $reposNote = $declaredRepos.Count -gt 0 ? "; codeRepos: $($declaredRepos -join ', ')" : ''
+                Add-Finding ok 'record' "adoption record valid — tiers: $(@($record.tiers) -join ', ')$reposNote; gate proven" ''
             }
         }
     }

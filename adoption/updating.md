@@ -296,12 +296,27 @@ hand:
 `topology` is `single` or `multi`; `tiers` are the menu tiers (backend, frontend, mobile,
 database, integration) **or any custom tier** (lowercase name — worker, cli, …; custom
 tiers are first-class, `docs/rulebooks/README.md`) — every declared tier must have its
-instantiated `docs/rulebooks/<tier>-rules.md`; `kitVersionAtInit` is informational — the kit's constitution
+instantiated `docs/rulebooks/<tier>-rules.md`; `codeRepos` is the multi-repo-only list of
+nested code repositories the machine scope check reaches into
+(`scripts/scope-check-repos.ps1`) — plain directory names, one level under this repository,
+never paths; `kitVersionAtInit` is informational — the kit's constitution
 version at init time, or `copy` (the doctor never validates it); `gateProof` is your
 attestation that the gate has been green at least once (adoption step 3) — record the
 exact command (never with secrets in it), the exit code, the date, and who ran it. No
 tool writes proof entries for you, and `init-kit.ps1` never overwrites an existing
 record — your attestation survives a re-init.
+
+**Multi-repo projects adopted before feature 012** add `codeRepos` by hand — one line, no
+migration tool:
+
+```json
+  "codeRepos": ["your-api", "your-web"],
+```
+
+Until it is there, the doctor WARNs and `scripts/scope-check-repos.ps1` reports `n/a`: the
+code phase commits in those repositories are graded by a reviewer's eye, not by a machine
+(GAP-016). A single-repo project omits the field entirely — its code lives in this
+repository, where `scripts/scope-check.ps1` already reaches it.
 
 <!-- digest: kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. -->
 

@@ -16,8 +16,9 @@
       - fills the mechanical slots: {{PROJECT_NAME}}, {{BACKEND_REPO}}, {{FRONTEND_REPO}},
         {{REPOSITORY_LIST}}
       - writes kit-adoption.json (the durable adoption record: name, topology, tiers,
-        init date, kit version; gateProof starts empty — recording the proof is the
-        human's attestation, adoption step 3)
+        init date, kit version, and — multi-repo only — codeRepos, the nested code
+        repositories scripts/scope-check-repos.ps1 grades; gateProof starts empty —
+        recording the proof is the human's attestation, adoption step 3)
       - prints the judgment slots that remain for a human (gate commands, PK standard,
         domain invariants, stack profile, ...)
       - finishes by running scripts/verify-kit.ps1 (the adoption doctor) — a red verdict
@@ -248,6 +249,12 @@ if (Test-Path $recordPath) {
             $kitVersionAtInit = $Matches[1]
         }
     }
+    # codeRepos (012): the nested code repositories scripts/scope-check-repos.ps1 grades.
+    # Multi-repo only — a single-repo project's code is in this repository, where
+    # scripts/scope-check.ps1 already reaches it. Directory names, not paths: the nested
+    # layout puts each code repository one level under the governance root
+    # (docs/sdlc/repository-strategy.md).
+    $codeRepos = @(@($BackendRepo, $FrontendRepo) | Where-Object { $_ } | Select-Object -Unique)
     $adoptionRecord = [ordered]@{
         schemaVersion    = 1
         projectName      = $ProjectName
@@ -257,8 +264,10 @@ if (Test-Path $recordPath) {
         kitVersionAtInit = $kitVersionAtInit
         gateProof        = @()
     }
+    if ($Topology -eq 'multi' -and $codeRepos.Count -gt 0) { $adoptionRecord.codeRepos = $codeRepos }
     [IO.File]::WriteAllText($recordPath, (($adoptionRecord | ConvertTo-Json -Depth 4) + "`n"))
-    Write-Host "record: kit-adoption.json written (tiers: $($Tiers -join ', ')); gateProof is yours to record (adoption step 3)"
+    $reposNote = ($adoptionRecord.Contains('codeRepos')) ? "; codeRepos: $($adoptionRecord.codeRepos -join ', ')" : ''
+    Write-Host "record: kit-adoption.json written (tiers: $($Tiers -join ', ')$reposNote); gateProof is yours to record (adoption step 3)"
 }
 
 # --- 4. Report the judgment slots that remain for a human -----------------------------------
