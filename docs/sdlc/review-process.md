@@ -47,12 +47,20 @@ screenshots to the phase notes — the AI review verifies they exist.
 
 ```bash
 pwsh -File scripts/scope-check.ps1
+pwsh -File scripts/scope-check-repos.ps1   # multi-repo only; n/a elsewhere
 ```
 
    It must report `PASS`: every changed file inside the phase's **Territory** from
    `tasks.md` — for a Micro feature, the feature-global **Territory** block in its
    mini-spec `spec.md` (constitution X, Micro lane) — (a `WARN` is acceptable only for
    features specified before the verification pack — Definition of Done, gate 4).
+   In a multi-repo project the second command grades this phase's commits in the nested
+   code repositories (`docs/sdlc/repository-strategy.md`, "Territory across repositories");
+   neither verdict may be FAIL — `n/a`, `not applicable` and `WARN` are the cross-repo
+   check's lawful non-blocking verdicts, and a phase that touches no code repository
+   legitimately produces one. Whole-run verdicts, here and in CI, come from
+   `pwsh -File scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check +
+   scope-repos + digests + roadmap-claims, plus the adoption doctor in adopted projects).
 4. On `FAIL`, remediate and redo the phase commit: revert the undeclared change — or, if
    it is legitimate scope discovery, amend the phase's **Territory** in `tasks.md` (owner
    approval) in a commit made **before** the re-committed phase. The check reads the

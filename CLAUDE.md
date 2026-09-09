@@ -76,7 +76,9 @@ links to prevail).
 6. Review the working diff for intent (`git diff --stat`), fix only current-phase issues,
    then commit the phase (`phase N` in the subject).
 7. Run the machine scope check against the commit (`pwsh -File scripts/scope-check.ps1` —
-   PASS required; a failing commit is remediated and redone). AI review by a fresh-context
+   PASS required; a failing commit is remediated and redone; in a multi-repo project
+   `pwsh -File scripts/scope-check-repos.ps1` grades the same phase's commits in the
+   nested code repositories). AI review by a fresh-context
    agent or second model — never self-graded — with the Reviewer Provenance block; then
    human review. Merge only after approval. CI re-runs the same checks on every push
    (`scripts/ritual-checks.ps1`).
@@ -125,7 +127,7 @@ digests never replace it.
 | A feature declared Critical (regulated / high-risk) | `docs/sdlc/critical-delivery.md` |
 | An external integration | {{INTEGRATION_RULES_PATH}} (contract before implementation — constitution VII) |
 | Frontend UI | {{FRONTEND_RULES_PATH}} + `docs/rulebooks/` compliance checklist for that tier |
-| Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/`; verdicts come from `pwsh -File scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check + digests + roadmap-claims, plus the adoption doctor in adopted projects — same command CI runs) |
+| Reviewing / finishing a phase | `docs/sdlc/review-process.md` + the templates in `specs/_templates/`; verdicts come from `pwsh -File scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check + scope-repos + digests + roadmap-claims, plus the adoption doctor in adopted projects — same command CI runs) |
 | Updating an adopted project from the kit | `adoption/updating.md`; integrity verdicts come from `pwsh -File scripts/verify-kit.ps1` (the adoption doctor — runs at init end, update end, and in adopted-project CI) |
 
 <!-- Tier rows are a MENU, not a requirement: keep only the tiers this project has, and add
@@ -142,3 +144,7 @@ digests never replace it.
      Single-repo projects: "This repository is the only repository." -->
 
 When implementing a feature, always confirm which repository is active before changing files.
+Multi-repo projects declare their code repositories in `kit-adoption.json` and write
+**Territory** entries repo-prefixed from this repository's root — see "Territory across
+repositories" in `docs/sdlc/repository-strategy.md`, which is what
+`scripts/scope-check-repos.ps1` grades against.

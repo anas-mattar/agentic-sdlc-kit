@@ -240,6 +240,36 @@ Status is not `idea`. **No constitutional change is involved** (the kit's consti
   the row exists without deadlocking itself; every *other* visible claim still has to have
   a row for the branch to go green.
 
+### Flow-down note: the 2026-09-09 cross-repo scope check (kit feature 012 — no constitution amendment)
+
+Machine gate 4 reaches the nested code repositories. **No constitutional change is involved**
+(the kit's constitution stayed 0.6.0); this note is the whole adoption story, and it matters
+most to projects in the nested multi-repo layout — until now, every phase commit containing
+code was outside the scope check's reach (GAP-016).
+
+- **What arrives verbatim**: `scripts/scope-lib.ps1` (new — the parsing/matching helpers, now
+  shared), `scripts/scope-check-repos.ps1` (new — the cross-repo grader),
+  `scripts/scope-check.ps1` (unchanged behavior, now dot-sourcing the library),
+  `scripts/ritual-checks.ps1` (new `scope-repos` member), `scripts/init-kit.ps1` and
+  `scripts/verify-kit.ps1` (the `codeRepos` field), and
+  `.github/workflows/code-repo-scope-check.yml.template` (surgical — you copy it).
+- **It is inert until you declare something.** With no `codeRepos` in `kit-adoption.json`, the
+  member reports `n/a` and your CI verdict is unchanged. A single-repo project never declares
+  it and is unaffected.
+- **What a multi-repo project does**: add `codeRepos` to the record (§4), write this feature's
+  **Territory** entries repo-prefixed from the governance root
+  (`` `your-api/src/**` ``), and copy the code-repo workflow template into each code repository,
+  filling its governance-repository and directory slots. The doctor WARNs until the field is
+  there — absent and empty count the same.
+- **Two rules that bite immediately**: the code repository must carry the same `NNN-name`
+  branch as the governance repository (the Cross-Repository Feature Rule), and the territory
+  must be declared **before** the code is committed — a declaration that post-dates a code
+  phase commit FAILs it, which is the same anti-retroactivity rule the in-repo check has
+  always applied to its own commits.
+- **Reading a code-repo CI run**: PASS or FAIL means it graded. A run showing only WARN or
+  `n/a` graded nothing — a mismatched directory name, a missing branch, or a code repository
+  whose trunk is not `main` (pass `-BaseRef`). Do not accept that as a green gate.
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
@@ -267,7 +297,7 @@ edit: reviewed, committed, no different from hand-written project documentation.
 
 `pwsh -File scripts/verify-kit.ps1` audits your project's kit integrity any time (structure
 essentials, unfilled slots in project-owned files, constitution ratification, declared-tier
-rulebooks + gate proof, `.kit-version`). It runs automatically at the end of `init-kit.ps1`
+rulebooks + gate proof, declared code repositories, `.kit-version`). It runs automatically at the end of `init-kit.ps1`
 and of every `update-kit.ps1` apply, and as part of the `ritual-checks` CI in adopted
 projects. It is read-only: it reports, you repair.
 
@@ -296,12 +326,28 @@ hand:
 `topology` is `single` or `multi`; `tiers` are the menu tiers (backend, frontend, mobile,
 database, integration) **or any custom tier** (lowercase name — worker, cli, …; custom
 tiers are first-class, `docs/rulebooks/README.md`) — every declared tier must have its
-instantiated `docs/rulebooks/<tier>-rules.md`; `kitVersionAtInit` is informational — the kit's constitution
+instantiated `docs/rulebooks/<tier>-rules.md`; `codeRepos` is the multi-repo-only list of
+nested code repositories the machine scope check reaches into
+(`scripts/scope-check-repos.ps1`) — plain directory names, one level under this repository,
+never paths; `kitVersionAtInit` is informational — the kit's constitution
 version at init time, or `copy` (the doctor never validates it); `gateProof` is your
 attestation that the gate has been green at least once (adoption step 3) — record the
 exact command (never with secrets in it), the exit code, the date, and who ran it. No
 tool writes proof entries for you, and `init-kit.ps1` never overwrites an existing
 record — your attestation survives a re-init.
+
+**Multi-repo projects adopted before feature 012** add `codeRepos` by hand — one line, no
+migration tool. Put it after `topology`, keeping the record valid JSON:
+
+```json
+  "topology": "multi",
+  "codeRepos": ["your-api", "your-web"],
+```
+
+Until it is there, the doctor WARNs and `scripts/scope-check-repos.ps1` reports `n/a`: the
+code phase commits in those repositories are graded by a reviewer's eye, not by a machine
+(GAP-016). An empty array counts as "not there" — same WARN, same silence. A single-repo project omits the field entirely — its code lives in this
+repository, where `scripts/scope-check.ps1` already reaches it.
 
 <!-- digest: kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. -->
 

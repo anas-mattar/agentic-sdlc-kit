@@ -88,7 +88,22 @@ Gates apply at two different points, not uniformly at every phase:
    `git diff --stat` for intent; the machine makes a skipped or sloppy scope check
    visible (`docs/sdlc/review-process.md`).
 
+   **Multi-repo projects**: the phase's code commits in the nested code repositories are
+   graded by `pwsh -File scripts/scope-check-repos.ps1` under the same rules — territory
+   entries repo-prefixed, the declaration read as it stood when the code was committed
+   (`docs/sdlc/repository-strategy.md`, "Territory across repositories"). One rule is
+   deliberately **stricter** there: where the in-repo check treats a missing declaration as a
+   non-blocking WARN, the cross-repo check FAILs a commit whose declaration exists but
+   post-dates it. The in-repo check can read the declaration from the commit's own parent and
+   so cannot be fooled by ordering; across repositories there is no such structural guarantee,
+   and only the ordering rule stands between "declare the territory" and "declare it
+   afterwards". Neither check may
+   FAIL; `n/a`, `not applicable` and `WARN` are lawful non-blocking verdicts of the
+   cross-repo check (its contract table) — a governance-only phase legitimately grades no
+   code, and single-repo projects see `n/a` always, so nothing changes for them.
+
    <!-- digest: Gate 4: scope-check PASS — every changed file inside the declared Territory; amendments precede the phase commit. -->
+   <!-- digest: Multi-repo: scope-check-repos.ps1 grades the nested code repositories' phase commits under the same rules. -->
 
 5. **AI review complete — by a reviewer that did not write the code** — the AI review
    checklist (`specs/_templates/ai-code-review-template.md`) was completed: spec/visual-
