@@ -58,7 +58,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Micro lane (single-page mini-spec, one phase, declared eligibility enforced by the scope check; outgrowing the lane promotes it in place to Standard) | GAP-013 | P3 | shipped | anas.m | `specs/009-micro-lane/` |
 | Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | shipped | anas.m | `specs/010-law-digests/` |
 | Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
-| Code-repo scope-check reach (thin scripts/ shipped into code repos at adoption, or governance-side check reads sibling working trees; decide shape before adopting a multi-repo project) | GAP-016 | P2 | idea | — | — |
+| Code-repo scope-check reach (thin scripts/ shipped into code repos at adoption, or governance-side check reads sibling working trees; decide shape before adopting a multi-repo project) | GAP-016 | P1 | in progress | anas.m | `specs/012-cross-repo-scope-check/` |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
 
 ## Decisions log *(authored)*
@@ -121,3 +121,12 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   bites only nested-repo projects — its fix shape must be decided before adopting one,
   but a single-repo adoption is unaffected. GAP-004 stays deferred: a multi-developer
   test is exactly the field that will show whether pipelining abuse is real.
+- 2026-09-09 GAP-016 raised P2 → P1 and claimed as feature 012: the first multi-developer,
+  multi-repo adoption (FitForge — C# API + Next.js web, nested layout, two developers) is
+  starting, which is exactly the condition the entry above named as the trigger ("its fix
+  shape must be decided before adopting one"). Shape decided in the same sitting:
+  **governance-side runner reading the code repos as sibling working trees**, not thin
+  `scripts/` shipped into each code repo — a copied script set re-creates the update-kit
+  sync ratchet GAP-006/GAP-007 already cost two flow-downs, and the territory declaration
+  it must read lives in the governance repo either way. The claim's spec carries the
+  reasoning; this row exists so a teammate orienting from main sees the work is live.
