@@ -81,7 +81,7 @@ while their first awaits review, under all of these conditions:
 **Stale claims may be reclaimed.** A claimed branch with no commits for two weeks
 (adjust to taste) is up for adoption: new owner, one line in the decisions log.
 
-<!-- digest: WIP limit: one active feature each; pipelining allows at most one awaiting-review + one active, territory disjoint. -->
+<!-- digest: WIP limit: one active feature each; pipelining: one awaiting-review + one active, territory disjoint or sequenced. -->
 
 ## 4. Cross-review — the owner never approves their own feature
 
@@ -129,7 +129,7 @@ The gate certifies the phase **as it will land**, not as it was written. Before 
 the gate on the final phase (and after any teammate's merge that touches your territory):
 rebase the feature branch on current `main`, re-run the loop if UI was touched, then gate.
 
-<!-- digest: Rebase on current main before the certifying gate — the gate certifies the phase as it will land. -->
+<!-- digest: Rebase on main before the final phase's gate, and after any teammate's merge touching your territory. -->
 
 ## 7. Governance changes ride alone
 

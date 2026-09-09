@@ -28,9 +28,9 @@ there.
 | Conflicts | A verbatim file your project has locally modified. Not overwritten. |
 | Result | The kit version now recorded, or "up to date" if nothing was pending. |
 | (never listed) | `generated`-class paths — `docs/digests/*-digest.md` — are neither copied nor reported: each project generates its own digests from its **own** law with `scripts/build-digests.ps1` (the generator and `docs/digests/digest-packs.json` arrive verbatim). |
+| Adoption doctor | An apply run ends with `scripts/verify-kit.ps1`'s verdict for your project — flow-down damage surfaces in the same session that caused it. A red verdict exits 2 ("attention needed"); get the doctor green before committing the flow-down. `-DryRun` skips it; `-Json` callers run `verify-kit.ps1 -Json -Root <project>` themselves. |
 
 <!-- digest: generated-class paths (docs/digests/*-digest.md) never flow down — each project generates digests from its own law. -->
-| Adoption doctor | An apply run ends with `scripts/verify-kit.ps1`'s verdict for your project — flow-down damage surfaces in the same session that caused it. A red verdict exits 2 ("attention needed"); get the doctor green before committing the flow-down. `-DryRun` skips it; `-Json` callers run `verify-kit.ps1 -Json -Root <project>` themselves. |
 
 **Resolving a conflict**: a verbatim file only conflicts when someone edited kit-owned
 prose or a kit script directly, which normally shouldn't happen — verbatim files exist to
@@ -97,7 +97,6 @@ An amendment never gets copied in. It gets **re-expressed**:
    update script only delivers the report; it never amends your constitution for you.
 
    <!-- digest: Human approval adopts an amendment — the update script only delivers the report, never amends your constitution. -->
-
 
 ### Worked example: the 2026-09-01 kit 0.3.0 → 0.4.0 flow-back
 

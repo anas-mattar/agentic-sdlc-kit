@@ -209,3 +209,14 @@ existed.
   docs/digests/review-digest.md does not match its sources — regenerate: pwsh -File
   scripts/build-digests.ps1` (exit 1); reverted → `digests: OK (5 digest(s) fresh,
   68 marker(s))` (exit 0).
+
+### Phase 2 fixes (fresh-context AI review F1–F6) — 2026-09-09
+
+F1 (blocking): a marker placed mid-table in `adoption/updating.md` severed the "Adoption
+doctor" row from the report table — marker moved below the table (document marker order
+unchanged, adoption digest byte-identical). F2/F3: two team-workflow one-liners tightened
+to mirror their rules' actual scope (final-phase rebase wording; pipelining's
+"disjoint or sequenced"). F4: four double-blank-line sites collapsed. F5/F6:
+acknowledged, no change (dispositions in `ai-code-review-phase2.md`). Post-fix:
+regenerate + `digests: OK (5 digest(s) fresh, 68 marker(s))`, ritual-checks `RESULT OK`.
+The unrendered-markdown defect class (F1's) is added to phase 3's W4 sweep.

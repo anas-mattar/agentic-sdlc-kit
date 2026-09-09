@@ -93,7 +93,6 @@ Declare Critical when the feature touches any of:
 
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
 
-
 ## What this addendum is NOT
 
 It adds no new gates, documents, or workflow steps beyond the five items above. Do not

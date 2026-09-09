@@ -117,7 +117,6 @@ Gates apply at two different points, not uniformly at every phase:
 
    <!-- digest: Gate 6: a human reviews the full feature diff and approves before merge — once per feature. -->
 
-
 A phase **stands** on the feature branch once items 1–5 are true (items 4–5 verified against
 its commit — a failing commit is remediated and redone). The **feature** may be **merged** to
 `main` only after its final phase satisfies items 1–5 and the feature as a whole satisfies

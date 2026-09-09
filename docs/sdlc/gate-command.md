@@ -122,7 +122,6 @@ unforgeable evidence" — asynchronously, at the owner's own moment. What certif
 
    <!-- digest: The ci-held evidence triplet: CI run URL + green conclusion + exact phase-commit sha (batch: the batch-end commit). -->
 
-
 The approval is recorded where phase approvals already live — the feature's PR
 conversation or phase notes. Worked example:
 
