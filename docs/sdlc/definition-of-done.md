@@ -91,8 +91,10 @@ Gates apply at two different points, not uniformly at every phase:
    **Multi-repo projects**: the phase's code commits in the nested code repositories are
    graded by `pwsh -File scripts/scope-check-repos.ps1` under the same rules — territory
    entries repo-prefixed, the declaration read as it stood when the code was committed
-   (`docs/sdlc/repository-strategy.md`, "Territory across repositories"). Both checks must
-   PASS; the second reports `n/a` for single-repo projects, so nothing changes for them.
+   (`docs/sdlc/repository-strategy.md`, "Territory across repositories"). Neither check may
+   FAIL; `n/a`, `not applicable` and `WARN` are lawful non-blocking verdicts of the
+   cross-repo check (its contract table) — a governance-only phase legitimately grades no
+   code, and single-repo projects see `n/a` always, so nothing changes for them.
 
    <!-- digest: Gate 4: scope-check PASS — every changed file inside the declared Territory; amendments precede the phase commit. -->
    <!-- digest: Multi-repo: scope-check-repos.ps1 grades the nested code repositories' phase commits under the same rules. -->

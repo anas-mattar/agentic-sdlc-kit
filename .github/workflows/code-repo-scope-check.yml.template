@@ -18,13 +18,21 @@
 #   2. Fill GOVERNANCE_REPO with `owner/name` of the governance repository, and
 #      CODE_REPO_DIR with this repository's directory name EXACTLY as it is declared in
 #      the governance repository's kit-adoption.json `codeRepos` — the check prefixes this
-#      repository's paths with that name before matching territory entries, so a mismatch
-#      grades nothing.
+#      repository's paths with that name before matching territory entries. A name that is
+#      not in `codeRepos` fails the job with an error naming the declared set.
 #   3. Private governance repository: create a read-only token (a fine-grained PAT with
 #      Contents: read, or a GitHub App token) and store it as the GOVERNANCE_TOKEN secret.
 #      Public governance repository: delete the `token:` line. NEVER inline a credential.
 #   4. Feature branches must share the same NNN-name in both repositories (the
 #      Cross-Repository Feature Rule) — that is what lets the check find the declaration.
+#      The governance checkout below uses the SAME ref name for exactly this reason; the
+#      checker also falls back to the remote-tracking ref, so a governance branch that was
+#      never checked out locally still resolves.
+#
+# READING A RUN: PASS or FAIL means the check graded this repository. A run that reports
+# only WARN or n/a graded NOTHING — the wiring is wrong (a mismatched CODE_REPO_DIR, a
+# governance branch that does not exist, or a code repository whose trunk is not main:
+# pass -BaseRef). Do not treat that as a green gate.
 #
 # What a run means: PASS/not applicable/WARN exit 0; FAIL (an undeclared path) exits 1 and
 # names the file. A repository with no matching branch, or a phase with no declaration yet,
@@ -61,10 +69,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: '{{GOVERNANCE_REPO}}'
+          # the feature's declaration lives on the matching governance branch, not on main
+          ref: ${{ github.ref_name }}
           # delete this line when the governance repository is public
           token: ${{ secrets.GOVERNANCE_TOKEN }}
           # the declaration is read as of each code commit's date — full history required
           fetch-depth: 0
+          # nothing after checkout needs the credential; the checker never fetches
+          persist-credentials: false
           path: governance
 
       - name: Nest the code repository inside the governance checkout

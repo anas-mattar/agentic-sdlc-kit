@@ -144,3 +144,7 @@ digests never replace it.
      Single-repo projects: "This repository is the only repository." -->
 
 When implementing a feature, always confirm which repository is active before changing files.
+Multi-repo projects declare their code repositories in `kit-adoption.json` and write
+**Territory** entries repo-prefixed from this repository's root — see "Territory across
+repositories" in `docs/sdlc/repository-strategy.md`, which is what
+`scripts/scope-check-repos.ps1` grades against.

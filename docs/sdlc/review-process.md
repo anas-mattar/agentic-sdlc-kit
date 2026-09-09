@@ -56,7 +56,9 @@ pwsh -File scripts/scope-check-repos.ps1   # multi-repo only; n/a elsewhere
    features specified before the verification pack — Definition of Done, gate 4).
    In a multi-repo project the second command grades this phase's commits in the nested
    code repositories (`docs/sdlc/repository-strategy.md`, "Territory across repositories");
-   both verdicts must be PASS. Whole-run verdicts, here and in CI, come from
+   neither verdict may be FAIL — `n/a`, `not applicable` and `WARN` are the cross-repo
+   check's lawful non-blocking verdicts, and a phase that touches no code repository
+   legitimately produces one. Whole-run verdicts, here and in CI, come from
    `pwsh -File scripts/ritual-checks.ps1` (doc-lint + enforcement-pack + scope-check +
    scope-repos + digests + roadmap-claims, plus the adoption doctor in adopted projects).
 4. On `FAIL`, remediate and redo the phase commit: revert the undeclared change — or, if
