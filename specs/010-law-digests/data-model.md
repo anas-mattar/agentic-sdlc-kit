@@ -16,6 +16,11 @@ check verdicts.
 - Empty digest text (`<!-- digest: -->` / whitespace) → check FAIL naming the file and
   line (fail-closed).
 - Order of extraction = document order; document order = manifest member order.
+- *Phase 1 review hardening*: markers inside fenced code blocks are also ignored (F3 —
+  documentation may show the syntax literally inside a fence); the grammar is exact and
+  lowercase, and a standalone near-miss line (`<!-- DIGEST: … -->`, missing colon,
+  `-->` inside the text, unclosed comment) FAILs as *malformed digest marker* instead of
+  vanishing silently (F6/F7).
 
 ## Pack manifest — `docs/digests/digest-packs.json`
 
@@ -34,6 +39,9 @@ check verdicts.
 
 - The single source of pack composition (FR-002). A doc missing from disk → check FAIL.
 - A pack whose docs carry zero markers produces NO digest file, and none is demanded.
+- *Phase 1 review hardening (F4)*: pack names must match `^[A-Za-z0-9][A-Za-z0-9._-]*$`
+  (no path separators — a name can never route a write outside **docs/digests/**), and
+  duplicate pack names (case-insensitive) FAIL instead of silently swallowing a pack.
 
 ## Generated digest — `docs/digests/<pack>-digest.md`
 

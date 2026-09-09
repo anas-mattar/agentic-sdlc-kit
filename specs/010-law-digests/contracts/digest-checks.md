@@ -27,6 +27,21 @@ re-verified by the fresh-context review; C-numbers are the validation scenarios.
 | C11 | Marker content over MaxDigestLineLength (121 chars) | FAIL naming file + line + bound |
 | C12 | CRLF-checkout of a committed digest vs LF regeneration | check: OK (normalized comparison — no false drift) |
 
+## Phase 1 review amendments (hardening beyond C1–C12)
+
+Adopted at the phase 1 fix round (fresh-context review F1–F8); all FAILs follow the
+error-message contract below:
+
+| # | State | Expected |
+|---|---|---|
+| A1 | Over-bound pack whose digest is committed (F1) | the bound FAIL only — the digest is NOT also reported as an orphan |
+| A2 | Manifest missing (F2) | generate: FAIL with `build-digests:` prefix + restore fix; check with digests present: FAIL naming the count + restore-or-delete fix; check with none: n/a |
+| A3 | Marker example inside a fenced code block (F3) | not extracted — fences are excluded like comment blocks |
+| A4 | Invalid pack name (path traversal) or duplicate pack name, case-insensitive (F4) | FAIL naming the name and the manifest — nothing written |
+| A5 | ritual-checks summary on n/a (F5) | echoes the member's own n/a reason verbatim |
+| A6 | Near-miss marker line: wrong case, missing colon, internal `-->`, unclosed (F6/F7) | FAIL *malformed digest marker* naming file + line + the exact grammar |
+| A7 | Digest in a subdirectory of docs/digests/, or name differing only by case (F8) | seen by the recursive, case-exact orphan scan → FAIL |
+
 ## Error-message contract
 
 Every FAIL names: the offending file (and line where applicable), the violated condition

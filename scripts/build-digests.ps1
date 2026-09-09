@@ -27,8 +27,12 @@
     project marks its own law (010 SC-004). Wired as ritual-checks member 'digests'.
 
     Markers inside multi-line HTML comment blocks are ignored — a commented-out
-    section's markers vanish with it (010 research D6). Only standalone marker lines
-    count (nothing but whitespace around the comment).
+    section's markers vanish with it (010 research D6) — and so are markers inside
+    fenced code blocks, so documentation may show the syntax literally (phase 1 review
+    F3). Only standalone marker lines count (nothing but whitespace around the
+    comment), the grammar is exact and lowercase, and a near-miss line that starts
+    like a marker but breaks the grammar (wrong case, missing colon, '-->' inside the
+    text, unclosed comment) FAILs rather than vanishing silently (review F6/F7).
 
     Digests are orientation aids only: never a source-of-truth rung, never a substitute
     for reading the full document before acting on its area (constitution II unchanged).
@@ -76,10 +80,17 @@ function Get-DocMarkers {
     }
     $markers = @()
     $inComment = $false
+    $fenceClose = $null
     $lineNo = 0
     foreach ($rawLine in [IO.File]::ReadAllLines($abs)) {
         $lineNo++
         $line = $rawLine
+        if ($fenceClose) {
+            # Inside a fenced code block nothing counts (review F3): a literal marker
+            # example in documentation prose must never be harvested into a digest.
+            if ($line -match $fenceClose) { $fenceClose = $null }
+            continue
+        }
         if ($inComment) {
             $close = $line.IndexOf('-->')
             if ($close -lt 0) { continue }
@@ -87,7 +98,11 @@ function Get-DocMarkers {
             # The remainder after the close may reopen a comment; a digest marker in it
             # is not a standalone line and therefore never counts.
             $line = $line.Substring($close + 3)
-        } elseif ($rawLine -match '^\s*<!--\s*digest:(.*)-->\s*$') {
+        } elseif ($rawLine -match '^\s{0,3}(`{3,}|~{3,})') {
+            $f = $Matches[1]
+            $fenceClose = '^\s{0,3}' + [regex]::Escape($f.Substring(0, 1)) + '{' + $f.Length + ',}\s*$'
+            continue
+        } elseif ($rawLine -cmatch '^\s*<!--\s*digest:(.*)-->\s*$' -and $Matches[1] -notmatch '-->') {
             $text = $Matches[1].Trim()
             if (-not $text) {
                 $script:issues += "empty digest marker: ${RelPath}:${lineNo} — write the one-line rule statement or remove the marker"
@@ -97,6 +112,13 @@ function Get-DocMarkers {
                 $markers += [PSCustomObject]@{ Text = $text; Source = $RelPath }
             }
             continue
+        } elseif ($rawLine -match '^\s*<!--\s*digest\b') {
+            # Near-miss fail-closed (review F6/F7): a line that starts like a marker but
+            # breaks the exact grammar would otherwise vanish silently — and the check
+            # would then enforce the absence of a rule its author believed was marked.
+            $script:issues += "malformed digest marker: ${RelPath}:${lineNo} — exact grammar is '<!-- digest: <text> -->' (lowercase, one line, closed, no '-->' inside the text)"
+            # Fall through to the comment-state update so an unclosed '<!-- digest:'
+            # still opens a comment block and the rest of the file parses sanely.
         }
         $lastOpen = $line.LastIndexOf('<!--')
         if ($lastOpen -ge 0 -and $line.IndexOf('-->', $lastOpen) -lt 0) { $inComment = $true }
@@ -128,36 +150,63 @@ function Get-NormalizedText {
 }
 
 # --- Manifest -----------------------------------------------------------------------------
+# Recursive, exact-name scan (review F8): a rogue digest in a subdirectory, or one whose
+# name differs only by case, must not evade the orphan check.
 $existingDigests = @(
-    if (Test-Path $digestsDir) { Get-ChildItem $digestsDir -Filter '*-digest.md' -File | ForEach-Object Name }
+    if (Test-Path $digestsDir) {
+        Get-ChildItem $digestsDir -Recurse -File |
+            Where-Object { $_.Name -like '*-digest.md' } |
+            ForEach-Object { ([IO.Path]::GetRelativePath($digestsDir, $_.FullName)) -replace '\\', '/' }
+    }
 )
 
 if (-not (Test-Path $manifestPath)) {
-    if ($Check -and $existingDigests.Count -eq 0) {
-        Write-Host 'digests: n/a (no digest manifest)'
-        exit 0
+    if ($Check) {
+        if ($existingDigests.Count -eq 0) {
+            Write-Host 'digests: n/a (no digest manifest)'
+            exit 0
+        }
+        Write-Host "digests: FAIL — $manifestRel not found but $($existingDigests.Count) *-digest.md file(s) exist — restore the pack manifest (it ships verbatim with the kit) or delete the digest files"
+        exit 1
     }
-    Write-Host "digests: FAIL — $manifestRel not found (digest files exist without a pack manifest)"
+    Write-Host "build-digests: FAIL — $manifestRel not found — restore the pack manifest (it ships verbatim with the kit)"
     exit 1
 }
 $packs = @((Get-Content $manifestPath -Raw | ConvertFrom-Json).packs)
 
 # --- Expected state: per-pack markers and digest content ---------------------------------
 $expected = [ordered]@{}   # digest file name -> content
+$overBound = @()           # over-bound packs' digest names, kept out of the orphan scan (review F1)
+$seenNames = @{}
 $totalMarkers = 0
 foreach ($pack in $packs) {
+    $packName = [string]$pack.name
+    # Fail-closed manifest validation (review F4): a bad name must never route a write
+    # outside docs/digests/, and a duplicate must never silently swallow a pack's law.
+    if ($packName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+        $issues += "invalid pack name: '$packName' in $manifestRel — pack names must match ^[A-Za-z0-9][A-Za-z0-9._-]*$ (fix the manifest)"
+        continue
+    }
+    if ($seenNames.ContainsKey($packName.ToLowerInvariant())) {
+        $issues += "duplicate pack name: '$packName' in $manifestRel collides with '$($seenNames[$packName.ToLowerInvariant()])' — merge the packs or rename one (fix the manifest)"
+        continue
+    }
+    $seenNames[$packName.ToLowerInvariant()] = $packName
     $markers = @(foreach ($doc in $pack.docs) { Get-DocMarkers $doc })
     $totalMarkers += $markers.Count
     if ($markers.Count -eq 0) { continue }
     if ($markers.Count -gt $MaxDigestContentLines) {
-        $issues += "digest too long: pack '$($pack.name)' has $($markers.Count) content lines (bound: MaxDigestContentLines = $MaxDigestContentLines) — tighten or drop markers until the digest is one page"
+        $issues += "digest too long: pack '$packName' has $($markers.Count) content lines (bound: MaxDigestContentLines = $MaxDigestContentLines) — tighten or drop markers until the digest is one page"
+        $overBound += "$packName-digest.md"
         continue
     }
-    $expected["$($pack.name)-digest.md"] = Get-PackDigestContent $pack.name $markers
+    $expected["$packName-digest.md"] = Get-PackDigestContent $packName $markers
 }
 
-# Orphans: a *-digest.md present for a pack with zero markers, or not named by the manifest.
-$orphans = @($existingDigests | Where-Object { -not $expected.Contains($_) })
+# Orphans: a *-digest.md present for a pack with zero markers, or not named by the
+# manifest. Exact (case-sensitive) name match; an over-bound pack's digest is NOT an
+# orphan — the fix there is trimming markers, not deleting the digest (review F1).
+$orphans = @($existingDigests | Where-Object { ($expected.Keys -cnotcontains $_) -and ($overBound -cnotcontains $_) })
 
 if ($Check) {
     # --- Check mode -----------------------------------------------------------------------

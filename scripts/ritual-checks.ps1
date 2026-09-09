@@ -65,17 +65,21 @@ if ((Test-Path (Join-Path $Root '.kit-version')) -or (Test-Path (Join-Path $Root
 }
 
 $results = [ordered]@{}
-$digestsNA = $false
+$digestsNA = $null
 foreach ($name in $members.Keys) {
     Write-Host "=== ritual-checks: $name ==="
     if ($name -eq 'digests') {
-        # The digest check's n/a state (no markers yet — 010 SC-004) is a distinct
-        # verdict, not OK: capture the member's output (re-echoed verbatim) to read the
+        # The digest check's n/a states (no markers yet — 010 SC-004) are distinct
+        # verdicts, not OK: capture the member's output (re-echoed verbatim) to read the
         # n/a line while keeping the exit-code contract identical to the other members.
         $out = & pwsh -NoProfile -File @($members[$name]) 2>&1
         $results[$name] = $LASTEXITCODE
         $out | ForEach-Object { Write-Host $_ }
-        if ($results[$name] -eq 0 -and ($out -match '^digests: n/a')) { $digestsNA = $true }
+        if ($results[$name] -eq 0) {
+            # Echo the member's own n/a reason into the summary (phase 1 review F5).
+            $naLine = @($out | ForEach-Object { "$_" } | Where-Object { $_ -match '^digests: n/a' }) | Select-Object -First 1
+            if ($naLine) { $digestsNA = $naLine.Substring('digests: '.Length) }
+        }
     } else {
         & pwsh -NoProfile -File @($members[$name])
         $results[$name] = $LASTEXITCODE
@@ -86,7 +90,7 @@ foreach ($name in $members.Keys) {
 $failedCount = 0
 foreach ($name in $results.Keys) {
     $verdict = if ($results[$name] -eq 0) {
-        if ($name -eq 'digests' -and $digestsNA) { 'n/a (no digest markers)' } else { 'OK' }
+        if ($name -eq 'digests' -and $digestsNA) { $digestsNA } else { 'OK' }
     } else { $failedCount++; 'FAIL' }
     Write-Host ('ritual-checks: {0,-16} {1}' -f $name, $verdict)
 }

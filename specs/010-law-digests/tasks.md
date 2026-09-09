@@ -162,3 +162,23 @@ Observed: report showed `Applied (2): docs/digests/digest-packs.json … scripts
 **Kit self-run**: `ritual-checks` verdict block shows the new member as
 `ritual-checks: digests          n/a (no digest markers)` (distinct from OK) with
 `ritual-checks: RESULT OK` — no digest content exists until phase 2 (SC-004 inertness).
+
+### Phase 1 fixes (fresh-context AI review F1–F8) — 2026-09-09
+
+All eight findings fixed (dispositions in `ai-code-review-phase1.md`); hardening
+contracted as scenarios A1–A7 in `contracts/digest-checks.md` and validated on fresh
+scratch fixtures:
+
+| # | Verdict (quoted) | Exit |
+|---|---|---|
+| A1 | over-bound pack with committed digest → the bound FAIL is the ONLY issue (`RESULT FAIL (1 issue(s))`, no orphan line) | 1 |
+| A2 | generate: `build-digests: FAIL — docs/digests/digest-packs.json not found — restore the pack manifest (it ships verbatim with the kit)`; check w/ digests: `… not found but 2 *-digest.md file(s) exist — restore … or delete the digest files`; check w/ nothing: `digests: n/a (no digest manifest)` | 1/1/0 |
+| A3 | markers inside ``` and ~~~ fences NOT harvested (digest carries only `- Live alpha rule.`); check OK | 0 |
+| A4 | `FAIL — invalid pack name: '../evil' … must match ^[A-Za-z0-9][A-Za-z0-9._-]*$` + `FAIL — duplicate pack name: 'Alpha' … collides with 'alpha'`; nothing written, `A4 escaped file exists: False` | 1 |
+| A5 | ritual-checks summary echoes the member's own n/a reason (kit self-run: `digests          n/a (no digest markers)`) | — |
+| A6 | four `FAIL — malformed digest marker: docs/alpha.md:{3,4,5,6} — exact grammar is '<!-- digest: <text> -->' (lowercase, one line, closed, no '-->' inside the text)` for wrong case / missing colon / internal `-->` / unclosed | 1 |
+| A7 | `FAIL — orphan digest: docs/digests/sub/rogue-digest.md …` (recursive scan) | 1 |
+
+**Regression**: full C1–C12 harness re-run after the fixes — every exit code and the
+C2 byte-stability + C7 decoy + C12 CRLF results unchanged. Kit self-run of ritual-checks:
+`RESULT OK` with `digests n/a (no digest markers)`.
