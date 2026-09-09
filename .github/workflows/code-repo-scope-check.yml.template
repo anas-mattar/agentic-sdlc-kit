@@ -25,20 +25,22 @@
 #      Public governance repository: delete the `token:` line. NEVER inline a credential.
 #   4. Feature branches must share the same NNN-name in both repositories (the
 #      Cross-Repository Feature Rule) — that is what lets the check find the declaration.
-#      The governance checkout below uses the SAME ref name for exactly this reason; the
-#      checker also falls back to the remote-tracking ref, so a governance branch that was
-#      never checked out locally still resolves.
+#      The governance checkout below deliberately does NOT pin a ref: `fetch-depth: 0`
+#      brings every remote-tracking ref, and the checker searches refs/heads/<branch>, then
+#      refs/remotes/origin/<branch>, then HEAD. Pinning would fail the whole job the day the
+#      governance branch is merged and deleted while this repository still pushes to its own.
 #
-# READING A RUN: PASS or FAIL means the check graded this repository. A run that reports
-# only WARN or n/a graded NOTHING — the wiring is wrong (a mismatched CODE_REPO_DIR, a
-# governance branch that does not exist, or a code repository whose trunk is not main:
-# pass -BaseRef). Do not treat that as a green gate.
+# READING A RUN. The job FAILS on: a path outside the declared Territory; a malformed or
+# duplicated declaration; a Micro feature with no Territory block; a declaration that
+# POST-DATES the commit (declare territory before committing the code); and a CODE_REPO_DIR
+# not present in `codeRepos` (an error naming the declared set).
+# The job PASSES WITHOUT GRADING — WARN, n/a or "not applicable" on every line — when no
+# declaration exists in governance history at all, when this repository has no branch of that
+# name, when its trunk is not main (pass -BaseRef), or when no commit carries a `phase N`
+# subject token. A run like that is not a green gate: check the wiring.
 #
-# What a run means: PASS/not applicable/WARN exit 0; FAIL (an undeclared path) exits 1 and
-# names the file. A repository with no matching branch, or a phase with no declaration yet,
-# is reported and does not fail the run. Recommended once it has run: require the
-# `code-repo-scope-check` status check on this repository's main
-# (docs/sdlc/branch-protection.md).
+# Recommended once it has run and graded: require the `code-repo-scope-check` status check on
+# this repository's main (docs/sdlc/branch-protection.md).
 
 name: code-repo-scope-check
 
@@ -69,8 +71,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: '{{GOVERNANCE_REPO}}'
-          # the feature's declaration lives on the matching governance branch, not on main
-          ref: ${{ github.ref_name }}
+          # no ref: pinned on purpose — fetch-depth 0 brings the remote-tracking refs and the
+          # checker finds the feature's declaration on origin/<branch> (see the header)
           # delete this line when the governance repository is public
           token: ${{ secrets.GOVERNANCE_TOKEN }}
           # the declaration is read as of each code commit's date — full history required

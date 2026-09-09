@@ -123,6 +123,11 @@ projects and governance-only checkouts are unaffected. Two rules make it work:
   committed*: widening it afterwards cannot turn a FAIL into a PASS, exactly as in the
   single-repository check. Legitimate scope discovery is amended in a governance commit
   made **before** the code phase commit that relies on it.
+- **Territory is never back-declared.** A declaration that post-dates a phase's code commit
+  FAILs that commit even when every file it touched is inside the declared paths — the
+  ordering is the violation. Turning this on mid-flight therefore means one of two things
+  for phases already committed: re-commit them on top of the declaration, or leave those
+  phases undeclared (a lawful non-blocking WARN) and declare from the next phase forward.
 
 In CI the reach is inverted: the governance repository's CI clones itself alone and reports
 `n/a`, while each code repository runs the check for itself by checking out the governance
