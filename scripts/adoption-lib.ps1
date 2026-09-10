@@ -8,10 +8,11 @@
     same reason: two graders of one rule drift, and a comment claiming they agree is not a
     mechanism.
 
-    That is not a hypothetical here. Feature 013 shipped the logic twice and the copies
-    diverged twice inside one feature — the root-object guard landed in the enforcing copy
-    only, and the two used different dedupe comparers. The second divergence was found by a
-    reviewer reading a comment that asserted they matched exactly.
+    That is not a hypothetical here. Feature 013 shipped the logic twice, and it went wrong
+    in both of the ways duplication allows, inside one feature: the copies drifted (the
+    root-object guard landed in the enforcing copy only), and the reporting copy used two
+    comparers that disagreed with each other. The drift was found by a reviewer reading a
+    comment asserting the two copies matched exactly.
 
     Get-DeveloperMode returns one object describing the record, and BOTH behaviours are read
     from it: the mode the check enforces, and the problems the doctor reports. Neither script
@@ -32,15 +33,21 @@
 #   Count     usable developers after trimming, dropping non-strings/blanks, and collapsing
 #             duplicates case-insensitively
 #   Why       one clause naming the reason, for the caller's message
-#   Problems  zero or more @{ Message; Fix } the doctor reports; the check ignores these,
-#             because every problem already resolves to the strict arm
+#   Declared  whether the record declares the field at all, so no caller needs its own notion
+#             of "is this declared" — a second such notion had grown in the doctor
+#   Problems  zero or more @{ Message; Fix } the doctor reports. The check ignores them, and
+#             the reason is narrower than it first looks: a problem never makes a record
+#             produce a LAXER mode than it would without the malformation. It does NOT mean
+#             every problem lands on solo — ["ada","grace"," "] is malformed and is team.
+#             Getting that reason wrong is how a maintainer talks themselves out of the
+#             doctor (013 phase 5 review, NEW-4)
 function Get-DeveloperMode {
     param([Parameter(Mandatory)][string]$Root)
 
     $problems = [System.Collections.Generic.List[object]]::new()
     $recordPath = Join-Path $Root 'kit-adoption.json'
     if (-not (Test-Path -LiteralPath $recordPath)) {
-        return @{ Mode = 'solo'; Count = 0; Why = 'no kit-adoption.json'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'no kit-adoption.json'; Problems = $problems }
     }
 
     # Inside the try: 'unreadable' is one of the degenerate records FR-003 names, and a read
@@ -49,9 +56,12 @@ function Get-DeveloperMode {
     # $ErrorActionPreference = 'Stop', an unreadable record became an unhandled error that
     # skipped every check ordered after this one (013 phase 4 re-review, N2).
     try {
-        $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw)"
+        # -ErrorAction Stop so the catch fires regardless of the caller's preference. Both
+        # shipped callers set 'Stop', but a library that only works under one caller's
+        # settings is not self-contained (013 phase 5 review, NEW-E).
+        $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw -ErrorAction Stop)"
     } catch {
-        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json could not be read'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json could not be read'; Problems = $problems }
     }
 
     # The root must be a JSON OBJECT, judged from the TEXT. Testing the parsed value is not
@@ -61,23 +71,30 @@ function Get-DeveloperMode {
     # opens, so this test cannot be fooled by a brace inside a string.
     if ($rawRecord.TrimStart([char]0xFEFF, ' ', "`t", "`r", "`n") -notmatch '^\{') {
         $problems.Add(@{ Message = 'kit-adoption.json is not a JSON object at its root'; Fix = 'the record is a single JSON object; a root array is ignored entirely and the project falls back to the solo evidence rule' })
-        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json is not a JSON object at its root'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'kit-adoption.json is not a JSON object at its root'; Problems = $problems }
     }
     try {
         $record = $rawRecord | ConvertFrom-Json
     } catch {
-        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json does not parse'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json does not parse'; Problems = $problems }
     }
     if ($record -isnot [PSCustomObject]) {
-        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json is not a JSON object'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json is not a JSON object'; Problems = $problems }
     }
 
     if ($null -eq $record.developers) {
-        return @{ Mode = 'solo'; Count = 0; Why = 'no developers declared in kit-adoption.json'; Problems = $problems }
+        # An explicit `"developers": null` is the same unfinished edit as `[]` and is reported
+        # the same way — but only when the key is really present. An ABSENT key is the
+        # supported default for every adoption predating this feature and must stay silent.
+        if ($rawRecord -match '(?m)"developers"\s*:') {
+            $problems.Add(@{ Message = 'kit-adoption.json developers is null'; Fix = 'name the project''s developers, or remove the key — an explicit null is treated as solo, the same as an empty array' })
+            return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'developers in kit-adoption.json is null'; Problems = $problems }
+        }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'no developers declared in kit-adoption.json'; Problems = $problems }
     }
     if ($record.developers -isnot [Array]) {
         $problems.Add(@{ Message = 'kit-adoption.json developers is not an array'; Fix = 'declare it as a JSON array of names, e.g. ["ada", "grace"] — a non-array is ignored and the project is treated as solo (adoption/updating.md)' })
-        return @{ Mode = 'solo'; Count = 0; Why = 'developers in kit-adoption.json is not an array'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'developers in kit-adoption.json is not an array'; Problems = $problems }
     }
 
     $entries = @($record.developers)
@@ -107,6 +124,7 @@ function Get-DeveloperMode {
     return @{
         Mode     = $mode
         Count    = $unique.Count
+        Declared = $true
         Why      = "$($unique.Count) $noun declared in kit-adoption.json"
         Problems = $problems
     }

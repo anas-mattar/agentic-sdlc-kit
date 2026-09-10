@@ -311,8 +311,14 @@ function Invoke-CriticalTeamEvidence {
     # local run — the one place that hole mattered most.
     # $Dir is built with forward slashes ("specs/$Branch"), which is what git wants — no
     # separator translation, and therefore no regex to get wrong.
-    $blob = (git show "HEAD:$Dir/human-pr-review.md" 2>$null)
-    if ($LASTEXITCODE -ne 0 -or $null -eq $blob) {
+    # The './' matters. Without it git resolves HEAD:<path> against the REPOSITORY root, while
+    # every other path here is relative to $Root — so a governance repo living in a
+    # subdirectory reported a correctly committed review as uncommitted. With it, git resolves
+    # against the current directory, which Push-Location $Root already set (013 phase 5
+    # review, NEW-A). Exit code alone decides: a committed but EMPTY file yields $null and
+    # must not be called uncommitted (NEW-C) — it fails the section check instead, correctly.
+    $blob = (git show "HEAD:./$Dir/human-pr-review.md" 2>$null)
+    if ($LASTEXITCODE -ne 0) {
         $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is not committed — evidence that exists only in a working tree is not evidence (commit it; FR-006 requires the identities to be read from committed artifacts)"
         return
     }
@@ -326,7 +332,24 @@ function Invoke-CriticalTeamEvidence {
     # backtick fences, tilde fences, and 4-space-indented blocks (013 phase 3 review NIT 7,
     # phase 4 re-review N3, which found the first fix caught only the backtick form).
     $slice = [regex]::Replace($slice, '(?ms)^(?:```|~~~).*?(^(?:```|~~~)|\z)', '')
-    $slice = ($slice -split "`n" | Where-Object { $_ -notmatch '^(?: {4,}|	)\S' }) -join "`n"
+    # An indented code block requires a preceding blank line; 4 spaces INSIDE a list is a
+    # nested item, not code, and dropping those lines hid legitimate values (013 phase 5
+    # review, NEW-B). Only strip an indented run that opens after a blank line.
+    $sliceLines = $slice -split "`n"
+    $kept = [System.Collections.Generic.List[string]]::new()
+    $inIndentedCode = $false
+    for ($i = 0; $i -lt $sliceLines.Count; $i++) {
+        $line = $sliceLines[$i]
+        $isIndented = $line -match '^(?: {4,}|	)\S'
+        if ($isIndented -and -not $inIndentedCode) {
+            $prev = if ($i -gt 0) { $sliceLines[$i - 1] } else { '' }
+            $inIndentedCode = [string]::IsNullOrWhiteSpace($prev)
+        } elseif (-not $isIndented -and -not [string]::IsNullOrWhiteSpace($line)) {
+            $inIndentedCode = $false
+        }
+        if (-not ($isIndented -and $inIndentedCode)) { $kept.Add($line) }
+    }
+    $slice = $kept -join "`n"
 
     $reviewer = Get-ProvenanceValue -Slice $slice -Field 'Reviewer'
     $owner = Get-ProvenanceValue -Slice $slice -Field 'Owner'

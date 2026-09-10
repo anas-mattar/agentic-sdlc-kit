@@ -649,3 +649,70 @@ every earlier fixture family unchanged.
 - [x] T048 (NIT-4, NIT-5) Rewrap the over-long line; blank line before the D4 amendment note
 - [x] T049 Add `## Current state (authoritative)` and back-point the two superseded tables
 - [x] T050 Re-run every fixture family and re-diff solo against the T001 baseline
+
+## Phase 6 — remediation results
+
+The third review pass closed both outstanding blocking findings (the logic reviewer tried to
+defeat the committed-blob read and the unreadable-record fallback, and could not), and found
+one new blocking defect plus one new fail-closed regression — both introduced by phase 5.
+
+### NEW-3 — the kit would have told every adopter to declare a team wrongly
+
+Phase 5 added a copy-pasteable `-Developers ada,grace` to `adoption/greenfield.md` while
+moving that guidance to a better place. Under `pwsh -File` — which is how every adoption doc
+invokes the initializer — PowerShell hands a `[string[]]` parameter **one literal element**,
+so the record was written as `["ada,grace"]`: a single developer with a comma in their name.
+A one-element array of a non-blank string is perfectly well-formed, so the doctor reported
+nothing. A real two-developer project following the kit's own instruction would have been
+silently held to the solo arm — verbatim the failure `adoption/updating.md` says the doctor
+exists to prevent.
+
+Fixed in `init-kit.ps1` rather than in the doc: the parameter now splits on commas, so both
+the `-File` and `-Command` forms produce two developers. Measured: `-Developers ada,grace`
+now yields `2 -> ada | grace`.
+
+### NEW-A — the committed-blob read was repo-root-relative
+
+`git show HEAD:<path>` resolves against the repository root; every other path in the check is
+relative to `-Root`. A governance repo living in a subdirectory therefore reported a correctly
+committed review as uncommitted. One character — `HEAD:./$Dir/…` — restores parity with the
+solo arm, because `Push-Location $Root` has already set the working directory.
+
+| Fixture | Result |
+|---|---|
+| governance repo at `<repo>/gov`, review committed | pass (was "is not committed") |
+
+### The rest
+
+| Finding | Fix | Verified |
+|---|---|---|
+| NEW-4 — the header's justification for ignoring `Problems` was false | narrowed to what is true: a problem never produces a *laxer* mode | three malformed-but-team shapes named in the header |
+| NEW-5 — the drift account over-claimed, in three places | corrected: one cross-copy drift, plus two comparers disagreeing inside the doctor | phase 4 blobs re-read |
+| NEW-6 / NEW-D — the doctor kept its own raw-text "is this declared" test | `Get-DeveloperMode` now returns `Declared`; the last unguarded read is gone | doctor fixtures unchanged |
+| NEW-B — the indent stripper ate nested list items | an indented run is code only when it opens after a blank line | nested list passes, real code block still ignored |
+| NEW-C — a committed but empty review said "is not committed" | exit code alone decides; empty content fails the section check | fixture reports the section, not the commit |
+| NEW-E — the lib's `try` depended on the caller's preference | `-ErrorAction Stop` on its own read | — |
+| `"developers": null` was silent where `[]` failed | reported the same, but only when the key is actually present | doctor fixtures |
+| NIT-3 — a reviewer's position was misstated in `spec.md` | corrected to what each reviewer actually said | — |
+| NIT-4, NIT-5 | rewrap; blank line before the D4 amendment note | — |
+
+**NIT-3 is worth naming separately.** `spec.md` claimed both reviewers judged disclosure alone
+the right resolution for the roster limit. The docs reviewer had said the opposite — that
+disclosure alone was *not* enough and the Edge Case had to be amended, which is why it was. In
+a document whose purpose is to record reviewer judgements, attributing a position someone did
+not hold is a defect of the same family as a fabricated evidence row, and it was found the same
+way: by the person whose position it was.
+
+### `tasks.md` restructured, not split
+
+The docs reviewer's verdict on this file was "as an audit trail, yes — as a reviewer's entry
+point, no": 543 lines, chronological, four tables written at four different times, two of them
+stale by design. Their recommendation, taken as given: a **Current state (authoritative)**
+section at the top, back-pointers on the two superseded tables, and *no* new file — because
+`CLAUDE.md`'s Feature Structure fixes the file set for `specs/NNN-name/`, and inventing a
+`results.md` would be the exact improvisation that law exists to prevent.
+
+### No regression
+
+R1–R9, S1–S12, G3/G3b/U1 and the seven doctor shapes all re-run: unchanged. Solo output still
+byte-identical to the pre-013 T001 baseline.

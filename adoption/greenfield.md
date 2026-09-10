@@ -45,8 +45,10 @@ Machine assist: `pwsh -File scripts/init-kit.ps1` does the mechanical part of st
 instantiates the selected tier rulebooks, wires the Task-Scoped Reading rows, fills
 `{{PROJECT_NAME}}` and the repository slots, and writes **kit-adoption.json** (the durable
 record of your name/topology/tier choices — the adoption doctor's source of truth,
-owner-editable if tiers change later). **Two or more developers? Pass `-Developers ada,grace`
-now**, or hand-edit the record later: that array decides whether a **Critical** feature owes an
+owner-editable if tiers change later). **Two or more developers? Pass
+`-Developers ada,grace` now** — a comma-separated list, which the initializer splits, so it
+works under `pwsh -File` where PowerShell would otherwise hand the whole string over as one
+name. Or hand-edit the record later: that array decides whether a **Critical** feature owes an
 independent human review or the solo substitute (`docs/sdlc/critical-delivery.md` item 5). Left
 undeclared it stays solo, which is the stricter arm — so declaring nothing is safe, and
 declaring a team you do not have is not. Then it prints the judgment slots that remain yours

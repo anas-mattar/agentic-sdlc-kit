@@ -279,7 +279,17 @@ if (Test-Path $recordPath) {
     # project did not make, and the moment a second developer joins, the stale declaration
     # keeps them in solo mode while everyone believes the record is accurate. An absent
     # field is honest about not knowing; a guessed field is not.
-    $namedDevelopers = @($Developers | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    # Split on commas as well as array elements. Under `pwsh -File`, which is how every
+    # adoption doc invokes this script, PowerShell hands a [string[]] parameter ONE literal
+    # element — so `-Developers ada,grace` arrives as the single name "ada,grace", writes a
+    # perfectly well-formed one-element record, and silently declares a solo project. No
+    # check can catch that: a one-element array of a non-blank string is valid. The kit's own
+    # greenfield instruction produced exactly this (013 phase 5 review, NEW-3).
+    $namedDevelopers = @($Developers |
+        Where-Object { $_ } |
+        ForEach-Object { $_ -split ',' } |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     if ($namedDevelopers.Count -gt 0) { $adoptionRecord.developers = $namedDevelopers }
     [IO.File]::WriteAllText($recordPath, (($adoptionRecord | ConvertTo-Json -Depth 4) + "`n"))
     $reposNote = ($adoptionRecord.Contains('codeRepos')) ? "; codeRepos: $($adoptionRecord.codeRepos -join ', ')" : ''

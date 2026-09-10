@@ -382,9 +382,9 @@ number is discarded rather than counted. A value that is not an array at all, or
 root is not a JSON object, is ignored entirely and the project falls back to solo.
 
 Every one of those fallbacks is safe — they all land on the stricter arm — but they are
-**silent** in the check itself, so the doctor reports each as a FAIL *and* prints the mode the
-record actually produces — on every one of those paths, including the not-an-array case. The
-doctor and the check read the record through the same function
+**silent** in the check itself, so the doctor reports each as a FAIL *and* prints the mode
+the record actually produces — on every one of those paths, including the not-an-array case.
+The doctor and the check read the record through the same function
 (`scripts/adoption-lib.ps1`), so the mode it prints is the mode you will be held to. Without both halves, a project could believe it declared a team for
 months while being checked as solo.
 

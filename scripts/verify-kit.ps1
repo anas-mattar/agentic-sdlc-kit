@@ -253,17 +253,22 @@ try {
             # Critical lane's evidence mode in scripts/enforcement-pack.ps1.
             #
             # Read through the SAME function the check uses (scripts/adoption-lib.ps1), not
-            # a second copy of the rules. The two copies drifted twice inside feature 013 —
-            # a root-object guard in one, different dedupe comparers in both — and the
-            # divergence was found by a reviewer reading a comment asserting they matched.
-            # A comment is not a mechanism; one function is.
+            # a second copy of the rules. The copies drifted inside feature 013 — the
+            # root-object guard landed in the enforcing one only — and the divergence was
+            # found by a reviewer reading a comment asserting they matched. A comment is not
+            # a mechanism; one function is.
             #
             # Absence is NOT a finding. Every adoption predating 013 declares nothing and is
             # treated as solo, the stricter arm. A malformed value IS a finding, because the
             # check falls back silently and the project would otherwise never learn its
             # declaration is being ignored — so the mode is always stated alongside.
-            if ($null -ne $record.developers -or (Get-Content -LiteralPath $recordPath -Raw) -match '"developers"') {
-                $devMode = Get-DeveloperMode -Root $Root
+            # Gated on the library's own Declared rather than a second raw-text test of our
+            # own. A private notion of "does this record declare developers" is precisely the
+            # duplicated interpretation this library exists to remove, and one had grown here
+            # (013 phase 5 review, NEW-6 / NEW-D) — including the last unguarded read in the
+            # new code.
+            $devMode = Get-DeveloperMode -Root $Root
+            if ($devMode.Declared) {
                 foreach ($problem in $devMode.Problems) {
                     Add-Finding FAIL 'record' $problem.Message $problem.Fix
                 }
