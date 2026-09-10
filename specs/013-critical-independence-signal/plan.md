@@ -95,6 +95,12 @@ except for the record shape it validates; backward compatible by construction (D
   feature, eligible, declared here before any phase. The agent reports the evidence triplet and
   never claims the gate. PASS.
 
+**Amendment — phase 4 added 2026-09-10.** Two fresh-context reviews (logic and law) both
+returned REQUEST CHANGES with blocking findings, including two the implementing session had
+not seen. A remediation phase is added rather than folded into the existing three, so what
+the reviews found and what they cost stays visible in the history.
+**Amendment approved by**: anas.m, 2026-09-10.
+
 **Phase-sizing**: each phase stands alone. Phase 1 makes the check correct and is provable on
 fixtures with no adopter involved. Phase 2 makes the record and the doctor aware of the field.
 Phase 3 states the law. Reverting any one leaves the others correct — phase 1 without phase 2
@@ -111,6 +117,12 @@ adoption/updating.md                          # MOD  phase 2 — how an existing
 adoption/greenfield.md                        # MOD  phase 2 — how a new project declares it
 docs/sdlc/critical-delivery.md                # MOD  phase 3 — item 5 states the two modes (FR-010, D6)
 docs/digests/*.md                             # GEN  phase 3 — regenerated if a marker moved
+scripts/enforcement-pack.ps1                  # MOD  phase 4 — review remediation (L1, L2, dedupe, root guard)
+scripts/verify-kit.ps1                        # MOD  phase 4 — doctor double-report + silent mode line
+specs/_templates/human-pr-review-template.md  # MOD  phase 4 — remove the comment from inside the block
+docs/sdlc/critical-delivery.md                # MOD  phase 4 — artifact path, duplicate wording
+adoption/updating.md                          # MOD  phase 4 — malformed-case wording, attestation
+adoption/greenfield.md                        # MOD  phase 4 — honesty caveat
 ```
 
 ## Testing Strategy

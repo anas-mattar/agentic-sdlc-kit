@@ -271,3 +271,55 @@ the generator refusing an unreadable one-liner is the bound doing its job. Rewri
 
 All three phases pushed separately, each with a CI run against its own commit — no phase
 certified against a sha that CI never graded (FitForge 001's recorded lesson).
+
+## Phase 4: Review remediation (added by amendment — approved by anas.m, 2026-09-10)
+
+**Goal**: close every blocking finding from the two fresh-context reviews, and the two the
+reviews exposed in the *evidence* rather than the code.
+
+**Independent Test**: the reviewers' own reproduced scenarios flip from passing to failing —
+an untracked review file, a commented-out provenance block, a duplicated developer name, a
+root-array record; S1–S12 re-run unchanged; the doctor table re-measured rather than reasoned.
+
+**Territory**:
+
+- `scripts/enforcement-pack.ps1`
+- `scripts/verify-kit.ps1`
+- `specs/_templates/human-pr-review-template.md`
+- `docs/sdlc/critical-delivery.md`
+- `adoption/updating.md`
+- `adoption/greenfield.md`
+
+- [ ] T019 (L1, BLOCKING) Team mode must require `human-pr-review.md` to be **committed**,
+      mirroring the solo arm's git-history guard. A Critical feature cannot use `ci-held`, so
+      the authoritative gate is a human's local run — exactly where an untracked file passes
+- [ ] T020 (L2, BLOCKING) Strip HTML comments before slicing the provenance section, and
+      match the attestation against the **slice**, not the whole file (contract M13, the rule
+      `Get-VisiblePlanLines` already states). Handle an **unterminated** `<!--` as commenting
+      out the remainder, because that is what a renderer does
+- [ ] T021 (L2 corollary) Move the explanatory comment **out of** the provenance section in
+      `specs/_templates/human-pr-review-template.md`. A dropped `-->` inside the block turns a
+      filled block invisible while the check still blesses it — the template shipped the trap
+- [ ] T022 (B1 / CONFIRM 3, BLOCKING) De-duplicate case-insensitively in `Get-EvidenceMode`
+      so the enforcing side agrees with the reporting side. `["Ada","ada"]` is one person and
+      must not inflate a solo project into team mode — the only direction that drops a
+      requirement
+- [ ] T023 (CONFIRM 4) Require the parsed record to be an object before reading `.developers`:
+      PowerShell member enumeration makes `[{"developers":["a","b"]}]` return a real array from
+      a record with no other field at all, selecting team in violation of FR-003
+- [ ] T024 (C1) Reword the script header's "one step stronger than ReviewProvenance" claim,
+      which contradicts FR-007's explicit ceiling. State the roster's limit in the same place:
+      it is counted, never compared against Reviewer or Owner (spec Edge Cases, CONFIRM 5)
+- [ ] T025 (C2, N2) Spell the artifact's path — `specs/NNN-name/human-pr-review.md` — in item 5
+      and in `adoption/updating.md`, as the solo bullet already does for its artifact; and add
+      the attestation to updating.md's team row, which omits a thing the check requires
+- [ ] T026 (B1 docs half, N1) Correct both places that call a duplicate or blank-entry record
+      "ignored, falls back to solo"; fix "the first **row**" left over from the table→list
+      conversion; add the missing honesty caveat to `adoption/greenfield.md` (N4)
+- [ ] T027 (N6, N7, N8, N9) Placeholder regex accepts a markdown link; fenced code inside the
+      section no longer supplies values; drop the dead `$dir = $Dir` self-assignments; restructure
+      the doctor so one defect reports once and the mode line always prints
+- [ ] T028 (B2) Re-measure the phase 2 doctor table with the evidence mode taken from
+      `enforcement-pack.ps1` rather than inferred, and correct the fabricated row
+- [ ] T029 (C3) Verify SC-006 — the adopted projects' records untouched by this feature — and
+      record the result, or record plainly which projects were not reachable from here
