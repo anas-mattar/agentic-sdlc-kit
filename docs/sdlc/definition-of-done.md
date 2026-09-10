@@ -128,7 +128,9 @@ Gates apply at two different points, not uniformly at every phase:
    passes gates 1–5, a human reviewer verified business requirements, domain correctness,
    security implications, visual-reference compliance, and architectural compliance across the
    **full feature diff**, and approved the change. **Human review is required before merge**
-   (constitution IX; `specs/_templates/human-pr-review-template.md`).
+   (constitution IX). The review is recorded at `specs/NNN-name/human-pr-review.md`, written
+   from `specs/_templates/human-pr-review-template.md` — the template is where the shape
+   lives, never where a review is filed.
 
    <!-- digest: Gate 6: a human reviews the full feature diff and approves before merge — once per feature. -->
 

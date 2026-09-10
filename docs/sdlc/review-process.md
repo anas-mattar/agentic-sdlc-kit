@@ -118,7 +118,8 @@ change MUST NOT be merged until a human reviewer approves it (constitution IX).
 
 <!-- digest: Human review is required before merge — a change is never merged until a human reviewer approves (constitution IX). -->
 
-Human reviewer checks (record in `specs/_templates/human-pr-review-template.md`):
+Human reviewer checks (record in `specs/NNN-name/human-pr-review.md`, written from
+`specs/_templates/human-pr-review-template.md`):
 
 - Actual UI vs visual references
 - Business behavior
