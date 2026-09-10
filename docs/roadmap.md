@@ -15,10 +15,13 @@ session findings; the roadmap is authored and never regenerated.
 reviews, adoption field-lesson candidates (expense-tracker, flowboard), first kit-update
 flow-down findings (2026-09-07, kit 005 → both adopted projects), framework
 self-assessment — pros/cons review (2026-09-07), feature 010 phase-2 AI review, first
-post-010 field use (expense-tracker session, 2026-09-09)
-**Generated on**: 2026-09-09 — **by**: manual audit during the 005 flow-down + same-day
-self-assessment session (2026-09-07), extended with the feature 010 review harvest and
-the first post-010 field-use lessons (2026-09-09)
+post-010 field use (expense-tracker session, 2026-09-09), first multi-repo
+two-developer adoption (FitForge — 001 governance AI review and parallel-work planning,
+2026-09-10)
+**Generated on**: 2026-09-10 — **by**: manual audit during the 005 flow-down + same-day
+self-assessment session (2026-09-07), extended with the feature 010 review harvest
+(2026-09-09), the first post-010 field-use lessons (2026-09-09), and the first
+multi-repo two-developer adoption (2026-09-10)
 
 | Inv # | Gap / lesson | Source |
 |---|---|---|
@@ -39,6 +42,8 @@ the first post-010 field-use lessons (2026-09-09)
 | GAP-015 | No check sees a document's *rendered* structure: nothing in the kit renders markdown, so an inline HTML comment (e.g. a `digest:` marker) or a stray blank line placed inside a GFM block — between a table's rows, inside a list continuation — silently severs that block while doc-lint, the digest check and the whole ritual-checks chain stay green. The law still says the right thing and displays the wrong thing; only a human or fresh-context reviewer reading the diff catches it | 010 phase 2 AI review, finding F1 |
 | GAP-016 | The machine scope check (gate 4) cannot reach nested code repos: in the nested-repo layout the code repositories carry no kit scripts, and `docs/sdlc/repository-strategy.md` is silent on it — so `scripts/scope-check.ps1` only ever governs the governance repo, while every phase commit that contains code lives in a repo the check cannot see. Territory declarations for code phases are reviewer-verified prose, not machine-verified. Candidate fix shapes: ship a thin scripts/ set into code repos at adoption, or a governance-side check that reads the code repos as sibling working trees | 2026-09-09 first post-010 field use (expense-tracker) |
 | GAP-017 | A paused feature branch makes main's roadmap lie, and nothing checks it: an adopted project's feature 003 sat 13 days with an approved spec and a delivered, gated, AI-reviewed phase 1 on an unmerged branch while main's roadmap row still read idea with no spec link — any agent orienting from main would have concluded the feature was unstarted and re-specced it. The status flip lives on the branch, invisible until merge | 2026-09-09 first post-010 field use (expense-tracker) |
+| GAP-018 | The **pre-phase** territory check cannot reach nested code repositories — the same blindness GAP-016 closed for the post-commit scope check, now in the tool meant to *prevent* the collision rather than grade it after the fact. `scripts/territory-check.ps1` diffs the governance repo alone (`scripts/territory-check.ps1:63,90`) and has no `codeRepos` awareness. In a nested multi-repo project two feature branches touch their own `specs/NNN-name/` directories and little else the check can see, while the code that actually overlaps sits in repositories it never opens — so it reports clean and cannot produce a true positive in the one layout that needs it. `docs/sdlc/team-workflow.md` §5 mandates it before every phase, and `docs/sdlc/definition-of-done.md` does not, so the failure is silent: no gate goes red, the two owners simply discover the overlap at merge — which §5 itself calls a process failure. Candidate fix: extend it the way feature 012 extended the scope check, reading the declared code repos as sibling working trees | 2026-09-10 FitForge, planning the first two-developer parallel features |
+| GAP-019 | Nothing records or checks **who approved a change to an already-approved feature document**. Constitution I says "create **or update**" `spec.md`, `plan.md` and `tasks.md` and stops there — the update needs no approver; the Governance section's "adopted only after human approval" binds amendments to the constitution, not to feature documents. Every enforcement-pack check grades paths, tokens, levels and dates; none grades authority. Observed: after one owner approval, five rule changes — a new package, a changed contract value, two widened Territory blocks, an added phase — were written and consumed by the same implementing session within minutes, one pair 29 seconds apart, with every machine check green throughout. Getting the order right (amend, then implement) is a check on retroactivity, not on consent. The adopting project amended its own constitution to require an amendment-approver line, but **cannot host the check**: `scripts/*.ps1` is `verbatim` in `kit-manifest.json`, so a project-side check is overwritten by the next `update-kit.ps1` run — leaving a constitutional rule whose enforcement had silently disappeared. The check belongs in `scripts/enforcement-pack.ps1` or nowhere | 2026-09-10 FitForge 001 governance AI review, finding F3 |
 
 ## Roadmap *(authored — humans only, never regenerated)*
 
@@ -60,6 +65,8 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
 | Code-repo scope-check reach (governance-side `scope-check-repos.ps1` reads the nested code repos as sibling working trees and grades their phase commits against repo-prefixed Territory, resolved as of each code commit; `codeRepos` in the adoption record; code-repo CI template) | GAP-016 | P1 | shipped | anas.m | `specs/012-cross-repo-scope-check/` |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
+| Amendment authority (constitution clause first: any change to an approved `spec.md`, `plan.md`, `tasks.md` or contract records who approved it, and an implementing agent may not approve its own; then an `enforcement-pack.ps1` check that grades it) | GAP-019 | P1 | idea | — | — |
+| Cross-repo territory reach (`territory-check.ps1` reads the declared code repositories as sibling working trees and reports overlap across them, the way feature 012 extended the scope check) | GAP-018 | P2 | idea | — | — |
 
 ## Decisions log *(authored)*
 
@@ -162,3 +169,43 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   more sweep": a rule the kit states about itself should be machine-checked. A doc-lint
   rule that fails a backticked surgical path inside a verbatim document would have caught
   this at authoring time — recorded as a candidate, not fixed here.**
+- 2026-09-10 GAP-018 and GAP-019 recorded from the first multi-repo two-developer
+  adoption — **inventory only; the promotion decision is the owner's** (record before
+  fixing, per the GAP-002/GAP-015/GAP-016 precedent). Both were found the same way, and
+  it is not the way this kit is designed to find things: neither came from a check, a
+  gate or a review, but from answering a plain process question ("can the two developers
+  work in parallel?") and reading what the tooling would actually do. Every machine check
+  was green over both.
+- 2026-09-10 On promoting GAP-018 (pre-phase territory check): the trigger GAP-016's own
+  entry named — "its fix shape must be decided before adopting one" — is not merely met
+  but live, and this is the sibling script in the same blind spot. It is nonetheless
+  recommended at **P2, not P1**, and the distinction is worth stating because it is the
+  one that separates this gap from GAP-016. The scope check is a Definition-of-Done gate:
+  when it cannot see a repository, a required verification silently returns nothing and
+  the phase merges ungraded. `scripts/territory-check.ps1` grades nothing — it is
+  advisory, mandated by `docs/sdlc/team-workflow.md` §5 alone, and its failure costs a
+  rebase discovered at merge instead of a collision avoided before the phase. Real, but
+  recoverable, and the manual fallback §5 already documents is two commands per code
+  repository. What makes it a roadmap row rather than a GAP-015-style single sighting is
+  that it needs no second sighting: the check **cannot** produce a true positive in the
+  nested layout, so the field cannot teach us anything further by repeating it.
+- 2026-09-10 On promoting GAP-019 (amendment authority): recommended as a roadmap row at
+  **P1**, on a ground no other open gap shares — a constitutional rule is already live in
+  an adopted project with nothing enforcing it, and the kit does not yet carry the clause
+  at all. That is the GAP-002 shape (a constitutional constant kept true by discipline)
+  with the discipline removed, and it is exactly the failure mode feature 012's review
+  taught us to hunt: green and blind. The fix has two halves and the order matters — the
+  kit's own constitution gains the rule first (Principle I, which today says "create **or
+  update**" and asks nothing of the update), then `scripts/enforcement-pack.ps1` gains the
+  check; a check without the clause enforces nothing, and the clause without the check is
+  the state we are recording. Two design questions must be settled in the spec rather than
+  waved at, because both are places this could quietly become a check that cannot fail:
+  (1) **when does "after approval" begin?** — there is no approval marker in any kit
+  artifact today, and the honest mechanical proxy is the first `phase N` commit on the
+  branch, which catches amendment-during-implementation but not the sitting where plan and
+  approval and first amendment all precede it; (2) **how strong is "not your own"?** — an
+  approver name compared against the commit author is free text, and no stronger than the
+  Reviewer Provenance block, but it converts a silent omission into a written claim that a
+  human reviewer can falsify. Neither question has a clean answer; both have honest ones,
+  and an unenforced rule with a stated limit beats an enforced-looking one without.
+- 2026-09-10 GAP-018 and GAP-019 promoted to roadmap rows at the recommended priorities, owner approved the same day. Neither is claimed: the rows exist so that a teammate orienting from main sees two known blind spots rather than inferring from green checks that none exist. GAP-019 is sequenced ahead of GAP-018 and ahead of GAP-015 because it is the only open row whose rule is **already live in an adopted project** with nothing enforcing it — every other open gap is missing enforcement for a rule the kit has not yet written down.
