@@ -2,7 +2,7 @@
 
 **Feature Branch**: `013-critical-independence-signal`
 **Created**: 2026-09-10
-**Status**: Draft — awaiting owner approval
+**Status**: Approved 2026-09-10 (owner: anas.m)
 **Delivery Level**: Standard
 **Input**: User description: "Make the Critical independent-approval evidence match the law: second-model substitute only when the project is solo"
 
