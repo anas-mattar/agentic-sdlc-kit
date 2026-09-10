@@ -66,7 +66,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
 | Code-repo scope-check reach (governance-side `scope-check-repos.ps1` reads the nested code repos as sibling working trees and grades their phase commits against repo-prefixed Territory, resolved as of each code commit; `codeRepos` in the adoption record; code-repo CI template) | GAP-016 | P1 | shipped | anas.m | `specs/012-cross-repo-scope-check/` |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
-| Critical independence signal (the adoption record states the project's developers; the Critical evidence check requires the solo substitute only when the project is solo, and an equally machine-checked independence artifact when it is not — absent record defaults to strict, so no existing adoption changes behaviour) | GAP-020 | P1 | in progress | anas.m | `[specs/013-critical-independence-signal/]` |
+| Critical independence signal (the adoption record states the project's developers; the Critical evidence check requires the solo substitute only when the project is solo, and an equally machine-checked independence artifact when it is not — absent record defaults to strict, so no existing adoption changes behaviour) | GAP-020 | P1 | shipped | anas.m | `specs/013-critical-independence-signal/` |
 | Amendment authority (constitution clause first: any change to an approved `spec.md`, `plan.md`, `tasks.md` or contract records who approved it, and an implementing agent may not approve its own; then an `enforcement-pack.ps1` check that grades it) | GAP-019 | P1 | idea | — | — |
 | Cross-repo territory reach (`territory-check.ps1` reads the declared code repositories as sibling working trees and reports overlap across them, the way feature 012 extended the scope check) | GAP-018 | P2 | idea | — | — |
 
@@ -212,3 +212,24 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   and an unenforced rule with a stated limit beats an enforced-looking one without.
 - 2026-09-10 GAP-018 and GAP-019 promoted to roadmap rows at the recommended priorities, owner approved the same day. Neither is claimed: the rows exist so that a teammate orienting from main sees two known blind spots rather than inferring from green checks that none exist. GAP-019 is sequenced ahead of GAP-018 and ahead of GAP-015 because it is the only open row whose rule is **already live in an adopted project** with nothing enforcing it — every other open gap is missing enforcement for a rule the kit has not yet written down.
 - 2026-09-10 GAP-020 recorded and claimed as feature 013 in the same sitting, breaking the record-then-wait precedent deliberately: unlike GAP-015 (observed once, cost one fix commit) this gap **blocks a live feature in an adopted project** — FitForge's 002 is the first Critical feature anywhere and cannot merge green — and unlike GAP-018 it has no manual fallback, because the only ways past it are to fabricate the substitute or to leave the lane. It is P1 for the reason GAP-019 is: the failure is in the kit's strictest lane, where being wrong is least affordable. The fix must not become a downgrade — removing the substitute for team projects without putting an equally machine-checked independence artifact in its place would close this gap by opening GAP-019's, and the spec says so.
+
+- 2026-09-10 013 shipped (main `6cccd24`), and the roadmap row flips in this main-side
+  commit rather than on the branch — feature 011's claim-visibility rule cuts both ways.
+  Six phases, six ci-held gates each pushed alone, six fresh-context reviews filed
+  verbatim in the feature directory. Four of the six said REQUEST CHANGES. The number
+  worth carrying forward is not that count but its shape: **every remediation round
+  introduced something new** — phase 4 a fail-closed regression, phase 5 a fix that moved
+  the hole rather than closing it — with severity falling each round and the rate flat.
+  Phase 6 was therefore the last agent round by decision, not by exhaustion, and the next
+  gate was a human reading the diff. A fifth defect of that shape does not want a fourth
+  agent pass.
+  Two facts the feature learned about itself and recorded rather than tidied: it shipped
+  the record-reading logic twice in phase 1 and the two copies drifted **inside the same
+  feature** (hence `scripts/adoption-lib.ps1`, the second shared library after 012's
+  `scope-lib.ps1`); and one review round was misattributed in `spec.md` until the reviewer
+  whose position it was said so.
+  Still open by decision: the roster is **counted, never compared** — a review naming two
+  people absent from the declared roster passes. Disclosed in the script header and in
+  `spec.md`'s Edge Cases, so it is a known limit rather than an unmet MUST.
+  SC-001 remains unmet from this repository by construction: it needs FitForge's 002 to
+  pass on its real cross-review, which needs this flowed down.
