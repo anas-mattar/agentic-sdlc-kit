@@ -149,3 +149,16 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   and **every one was the same shape: a silent downgrade to WARN/exit 0** — green and
   blind. That is the failure mode to hunt for in any check this kit adds next; a check that
   cannot fail is worse than no check, because it also buys false confidence.
+- 2026-09-09 First FitForge adoption caught a GAP-007-class violation in the kit's own
+  verbatim file and it was fixed in place (GAP-002 precedent — one line, no feature):
+  `adoption/greenfield.md` backtick-referenced `modules/finance/finance-invariants.md`,
+  a **surgical** path the manifest itself describes as "worked examples; projects replace
+  with their own domain modules". FitForge did exactly that — replaced it with
+  **modules/training/** — and doc-lint then failed inside a verbatim kit document, which
+  `update-kit.ps1` re-applies wholesale, so the adopter could never fix it locally without
+  taking a permanent conflict. Now bold, per the authoring convention doc-lint's own header
+  states. Why it went unseen for four adoptions: the two earlier projects left the finance
+  example in place, so nobody had yet done the documented thing. **The lesson is not "one
+  more sweep": a rule the kit states about itself should be machine-checked. A doc-lint
+  rule that fails a backticked surgical path inside a verbatim document would have caught
+  this at authoring time — recorded as a candidate, not fixed here.**

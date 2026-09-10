@@ -25,8 +25,8 @@ exist and exits non-zero on a partial install.
 
 Copy the kit, then fill every `{{SLOT}}` and `TODO(...)` in `.specify/memory/constitution.md`:
 project name, PK standard, audit fields, repository names (or delete principle III for
-single-repo). Write the domain-invariants pack (`modules/finance/finance-invariants.md` is the
-model) and point principle V at it. Bump to v1.0.0 with today's ratification date. Keep it
+single-repo). Write the domain-invariants pack (**modules/finance/finance-invariants.md** is the
+model — bold because you replace or delete it; `modules/**` is surgical) and point principle V at it. Bump to v1.0.0 with today's ratification date. Keep it
 under ~20 principles — a constitution that says everything governs nothing.
 
 ## 2. Fill CLAUDE.md
@@ -83,6 +83,13 @@ the first commit:
   nested repo. Run `git status` and `git rev-parse --show-toplevel` right after scaffolding and
   confirm new files appear as untracked additions at the expected parent-repo root, not inside
   a stray nested `.git`.
+- **Scaffolder writes its own agent files**: some scaffolding CLIs (e.g. `create-next-app`)
+  now generate `CLAUDE.md` / `AGENTS.md` inside the code repository, and some regenerate a
+  marked block in them on every dev-server run. In the nested layout that puts a second,
+  tool-authored agent file between the agent and the governance tree above it. Rewrite both
+  to point at the parent repository's law, and keep your content OUTSIDE any regenerated
+  marker block so it survives — deleting the block only re-creates it as an uncommitted
+  change.
 - **Strict-build flag fails on a transitive vulnerability**: if proving the gate trips a
   strict-build flag on a dependency the scaffold pulled in transitively, triage per
   `docs/sdlc/gate-command.md` ("Strict-build flags vs transitive-dependency
