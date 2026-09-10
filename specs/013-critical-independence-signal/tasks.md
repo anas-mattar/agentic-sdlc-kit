@@ -196,7 +196,7 @@ that matters is the last one: what `enforcement-pack.ps1` does with the same rec
 | `"ada"` (a string) | FAIL — not an array | solo |
 | `[]` | FAIL — empty | solo |
 | `["ada","  "]` | FAIL — blank entry, **and** ok — 1 developer declared | solo |
-| `["Ada","ada"]` | FAIL — listed more than once | solo |
+| `["Ada","ada"]` | FAIL — listed more than once | solo **(was TEAM before phase 4 — see B2 below)** |
 
 **Absence is deliberately not a finding.** Three projects adopted this kit before the field
 existed; warning them about a value whose absence produces the stricter behaviour would be
@@ -290,36 +290,113 @@ root-array record; S1–S12 re-run unchanged; the doctor table re-measured rathe
 - `adoption/updating.md`
 - `adoption/greenfield.md`
 
-- [ ] T019 (L1, BLOCKING) Team mode must require `human-pr-review.md` to be **committed**,
+- [x] T019 (L1, BLOCKING) Team mode must require `human-pr-review.md` to be **committed**,
       mirroring the solo arm's git-history guard. A Critical feature cannot use `ci-held`, so
       the authoritative gate is a human's local run — exactly where an untracked file passes
-- [ ] T020 (L2, BLOCKING) Strip HTML comments before slicing the provenance section, and
+- [x] T020 (L2, BLOCKING) Strip HTML comments before slicing the provenance section, and
       match the attestation against the **slice**, not the whole file (contract M13, the rule
       `Get-VisiblePlanLines` already states). Handle an **unterminated** `<!--` as commenting
       out the remainder, because that is what a renderer does
-- [ ] T021 (L2 corollary) Move the explanatory comment **out of** the provenance section in
+- [x] T021 (L2 corollary) Move the explanatory comment **out of** the provenance section in
       `specs/_templates/human-pr-review-template.md`. A dropped `-->` inside the block turns a
       filled block invisible while the check still blesses it — the template shipped the trap
-- [ ] T022 (B1 / CONFIRM 3, BLOCKING) De-duplicate case-insensitively in `Get-EvidenceMode`
+- [x] T022 (B1 / CONFIRM 3, BLOCKING) De-duplicate case-insensitively in `Get-EvidenceMode`
       so the enforcing side agrees with the reporting side. `["Ada","ada"]` is one person and
       must not inflate a solo project into team mode — the only direction that drops a
       requirement
-- [ ] T023 (CONFIRM 4) Require the parsed record to be an object before reading `.developers`:
+- [x] T023 (CONFIRM 4) Require the parsed record to be an object before reading `.developers`:
       PowerShell member enumeration makes `[{"developers":["a","b"]}]` return a real array from
       a record with no other field at all, selecting team in violation of FR-003
-- [ ] T024 (C1) Reword the script header's "one step stronger than ReviewProvenance" claim,
+- [x] T024 (C1) Reword the script header's "one step stronger than ReviewProvenance" claim,
       which contradicts FR-007's explicit ceiling. State the roster's limit in the same place:
       it is counted, never compared against Reviewer or Owner (spec Edge Cases, CONFIRM 5)
-- [ ] T025 (C2, N2) Spell the artifact's path — `specs/NNN-name/human-pr-review.md` — in item 5
+- [x] T025 (C2, N2) Spell the artifact's path — `specs/NNN-name/human-pr-review.md` — in item 5
       and in `adoption/updating.md`, as the solo bullet already does for its artifact; and add
       the attestation to updating.md's team row, which omits a thing the check requires
-- [ ] T026 (B1 docs half, N1) Correct both places that call a duplicate or blank-entry record
+- [x] T026 (B1 docs half, N1) Correct both places that call a duplicate or blank-entry record
       "ignored, falls back to solo"; fix "the first **row**" left over from the table→list
       conversion; add the missing honesty caveat to `adoption/greenfield.md` (N4)
-- [ ] T027 (N6, N7, N8, N9) Placeholder regex accepts a markdown link; fenced code inside the
+- [x] T027 (N6, N7, N8, N9) Placeholder regex accepts a markdown link; fenced code inside the
       section no longer supplies values; drop the dead `$dir = $Dir` self-assignments; restructure
       the doctor so one defect reports once and the mode line always prints
-- [ ] T028 (B2) Re-measure the phase 2 doctor table with the evidence mode taken from
+- [x] T028 (B2) Re-measure the phase 2 doctor table with the evidence mode taken from
       `enforcement-pack.ps1` rather than inferred, and correct the fabricated row
-- [ ] T029 (C3) Verify SC-006 — the adopted projects' records untouched by this feature — and
+- [x] T029 (C3) Verify SC-006 — the adopted projects' records untouched by this feature — and
       record the result, or record plainly which projects were not reachable from here
+
+## Phase 4 — remediation results
+
+### The two review verdicts
+
+Both fresh-context reviews returned **REQUEST CHANGES**. Between them: two blocking defects in
+the code that this session had not seen, one blocking defect both found independently, one more
+FR-003 violation, and two failures in the *evidence and process* rather than the code.
+
+### B2 — the row that was wrong, and why
+
+The phase 2 doctor table recorded `["Ada","ada"] → solo`. The code produced **team**. The
+column was filled by reasoning from what the doctor said, not by running the check — and the
+paragraph directly beneath the table said the opposite of the table, which is what gave it
+away. The table above is corrected and every mode below was **measured**:
+
+| Record shape | Evidence mode (measured 2026-09-10, post-remediation) |
+|---|---|
+| field absent | solo |
+| `["ada"]` | solo |
+| `["ada","grace"]` | team |
+| `"ada"` (a string) | solo |
+| `[]` | solo |
+| `["ada","  "]` | solo |
+| `["Ada","ada"]` | solo |
+| `[{"developers":["a","b"]}]` (root array) | solo |
+
+Every degenerate shape now lands on the stricter arm. FR-003 holds — and this time that is a
+measurement rather than an assertion.
+
+### The reviewers' scenarios, flipped
+
+Each of these was reproduced by a reviewer against the phase 3 code and passed when it should
+have failed. Re-run against phase 4:
+
+| # | Scenario | Now |
+|---|---|---|
+| R1 | `human-pr-review.md` present but never `git add`ed | FAIL — not committed |
+| R2 | provenance block entirely inside `<!-- -->` | FAIL — no visible section |
+| R3 | the template's own comment loses its closing `-->` | FAIL — names unreadable |
+| R4 | attestation present only outside the section | FAIL — missing from the section |
+| R5 | `["Ada","ada"]` | FAIL — solo arm, as it should always have been |
+| R6 | names supplied only inside a fenced code block | FAIL — fenced content is illustration |
+| R7 | a real, filled, committed review | **pass** |
+| R8 | `**Reviewer**: [Alice](mailto:…)` — a markdown link | **pass** |
+| R9 | root-array record | FAIL — solo arm |
+
+R9 took two attempts, and the first one is worth recording. The obvious guard —
+`$record -isnot [PSCustomObject]` — does not catch it: `ConvertFrom-Json` emits array elements
+to the pipeline one at a time, so a **single-element** root array collapses to one
+`PSCustomObject` indistinguishable from a real record. The shape has to be rejected from the
+raw text. The regression fixture caught the bad fix immediately, which is the argument for
+writing the fixture before trusting the patch.
+
+### No regression
+
+- **S1–S12**: verdicts unchanged from phase 2. One message differs by design — S10 now says
+  "no **visible** `## Review Provenance` section" and explains that a commented-out section
+  renders as nothing.
+- **Solo mode**: still byte-identical to the pre-013 baseline captured at T001, diffed again
+  after phase 4.
+- **SC-006 (T029)**: all three adopted projects — expense-tracker, fitforge, flowboard —
+  verified directly. Each `kit-adoption.json` is `clean` in git (untouched by this feature),
+  none declares `developers`, and the new doctor is silent about the field for all three, which
+  is the designed behaviour for a record that predates it. Verified, not assumed.
+- **SC-001** remains the one unmet criterion. It cannot be met from this repository: it asks
+  that FitForge 002 pass on its genuine cross-review, which requires this feature to merge and
+  flow down first. Recorded as outstanding rather than quietly dropped.
+
+### What the reviews cost, and what they were worth
+
+Four blocking-class code defects, two evidence failures, nine nits — on a feature whose entire
+subject is a check that was enforcing the wrong thing. Two of the four blocking defects were
+invisible to every machine check in the kit: an untracked file and a commented-out block both
+produced `RESULT OK`. The strongest single finding is L1, and it is worth stating plainly: the
+check that exists to prove a human reviewed the code could be satisfied by a file that existed
+only on the implementer's disk.

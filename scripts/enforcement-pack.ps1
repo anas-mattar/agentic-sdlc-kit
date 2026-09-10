@@ -42,9 +42,10 @@
                          project that declares nothing keeps the behaviour it has today.
                          How strong is TEAM? Two names written by the same team, in one
                          file: it converts a silent omission into a written claim a human
-                         reviewer can falsify, and it is worth exactly that much. It is
-                         deliberately one step stronger than ReviewProvenance below, which
-                         compares nothing — see specs/013-*/plan.md D4.
+                         reviewer can falsify, and it is worth exactly that much — the
+                         strength of the Reviewer Provenance block, no more (FR-007). The
+                         declared roster is COUNTED to pick the mode and is never compared
+                         against either name.
       - PhaseSizeWarning (NNN-* branches): non-blocking warning when a single commit's
                          diff exceeds the configured line/file thresholds.
       - GateCertification (NNN-* branches): the '**Gate Certification**' declaration —
@@ -241,15 +242,36 @@ function Invoke-LiteAndAbuseCheck {
 function Get-EvidenceMode {
     $recordPath = Join-Path $Root 'kit-adoption.json'
     if (-not (Test-Path -LiteralPath $recordPath)) { return @{ Mode = 'solo'; Count = 0; Why = 'no kit-adoption.json' } }
+    $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw)"
+    # The record must be a JSON OBJECT at the root, and that has to be judged from the TEXT.
+    # Testing the parsed value is not enough: ConvertFrom-Json emits array elements to the
+    # pipeline one at a time, so `[{"developers":["a","b"]}]` — a record carrying no
+    # schemaVersion, projectName or topology at all — collapses to a single PSCustomObject
+    # indistinguishable from a real record, and selected team. FR-003 says every degenerate
+    # record is solo (013 phase 3 review, CONFIRM 4; the type guard that missed it was the
+    # phase 4 fix's own first attempt, caught by the regression fixture).
+    if ($rawRecord.TrimStart([char]0xFEFF, ' ', "`t", "`r", "`n") -notmatch '^\{') {
+        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json is not a JSON object at its root' }
+    }
     try {
-        $record = Get-Content -LiteralPath $recordPath -Raw | ConvertFrom-Json
+        $record = $rawRecord | ConvertFrom-Json
     } catch {
         return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json does not parse' }
     }
+    if ($record -isnot [PSCustomObject]) { return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json is not a JSON object' } }
     if ($null -eq $record.developers) { return @{ Mode = 'solo'; Count = 0; Why = 'no developers declared in kit-adoption.json' } }
     if ($record.developers -isnot [Array]) { return @{ Mode = 'solo'; Count = 0; Why = 'developers in kit-adoption.json is not an array' } }
 
-    $named = @($record.developers | Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) })
+    # De-duplicated case-insensitively, exactly as scripts/verify-kit.ps1 does. Counting raw
+    # entries let one person written twice — ["Ada","ada"] — inflate a solo project into team
+    # mode, dropping the second-model review and the cooling-off. That is the only direction
+    # this feature must never move a project by accident, and the doctor already refused it
+    # while the enforcing side allowed it: the two scripts disagreed about what a developer
+    # is (013 phase 3 reviews, docs B1 / logic CONFIRM 3).
+    $named = @($record.developers |
+        Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) } |
+        ForEach-Object { $_.Trim() } |
+        Sort-Object -Unique -CaseSensitive:$false)
     if ($named.Count -ge 2) {
         return @{ Mode = 'team'; Count = $named.Count; Why = "$($named.Count) developers declared in kit-adoption.json" }
     }
@@ -277,8 +299,7 @@ function Invoke-CriticalEvidenceCheck {
 # conditions, same message strings, so a solo project cannot tell this feature happened.
 function Invoke-CriticalSoloEvidence {
     param([string]$Dir)
-    $dir = $Dir
-    $reviewPath = Join-Path $dir 'second-model-review.md'
+    $reviewPath = Join-Path $Dir 'second-model-review.md'
     if (-not (Test-Path $reviewPath)) {
         $script:failures += "CriticalEvidence: $dir/second-model-review.md is missing (required for Critical features — docs/sdlc/critical-delivery.md item 5)"
         return
@@ -300,44 +321,81 @@ function Invoke-CriticalSoloEvidence {
 # human reviewer is not the feature's owner. No cooling-off: the period exists to give a
 # solo developer distance from their own work, and a second person already is that.
 #
-# Both names are read from INSIDE the '## Review Provenance' section. The document header
-# also carries a '**Reviewer**:' field and must never shadow the block's — the identical
-# trap feature 006's phase-2 review recorded as F1 for the AI-review check.
+# Three parsing rules, each of which a phase-3 fresh-context review demonstrated was needed:
+#   1. The file must be COMMITTED. A Critical feature cannot use ci-held, so its authoritative
+#      gate is a human's local run — precisely where an untracked file on one developer's disk
+#      would otherwise satisfy the only machine enforcement of item 5. The solo arm has always
+#      had this guard; the team arm shipped without it (logic review, BLOCKING 1).
+#   2. HTML comments are stripped FIRST, including an unterminated one, because that is what a
+#      renderer does. A provenance block wrapped in <!-- --> renders as nothing and used to
+#      pass — contract M13's rule, which Get-VisiblePlanLines already states, applied here
+#      (logic review, BLOCKING 2).
+#   3. Both names AND the attestation are read from inside the section slice only. The document
+#      header carries its own '**Reviewer**:' field (006 phase-2 F1), and matching the
+#      attestation against the whole file let it be satisfied from an unrelated comment.
+#
+# The roster in kit-adoption.json is COUNTED and nothing more: it selects the mode, and is
+# never compared against Reviewer or Owner. A review naming two people who are not in the
+# roster passes. That limit is deliberate and recorded rather than hidden — cross-checking
+# free-text names against a free-text roster would read as verification while providing none.
 function Invoke-CriticalTeamEvidence {
     param([string]$Dir, [string]$Why)
-    $dir = $Dir
     $attestation = 'This reviewer is not the owner of the feature under review.'
-    $reviewPath = Join-Path $dir 'human-pr-review.md'
+    $reviewPath = Join-Path $Dir 'human-pr-review.md'
 
     if (-not (Test-Path -LiteralPath $reviewPath)) {
-        $script:failures += "CriticalEvidence: $dir/human-pr-review.md is missing — team mode ($Why) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)"
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is missing — team mode ($Why) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)"
         return
     }
-    $content = Get-Content -LiteralPath $reviewPath -Raw
+    if (-not ((git log --format=%H -- $reviewPath 2>$null) | Select-Object -First 1)) {
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is not committed — evidence that exists only in a working tree is not evidence (commit it; FR-006 requires the identities to be read from committed artifacts)"
+        return
+    }
+
+    $content = Get-VisibleText -Path $reviewPath
     if ($content -notmatch '(?m)^##\s+Review Provenance') {
-        $script:failures += "CriticalEvidence: $dir/human-pr-review.md has no '## Review Provenance' section — team mode ($Why) needs the reviewer and owner named in the review itself (specs/_templates/human-pr-review-template.md)"
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md has no visible '## Review Provenance' section — team mode ($Why) needs the reviewer and owner named in the review itself (specs/_templates/human-pr-review-template.md). A section inside an HTML comment does not count: it renders as nothing"
         return
     }
     $slice = if ($content -match '(?ms)^##\s+Review Provenance\s*$(.*?)(?=^##\s|\z)') { $matches[1] } else { '' }
+    # Fenced code inside the section is illustration, not a declaration (logic review, NIT 7).
+    $slice = [regex]::Replace($slice, '(?ms)^```.*?(^```|\z)', '')
 
     $reviewer = Get-ProvenanceValue -Slice $slice -Field 'Reviewer'
     $owner = Get-ProvenanceValue -Slice $slice -Field 'Owner'
 
+    # A bare [bracketed] value is the template placeholder; '[Name](mailto:...)' is a
+    # perfectly ordinary markdown link and must not be mistaken for one (logic review, NIT 6).
+    $placeholder = '^\[[^\]]*\]\s*$'
     foreach ($pair in @(@{ N = 'Reviewer'; V = $reviewer }, @{ N = 'Owner'; V = $owner })) {
         if (-not $pair.V) {
-            $script:failures += "CriticalEvidence: $dir/human-pr-review.md has no filled '**$($pair.N)**:' line inside its Review Provenance section (team mode — $Why)"
-        } elseif ($pair.V -match '^\[') {
-            $script:failures += "CriticalEvidence: $dir/human-pr-review.md leaves '**$($pair.N)**: $($pair.V)' as a template placeholder — team mode ($Why) needs the actual name"
+            $script:failures += "CriticalEvidence: $Dir/human-pr-review.md has no filled '**$($pair.N)**:' line inside its Review Provenance section (team mode — $Why)"
+        } elseif ($pair.V -match $placeholder) {
+            $script:failures += "CriticalEvidence: $Dir/human-pr-review.md leaves '**$($pair.N)**: $($pair.V)' as a template placeholder — team mode ($Why) needs the actual name"
         }
     }
-    if ($reviewer -and $owner -and $reviewer -notmatch '^\[' -and $owner -notmatch '^\[') {
-        if ($reviewer.Trim() -ieq $owner.Trim()) {
-            $script:failures += "CriticalEvidence: $dir/human-pr-review.md names '$reviewer' as both reviewer and owner — the human reviewer of a Critical feature MUST NOT be its owner (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md rule 4)"
+    if ($reviewer -and $owner -and $reviewer -notmatch $placeholder -and $owner -notmatch $placeholder) {
+        if ($reviewer -ieq $owner) {
+            $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$reviewer' as both reviewer and owner — the human reviewer of a Critical feature MUST NOT be its owner (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md rule 4)"
         }
     }
-    if ($content -notmatch [regex]::Escape($attestation)) {
-        $script:failures += "CriticalEvidence: $dir/human-pr-review.md is missing the verbatim attestation sentence '$attestation' (team mode — $Why)"
+    if ($slice -notmatch [regex]::Escape($attestation)) {
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is missing the verbatim attestation sentence '$attestation' from its Review Provenance section (team mode — $Why)"
     }
+}
+
+# A file as a reader sees it: HTML comments removed, closed ones first and then an
+# UNTERMINATED '<!--' through to end of file — a renderer swallows the rest of the document,
+# so a check that keeps reading is reading text nobody can see. Get-VisiblePlanLines applies
+# the same rule line-wise for plan headers (contract M13); this returns whole text because
+# the provenance parser needs to slice sections out of it.
+function Get-VisibleText {
+    param([string]$Path)
+    $raw = "$(Get-Content -LiteralPath $Path -Raw)"
+    $stripped = [regex]::Replace($raw, '(?s)<!--.*?-->', '')
+    $dangling = $stripped.IndexOf('<!--')
+    if ($dangling -ge 0) { $stripped = $stripped.Substring(0, $dangling) }
+    return $stripped
 }
 
 function Get-ProvenanceValue {

@@ -97,13 +97,15 @@ Declare Critical when the feature touches any of:
 
    - **Nothing declared, or one developer** → `second-model-review.md`, first committed at
      least 24 hours before merge. The substitute above, unchanged.
-   - **Two or more developers** → `human-pr-review.md` carrying a filled
-     `## Review Provenance` block whose **Reviewer** is not its **Owner**, plus the verbatim
-     attestation. No cooling-off.
+   - **Two or more developers** → `specs/NNN-name/human-pr-review.md`, **committed**, carrying
+     a filled `## Review Provenance` block whose **Reviewer** is not its **Owner**, plus the
+     verbatim attestation. No cooling-off.
 
-   An absent, empty or malformed declaration selects the **first** row. A project that has
-   never declared anything is treated as solo and keeps the stricter requirement; the doctor
-   (`scripts/verify-kit.ps1`) reports a malformed declaration, because the fallback is
+   The count is taken after blank entries are dropped and duplicates collapsed
+   case-insensitively, so `["Ada","ada"]` is one developer, not two. An absent, empty, or
+   otherwise unusable declaration selects the **solo arm**: a project that has never declared
+   anything keeps the stricter requirement, forever. The doctor (`scripts/verify-kit.ps1`)
+   reports a malformed declaration and states the mode it produces, because the fallback is
    otherwise silent. See **adoption/updating.md** for the shape.
 
    **Honesty about the second row too**: it compares two names written by the same team, in

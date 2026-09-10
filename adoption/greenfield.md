@@ -156,9 +156,11 @@ From the first week:
   independence evidence a **Critical** feature owes: two or more names means the real thing,
   an independent human review recorded in `human-pr-review.md`; anything else means the
   solo substitute, a second-model review plus a 24-hour cooling-off
-  (`docs/sdlc/critical-delivery.md` item 5). Declaring nothing is a supported answer and
-  keeps the stricter rule — declare it only when the second person is real, and see
-  **adoption/updating.md** for the full table.
+  (`docs/sdlc/critical-delivery.md` item 5). What the team check proves is bounded — two
+  names in one file, written by the same team; it makes an omission falsifiable, it does not
+  verify the review happened. Declaring nothing is a supported answer and keeps the stricter
+  rule — declare it only when the second person is real, and see **adoption/updating.md** for
+  the full table.
 - **CI gate as second witness**: run the gate on every push. The owner-held certifying
   gate (user-run — or plan-declared `ci-held`, where the CI run itself becomes the
   approved evidence; `docs/sdlc/gate-command.md`) remains the trust ritual; CI catches

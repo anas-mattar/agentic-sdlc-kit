@@ -262,19 +262,28 @@ try {
                 if ($record.developers -isnot [Array]) {
                     Add-Finding FAIL 'record' 'kit-adoption.json developers is not an array' 'declare it as a JSON array of names, e.g. ["ada", "grace"] — a non-array is ignored and the project is silently treated as solo (adoption/updating.md)'
                 } else {
-                    $named = @($record.developers | Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) })
-                    if ($named.Count -ne @($record.developers).Count) {
+                    # Each defect reports ONCE, and the resulting mode is ALWAYS stated —
+                    # a record can be both malformed and in a definite mode, and the reader
+                    # needs both facts (013 phase 3 review, NIT 9). Deduplication matches
+                    # scripts/enforcement-pack.ps1's Get-EvidenceMode exactly; if these two
+                    # ever disagree about what a developer is, the doctor is reporting a
+                    # mode the enforcing side does not use.
+                    $entries = @($record.developers)
+                    $named = @($entries |
+                        Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) } |
+                        ForEach-Object { $_.Trim() })
+                    if ($entries.Count -eq 0) {
+                        Add-Finding FAIL 'record' 'kit-adoption.json developers is empty' 'name the project''s developers, or remove the field — an empty array is indistinguishable from an unfinished edit and is treated as solo'
+                    } elseif ($named.Count -ne $entries.Count) {
                         Add-Finding FAIL 'record' 'kit-adoption.json developers contains a blank or non-string entry' 'every entry is a non-empty name; blank entries are dropped before the count is taken, which can silently move the project from team back to solo'
                     }
-                    $dupes = @($named | Group-Object { "$_".Trim().ToLowerInvariant() } | Where-Object { $_.Count -gt 1 })
-                    if ($dupes.Count -gt 0) {
-                        Add-Finding FAIL 'record' "kit-adoption.json developers lists '$($dupes[0].Group[0])' more than once (case-insensitively)" 'one entry per person — a duplicate inflates the count and can put a solo project into team mode, which is the one direction this feature must never move a project by accident'
-                    } elseif ($named.Count -eq 0) {
-                        Add-Finding FAIL 'record' 'kit-adoption.json developers is empty' 'name the project''s developers, or remove the field — an empty array is indistinguishable from an unfinished edit and is treated as solo'
-                    } else {
-                        $mode = if ($named.Count -ge 2) { 'team' } else { 'solo' }
-                        Add-Finding OK 'record' "$($named.Count) developer(s) declared — Critical features use the $mode evidence rule (docs/sdlc/critical-delivery.md item 5)" ''
+                    $unique = @($named | Sort-Object -Unique -CaseSensitive:$false)
+                    if ($unique.Count -ne $named.Count) {
+                        $dupe = @($named | Group-Object { $_.ToLowerInvariant() } | Where-Object { $_.Count -gt 1 })[0].Group[0]
+                        Add-Finding FAIL 'record' "kit-adoption.json developers lists '$dupe' more than once (case-insensitively)" 'one entry per person — duplicates are collapsed before the count is taken, so the extra entry changes nothing except how the record reads'
                     }
+                    $mode = if ($unique.Count -ge 2) { 'team' } else { 'solo' }
+                    Add-Finding OK 'record' "$($unique.Count) developer(s) declared — Critical features use the $mode evidence rule (docs/sdlc/critical-delivery.md item 5)" ''
                 }
             }
 
