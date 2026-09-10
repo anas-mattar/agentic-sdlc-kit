@@ -127,18 +127,18 @@ sentence is unchanged (`git diff` shows additions around it, not edits to it).
 - `docs/sdlc/critical-delivery.md`
 - `docs/digests/*.md`
 
-- [ ] T015 Rewrite item 5's *machinery*, not its requirement: keep the independence sentence and
+- [x] T015 Rewrite item 5's *machinery*, not its requirement: keep the independence sentence and
       the solo-substitute sentence exactly as they are, and add which artifact each mode
       requires, that the mode comes from `kit-adoption.json`, and that an undeclared project is
       treated as solo. The honesty paragraph gains one clause: the team-mode comparison is two
       names in one file, written by the same team
-- [ ] T016 Check whether any `<!-- digest: -->` marker in the edited region moved or needs
+- [x] T016 Check whether any `<!-- digest: -->` marker in the edited region moved or needs
       rewording; if so update the marker and run `pwsh -File scripts/build-digests.ps1`
-- [ ] T017 Search for every other place the substitute is described — `docs/sdlc/flow.md`,
+- [x] T017 Search for every other place the substitute is described — `docs/sdlc/flow.md`,
       `docs/sdlc/definition-of-done.md`, `docs/sdlc/review-process.md`, `CLAUDE.md`, the
       constitution's sync list — and correct any that implies the substitute is unconditional.
       Kit 011's lesson is that this enumeration goes stale in exactly these files
-- [ ] T018 Full `pwsh -File scripts/ritual-checks.ps1`; re-run S1–S12 one last time; record the
+- [x] T018 Full `pwsh -File scripts/ritual-checks.ps1`; re-run S1–S12 one last time; record the
       final verdict table in this file
 
 ## Phase 1 — scenario results (T008)
@@ -219,3 +219,46 @@ default `developers` to the current user so the record looks complete. It must n
 default is a claim the project never made, and when a second developer joins, the stale
 declaration keeps Critical features on the solo substitute while everyone believes the record is
 accurate. An absent field is honest about not knowing; a guessed one is not.
+
+## Phase 2 — gate (ci-held)
+
+| Run | Conclusion | Commit | Owner approval |
+|---|---|---|---|
+| [34459430831](https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34459430831) | success | `1b30e99a6a9fcfcab77539ed28fc744d7ec6938f` | recorded 2026-09-10 |
+
+## Phase 3 — the sweep, and what it did not find (T017)
+
+The enumeration T017 was written to distrust turned out to be clean, and that is worth
+recording as a result rather than skipping in silence. Every mention of the substitute across
+`docs/`, `CLAUDE.md`, the constitution and the templates:
+
+- `docs/sdlc/critical-delivery.md` item 5 — **the only law statement**, and in this phase's
+  Territory. Amended.
+- `specs/_templates/human-pr-review-template.md` — already carries the conditional wording
+  from phase 1.
+- `.specify/memory/constitution.md` lines 64 and 137 — the sync list, naming "the Critical
+  cooling-off hours" as a constant. Still true: the constant is 24 and this feature does not
+  move it. **Not edited.**
+- `.specify/memory/constitution.md` line 96 — the SYNC IMPACT REPORT of an earlier amendment,
+  which already calls it "the Critical-**solo** review substitute". That is a historical
+  record of what that amendment did, it is accurate, and rewriting history to match today
+  would be the opposite of an audit trail. **Not edited** — and it is the strongest single
+  piece of evidence that the unconditional check was a defect rather than a decision.
+- `docs/roadmap.md` — GAP rows and shipped-feature descriptions; historical, nothing implies
+  the substitute is unconditional. **Not edited.**
+
+So Territory did not need widening, and no amendment was required. Kit 011's lesson was that
+this enumeration goes stale in exactly these files; this time it had not.
+
+**A GAP-015 near-miss, caught before commit.** The first draft of item 5's machine-check
+paragraph used a markdown table nested inside numbered list item 5. GFM renders tables
+inconsistently inside list continuations, and a table that fails to render degrades into a row
+of raw pipes — the precise failure GAP-015 records, in a law document, introduced by the
+session that recorded the gap twice today. Converted to a bulleted list, which renders
+everywhere. No machine check would have caught it: `doc-lint` and the `digests` member were
+green across both versions.
+
+**Digest markers**: item 5 gains a second marker naming where the mode comes from. The first
+draft was 194 characters and `build-digests.ps1` rejected it against its 120-character bound —
+the generator refusing an unreadable one-liner is the bound doing its job. Rewritten to 115.
+`build-digests.ps1` re-run; the `digests` member is green, so the digests match the law.
