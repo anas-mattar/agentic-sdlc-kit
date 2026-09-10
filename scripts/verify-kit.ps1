@@ -248,6 +248,36 @@ try {
                 Add-Finding WARN 'record' 'multi-repo adoption declares no codeRepos (absent, empty, or all entries unusable)' 'declare the nested code repositories so the machine scope check reaches the code (scripts/scope-check-repos.ps1; adoption/updating.md) — without it, code phase commits are reviewer-verified only'
             }
 
+            # developers (013): who the project's developers are, which is what selects the
+            # Critical lane's evidence mode in scripts/enforcement-pack.ps1 — the solo
+            # substitute (second-model review + cooling-off) or the independent human
+            # review a second person can actually give.
+            #
+            # Absence is NOT a finding. Every adoption predating 013 declares nothing and is
+            # treated as solo, which is the stricter branch; warning about it would nag three
+            # projects about a field that is doing exactly what it should. A MALFORMED value
+            # is a finding, because the check silently falls back to solo and the project
+            # would otherwise never learn its declaration is being ignored.
+            if ($null -ne $record.developers) {
+                if ($record.developers -isnot [Array]) {
+                    Add-Finding FAIL 'record' 'kit-adoption.json developers is not an array' 'declare it as a JSON array of names, e.g. ["ada", "grace"] — a non-array is ignored and the project is silently treated as solo (adoption/updating.md)'
+                } else {
+                    $named = @($record.developers | Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) })
+                    if ($named.Count -ne @($record.developers).Count) {
+                        Add-Finding FAIL 'record' 'kit-adoption.json developers contains a blank or non-string entry' 'every entry is a non-empty name; blank entries are dropped before the count is taken, which can silently move the project from team back to solo'
+                    }
+                    $dupes = @($named | Group-Object { "$_".Trim().ToLowerInvariant() } | Where-Object { $_.Count -gt 1 })
+                    if ($dupes.Count -gt 0) {
+                        Add-Finding FAIL 'record' "kit-adoption.json developers lists '$($dupes[0].Group[0])' more than once (case-insensitively)" 'one entry per person — a duplicate inflates the count and can put a solo project into team mode, which is the one direction this feature must never move a project by accident'
+                    } elseif ($named.Count -eq 0) {
+                        Add-Finding FAIL 'record' 'kit-adoption.json developers is empty' 'name the project''s developers, or remove the field — an empty array is indistinguishable from an unfinished edit and is treated as solo'
+                    } else {
+                        $mode = if ($named.Count -ge 2) { 'team' } else { 'solo' }
+                        Add-Finding OK 'record' "$($named.Count) developer(s) declared — Critical features use the $mode evidence rule (docs/sdlc/critical-delivery.md item 5)" ''
+                    }
+                }
+            }
+
             $proofOk = @($record.gateProof) | Where-Object { $_.exitCode -eq 0 }
             if (-not $proofOk) {
                 Add-Finding FAIL 'record' 'no gate proof with exit code 0 recorded in kit-adoption.json' 'prove the gate green and record command/exitCode/date/recordedBy (adoption step 3 — "a gate that has never been green is not a gate")'

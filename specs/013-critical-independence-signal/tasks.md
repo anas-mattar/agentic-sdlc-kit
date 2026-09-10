@@ -99,18 +99,18 @@ default for every project that adopted before this feature.
 - `adoption/updating.md`
 - `adoption/greenfield.md`
 
-- [ ] T010 `scripts/verify-kit.ps1` dimension 4: validate `developers` when present — array of
+- [x] T010 `scripts/verify-kit.ps1` dimension 4: validate `developers` when present — array of
       non-blank strings, no duplicates after case-folding. FAIL on a wrong type or a bad entry,
       naming the shape; stay silent when the field is absent (FR-009)
-- [ ] T011 `scripts/init-kit.ps1`: accept an optional developer list and write it into the
+- [x] T011 `scripts/init-kit.ps1`: accept an optional developer list and write it into the
       record it generates. Absent parameter writes no field — the initializer must not invent a
       roster, and a one-person default would be a claim the project did not make
-- [ ] T012 `adoption/updating.md`: a short section on declaring the field — the shape, that
+- [x] T012 `adoption/updating.md`: a short section on declaring the field — the shape, that
       declaring one developer changes nothing, that declaring two or more switches Critical
       features to requiring an independent human review instead of the second-model substitute,
       and that declaring nothing keeps today's behaviour forever
-- [ ] T013 `adoption/greenfield.md`: the same, at the step that writes `kit-adoption.json`
-- [ ] T014 Re-run S12 end to end (strict **and** reported); re-run S1–S11 to confirm phase 2
+- [x] T013 `adoption/greenfield.md`: the same, at the step that writes `kit-adoption.json`
+- [x] T014 Re-run S12 end to end (strict **and** reported); re-run S1–S11 to confirm phase 2
       changed no verdict; append the results to this file
 
 ## Phase 3: The law says what the machine does (FR-010)
@@ -174,3 +174,48 @@ rewritten.
 **Not yet true, and deliberately so**: S12's malformed record selects the strict branch but says
 nothing about being malformed. `verify-kit.ps1` reports it in phase 2. Strict-and-silent is safe
 in the interim; lenient-and-loud would not have been, which is why the order is this way round.
+
+## Phase 1 — gate (ci-held)
+
+| Run | Conclusion | Commit | Owner approval |
+|---|---|---|---|
+| [34458129073](https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34458129073) | success | `c28e1f99a10c4e2bb436b5483d644e7dd60fcc6c` | recorded 2026-09-10 |
+
+Pushed alone so the commit has a run of its own — FitForge 001's recorded lesson applied.
+
+## Phase 2 — doctor results (T014)
+
+`verify-kit.ps1` run against one minimal adopted-project fixture per record shape. The column
+that matters is the last one: what `enforcement-pack.ps1` does with the same record.
+
+| Record shape | Doctor says | Evidence mode |
+|---|---|---|
+| field absent | nothing at all | solo |
+| `["ada"]` | ok — 1 developer declared | solo |
+| `["ada","grace"]` | ok — 2 developers declared | team |
+| `"ada"` (a string) | FAIL — not an array | solo |
+| `[]` | FAIL — empty | solo |
+| `["ada","  "]` | FAIL — blank entry, **and** ok — 1 developer declared | solo |
+| `["Ada","ada"]` | FAIL — listed more than once | solo |
+
+**Absence is deliberately not a finding.** Three projects adopted this kit before the field
+existed; warning them about a value whose absence produces the stricter behaviour would be
+nagging about something working as intended.
+
+**The blank-entry row is the one worth reading twice.** A record naming two developers, one of
+them whitespace, is a *team declaration that silently becomes solo* — the count is taken after
+blanks are dropped. The doctor prints both lines: the failure, and the mode the project actually
+gets. Either alone would mislead.
+
+The duplicate case matters for the opposite reason. `["Ada","ada"]` is one person written twice,
+and it inflates the count into team mode — the only direction this feature must never move a
+project by accident, because it is the direction that drops a requirement.
+
+**S1–S12 re-run after phase 2: no verdict changed**, and two consecutive full runs are identical,
+so the fixtures are deterministic rather than incidentally passing.
+
+**T011's temptation, recorded because the next person will feel it**: `init-kit.ps1` could
+default `developers` to the current user so the record looks complete. It must not. A one-person
+default is a claim the project never made, and when a second developer joins, the stale
+declaration keeps Critical features on the solo substitute while everyone believes the record is
+accurate. An absent field is honest about not knowing; a guessed one is not.

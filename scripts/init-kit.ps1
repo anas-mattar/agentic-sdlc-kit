@@ -16,7 +16,8 @@
       - fills the mechanical slots: {{PROJECT_NAME}}, {{BACKEND_REPO}}, {{FRONTEND_REPO}},
         {{REPOSITORY_LIST}}
       - writes kit-adoption.json (the durable adoption record: name, topology, tiers,
-        init date, kit version, and — multi-repo only — codeRepos, the nested code
+        init date, kit version, developers when supplied, and — multi-repo only —
+        codeRepos, the nested code
         repositories scripts/scope-check-repos.ps1 grades; gateProof starts empty —
         recording the proof is the human's attestation, adoption step 3)
       - prints the judgment slots that remain for a human (gate commands, PK standard,
@@ -46,6 +47,9 @@ param(
     [string[]]$Tiers,
     [string]$BackendRepo,
     [string]$FrontendRepo,
+    # 013: the project's developers. Optional and deliberately not prompted for — see the
+    # record writer below for why an unsupplied value must write no field at all.
+    [string[]]$Developers,
     [switch]$DeleteUnusedTemplates,
     [switch]$NonInteractive
 )
@@ -265,9 +269,22 @@ if (Test-Path $recordPath) {
         gateProof        = @()
     }
     if ($Topology -eq 'multi' -and $codeRepos.Count -gt 0) { $adoptionRecord.codeRepos = $codeRepos }
+    # developers (013): selects the Critical lane's evidence mode — the solo substitute, or
+    # the independent human review a second person can give (docs/sdlc/critical-delivery.md
+    # item 5). Written ONLY when supplied. An unsupplied value writes no field, and the
+    # absent field means solo.
+    #
+    # The temptation here is to default to @($env:USERNAME) so the record looks complete.
+    # That would be the initializer inventing a roster: a one-person default is a claim the
+    # project did not make, and the moment a second developer joins, the stale declaration
+    # keeps them in solo mode while everyone believes the record is accurate. An absent
+    # field is honest about not knowing; a guessed field is not.
+    $namedDevelopers = @($Developers | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($namedDevelopers.Count -gt 0) { $adoptionRecord.developers = $namedDevelopers }
     [IO.File]::WriteAllText($recordPath, (($adoptionRecord | ConvertTo-Json -Depth 4) + "`n"))
     $reposNote = ($adoptionRecord.Contains('codeRepos')) ? "; codeRepos: $($adoptionRecord.codeRepos -join ', ')" : ''
-    Write-Host "record: kit-adoption.json written (tiers: $($Tiers -join ', ')$reposNote); gateProof is yours to record (adoption step 3)"
+    $devNote = ($adoptionRecord.Contains('developers')) ? "; developers: $($adoptionRecord.developers -join ', ')" : '; no developers declared (Critical features use the solo evidence rule until you declare them)'
+    Write-Host "record: kit-adoption.json written (tiers: $($Tiers -join ', ')$reposNote$devNote); gateProof is yours to record (adoption step 3)"
 }
 
 # --- 4. Report the judgment slots that remain for a human -----------------------------------

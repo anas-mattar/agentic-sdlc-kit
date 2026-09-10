@@ -151,6 +151,14 @@ From the first week:
   repository, filling its two slots. Skip this and the scope check governs only the
   governance repository, leaving every code phase commit's territory reviewer-verified prose
   (`docs/sdlc/repository-strategy.md`, "Territory across repositories").
+- **More than one developer? Say so.** Add `developers` to **kit-adoption.json** — a plain
+  array of names (`init-kit.ps1` writes it when you pass `-Developers`). It selects which
+  independence evidence a **Critical** feature owes: two or more names means the real thing,
+  an independent human review recorded in `human-pr-review.md`; anything else means the
+  solo substitute, a second-model review plus a 24-hour cooling-off
+  (`docs/sdlc/critical-delivery.md` item 5). Declaring nothing is a supported answer and
+  keeps the stricter rule — declare it only when the second person is real, and see
+  **adoption/updating.md** for the full table.
 - **CI gate as second witness**: run the gate on every push. The owner-held certifying
   gate (user-run — or plan-declared `ci-held`, where the CI run itself becomes the
   approved evidence; `docs/sdlc/gate-command.md`) remains the trust ritual; CI catches

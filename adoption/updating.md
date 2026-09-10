@@ -329,7 +329,8 @@ tiers are first-class, `docs/rulebooks/README.md`) — every declared tier must 
 instantiated `docs/rulebooks/<tier>-rules.md`; `codeRepos` is the multi-repo-only list of
 nested code repositories the machine scope check reaches into
 (`scripts/scope-check-repos.ps1`) — plain directory names, one level under this repository,
-never paths; `kitVersionAtInit` is informational — the kit's constitution
+never paths; `developers` names the people who work on the project, and is what selects
+the Critical lane's evidence rule (below); `kitVersionAtInit` is informational — the kit's constitution
 version at init time, or `copy` (the doctor never validates it); `gateProof` is your
 attestation that the gate has been green at least once (adoption step 3) — record the
 exact command (never with secrets in it), the exit code, the date, and who ran it. No
@@ -348,6 +349,36 @@ Until it is there, the doctor WARNs and `scripts/scope-check-repos.ps1` reports 
 code phase commits in those repositories are graded by a reviewer's eye, not by a machine
 (GAP-016). An empty array counts as "not there" — same WARN, same silence. A single-repo project omits the field entirely — its code lives in this
 repository, where `scripts/scope-check.ps1` already reaches it.
+
+**Declaring `developers` (feature 013)** — one line, and it changes exactly one thing:
+which evidence a **Critical** feature must produce for independent approval
+(`docs/sdlc/critical-delivery.md` item 5).
+
+```json
+  "developers": ["ada", "grace"],
+```
+
+| What the record says | What a Critical feature must produce |
+|---|---|
+| nothing (the default) | `second-model-review.md` + the 24-hour cooling-off — the solo substitute |
+| one name | the same; one developer *is* the solo case |
+| two or more names | `human-pr-review.md` with a filled `## Review Provenance` block whose Reviewer is not the Owner — and **no** cooling-off |
+
+Read the table in the direction that matters: **declaring nothing changes nothing.** Every
+project adopted before this feature keeps the behaviour it has today, forever, without
+touching its record. The field only ever moves a project *off* the substitute, and only when
+it says two or more people are here — because the substitute is what a solo developer does
+*instead of* independent review, and a second person is not a substitute for anything.
+
+Declare it when your project genuinely has two or more people who review each other's work.
+Do not declare it to make a check pass: a team declaration on a one-person project removes
+the cooling-off period and asks a reviewer line you will end up filling with your own name,
+which the check rejects — correctly.
+
+A malformed value (not an array, empty, a blank entry, the same person twice) is **ignored**
+and the project falls back to solo. That fallback is safe but silent, so the doctor reports
+it as a FAIL: without that, a project could believe it declared a team for months while
+being checked as solo.
 
 <!-- digest: kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. -->
 
