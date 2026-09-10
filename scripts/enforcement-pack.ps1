@@ -28,8 +28,23 @@
                          domain invariants); migrations are always prohibited on this lane
                          regardless of file count; more than $Config.AbuseGuardFileCount
                          changed files fails as well, suggesting promotion to a feature.
-      - CriticalEvidence (NNN-* branches declared Critical): second-model-review.md exists
-                         and was first committed at least $Config.CoolingOffHours ago.
+      - CriticalEvidence (NNN-* branches declared Critical): the independence evidence
+                         docs/sdlc/critical-delivery.md item 5 requires, in one of two
+                         MODES selected by the 'developers' array in kit-adoption.json.
+                         SOLO (one developer declared, or nothing usable declared):
+                         second-model-review.md exists and was first committed at least
+                         $Config.CoolingOffHours ago — the solo substitute, unchanged.
+                         TEAM (two or more declared): human-pr-review.md carries a filled
+                         '## Review Provenance' block naming a Reviewer who is not the
+                         Owner, plus the verbatim attestation; no cooling-off applies,
+                         because the independence is real rather than substituted.
+                         Absence of any kind selects SOLO — the stricter branch — so a
+                         project that declares nothing keeps the behaviour it has today.
+                         How strong is TEAM? Two names written by the same team, in one
+                         file: it converts a silent omission into a written claim a human
+                         reviewer can falsify, and it is worth exactly that much. It is
+                         deliberately one step stronger than ReviewProvenance below, which
+                         compares nothing — see specs/013-*/plan.md D4.
       - PhaseSizeWarning (NNN-* branches): non-blocking warning when a single commit's
                          diff exceeds the configured line/file thresholds.
       - GateCertification (NNN-* branches): the '**Gate Certification**' declaration —
@@ -211,7 +226,37 @@ function Invoke-LiteAndAbuseCheck {
     }
 }
 
-# --- Critical-evidence check (FR-005) ---
+# Evidence mode for the Critical lane (013 D1/D2): 'solo' or 'team', DERIVED from the
+# adoption record's 'developers' array and never declared directly — a project must not be
+# able to assert team independence while naming one person.
+#
+# Every degenerate input resolves to 'solo', the stricter branch: no record, no field, a
+# non-array, an empty array, an array of blanks, or a file that will not parse. That is the
+# load-bearing half of this feature. Adoptions that predate it declare nothing, and a
+# default of 'team' would silently drop the substitute requirement in projects that never
+# asked — the silent-downgrade shape feature 012's reviews found four times in one feature.
+#
+# Malformation is strict here but SILENT here; scripts/verify-kit.ps1 is what reports it
+# (013 phase 2). Strict-and-silent is safe; lenient-and-loud would not be.
+function Get-EvidenceMode {
+    $recordPath = Join-Path $Root 'kit-adoption.json'
+    if (-not (Test-Path -LiteralPath $recordPath)) { return @{ Mode = 'solo'; Count = 0; Why = 'no kit-adoption.json' } }
+    try {
+        $record = Get-Content -LiteralPath $recordPath -Raw | ConvertFrom-Json
+    } catch {
+        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json does not parse' }
+    }
+    if ($null -eq $record.developers) { return @{ Mode = 'solo'; Count = 0; Why = 'no developers declared in kit-adoption.json' } }
+    if ($record.developers -isnot [Array]) { return @{ Mode = 'solo'; Count = 0; Why = 'developers in kit-adoption.json is not an array' } }
+
+    $named = @($record.developers | Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) })
+    if ($named.Count -ge 2) {
+        return @{ Mode = 'team'; Count = $named.Count; Why = "$($named.Count) developers declared in kit-adoption.json" }
+    }
+    return @{ Mode = 'solo'; Count = $named.Count; Why = "$($named.Count) developer(s) declared in kit-adoption.json" }
+}
+
+# --- Critical-evidence check (FR-005; modes added by 013) ---
 function Invoke-CriticalEvidenceCheck {
     param([string]$Branch)
     if ($Branch -notmatch '^\d{3}-') { return }
@@ -220,6 +265,19 @@ function Invoke-CriticalEvidenceCheck {
     if (-not (Test-Path $specPath)) { return }
     if ((Get-DeliveryLevel -SpecPath $specPath) -notmatch '^Critical\b') { return }
 
+    $mode = Get-EvidenceMode
+    if ($mode.Mode -eq 'team') {
+        Invoke-CriticalTeamEvidence -Dir $dir -Why $mode.Why
+    } else {
+        Invoke-CriticalSoloEvidence -Dir $dir
+    }
+}
+
+# SOLO: the substitute. Moved verbatim from the pre-013 check — same order, same
+# conditions, same message strings, so a solo project cannot tell this feature happened.
+function Invoke-CriticalSoloEvidence {
+    param([string]$Dir)
+    $dir = $Dir
     $reviewPath = Join-Path $dir 'second-model-review.md'
     if (-not (Test-Path $reviewPath)) {
         $script:failures += "CriticalEvidence: $dir/second-model-review.md is missing (required for Critical features — docs/sdlc/critical-delivery.md item 5)"
@@ -236,6 +294,57 @@ function Invoke-CriticalEvidenceCheck {
         $remaining = [math]::Ceiling($Config.CoolingOffHours - $elapsedHours)
         $script:failures += "CriticalEvidence: $dir/second-model-review.md was recorded $([math]::Round($elapsedHours, 1))h ago — cooling-off requires $($Config.CoolingOffHours)h ($remaining h remaining, docs/sdlc/critical-delivery.md item 5)"
     }
+}
+
+# TEAM: the real thing rather than the substitute — item 5's actual requirement, that the
+# human reviewer is not the feature's owner. No cooling-off: the period exists to give a
+# solo developer distance from their own work, and a second person already is that.
+#
+# Both names are read from INSIDE the '## Review Provenance' section. The document header
+# also carries a '**Reviewer**:' field and must never shadow the block's — the identical
+# trap feature 006's phase-2 review recorded as F1 for the AI-review check.
+function Invoke-CriticalTeamEvidence {
+    param([string]$Dir, [string]$Why)
+    $dir = $Dir
+    $attestation = 'This reviewer is not the owner of the feature under review.'
+    $reviewPath = Join-Path $dir 'human-pr-review.md'
+
+    if (-not (Test-Path -LiteralPath $reviewPath)) {
+        $script:failures += "CriticalEvidence: $dir/human-pr-review.md is missing — team mode ($Why) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)"
+        return
+    }
+    $content = Get-Content -LiteralPath $reviewPath -Raw
+    if ($content -notmatch '(?m)^##\s+Review Provenance') {
+        $script:failures += "CriticalEvidence: $dir/human-pr-review.md has no '## Review Provenance' section — team mode ($Why) needs the reviewer and owner named in the review itself (specs/_templates/human-pr-review-template.md)"
+        return
+    }
+    $slice = if ($content -match '(?ms)^##\s+Review Provenance\s*$(.*?)(?=^##\s|\z)') { $matches[1] } else { '' }
+
+    $reviewer = Get-ProvenanceValue -Slice $slice -Field 'Reviewer'
+    $owner = Get-ProvenanceValue -Slice $slice -Field 'Owner'
+
+    foreach ($pair in @(@{ N = 'Reviewer'; V = $reviewer }, @{ N = 'Owner'; V = $owner })) {
+        if (-not $pair.V) {
+            $script:failures += "CriticalEvidence: $dir/human-pr-review.md has no filled '**$($pair.N)**:' line inside its Review Provenance section (team mode — $Why)"
+        } elseif ($pair.V -match '^\[') {
+            $script:failures += "CriticalEvidence: $dir/human-pr-review.md leaves '**$($pair.N)**: $($pair.V)' as a template placeholder — team mode ($Why) needs the actual name"
+        }
+    }
+    if ($reviewer -and $owner -and $reviewer -notmatch '^\[' -and $owner -notmatch '^\[') {
+        if ($reviewer.Trim() -ieq $owner.Trim()) {
+            $script:failures += "CriticalEvidence: $dir/human-pr-review.md names '$reviewer' as both reviewer and owner — the human reviewer of a Critical feature MUST NOT be its owner (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md rule 4)"
+        }
+    }
+    if ($content -notmatch [regex]::Escape($attestation)) {
+        $script:failures += "CriticalEvidence: $dir/human-pr-review.md is missing the verbatim attestation sentence '$attestation' (team mode — $Why)"
+    }
+}
+
+function Get-ProvenanceValue {
+    param([string]$Slice, [string]$Field)
+    $line = $Slice -split "`n" | Where-Object { $_ -match "^\s*[-*]?\s*\*\*$Field\*\*:\s*(\S.*)$" } | Select-Object -First 1
+    if ($line -match "\*\*$Field\*\*:\s*(.+)$") { return $matches[1].Trim() }
+    return ''
 }
 
 # --- Gate-batching check (003 FR-008/FR-009: constitution X, Batched gates) ---

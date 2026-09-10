@@ -52,35 +52,35 @@ stays green.
 - `scripts/enforcement-pack.ps1`
 - `specs/_templates/human-pr-review-template.md`
 
-- [ ] T001 Capture the baseline: run `enforcement-pack.ps1` against fixtures S1, S3 and S4 on
+- [x] T001 Capture the baseline: run `enforcement-pack.ps1` against fixtures S1, S3 and S4 on
       the **unmodified** script and save the exact CriticalEvidence lines to the scratchpad.
       This is the artifact T007 diffs against, and it cannot be reconstructed after the edit
-- [ ] T002 Add a mode reader to `scripts/enforcement-pack.ps1`: read `developers` from
+- [x] T002 Add a mode reader to `scripts/enforcement-pack.ps1`: read `developers` from
       `kit-adoption.json` at `$Root`, tolerate a missing file, missing field, non-array, empty
       array and non-string or blank entries, and return `solo` for every one of them (D1, D2).
       No caller yet — the reader lands and is exercised before the rule changes
-- [ ] T003 Split `Invoke-CriticalEvidenceCheck` into the mode selection plus a solo branch
+- [x] T003 Split `Invoke-CriticalEvidenceCheck` into the mode selection plus a solo branch
       holding today's logic **moved, not rewritten** — same order, same conditions, same
       message strings. A rewrite here is how byte-for-byte preservation is lost
-- [ ] T004 Add the team branch: require `specs/<branch>/human-pr-review.md`; require a
+- [x] T004 Add the team branch: require `specs/<branch>/human-pr-review.md`; require a
       `## Review Provenance` section; parse `**Reviewer**` and `**Owner**` from **inside that
       section only** (the document header also carries a `**Reviewer**:` field and must never
       shadow the block — the same trap phase 2 of feature 006 recorded as F1); fail on an
       absent, blank or `[bracketed]` value; fail when the two match case- and
       whitespace-insensitively; require the verbatim attestation (D3)
-- [ ] T005 Make every failure message name the mode and why it applies, e.g. "team mode (2
+- [x] T005 Make every failure message name the mode and why it applies, e.g. "team mode (2
       developers declared in kit-adoption.json)" — a conditional check that does not say which
       branch it took is unfalsifiable by the person reading its output
-- [ ] T006 Update the script's header comment block: state both modes, where the mode comes
+- [x] T006 Update the script's header comment block: state both modes, where the mode comes
       from, and that the team comparison is name-against-name of the same strength as the
       Reviewer Provenance block (FR-007, D4). Do not restate the law — point at
       `docs/sdlc/critical-delivery.md`
-- [ ] T007 Add the `## Review Provenance` block to
+- [x] T007 Add the `## Review Provenance` block to
       `specs/_templates/human-pr-review-template.md`: `**Reviewer**`, `**Owner**`, the verbatim
       attestation, and a comment saying the block is required only in team mode and why
-- [ ] T008 Build fixtures S1–S12 and run them; diff the solo messages against T001's baseline;
+- [x] T008 Build fixtures S1–S12 and run them; diff the solo messages against T001's baseline;
       record every verdict in this file under a "Phase 1 — scenario results" section
-- [ ] T009 Run `pwsh -File scripts/ritual-checks.ps1` in this repository and confirm it is
+- [x] T009 Run `pwsh -File scripts/ritual-checks.ps1` in this repository and confirm it is
       green (the kit declares no `developers`, so it is solo and nothing changes for it)
 
 ## Phase 2: The record and the doctor (US3, P1)
@@ -140,3 +140,37 @@ sentence is unchanged (`git diff` shows additions around it, not edits to it).
       Kit 011's lesson is that this enumeration goes stale in exactly these files
 - [ ] T018 Full `pwsh -File scripts/ritual-checks.ps1`; re-run S1–S12 one last time; record the
       final verdict table in this file
+
+## Phase 1 — scenario results (T008)
+
+Run 2026-09-10 against `scripts/enforcement-pack.ps1` at this commit, fixtures rebuilt from
+scratch. Verdict column is the CriticalEvidence finding only; "pass" means the check produced
+none. Every row matches the expected column of the S1–S12 table above.
+
+| # | Mode taken | Result |
+|---|---|---|
+| S1 | solo (no developers declared) | FAIL — second-model-review.md is missing |
+| S2 | solo | pass |
+| S3 | solo | FAIL — recorded 2h ago, 22h remaining |
+| S4 | solo (no kit-adoption.json) | FAIL — second-model-review.md is missing |
+| S5 | solo (1 declared) | FAIL — second-model-review.md is missing |
+| S6 | solo (1 declared) | pass |
+| S7 | team (2 declared) | FAIL — human-pr-review.md is missing |
+| S8 | team | pass |
+| S9 | team | FAIL — names 'anas.m' as both reviewer and owner |
+| S10 | team | FAIL — no Review Provenance section |
+| S11 | team | FAIL — Owner left as a template placeholder |
+| S12 | solo (developers is a string, not an array) | FAIL — second-model-review.md is missing |
+
+**S8 is the whole feature in one row.** Before this phase it failed asking for the solo
+substitute — a two-developer project with a complete, genuine independent review, told to
+produce evidence of a substitution that never happened. That was FitForge 002's exact position.
+
+**Byte-for-byte preservation (T001 baseline vs. now)**: S1, S3, S4 and S5 were captured against
+the unmodified script before any edit and re-run after; `diff -u` reports no difference. A solo
+project cannot tell this feature happened, which is the point — the messages were moved, not
+rewritten.
+
+**Not yet true, and deliberately so**: S12's malformed record selects the strict branch but says
+nothing about being malformed. `verify-kit.ps1` reports it in phase 2. Strict-and-silent is safe
+in the interim; lenient-and-loud would not have been, which is why the order is this way round.

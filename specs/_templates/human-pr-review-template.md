@@ -7,6 +7,25 @@ BLOCKING/CONFIRM findings were resolved, don't re-derive them]
 **Spec / plan / tasks**: [links — for a Micro feature, the mini-spec `spec.md` alone;
 verify its eligibility checklist still holds against the diff (constitution X, Micro lane)]
 
+## Review Provenance
+
+<!-- REQUIRED for a Critical feature in a project whose kit-adoption.json declares two or
+  more developers ("team mode"): scripts/enforcement-pack.ps1 fails the branch when this
+  section is missing, either name is unfilled or left as a [placeholder], the two names
+  match, or the attestation is absent.
+
+  In a solo project this block is optional — there, item 5's independence is substituted
+  by second-model-review.md plus the cooling-off period, and the check asks for that
+  instead (docs/sdlc/critical-delivery.md item 5).
+
+  What it proves is bounded, and worth stating plainly: two names written by the same
+  team, in one file. It converts a silent omission into a written claim someone can
+  falsify. It does not, and cannot, verify that the review happened. -->
+
+- **Reviewer**: [name — the person who reviewed; MUST NOT be the owner]
+- **Owner**: [name — the person who owns and implemented the feature]
+- **Attestation**: This reviewer is not the owner of the feature under review.
+
 ## Business Review
 
 - [ ] Behavior matches the business intent in `spec.md` (not just the letter of the FRs)
