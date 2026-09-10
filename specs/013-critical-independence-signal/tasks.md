@@ -262,3 +262,12 @@ green across both versions.
 draft was 194 characters and `build-digests.ps1` rejected it against its 120-character bound —
 the generator refusing an unreadable one-liner is the bound doing its job. Rewritten to 115.
 `build-digests.ps1` re-run; the `digests` member is green, so the digests match the law.
+
+## Phase 3 — gate (ci-held)
+
+| Run | Conclusion | Commit | Owner approval |
+|---|---|---|---|
+| [34459972572](https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34459972572) | success | `20bda1883fb42f8cde9599ec9550324b3738d462` | recorded 2026-09-10 |
+
+All three phases pushed separately, each with a CI run against its own commit — no phase
+certified against a sha that CI never graded (FitForge 001's recorded lesson).
