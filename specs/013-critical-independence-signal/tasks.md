@@ -12,7 +12,67 @@ test framework (kit convention).
 Certification: ci-held** (both declared in plan.md). Phase commits carry `phase N` subjects;
 Territory per phase (006 law).
 
+## Current state (authoritative)
+
+**Read this section, not the tables below it.** Everything after this point is chronological
+history: five phases, three review rounds, and the corrections each produced. Earlier tables
+were true when written and several have since been superseded — they are kept because how a
+number changed is part of the evidence, not despite it.
+
+### What the check does now
+
+Measured 2026-09-10 against the head of this branch, by running the check — not inferred from
+the doctor and not reasoned from the code.
+
+| Record shape | Evidence mode | Doctor |
+|---|---|---|
+| field absent | solo | silent (the supported default) |
+| `["ada"]` | solo | ok, 1 declared |
+| `["ada","grace"]` | team | ok, 2 declared |
+| `["ada","grace"," "]` | team | FAIL blank entry, ok 2 declared |
+| `["ada",5,"grace"]` | team | FAIL non-string entry, ok 2 declared |
+| `["Ada","ada"]` | solo | FAIL duplicate, ok 1 declared |
+| `[]` | solo | FAIL empty, ok 0 declared |
+| `null` | solo | FAIL null, ok 0 declared |
+| `"ada"` (a string) | solo | FAIL not an array, ok 0 declared |
+| `[{"developers":[…]}]` (root array) | solo | FAIL not a JSON object at its root |
+| unreadable / unparsable / no record | solo | silent or other-dimension FAILs |
+
+In team mode the check requires a **committed** `specs/NNN-name/human-pr-review.md` whose
+visible `## Review Provenance` section names a Reviewer who is not the Owner, plus the verbatim
+attestation. Comments, code fences and indented code blocks are not visible content; a nested
+list item is. In solo mode it requires `second-model-review.md` committed at least 24 hours
+before merge — byte-for-byte the behaviour that shipped before this feature.
+
+### Requirements and success criteria
+
+| | Status |
+|---|---|
+| FR-001…FR-002 (the field, and the mode derived from it) | met |
+| FR-003 (every degenerate record is solo) | met — measured across the eleven shapes above |
+| FR-004 (solo unchanged) | met — byte-identical to the pre-013 baseline, diffed three times |
+| FR-005…FR-006 (team arm, committed artifacts) | met |
+| FR-007 (honesty about the team check's strength) | met — stated in the script header, item 5, and both adoption docs |
+| FR-008 (no mode leaves item 5 unenforced) | met |
+| FR-009…FR-012 (doctor, law, adoption guidance, fixtures) | met |
+| SC-001 (FitForge 002 passes on its real cross-review) | **outstanding** — needs this feature merged and flowed down; cannot be met from this repository |
+| SC-002…SC-005, SC-007 | met |
+| SC-006 (adopted projects untouched) | met — all three verified directly |
+
+### Known and deliberately open
+
+- **C2** — `docs/sdlc/review-process.md` still points at the template path rather than
+  `specs/NNN-name/human-pr-review.md`. One pre-existing sentence, outside every phase's
+  Territory; the docs reviewer ruled it a follow-up rather than a drive-by. Next Lite `fix/`.
+- **The roster is counted, never compared.** A review naming two people absent from the
+  declared roster passes. Disclosed in the script header and in `spec.md`'s Edge Cases, which
+  records the decision rather than an unmet MUST.
+
 ## Fixture scenarios (S1–S12)
+
+*Superseded in part — see **Current state (authoritative)** above. These were the expectations
+written before phases 4 and 5; the verdicts still hold, but two messages have since changed and
+the record shapes below are not the full set.*
 
 Each is a throwaway git repository under the scratchpad with a `specs/007-x/spec.md` declaring
 `**Delivery Level**: Critical`, plus whatever the row names. Expected verdict is what
@@ -184,6 +244,9 @@ in the interim; lenient-and-loud would not have been, which is why the order is 
 Pushed alone so the commit has a run of its own — FitForge 001's recorded lesson applied.
 
 ## Phase 2 — doctor results (T014)
+
+*Superseded — see **Current state (authoritative)** above. One row in this table was wrong when
+written (see B2 below) and the modes changed again in phases 4 and 5.*
 
 `verify-kit.ps1` run against one minimal adopted-project fixture per record shape. The column
 that matters is the last one: what `enforcement-pack.ps1` does with the same record.
@@ -541,3 +604,48 @@ because it was written carefully.
 | [34475481440](https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34475481440) | success | `9054e97ad273c989d0e22933021144d078d6fd46` | recorded 2026-09-10 |
 
 Five phases, five runs, five commits, each pushed alone.
+
+## Phase 6: Third-pass remediation (added by amendment — approved by anas.m, 2026-09-10)
+
+**Goal**: close the blocking defect and the fail-closed regression phase 5 introduced, correct
+three inaccurate statements this feature made about itself, and give this file a current-state
+entry point. The last remediation round before a human reads the diff.
+
+**Independent Test**: `-Developers ada,grace` under `pwsh -File` yields two developers; a
+governance repo in a subdirectory passes; a nested-list provenance line passes while a real
+indented code block is still ignored; a committed-but-empty review is not called uncommitted;
+every earlier fixture family unchanged.
+
+**Territory**:
+
+- `scripts/init-kit.ps1`
+- `scripts/adoption-lib.ps1`
+- `scripts/enforcement-pack.ps1`
+- `scripts/verify-kit.ps1`
+- `adoption/greenfield.md`
+- `adoption/updating.md`
+- `docs/digests/*.md`
+
+- [x] T038 (NEW-3, BLOCKING) Split `-Developers` on commas in `init-kit.ps1`, so the
+      invocation the kit's own onboarding prints cannot silently declare one developer named
+      "ada,grace"
+- [x] T039 (NEW-A) `git show "HEAD:./$Dir/..."` — the `./` makes git resolve against the
+      working directory `Push-Location $Root` already set, instead of the repository root
+- [x] T040 (NEW-C) Decide on `$LASTEXITCODE` alone; a committed but empty file must fail the
+      section check, not be called uncommitted
+- [x] T041 (NEW-B) Treat an indented run as code only when it opens after a blank line — four
+      spaces inside a list is a nested item in CommonMark, not code
+- [x] T042 (NEW-4) Narrow the header's justification for ignoring `Problems` to what is true:
+      a problem never produces a *laxer* mode. It does not mean every problem lands on solo
+- [x] T043 (NEW-5) Correct the drift account in all three places: one cross-copy drift, plus
+      two comparers disagreeing inside the doctor — not two cross-copy drifts
+- [x] T044 (NEW-6 / NEW-D) Return `Declared` from `Get-DeveloperMode` and gate the doctor on
+      it, removing its private raw-text test and the last unguarded read in the new code
+- [x] T045 (NEW-E) `-ErrorAction Stop` on the library's own read, so its `try` does not depend
+      on the caller's preference
+- [x] T046 Report an explicit `"developers": null` the way `[]` is reported — but only when the
+      key is actually present, so an absent field stays silent
+- [x] T047 (NIT-3) Correct `spec.md`'s account of what each reviewer judged
+- [x] T048 (NIT-4, NIT-5) Rewrap the over-long line; blank line before the D4 amendment note
+- [x] T049 Add `## Current state (authoritative)` and back-point the two superseded tables
+- [x] T050 Re-run every fixture family and re-diff solo against the T001 baseline

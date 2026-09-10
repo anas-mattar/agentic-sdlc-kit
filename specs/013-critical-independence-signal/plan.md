@@ -50,6 +50,7 @@ except for the record shape it validates; backward compatible by construction (D
   **Reviewer ≠ Owner** compared case- and whitespace-insensitively.
 - **D4 — D3 compares two values where the AI-review provenance check compares none: a
   different check, not a stronger claim.**
+
   **Amendment approved by**: anas.m, 2026-09-10 — the original headline said "deliberately
   stronger", which exceeded FR-007's explicit ceiling and, after phase 4 corrected the script
   header, contradicted the shipped code (013 phase 3 docs review C1). `Invoke-ReviewProvenanceCheck` never compares two
@@ -111,6 +112,13 @@ the single mode function both scripts call, the `scope-lib.ps1` pattern feature 
 — because the alternative is two copies that have already drifted once.
 **Amendment approved by**: anas.m, 2026-09-10.
 
+**Amendment — phase 6 added 2026-09-10.** The third review pass closed both remaining blocking
+findings but found one new blocking defect in phase 5's documentation half and one new
+fail-closed regression in its code half. Phase 6 is the last remediation round before a human
+reads the diff: four rounds have each introduced something, and the answer to that is a
+different kind of reviewer, not a fifth round of the same kind.
+**Amendment approved by**: anas.m, 2026-09-10.
+
 **Phase-sizing**: each phase stands alone. Phase 1 makes the check correct and is provable on
 fixtures with no adopter involved. Phase 2 makes the record and the doctor aware of the field.
 Phase 3 states the law. Reverting any one leaves the others correct — phase 1 without phase 2
@@ -136,6 +144,10 @@ adoption/greenfield.md                        # MOD  phase 4 — honesty caveat
 scripts/adoption-lib.ps1                      # NEW  phase 5 — the one mode function both scripts call
 scripts/enforcement-pack.ps1                  # MOD  phase 5 — committed blob, read regression, fences
 scripts/verify-kit.ps1                        # MOD  phase 5 — call the shared function
+scripts/init-kit.ps1                          # MOD  phase 6 — comma-split -Developers (NEW-3)
+scripts/adoption-lib.ps1                      # MOD  phase 6 — Declared, honest header, own ErrorAction
+scripts/enforcement-pack.ps1                  # MOD  phase 6 — ./ path prefix, exit-code test, indent guard
+adoption/greenfield.md                        # MOD  phase 6 — the invocation that produced NEW-3
 ```
 
 ## Testing Strategy

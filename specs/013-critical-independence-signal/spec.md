@@ -105,8 +105,12 @@ information (and again with the field present but malformed), the check behaves 
   review document. **Decided 2026-09-10: this case is disclosed, not enforced.** The roster is
   counted to select the mode and is never compared against Reviewer or Owner, so a review naming
   two people absent from the roster passes. Cross-checking free text against free text would read
-  as verification while providing none, and both fresh-context reviewers judged the disclosure in
-  `scripts/enforcement-pack.ps1`'s header the right resolution. The original wording of this
+  as verification while providing none. Both fresh-context reviewers judged the **behaviour**
+  correct; the logic reviewer judged the disclosure in `scripts/enforcement-pack.ps1`'s header
+  sufficient on its own, while the docs reviewer required this entry to be amended rather than
+  left standing as an unmet MUST — which is why it was. An earlier draft of this paragraph
+  credited both reviewers with the first position; that was a misstatement of a reviewer's
+  judgement in a document whose purpose is to record them. The original wording of this
   entry ("must fail loudly rather than pass by accident") described behaviour the feature does
   not have, and an unmet MUST is the wrong thing to leave standing in this feature of all
   features. **Amendment approved by**: anas.m, 2026-09-10.
