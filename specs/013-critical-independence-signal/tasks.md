@@ -716,3 +716,36 @@ section at the top, back-pointers on the two superseded tables, and *no* new fil
 
 R1–R9, S1–S12, G3/G3b/U1 and the seven doctor shapes all re-run: unchanged. Solo output still
 byte-identical to the pre-013 T001 baseline.
+
+## Phase 6 — gate (ci-held)
+
+| Run | Conclusion | Commit | Owner approval |
+|---|---|---|---|
+| [34481073197](https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34481073197) | success | `aeac7f884200d21909cd8a78af41d55d3ffea40f` | recorded 2026-09-10 |
+
+Six phases, six runs, six commits, each pushed alone. The phase 6 declaration
+(`34e3214`) was committed before the work (`aeac7f8`) — the anti-retroactivity rule
+turned the first attempt into `scope-check: WARN … no territory declared`, and a
+non-blocking WARN is exactly the silently-green shape this feature exists to remove, so
+it was not taken as a pass.
+
+## Review evidence (Definition of Done gate 5)
+
+Two fresh-context reviewers, three rounds each, filed verbatim in this directory. Neither
+reviewer wrote any of the code under review, and neither had access to the implementing
+session's conversation, reasoning or notes.
+
+| Round | Reviewer | File | Verdict | Under review |
+|---|---|---|---|---|
+| 1 | check logic | `ai-code-review-logic-round1.md` | REQUEST CHANGES (2 blocking) | phases 1–3, tip `b60b868` |
+| 1 | law and docs | `ai-code-review-docs-round1.md` | REQUEST CHANGES (3 blocking) | phases 1–3, tip `b60b868` |
+| 2 | check logic | `ai-code-review-logic-round2.md` | REQUEST CHANGES (1 regression, 1 residual) | phase 4, `20bda18..43e52cf` |
+| 2 | law and docs | `ai-code-review-docs-round2.md` | APPROVE WITH COMMENTS | phase 4, `20bda18..43e52cf` |
+| 3 | check logic | `ai-code-review-logic-round3.md` | APPROVE WITH COMMENTS | phase 5, `43e52cf..9054e97` |
+| 3 | law and docs | `ai-code-review-docs-round3.md` | REQUEST CHANGES (1 blocking) | phase 5, `43e52cf..9054e97` |
+
+Phase 6 answers round 3. It has not itself been AI-reviewed, and deliberately so: every
+remediation round so far has introduced something, the severity has fallen but the rate
+has not, and a fourth agent pass is not what a fifth defect of that shape needs. The next
+gate is the human review — `human-pr-review.md`, using the `## Review Provenance` block
+this feature adds.
