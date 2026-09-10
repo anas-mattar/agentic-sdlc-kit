@@ -65,6 +65,8 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
 | Code-repo scope-check reach (governance-side `scope-check-repos.ps1` reads the nested code repos as sibling working trees and grades their phase commits against repo-prefixed Territory, resolved as of each code commit; `codeRepos` in the adoption record; code-repo CI template) | GAP-016 | P1 | shipped | anas.m | `specs/012-cross-repo-scope-check/` |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
+| Amendment authority (constitution clause first: any change to an approved `spec.md`, `plan.md`, `tasks.md` or contract records who approved it, and an implementing agent may not approve its own; then an `enforcement-pack.ps1` check that grades it) | GAP-019 | P1 | idea | — | — |
+| Cross-repo territory reach (`territory-check.ps1` reads the declared code repositories as sibling working trees and reports overlap across them, the way feature 012 extended the scope check) | GAP-018 | P2 | idea | — | — |
 
 ## Decisions log *(authored)*
 
@@ -206,3 +208,4 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   Reviewer Provenance block, but it converts a silent omission into a written claim that a
   human reviewer can falsify. Neither question has a clean answer; both have honest ones,
   and an unenforced rule with a stated limit beats an enforced-looking one without.
+- 2026-09-10 GAP-018 and GAP-019 promoted to roadmap rows at the recommended priorities, owner approved the same day. Neither is claimed: the rows exist so that a teammate orienting from main sees two known blind spots rather than inferring from green checks that none exist. GAP-019 is sequenced ahead of GAP-018 and ahead of GAP-015 because it is the only open row whose rule is **already live in an adopted project** with nothing enforcing it — every other open gap is missing enforcement for a rule the kit has not yet written down.
