@@ -39,6 +39,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 try { [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new() } catch {}
+. (Join-Path $PSScriptRoot 'adoption-lib.ps1')
 
 $findings = [System.Collections.Generic.List[object]]::new()
 function Add-Finding {
@@ -248,43 +249,25 @@ try {
                 Add-Finding WARN 'record' 'multi-repo adoption declares no codeRepos (absent, empty, or all entries unusable)' 'declare the nested code repositories so the machine scope check reaches the code (scripts/scope-check-repos.ps1; adoption/updating.md) — without it, code phase commits are reviewer-verified only'
             }
 
-            # developers (013): who the project's developers are, which is what selects the
-            # Critical lane's evidence mode in scripts/enforcement-pack.ps1 — the solo
-            # substitute (second-model review + cooling-off) or the independent human
-            # review a second person can actually give.
+            # developers (013): who the project's developers are, which selects the
+            # Critical lane's evidence mode in scripts/enforcement-pack.ps1.
+            #
+            # Read through the SAME function the check uses (scripts/adoption-lib.ps1), not
+            # a second copy of the rules. The two copies drifted twice inside feature 013 —
+            # a root-object guard in one, different dedupe comparers in both — and the
+            # divergence was found by a reviewer reading a comment asserting they matched.
+            # A comment is not a mechanism; one function is.
             #
             # Absence is NOT a finding. Every adoption predating 013 declares nothing and is
-            # treated as solo, which is the stricter branch; warning about it would nag three
-            # projects about a field that is doing exactly what it should. A MALFORMED value
-            # is a finding, because the check silently falls back to solo and the project
-            # would otherwise never learn its declaration is being ignored.
-            if ($null -ne $record.developers) {
-                if ($record.developers -isnot [Array]) {
-                    Add-Finding FAIL 'record' 'kit-adoption.json developers is not an array' 'declare it as a JSON array of names, e.g. ["ada", "grace"] — a non-array is ignored and the project is silently treated as solo (adoption/updating.md)'
-                } else {
-                    # Each defect reports ONCE, and the resulting mode is ALWAYS stated —
-                    # a record can be both malformed and in a definite mode, and the reader
-                    # needs both facts (013 phase 3 review, NIT 9). Deduplication matches
-                    # scripts/enforcement-pack.ps1's Get-EvidenceMode exactly; if these two
-                    # ever disagree about what a developer is, the doctor is reporting a
-                    # mode the enforcing side does not use.
-                    $entries = @($record.developers)
-                    $named = @($entries |
-                        Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) } |
-                        ForEach-Object { $_.Trim() })
-                    if ($entries.Count -eq 0) {
-                        Add-Finding FAIL 'record' 'kit-adoption.json developers is empty' 'name the project''s developers, or remove the field — an empty array is indistinguishable from an unfinished edit and is treated as solo'
-                    } elseif ($named.Count -ne $entries.Count) {
-                        Add-Finding FAIL 'record' 'kit-adoption.json developers contains a blank or non-string entry' 'every entry is a non-empty name; blank entries are dropped before the count is taken, which can silently move the project from team back to solo'
-                    }
-                    $unique = @($named | Sort-Object -Unique -CaseSensitive:$false)
-                    if ($unique.Count -ne $named.Count) {
-                        $dupe = @($named | Group-Object { $_.ToLowerInvariant() } | Where-Object { $_.Count -gt 1 })[0].Group[0]
-                        Add-Finding FAIL 'record' "kit-adoption.json developers lists '$dupe' more than once (case-insensitively)" 'one entry per person — duplicates are collapsed before the count is taken, so the extra entry changes nothing except how the record reads'
-                    }
-                    $mode = if ($unique.Count -ge 2) { 'team' } else { 'solo' }
-                    Add-Finding OK 'record' "$($unique.Count) developer(s) declared — Critical features use the $mode evidence rule (docs/sdlc/critical-delivery.md item 5)" ''
+            # treated as solo, the stricter arm. A malformed value IS a finding, because the
+            # check falls back silently and the project would otherwise never learn its
+            # declaration is being ignored — so the mode is always stated alongside.
+            if ($null -ne $record.developers -or (Get-Content -LiteralPath $recordPath -Raw) -match '"developers"') {
+                $devMode = Get-DeveloperMode -Root $Root
+                foreach ($problem in $devMode.Problems) {
+                    Add-Finding FAIL 'record' $problem.Message $problem.Fix
                 }
+                Add-Finding ok 'record' "$($devMode.Count) developer(s) declared — Critical features use the $($devMode.Mode) evidence rule (docs/sdlc/critical-delivery.md item 5)" ''
             }
 
             $proofOk = @($record.gateProof) | Where-Object { $_.exitCode -eq 0 }

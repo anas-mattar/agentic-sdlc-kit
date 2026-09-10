@@ -40,6 +40,8 @@
                          because the independence is real rather than substituted.
                          Absence of any kind selects SOLO — the stricter branch — so a
                          project that declares nothing keeps the behaviour it has today.
+                         The team artifact is read from the COMMITTED blob, never the
+                         working tree: uncommitted edits are not evidence.
                          How strong is TEAM? Two names written by the same team, in one
                          file: it converts a silent omission into a written claim a human
                          reviewer can falsify, and it is worth exactly that much — the
@@ -87,6 +89,7 @@ $ErrorActionPreference = 'Stop'
 # decoding so non-ASCII filenames round-trip on Windows consoles too (phase 2 review, F2).
 try { [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new() } catch {}
 $Root = (Resolve-Path $Root).Path
+. (Join-Path $PSScriptRoot 'adoption-lib.ps1')
 Push-Location $Root
 try {
 
@@ -227,56 +230,10 @@ function Invoke-LiteAndAbuseCheck {
     }
 }
 
-# Evidence mode for the Critical lane (013 D1/D2): 'solo' or 'team', DERIVED from the
-# adoption record's 'developers' array and never declared directly — a project must not be
-# able to assert team independence while naming one person.
-#
-# Every degenerate input resolves to 'solo', the stricter branch: no record, no field, a
-# non-array, an empty array, an array of blanks, or a file that will not parse. That is the
-# load-bearing half of this feature. Adoptions that predate it declare nothing, and a
-# default of 'team' would silently drop the substitute requirement in projects that never
-# asked — the silent-downgrade shape feature 012's reviews found four times in one feature.
-#
-# Malformation is strict here but SILENT here; scripts/verify-kit.ps1 is what reports it
-# (013 phase 2). Strict-and-silent is safe; lenient-and-loud would not be.
-function Get-EvidenceMode {
-    $recordPath = Join-Path $Root 'kit-adoption.json'
-    if (-not (Test-Path -LiteralPath $recordPath)) { return @{ Mode = 'solo'; Count = 0; Why = 'no kit-adoption.json' } }
-    $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw)"
-    # The record must be a JSON OBJECT at the root, and that has to be judged from the TEXT.
-    # Testing the parsed value is not enough: ConvertFrom-Json emits array elements to the
-    # pipeline one at a time, so `[{"developers":["a","b"]}]` — a record carrying no
-    # schemaVersion, projectName or topology at all — collapses to a single PSCustomObject
-    # indistinguishable from a real record, and selected team. FR-003 says every degenerate
-    # record is solo (013 phase 3 review, CONFIRM 4; the type guard that missed it was the
-    # phase 4 fix's own first attempt, caught by the regression fixture).
-    if ($rawRecord.TrimStart([char]0xFEFF, ' ', "`t", "`r", "`n") -notmatch '^\{') {
-        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json is not a JSON object at its root' }
-    }
-    try {
-        $record = $rawRecord | ConvertFrom-Json
-    } catch {
-        return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json does not parse' }
-    }
-    if ($record -isnot [PSCustomObject]) { return @{ Mode = 'solo'; Count = 0; Why = 'kit-adoption.json is not a JSON object' } }
-    if ($null -eq $record.developers) { return @{ Mode = 'solo'; Count = 0; Why = 'no developers declared in kit-adoption.json' } }
-    if ($record.developers -isnot [Array]) { return @{ Mode = 'solo'; Count = 0; Why = 'developers in kit-adoption.json is not an array' } }
-
-    # De-duplicated case-insensitively, exactly as scripts/verify-kit.ps1 does. Counting raw
-    # entries let one person written twice — ["Ada","ada"] — inflate a solo project into team
-    # mode, dropping the second-model review and the cooling-off. That is the only direction
-    # this feature must never move a project by accident, and the doctor already refused it
-    # while the enforcing side allowed it: the two scripts disagreed about what a developer
-    # is (013 phase 3 reviews, docs B1 / logic CONFIRM 3).
-    $named = @($record.developers |
-        Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) } |
-        ForEach-Object { $_.Trim() } |
-        Sort-Object -Unique -CaseSensitive:$false)
-    if ($named.Count -ge 2) {
-        return @{ Mode = 'team'; Count = $named.Count; Why = "$($named.Count) developers declared in kit-adoption.json" }
-    }
-    return @{ Mode = 'solo'; Count = $named.Count; Why = "$($named.Count) developer(s) declared in kit-adoption.json" }
-}
+# The evidence mode comes from scripts/adoption-lib.ps1, dot-sourced above, so this check and
+# the adoption doctor read the record through the SAME function. They were two copies until
+# phase 5 and drifted twice inside one feature (013 phase 4 re-review, docs NEW-1).
+function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 
 # --- Critical-evidence check (FR-005; modes added by 013) ---
 function Invoke-CriticalEvidenceCheck {
@@ -347,19 +304,29 @@ function Invoke-CriticalTeamEvidence {
         $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is missing — team mode ($Why) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)"
         return
     }
-    if (-not ((git log --format=%H -- $reviewPath 2>$null) | Select-Object -First 1)) {
+    # Read the COMMITTED blob, not the working tree. A history check alone only proved the
+    # PATH was committed: copy the template in early, fill it locally at review time, never
+    # commit, and the check passed on content the branch does not carry (013 phase 4
+    # re-review, N1). Critical forbids ci-held, so the authoritative gate is the human's
+    # local run — the one place that hole mattered most.
+    # $Dir is built with forward slashes ("specs/$Branch"), which is what git wants — no
+    # separator translation, and therefore no regex to get wrong.
+    $blob = (git show "HEAD:$Dir/human-pr-review.md" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $null -eq $blob) {
         $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is not committed — evidence that exists only in a working tree is not evidence (commit it; FR-006 requires the identities to be read from committed artifacts)"
         return
     }
-
-    $content = Get-VisibleText -Path $reviewPath
+    $content = ConvertTo-VisibleText -Text ($blob -join "`n")
     if ($content -notmatch '(?m)^##\s+Review Provenance') {
-        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md has no visible '## Review Provenance' section — team mode ($Why) needs the reviewer and owner named in the review itself (specs/_templates/human-pr-review-template.md). A section inside an HTML comment does not count: it renders as nothing"
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md has no visible '## Review Provenance' section — team mode ($Why) needs the reviewer and owner named in the review itself (specs/_templates/human-pr-review-template.md). Content inside an HTML comment does not count, and an UNTERMINATED '<!--' anywhere earlier in the file hides everything after it — check for a comment missing its '-->'"
         return
     }
     $slice = if ($content -match '(?ms)^##\s+Review Provenance\s*$(.*?)(?=^##\s|\z)') { $matches[1] } else { '' }
-    # Fenced code inside the section is illustration, not a declaration (logic review, NIT 7).
-    $slice = [regex]::Replace($slice, '(?ms)^```.*?(^```|\z)', '')
+    # Code inside the section is illustration, not a declaration — in every form it can take:
+    # backtick fences, tilde fences, and 4-space-indented blocks (013 phase 3 review NIT 7,
+    # phase 4 re-review N3, which found the first fix caught only the backtick form).
+    $slice = [regex]::Replace($slice, '(?ms)^(?:```|~~~).*?(^(?:```|~~~)|\z)', '')
+    $slice = ($slice -split "`n" | Where-Object { $_ -notmatch '^(?: {4,}|	)\S' }) -join "`n"
 
     $reviewer = Get-ProvenanceValue -Slice $slice -Field 'Reviewer'
     $owner = Get-ProvenanceValue -Slice $slice -Field 'Owner'
@@ -389,11 +356,12 @@ function Invoke-CriticalTeamEvidence {
 # so a check that keeps reading is reading text nobody can see. Get-VisiblePlanLines applies
 # the same rule line-wise for plan headers (contract M13); this returns whole text because
 # the provenance parser needs to slice sections out of it.
-function Get-VisibleText {
-    param([string]$Path)
-    $raw = "$(Get-Content -LiteralPath $Path -Raw)"
-    $stripped = [regex]::Replace($raw, '(?s)<!--.*?-->', '')
-    $dangling = $stripped.IndexOf('<!--')
+function ConvertTo-VisibleText {
+    param([string]$Text)
+    $stripped = [regex]::Replace($Text, '(?s)<!--.*?-->', '')
+    # Ordinal: the culture-sensitive overload can match a marker a renderer never sees — a
+    # soft hyphen inside '<!--' is enough (013 phase 4 re-review, N4).
+    $dangling = $stripped.IndexOf('<!--', [StringComparison]::Ordinal)
     if ($dangling -ge 0) { $stripped = $stripped.Substring(0, $dangling) }
     return $stripped
 }

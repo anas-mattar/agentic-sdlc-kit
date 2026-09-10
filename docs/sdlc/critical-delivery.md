@@ -101,14 +101,14 @@ Declare Critical when the feature touches any of:
      a filled `## Review Provenance` block whose **Reviewer** is not its **Owner**, plus the
      verbatim attestation. No cooling-off.
 
-   The count is taken after blank entries are dropped and duplicates collapsed
+   The count is taken after non-string and blank entries are dropped and duplicates collapsed
    case-insensitively, so `["Ada","ada"]` is one developer, not two. An absent, empty, or
    otherwise unusable declaration selects the **solo arm**: a project that has never declared
    anything keeps the stricter requirement, forever. The doctor (`scripts/verify-kit.ps1`)
    reports a malformed declaration and states the mode it produces, because the fallback is
    otherwise silent. See **adoption/updating.md** for the shape.
 
-   **Honesty about the second row too**: it compares two names written by the same team, in
+   **Honesty about the team arm too**: it compares two names written by the same team, in
    one file. That converts a silent omission into a written claim a reviewer can falsify —
    which is worth something, and is not the same as verifying that the review happened. The
    cooling-off does not apply there because the period exists to give a solo developer

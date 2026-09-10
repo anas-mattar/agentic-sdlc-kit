@@ -375,14 +375,17 @@ Do not declare it to make a check pass: a team declaration on a one-person proje
 the cooling-off period and asks a reviewer line you will end up filling with your own name,
 which the check rejects — correctly.
 
-The count is taken **after** blank entries are dropped and duplicates collapsed
-case-insensitively — so `["Ada","ada"]` is one developer and stays solo, and
-`["ada","grace"," "]` is two and is team. A value that is not an array at all, or a file whose
+The count is taken **after** blank *and non-string* entries are dropped and duplicates
+collapsed case-insensitively — so `["Ada","ada"]` is one developer and stays solo,
+`["ada","grace"," "]` is two and is team, and `["ada",5,"grace"]` is also two, because the
+number is discarded rather than counted. A value that is not an array at all, or a file whose
 root is not a JSON object, is ignored entirely and the project falls back to solo.
 
 Every one of those fallbacks is safe — they all land on the stricter arm — but they are
 **silent** in the check itself, so the doctor reports each as a FAIL *and* prints the mode the
-record actually produces. Without both halves, a project could believe it declared a team for
+record actually produces — on every one of those paths, including the not-an-array case. The
+doctor and the check read the record through the same function
+(`scripts/adoption-lib.ps1`), so the mode it prints is the mode you will be held to. Without both halves, a project could believe it declared a team for
 months while being checked as solo.
 
 <!-- digest: kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. -->

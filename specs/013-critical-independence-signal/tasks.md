@@ -428,29 +428,108 @@ same function; S1–S12 and R1–R9 unchanged; solo still byte-identical to the 
 - `adoption/updating.md`
 - `adoption/greenfield.md`
 
-- [ ] T030 (logic N1) Read the review from the **committed blob** (`git show HEAD:<path>`), not
+- [x] T030 (logic N1) Read the review from the **committed blob** (`git show HEAD:<path>`), not
       the working tree. A committed path with uncommitted content passed — the natural
       workflow of copying the template in early and filling it at review time. Reading the
       blob makes the phase 4 history guard redundant and says the same thing the solo arm
       already says: your edits do not count until you commit them
-- [ ] T031 (logic N2 — a regression phase 4 introduced) Restore the `try` around the record
+- [x] T031 (logic N2 — a regression phase 4 introduced) Restore the `try` around the record
       read. Moving `Get-Content` outside it made an unreadable `kit-adoption.json` an
       unhandled terminating error that skipped **every check after CriticalEvidence**. FR-003
       names "unreadable" among the records that must resolve to solo
-- [ ] T032 (docs NEW-1, logic N6) Extract one `Get-DeveloperMode` into a dot-sourced
+- [x] T032 (docs NEW-1, logic N6) Extract one `Get-DeveloperMode` into a dot-sourced
       `scripts/adoption-lib.ps1` and call it from both scripts, the `scope-lib.ps1` pattern
       from feature 012. The two copies had already drifted twice — the root-object guard
       landed in one, and the dedupe comparer differs between them. A comment claiming they
       match is not a mechanism; one function is
-- [ ] T033 (logic N3) Strip `~~~` fences and 4-space-indented code blocks inside the section,
+- [x] T033 (logic N3) Strip `~~~` fences and 4-space-indented code blocks inside the section,
       not only backtick fences — illustration must not read as declaration in any form
-- [ ] T034 (logic N4) `IndexOf('<!--', [StringComparison]::Ordinal)` — the culture-sensitive
+- [x] T034 (logic N4) `IndexOf('<!--', [StringComparison]::Ordinal)` — the culture-sensitive
       overload can find a marker a renderer never sees
-- [ ] T035 (logic N5) When the section is absent, say that an unterminated `<!--` anywhere
+- [x] T035 (logic N5) When the section is absent, say that an unterminated `<!--` anywhere
       earlier hides everything after it. The rule is right; the message left an author unable
       to work out why a visible block was called invisible
-- [ ] T036 (docs NEW-2, N1-residual, N4-placement) Document that non-string entries are dropped
+- [x] T036 (docs NEW-2, N1-residual, N4-placement) Document that non-string entries are dropped
       like blanks; make the mode line reachable on every branch; "the second row" → "arm";
       move the greenfield guidance to the step that writes the record
-- [ ] T037 Re-run every fixture family — S1–S12, R1–R9, the doctor shapes, G3, U1 — and record
+- [x] T037 Re-run every fixture family — S1–S12, R1–R9, the doctor shapes, G3, U1 — and record
       the results; re-diff solo against the T001 baseline
+
+## Phase 5 — remediation results
+
+### The two re-review verdicts
+
+The docs reviewer returned **APPROVE WITH COMMENTS** — all three of its blocking findings
+closed and independently re-measured. The logic reviewer returned **REQUEST CHANGES**: both
+its blocking findings substantively closed, but phase 4's fix for the first one had **moved
+the hole rather than shut it**, and phase 4 had **introduced a regression**.
+
+### The two that mattered
+
+**N1 — the hole moved.** Phase 4's guard proved the review file's *path* was in history; the
+content was still read from the working tree. Commit the template early, fill it locally at
+review time, never commit — and the check passed on content the branch does not carry. That
+is the normal workflow, not a contrivance. Phase 5 reads the **committed blob**
+(`git show HEAD:<path>`), which makes the history guard redundant and says what the solo arm
+has always said: your edits do not count until you commit them.
+
+| Fixture | Result |
+|---|---|
+| G3 — committed placeholder, filled only in the working tree | FAIL — grades the committed content |
+| G3b — same content, committed | pass |
+
+**N2 — a regression this feature introduced.** Fixing the root-array case in phase 4 moved
+`Get-Content` outside its `try`. With `$ErrorActionPreference = 'Stop'` an unreadable record —
+a directory, a lock, a permission denial — became an unhandled terminating error that skipped
+**every check ordered after CriticalEvidence**: GateBatching, GateCertification,
+ReviewProvenance, PhaseSizeWarning. Nothing passed wrongly, but four checks silently did not
+run. FR-003 names "unreadable" among the records that must resolve to solo. Fixture U1 now
+falls back to solo and the run summarises normally.
+
+### The drift, removed rather than corrected
+
+The two scripts diverged **twice inside one feature**: the root-object guard landed only in
+the enforcing copy, and the two used different dedupe comparers. The second divergence was
+found by a reviewer reading the phase 4 comment that asserted they matched exactly — a comment
+is not a mechanism.
+
+`scripts/adoption-lib.ps1` now holds one `Get-DeveloperMode`, dot-sourced by both, returning
+the mode the check enforces *and* the problems the doctor reports. Neither script interprets
+the record any more. This is the `scope-lib.ps1` pattern feature 012 established for exactly
+this reason, and the case that proved it necessary is now green on both sides:
+
+| Record | enforcement-pack | verify-kit |
+|---|---|---|
+| `[{"developers":["a","b"]}]` | solo | solo, FAIL "not a JSON object at its root" |
+
+### No regression
+
+- **R1–R9**: all nine still correct.
+- **S1–S12**: verdicts unchanged from phase 4; one message differs by design (N5 — the
+  absent-section message now says an unterminated `<!--` earlier in the file hides everything
+  after it, because the previous wording left an author unable to diagnose a visible block
+  being called invisible).
+- **Solo mode**: still byte-identical to the pre-013 T001 baseline, diffed a third time.
+- **Doctor**: one FAIL per defect, and the mode line now prints on every branch including
+  not-an-array (docs NEW-2).
+
+### Closed here, and what remains
+
+Closed: logic N1, N2, N3 (`~~~` and indented code now stripped), N4 (ordinal `IndexOf`),
+N5, N6 (one comparer, so the null-deref hazard cannot arise); docs NEW-1, NEW-2, N1-residual,
+N4-placement; C1 and C4 by amendment, each with a recorded approver.
+
+Left open deliberately: **C2** — `docs/sdlc/review-process.md` and
+`docs/sdlc/definition-of-done.md` still point at the template path rather than
+`specs/NNN-name/human-pr-review.md`. Both are pre-existing sentences outside this feature's
+Territory, and the docs reviewer explicitly ruled it a follow-up rather than a blocker:
+widening Territory post-hoc to sweep two sentences is the drive-by the scope check exists to
+catch. Worth a Lite `fix/` branch soon — a team reading review-process.md alone can still put
+the file where the check will not find it.
+
+### The pattern worth carrying forward
+
+Phase 4 closed four defects and introduced one; its fix for the most serious finding moved the
+hole instead of closing it. Both facts were found by re-review, not by any check. Two rounds of
+remediation each needed their own review, which is the argument against treating a fix as done
+because it was written carefully.
