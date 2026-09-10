@@ -408,3 +408,49 @@ only on the implementer's disk.
 | [34464641137](https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34464641137) | success | `43e52cfd4cd79c2bc24f050dbe039f13b864ee14` | recorded 2026-09-10 |
 
 Four phases, four runs, four commits — each pushed alone.
+
+## Phase 5: Re-review remediation (added by amendment — approved by anas.m, 2026-09-10)
+
+**Goal**: close the residual of BLOCKING 1, the regression phase 4 introduced, and the second
+drift between the two scripts — this time by removing the possibility of drift rather than
+correcting it.
+
+**Independent Test**: fixtures G3 (committed path, uncommitted content) and U1 (unreadable
+record) flip; both scripts report the same mode for every record shape because they call the
+same function; S1–S12 and R1–R9 unchanged; solo still byte-identical to the T001 baseline.
+
+**Territory**:
+
+- `scripts/adoption-lib.ps1`
+- `scripts/enforcement-pack.ps1`
+- `scripts/verify-kit.ps1`
+- `docs/sdlc/critical-delivery.md`
+- `adoption/updating.md`
+- `adoption/greenfield.md`
+
+- [ ] T030 (logic N1) Read the review from the **committed blob** (`git show HEAD:<path>`), not
+      the working tree. A committed path with uncommitted content passed — the natural
+      workflow of copying the template in early and filling it at review time. Reading the
+      blob makes the phase 4 history guard redundant and says the same thing the solo arm
+      already says: your edits do not count until you commit them
+- [ ] T031 (logic N2 — a regression phase 4 introduced) Restore the `try` around the record
+      read. Moving `Get-Content` outside it made an unreadable `kit-adoption.json` an
+      unhandled terminating error that skipped **every check after CriticalEvidence**. FR-003
+      names "unreadable" among the records that must resolve to solo
+- [ ] T032 (docs NEW-1, logic N6) Extract one `Get-DeveloperMode` into a dot-sourced
+      `scripts/adoption-lib.ps1` and call it from both scripts, the `scope-lib.ps1` pattern
+      from feature 012. The two copies had already drifted twice — the root-object guard
+      landed in one, and the dedupe comparer differs between them. A comment claiming they
+      match is not a mechanism; one function is
+- [ ] T033 (logic N3) Strip `~~~` fences and 4-space-indented code blocks inside the section,
+      not only backtick fences — illustration must not read as declaration in any form
+- [ ] T034 (logic N4) `IndexOf('<!--', [StringComparison]::Ordinal)` — the culture-sensitive
+      overload can find a marker a renderer never sees
+- [ ] T035 (logic N5) When the section is absent, say that an unterminated `<!--` anywhere
+      earlier hides everything after it. The rule is right; the message left an author unable
+      to work out why a visible block was called invisible
+- [ ] T036 (docs NEW-2, N1-residual, N4-placement) Document that non-string entries are dropped
+      like blanks; make the mode line reachable on every branch; "the second row" → "arm";
+      move the greenfield guidance to the step that writes the record
+- [ ] T037 Re-run every fixture family — S1–S12, R1–R9, the doctor shapes, G3, U1 — and record
+      the results; re-diff solo against the T001 baseline

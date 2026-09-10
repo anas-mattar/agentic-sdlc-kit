@@ -102,7 +102,14 @@ information (and again with the field present but malformed), the check behaves 
 - A record naming exactly one developer — solo, unambiguously.
 - A record naming two developers where both features are owned by the same person.
 - A record naming developers whose handles do not match the identities used in the roadmap or the
-  review document — the comparison must fail loudly rather than pass by accident.
+  review document. **Decided 2026-09-10: this case is disclosed, not enforced.** The roster is
+  counted to select the mode and is never compared against Reviewer or Owner, so a review naming
+  two people absent from the roster passes. Cross-checking free text against free text would read
+  as verification while providing none, and both fresh-context reviewers judged the disclosure in
+  `scripts/enforcement-pack.ps1`'s header the right resolution. The original wording of this
+  entry ("must fail loudly rather than pass by accident") described behaviour the feature does
+  not have, and an unmet MUST is the wrong thing to leave standing in this feature of all
+  features. **Amendment approved by**: anas.m, 2026-09-10.
 - A Critical feature on a branch whose main-side roadmap row is missing or still reads `idea`
   (feature 011 makes this an error, but the two checks must not deadlock each other).
 - A project that grows from one developer to two mid-feature, or shrinks.

@@ -48,8 +48,11 @@ except for the record shape it validates; backward compatible by construction (D
   attestation `This reviewer is not the owner of the feature under review.` Team mode requires
   the file, the section, both lines filled and non-placeholder, the attestation present, and
   **Reviewer ≠ Owner** compared case- and whitespace-insensitively.
-- **D4 — D3 is deliberately stronger than the existing AI-review provenance check, and the
-  difference is recorded rather than copied.** `Invoke-ReviewProvenanceCheck` never compares two
+- **D4 — D3 compares two values where the AI-review provenance check compares none: a
+  different check, not a stronger claim.**
+  **Amendment approved by**: anas.m, 2026-09-10 — the original headline said "deliberately
+  stronger", which exceeded FR-007's explicit ceiling and, after phase 4 corrected the script
+  header, contradicted the shipped code (013 phase 3 docs review C1). `Invoke-ReviewProvenanceCheck` never compares two
   values: it rejects an empty Reviewer, a `[placeholder]`, and a value that literally begins with
   the word "implementer". It cannot catch a reviewer who names themselves. Its header comment
   reads as though it compares; it does not. Two names in one file *can* be compared, so this
@@ -101,6 +104,13 @@ not seen. A remediation phase is added rather than folded into the existing thre
 the reviews found and what they cost stays visible in the history.
 **Amendment approved by**: anas.m, 2026-09-10.
 
+**Amendment — phase 5 added 2026-09-10.** The re-review of phase 4 found that its fix for
+BLOCKING 1 moved the hole rather than closed it, and that phase 4 itself introduced a
+regression. Phase 5 also adds one file to `scripts/` — a dot-sourced `adoption-lib.ps1` holding
+the single mode function both scripts call, the `scope-lib.ps1` pattern feature 012 established
+— because the alternative is two copies that have already drifted once.
+**Amendment approved by**: anas.m, 2026-09-10.
+
 **Phase-sizing**: each phase stands alone. Phase 1 makes the check correct and is provable on
 fixtures with no adopter involved. Phase 2 makes the record and the doctor aware of the field.
 Phase 3 states the law. Reverting any one leaves the others correct — phase 1 without phase 2
@@ -123,6 +133,9 @@ specs/_templates/human-pr-review-template.md  # MOD  phase 4 — remove the comm
 docs/sdlc/critical-delivery.md                # MOD  phase 4 — artifact path, duplicate wording
 adoption/updating.md                          # MOD  phase 4 — malformed-case wording, attestation
 adoption/greenfield.md                        # MOD  phase 4 — honesty caveat
+scripts/adoption-lib.ps1                      # NEW  phase 5 — the one mode function both scripts call
+scripts/enforcement-pack.ps1                  # MOD  phase 5 — committed blob, read regression, fences
+scripts/verify-kit.ps1                        # MOD  phase 5 — call the shared function
 ```
 
 ## Testing Strategy
