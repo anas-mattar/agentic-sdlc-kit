@@ -63,7 +63,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Flow-efficiency pack | — | P1 | shipped | anas.m | `specs/003-flow-efficiency-pack/` |
 | Kit-update channel (manifest of kit-owned vs slot-bearing files; update script that copies the verbatim set and reports the surgical set; amendment flow-down guidance) | GAP-001 | P1 | shipped | anas.m | `specs/004-kit-update-channel/` |
 | Field-lesson harvest (encode the adoption traps into `adoption/` steps and rulebook templates) | GAP-003 | P2 | shipped | anas.m | `specs/005-field-lesson-harvest/` |
-| Pipelining WIP machine check (enforcement-pack counts a developer's open `NNN-*` branches) | GAP-004 | P3 | idea | — | — |
+| Load-bearing developer roster (the adoption record's developers become objects — name, repos, canApproveCritical — keeping string entries legal and keeping 013's absent-record-defaults-to-strict rule; read three ways: a feature's Owner is in the roster, a Critical feature's reviewer is in it and is neither the Owner nor unpermitted, and at most one active claim per Owner — which is GAP-004's pipelining WIP counter, absorbed here rather than built twice) | GAP-024, GAP-004 | P2 | idea | — | — |
 | Verification pack (per-phase file territory declared in `tasks.md` + machine scope check; fresh-context/second-model AI review separation; ritual checks wired as required CI on feature branches) | GAP-008, GAP-009, GAP-010 | P1 | shipped | anas.m | `specs/006-verification-pack/` |
 | Adoption doctor (`verify-kit.ps1`: audits slots, structure, gate proof, tier rulebooks, `.kit-version`; runs post-init, post-update, and in adopted-project CI) | GAP-011 | P2 | shipped | anas.m | `specs/007-adoption-doctor/` |
 | CI-held certifying gate for Lite/Standard (gate evidence = unforgeable CI run on the branch; owner approves on evidence asynchronously; user-run gate stays law for Critical) | GAP-012 | P2 | shipped | anas.m | `specs/008-ci-held-gate/` |
@@ -75,6 +75,8 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Critical independence signal (the adoption record states the project's developers; the Critical evidence check requires the solo substitute only when the project is solo, and an equally machine-checked independence artifact when it is not — absent record defaults to strict, so no existing adoption changes behaviour) | GAP-020 | P1 | shipped | anas.m | `specs/013-critical-independence-signal/` |
 | Amendment authority (constitution clause first: any change to an approved `spec.md`, `plan.md`, `tasks.md` or contract records who approved it, and an implementing agent may not approve its own; then an `enforcement-pack.ps1` check that grades it) | GAP-019 | P1 | idea | — | — |
 | Cross-repo territory reach (`territory-check.ps1` reads the declared code repositories as sibling working trees and reports overlap across them, the way feature 012 extended the scope check) | GAP-018 | P2 | idea | — | — |
+| Spec-directory single source (`CLAUDE.md`'s Feature Structure summarises and points at `docs/sdlc/branch-strategy.md` for the authoritative file set, rather than asserting an exhaustive list the kit's own shipped features contradict) | GAP-021 | P2 | idea | — | — |
+| Level declaration graded (a **Level Rationale** block in `spec.md` answering the four Critical triggers explicitly, plus criticalSurfaces path globs in the adoption record and a `scripts/enforcement-pack.ps1` check that fails a sub-Critical level whose Territory intersects them — the missing Standard-to-Critical trigger, built the way feature 012 taught a check to read the code repos) | GAP-023 | P1 | idea | — | — |
 
 ## Decisions log *(authored)*
 
@@ -295,3 +297,19 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   the first feature whose recorded reviewer is someone the project never declared.
   Sequenced behind GAP-023 because a roster only starts paying once there is a decision
   (the level) whose approver has to be a real, declared person.
+- 2026-09-13 GAP-021, GAP-023 and GAP-024 promoted to roadmap rows at the recommended
+  priorities, owner approved the same day. None of the three is claimed: the rows exist so
+  that a teammate orienting from `main` sees three known blind spots rather than inferring
+  from green checks that none exist. GAP-022 keeps its no-row recommendation for the reason
+  recorded above — it has a working manual fallback and FitForge 002 will finish under it.
+  **GAP-004's row was absorbed rather than raised.** Its WIP counter is one of the three
+  reads the load-bearing roster needs, and two rows covering one inventory entry is exactly
+  the drift the roadmap exists to prevent; the surviving row covers GAP-024 and GAP-004 at
+  P2. GAP-004's *inventory* entry is untouched — the inventory is the permanent record of
+  what was seen, the roadmap only the plan for what to do about it, and absorbing a plan is
+  not unseeing an observation. Sequencing among the three: GAP-023 first, because it is the
+  only one that changes what a check dispatches on and because a level chosen wrongly costs
+  the strictest lane silently; GAP-021 is small enough to ride whenever someone is already
+  in `CLAUDE.md`; the roster is worth specifying in the same sitting as GAP-019's amendment
+  authority, since both need an approver name that resolves to a declared person and
+  neither is worth building twice.
