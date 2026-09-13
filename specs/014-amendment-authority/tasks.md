@@ -244,6 +244,24 @@ recorded rather than acted on. If phase 3 confirms the class, the fix is an amen
 `plan.md` and possibly to the clause, carrying its own approver line, which is exactly the
 procedure this feature exists to install.
 
-## Phase 1 — gate (ci-held)
+## Phase 1 — gate
 
-Evidence triplet to be recorded here once CI has run on the phase commit.
+Certified 2026-09-13. The plan declares `ci-held`, and the evidence triplet is recorded
+below — but the owner also ran the gate locally on the same commit, which is the stronger
+of the two and is what certifies this phase.
+
+| | |
+|---|---|
+| Phase commit | `ced1302` |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34756014814 |
+| CI conclusion | success |
+| Owner-run gate | `pwsh -File scripts/ritual-checks.ps1` → RESULT OK, confirmed by anas.m |
+| Scope check | PASS phase 1 commit `ced1302` (7 files) |
+
+Noted from that run and not acted on: `PhaseSizeWarning` on `aa3b194`, the `plan:` commit —
+407 lines across `plan.md` and `tasks.md`, seven over the guideline. Not a phase commit
+(scope-check skips it), documents rather than code, and recorded here so it is not
+re-discovered at review.
+
+Gate 5 (fresh-context AI review) is outstanding — it is never self-graded by the
+implementing session, so it is not recorded here by the session that wrote the phase.
