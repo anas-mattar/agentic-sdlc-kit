@@ -256,6 +256,37 @@ reviewer's shapes rather than mine.
 - [x] T055 Re-run both suites: the original 18 (no regression) and `attack-verify.ps1`
       (A1–A6 must fail, A7 must pass on any timezone). Record both in `notes.md`
 
+### Phase 2 remediation, round 2 (added by amendment 2026-09-14 — fourth review, J1–J6)
+
+Source: `ai-code-review-phase-2-remediation.md`. The reviewer confirmed the seven earlier
+shapes genuinely closed, then found six blocking findings — **four of them regressions
+introduced by the round-1 fixes**. Owner direction: simplify rather than add conditions.
+
+**Amendment approved by**: anas.m, 2026-09-14.
+
+- [x] T056 **J1** — "absent from the parent" rejected an honest repeat record (a second
+      amendment, same approver, same day). Replaced by occurrence counting: a record counts
+      when the file gains one, which separates a repeat from a recycled line without a
+      special case
+- [x] T057 **J2** — the `HEAD^` short-circuit failed open, silently, on every `pull_request`
+      run: GitHub checks out a merge preview whose first parent is the base, so `HEAD^` was
+      `main`, which carries no check. The early return is deleted; the boundary is evaluated
+      per commit again
+- [x] T058 **J3** — the `R100` rule graded a renumbered branch as an unapproved amendment,
+      against FR-010. Renumbering is now detected by the **feature directory** moving, which
+      is what FR-010 actually describes; a rename *within* a directory is still judged by
+      content, so H3's rename-plus-rewrite stays closed
+- [x] T059 **J4** — the trailer filter dropped every `Word: ` line, including commit subjects
+      (`docs:`, `spec:`). Now git's own `%(trailers:only)` says which lines are trailers
+- [x] T060 **J5** — an unterminated `<!--` left a record visible to the check and invisible to
+      every renderer. It now hides everything after it, as the pack's CriticalEvidence check
+      already warned it should
+- [x] T061 **J6** — a task line moved between phase blocks while ticked defeated hunk pairing.
+      The exemption now compares the **whole neutralised file in order**, so a move cannot be
+      expressed as progress. This removes the class, not the case
+- [x] T062 Re-run all three suites: 18 baseline, 8 attack (A), 7 boundary/regression (J).
+      Record in `notes.md`, including what could not be measured and why
+
 ## Phase 3: Replay over real history
 
 **Goal**: the check is proven against commits nobody wrote for it, and what that finds is fixed
