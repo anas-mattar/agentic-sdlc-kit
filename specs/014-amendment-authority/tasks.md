@@ -185,32 +185,32 @@ enforcement-pack message is byte-identical to a baseline captured before the edi
 - `scripts/enforcement-pack.ps1`
 - `scripts/scope-lib.ps1`
 
-- [ ] T010 Capture the baseline: run `enforcement-pack.ps1` on this branch and on two seeded
+- [x] T010 Capture the baseline: run `enforcement-pack.ps1` on this branch and on two seeded
       fixtures, and save every existing message to the scratchpad. It cannot be reconstructed
       after the edit, and it is what T018 diffs against
-- [ ] T011 Build fixtures S1–S14 plus the two negative-space cases as a scripted seeder, so they
+- [x] T011 Build fixtures S1–S14 plus the two negative-space cases as a scripted seeder, so they
       are rebuildable rather than hand-made once
-- [ ] T012 Add commit enumeration (D1): resolve the base with the existing helper in
+- [x] T012 Add commit enumeration (D1): resolve the base with the existing helper in
       `scripts/scope-lib.ps1`, list `base..HEAD`, and skip any commit with more than one parent
       (D7). If a shared helper is needed, it lands in `scope-lib.ps1` — not a new script file
-- [ ] T013 Add creation-vs-amendment classification (D2): for each feature document a commit
+- [x] T013 Add creation-vs-amendment classification (D2): for each feature document a commit
       touches, test existence in the commit's first parent. Absent → creation, exempt
-- [ ] T014 Add the checkbox exemption (D3): strip `- [ ]` / `- [x]` / `- [X]` from the commit's
+- [x] T014 Add the checkbox exemption (D3): strip `- [ ]` / `- [x]` / `- [X]` from the commit's
       removed and added lines for `tasks.md`; equal multisets → progress, exempt. A commit that
       also changes other text is **not** exempt (S10)
-- [ ] T015 Add record parsing and validation (D4, D6): at least one conforming
+- [x] T015 Add record parsing and validation (D4, D6): at least one conforming
       `**Amendment approved by**: <name>, <YYYY-MM-DD>` line added anywhere in the commit's
       diff across the feature's documents; reject empty names, slots, `TODO(...)`, malformed
       dates, and dates later than the commit's author date
-- [ ] T016 Add the commit-message consistency rule (D5): the message contains the approver's
+- [x] T016 Add the commit-message consistency rule (D5): the message contains the approver's
       name, matched case-insensitively after trimming
-- [ ] T017 Make every failure message name the file, the class of change detected, and a
+- [x] T017 Make every failure message name the file, the class of change detected, and a
       conforming record verbatim (FR-008). A developer must never have to read the script to
       learn what the check wants
-- [ ] T018 Run S1–S14 and the two negative-space cases; diff every pre-existing message against
+- [x] T018 Run S1–S14 and the two negative-space cases; diff every pre-existing message against
       T010's baseline; record all sixteen verdicts in `notes.md` under "Phase 2 — scenario
       results" (D3b — evidence never lands in this file)
-- [ ] T019 Run `pwsh -File scripts/ritual-checks.ps1` here and confirm green — every commit
+- [x] T019 Run `pwsh -File scripts/ritual-checks.ps1` here and confirm green — every commit
       the check grades must satisfy it. Under D2b that is the commits made after the check
       lands; `ced1302` and `f49ad61` predate it and are out of scope by rule, not by exception
 

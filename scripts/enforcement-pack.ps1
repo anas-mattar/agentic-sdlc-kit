@@ -627,6 +627,133 @@ function Invoke-PhaseSizeWarningCheck {
     }
 }
 
+# --- Amendment-authority check (014 FR-004; constitution I, Amendment authority) ---
+# Grades commits, not the cumulative diff (plan D1): the record lives in a commit's diff AND
+# its message, and a cumulative diff has no messages and cannot tell an amendment from a
+# creation that was later edited.
+#
+# Bounded by plan D2b: a commit is graded only if THIS CHECK existed before that commit was
+# made. Nothing earlier is graded, here or in an adopted project — so the update that delivers
+# the check is silent, and no in-flight branch turns red at once. The boundary is not a
+# convenience: D5 puts half of every record in an immutable commit message, so a retroactive
+# rule would be one nobody could comply with.
+$script:AmendmentRecordPattern = '^\*\*Amendment approved by\*\*:\s*(.+?)\s*,\s*(\d{4}-\d{2}-\d{2})\s*\.?\s*$'
+$script:AmendmentRecordExample = '**Amendment approved by**: <name>, <YYYY-MM-DD>'
+
+# D2b boundary. Self-bootstrapping: reads the parent's blob of this very script.
+function Test-AmendmentCheckPresent {
+    param([string]$Ref)
+    if (-not $Ref) { return $false }
+    $blob = git show "${Ref}:scripts/enforcement-pack.ps1" 2>$null
+    if (-not $blob) { return $false }
+    return [bool]($blob | Where-Object { $_ -match 'function Invoke-AmendmentAuthorityCheck' })
+}
+
+# Lines a commit ADDED to the given paths (no context, no +++ headers).
+function Get-AddedLines {
+    param([string]$Commit, [string[]]$Paths)
+    if (-not $Paths -or $Paths.Count -eq 0) { return @() }
+    $out = git show -U0 --format='' $Commit -- @Paths 2>$null
+    return @($out | Where-Object { $_ -match '^\+' -and $_ -notmatch '^\+\+\+' } |
+        ForEach-Object { $_.Substring(1) })
+}
+
+# D3: a tasks.md change that alters nothing but checkbox state is progress, not amendment.
+# Completion state moves in EITHER direction (constitution I; review finding F2). The test is
+# the text: strip the marker from every added and removed line and compare the multisets.
+function Test-CheckboxOnlyChange {
+    param([string]$Commit, [string]$Path)
+    $diff = git show -U0 --format='' $Commit -- $Path 2>$null
+    $removed = @(); $added = @()
+    foreach ($line in $diff) {
+        if ($line -match '^---' -or $line -match '^\+\+\+') { continue }
+        if ($line -match '^-')  { $removed += ($line.Substring(1) -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
+        elseif ($line -match '^\+') { $added += ($line.Substring(1) -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
+    }
+    if ($removed.Count -eq 0 -and $added.Count -eq 0) { return $true }
+    $r = @($removed | Sort-Object); $a = @($added | Sort-Object)
+    if ($r.Count -ne $a.Count) { return $false }
+    for ($i = 0; $i -lt $r.Count; $i++) { if ($r[$i] -ne $a[$i]) { return $false } }
+    return $true
+}
+
+# D6: an unfilled or impossible record is no record.
+function Get-ConformingRecord {
+    param([string[]]$AddedLines, [datetime]$CommitDate)
+    $result = @{ Name = $null; Malformed = @() }
+    foreach ($line in $AddedLines) {
+        if ($line -notmatch $script:AmendmentRecordPattern) { continue }
+        $name = $matches[1].Trim()
+        $dateText = $matches[2]
+        if (-not $name -or $name -match '^\{\{.*\}\}$' -or $name -match '^TODO\(' -or
+            $name -match '^\[.*\]$' -or $name -match '^<.*>$') {
+            $result.Malformed += "approver name '$name' is a placeholder, not a name"
+            continue
+        }
+        $parsed = [datetime]::MinValue
+        if (-not [datetime]::TryParseExact($dateText, 'yyyy-MM-dd',
+                [globalization.cultureinfo]::InvariantCulture,
+                [globalization.datetimestyles]::None, [ref]$parsed)) {
+            $result.Malformed += "date '$dateText' is not a real YYYY-MM-DD date"
+            continue
+        }
+        if ($parsed.Date -gt $CommitDate.Date) {
+            $result.Malformed += "date '$dateText' is later than the commit's own author date ($($CommitDate.ToString('yyyy-MM-dd')))"
+            continue
+        }
+        $result.Name = $name
+        return $result
+    }
+    return $result
+}
+
+function Invoke-AmendmentAuthorityCheck {
+    param([string]$Branch, [string]$Base)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    if (-not $Base) { return }
+    $dir = "specs/$Branch"
+    $commits = @((git rev-list --reverse "$Base..HEAD" 2>$null) | Where-Object { $_ })
+    foreach ($commit in $commits) {
+        $lineage = @((git rev-list --parents -n 1 $commit 2>$null) -split '\s+' | Where-Object { $_ })
+        if ($lineage.Count -gt 2) { continue }                       # D7: merge commit authored nothing
+        if (-not (Test-AmendmentCheckPresent -Ref $lineage[1])) { continue }   # D2b
+        $short = $commit.Substring(0, 7)
+
+        $amended = @()
+        foreach ($row in (git show --name-status --format='' $commit 2>$null)) {
+            if (-not $row) { continue }
+            $parts = $row -split "`t"
+            if ($parts.Count -lt 2) { continue }
+            $status = $parts[0]
+            $path = $parts[$parts.Count - 1]                          # renames: the NEW path
+            if ($path -notlike "$dir/*") { continue }
+            $leaf = $path.Substring($dir.Length + 1)
+            if ($leaf -notin @('spec.md', 'plan.md', 'tasks.md') -and $leaf -notlike 'contracts/*') { continue }
+            if ($status -match '^[AR]') { continue }                  # D2: first appearance is creation
+            if ($status -match '^M' -and $leaf -eq 'tasks.md' -and
+                (Test-CheckboxOnlyChange -Commit $commit -Path $path)) { continue }   # D3
+            $amended += $path
+        }
+        if ($amended.Count -eq 0) { continue }
+
+        $dateText = (git show -s --format=%aI $commit 2>$null)
+        $commitDate = [datetime]::Now
+        if ($dateText) { $commitDate = [datetime]::Parse($dateText) }
+        $record = Get-ConformingRecord -AddedLines (Get-AddedLines -Commit $commit -Paths @("$dir")) -CommitDate $commitDate
+        $files = ($amended | Sort-Object -Unique) -join ', '
+
+        if (-not $record.Name) {
+            $why = if ($record.Malformed.Count -gt 0) { " Rejected record(s): $($record.Malformed -join '; ')." } else { '' }
+            $script:failures += "AmendmentAuthority: commit $short amends $files after approval with no conforming approver record.$why Add '$script:AmendmentRecordExample' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt; changing what a document says is not"
+            continue
+        }
+        $message = (git show -s --format=%B $commit 2>$null) -join "`n"
+        if ($message -notmatch [regex]::Escape($record.Name)) {
+            $script:failures += "AmendmentAuthority: commit $short records '$($record.Name)' as the approver of its change to $files, but its commit message does not name them — the message is fixed at commit time and is the half a later edit cannot fake (constitution I; plan D5)"
+        }
+    }
+}
+
 # --- Dispatch ---
 $Branch = Get-CurrentBranch -Override $Branch
 $diffBase = Get-DiffBase
@@ -643,6 +770,7 @@ if ($Branch -in @('main', 'master')) {
     Invoke-GateBatchingCheck -Branch $Branch
     Invoke-GateCertificationCheck -Branch $Branch
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
+    Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles

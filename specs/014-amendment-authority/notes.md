@@ -121,6 +121,70 @@ Two findings worth carrying beyond this feature:
   notes file is not a rule anything enforces, which is this feature's own thesis turned on
   itself.
 
-## Phase 1 remediation — gate
+## Phase 1 remediation — gate and the third review that was declined
 
-To be recorded here once the remediation commits have been gated and re-reviewed.
+Round 2 (`370a28b`) closed G1, G2 and G3 plus G6, G10, G11 and G12. `scope-check: PASS phase 1
+commit 370a28b (2 file(s))`; local `ritual-checks` RESULT OK; CI green
+(https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34758019912).
+
+**A third fresh-context review was recommended and declined by the owner** (2026-09-13), who
+directed the feature to phase 2 instead. Recorded because the reasoning against it was not
+weak: round 1 found six blocking findings, round 2 found three more *inside the fix for them*,
+and that curve had not flattened. What stands behind the round-2 diff is therefore the owner's
+judgement and gate 6's human review of the full feature diff at merge — not gate 5, which this
+round does not have. Six non-blocking findings from the second review also remain open (G5 in
+part, G9, G13 and the FR-012 reading-table mirror); they are in
+`ai-code-review-phase-1-remediation.md` and none of them blocks phase 2.
+
+## Phase 2 — scenario results (T018)
+
+Seeder: `scratchpad/seed.ps1` (rebuildable, not hand-made). Each scenario is a throwaway repo
+whose **main** branch already carries the check, so the commits under test have a parent
+containing it and are actually graded (D2b). Run 2026-09-13 against `enforcement-pack.ps1`
+with `Invoke-AmendmentAuthorityCheck` wired in.
+
+| # | Scenario | Expected | Observed |
+|---|---|---|---|
+| S1 | creation only | PASS | PASS |
+| S2 | conforming amendment | PASS | PASS |
+| S3 | amendment, no record | FAIL, names `plan.md` | FAIL, names it |
+| S4 | record and message disagree | FAIL | FAIL |
+| S5 | empty approver name | FAIL | FAIL |
+| S6 | placeholder name | FAIL | FAIL |
+| S7 | impossible date | FAIL | FAIL |
+| S8 | date after the commit | FAIL | FAIL |
+| S9 | checkbox tick only | PASS | PASS |
+| S9b | checkbox **un-tick** | PASS | PASS |
+| S10 | tick plus a reworded task | FAIL | FAIL |
+| S11 | `contracts/` amended, no record | FAIL, names the contract | FAIL, names it |
+| S12 | merge commit | PASS (skipped) | PASS |
+| S13 | renumbered branch | PASS (creation at new path) | PASS |
+| S14 | Micro, `spec.md` alone | FAIL | FAIL |
+| N1 | Lite lane, no `specs/` | PASS, silent | PASS |
+| N2 | one record, two documents | PASS | PASS |
+| N3 | parent predates the check (D2b) | PASS, not graded | PASS |
+
+**S9b and N3 were added during phase 2** and are the two that matter most. S9b is the F2 fix
+under test: un-ticking is progress, and the multiset comparison exempts it without a special
+case. N3 proves the D2b boundary does what the owner decided — a commit whose parent carries a
+pack without the function is skipped, which is what makes an adopted project's update day
+silent.
+
+### Two corrections of fact
+
+- **Plan D1 is wrong about novelty.** It says this is "the first pack member with per-commit
+  granularity". `Invoke-PhaseSizeWarningCheck` already walks `git rev-list "$Base..HEAD"`. The
+  *decision* D1 records — grade commits, not the cumulative diff — stands unchanged and is
+  right for the stated reason; only the claim to be first is false. Recorded here rather than
+  amended into the plan, because a decision's rationale is not changed by it.
+- **T012 anticipated a shared helper in `scripts/scope-lib.ps1`.** None was needed: the commit
+  walk is three lines of `git` plumbing already patterned in the same file, and extracting it
+  would have coupled two checks for no gain. Phase 2's declared Territory included
+  `scope-lib.ps1`; it was not touched.
+
+### A known limit of the S4 message
+
+The fixture table expected S4 to "name both" names. The check names the recorded approver and
+states that the message does not name them — it cannot name the *other* name, because it has
+no way to know which word in a commit message was meant as a person. Recorded as a limit of
+the check rather than a defect of it; the failure is still unambiguous to the person reading it.
