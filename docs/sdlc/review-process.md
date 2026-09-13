@@ -118,6 +118,8 @@ change MUST NOT be merged until a human reviewer approves it (constitution IX).
 
 <!-- digest: Human review is required before merge — a change is never merged until a human reviewer approves (constitution IX). -->
 
+<!-- digest: The human reviewer judges whether an amendment's approver really agreed — no machine can check that. -->
+
 Human reviewer checks (record in `specs/NNN-name/human-pr-review.md`, written from
 `specs/_templates/human-pr-review-template.md`):
 
@@ -129,6 +131,11 @@ Human reviewer checks (record in `specs/NNN-name/human-pr-review.md`, written fr
 - Code diff
 - Gate result
 - No unrelated changes
+- Every amendment in the feature diff carries its record — each change to an approved
+  `spec.md`, `plan.md`, `tasks.md` or `contracts/` file names an approver who is not the
+  implementing agent (constitution I). The machine grades that a record exists and agrees
+  with its commit; **whether the named person actually agreed is this reviewer's to judge**,
+  and it is the half no check can reach.
 
 ## Merge
 

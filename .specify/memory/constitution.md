@@ -1,7 +1,33 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.5.0 → 0.6.0 (kit template — not yet ratified by a project)
+Version change: 0.6.0 → 0.7.0 (kit template — not yet ratified by a project)
+Bump rationale: MINOR — Amendment authority clause added to Principle I (feature 014,
+  amendment-authority; roadmap GAP-019). Once a feature's spec.md or plan.md has been
+  approved, any later change to that feature's spec.md, plan.md, tasks.md or contracts/
+  MUST record who approved it: the amended section carries an
+  **Amendment approved by**: <name>, <YYYY-MM-DD> line and the amendment commit names the
+  same approver, and an implementing agent MUST NOT approve its own amendment. One
+  exemption, stated in the rule rather than left to the implementation: a tasks.md change
+  that alters nothing but task completion state is progress, not amendment. The clause
+  states plainly what the machine verifies (a record exists, is well-formed, and agrees
+  with its commit) and what it does not (that the named person agreed) — the record has
+  the strength of the Reviewer Provenance block, not of an authentication. Nothing is
+  redefined and no principle is removed: I's workflow, its Micro arm and every other
+  principle are unchanged, and a branch that amends nothing after approval is unaffected.
+  The rule is adopted from the wording an adopting project ratified in the field
+  (FitForge constitution 1.1.0, Principle I) rather than re-invented, so that flow-down
+  reconciles instead of colliding. The machine half —
+  scripts/enforcement-pack.ps1 (Invoke-AmendmentAuthorityCheck, walking the branch's own
+  commits) — lands in this same feature's next phase on the same branch, which is why
+  this clause ships first: the kit must not enforce a rule it has not ratified.
+  Human adoption of this amendment: the owner's spec/plan approval (2026-09-13) plus the
+  feature's gate-6 human review at merge. Mirrors synced in the same change:
+  CLAUDE.md (strict rule), definition-of-done.md (gates 5 and 6),
+  review-process.md (human reviewer checks); adoption/updating.md and
+  adoption/greenfield.md follow in the same feature's phase 4.
+
+Prior version history (0.5.0 → 0.6.0):
 Bump rationale: MINOR — Micro delivery lane added (feature 009, micro-lane; roadmap
   GAP-013), amending Principles I and X. Principle I gains the Micro arm: for a feature
   declared Micro, an approved single-page mini-spec (spec.md authored from
@@ -167,6 +193,42 @@ unchanged. Absent a Micro declaration, the full workflow above applies.
 change to an approved requirement. The Micro arm keeps all of that — intent is still written
 and approved before implementation — while dropping only the planning ceremony that adds
 nothing to a change small enough to fit the lane's machine-policed bounds.
+
+**Amendment authority**: once a feature's `spec.md` or `plan.md` has been approved, any
+later change to that feature's `spec.md`, `plan.md`, `tasks.md` or `contracts/` — a new
+package, a changed value, an added phase, a widened Territory, a reinterpreted contract
+clause — MUST record who approved it. The amended section carries an
+`**Amendment approved by**: <name>, <YYYY-MM-DD>` line, and the amendment commit names the
+same approver. **An implementing agent MUST NOT approve its own amendment.** Amending
+before implementing satisfies the sequence; it does not satisfy this rule.
+
+**Progress is not amendment**: a change to `tasks.md` that alters nothing but task
+completion state — a checkbox moving from unchecked to checked — records progress against
+work already approved and requires no approver. Every other change to an approved document
+is an amendment, including a task that is re-worded, re-scoped or re-opened. This exemption
+is part of the rule rather than a detail of whatever grades it: without it the rule would
+demand an approval for finishing a task, and a rule that is absurd in its commonest case is
+one people route around.
+
+**What is verified, and what is not**: `scripts/enforcement-pack.ps1` grades that a record
+exists, is well-formed, and names the same approver as the commit carrying it. It cannot
+verify that the named person agreed, and on a solo project the approver will be the same
+human who drove the session. The record is a written claim a reviewer can falsify — the
+strength of the Reviewer Provenance block, which `docs/sdlc/critical-delivery.md` describes
+the same way about its team arm — and the rule's teeth are that a *silent* amendment
+becomes impossible, not that consent is proven.
+
+**Rationale**: every machine check in this kit grades something other than authority —
+paths against a declared Territory, path resolution, levels, lanes, tokens, dates — so an
+agent that widens its own Territory passes the scope check by construction, because the
+check reads the Territory that same agent just wrote. Observed in the field: after one
+owner approval, five rule changes (a new package, a changed contract value, two widened
+Territory blocks, an added phase) were written and consumed by the same implementing
+session within minutes, one pair twenty-nine seconds apart, with every machine check green
+throughout. Each of those amendments happened to be correct, which is precisely why the
+mechanism would have survived one that was not. Getting the order right — amend, then
+implement — is a check on retroactivity, not a check on consent, and the two had been
+quietly conflated.
 
 ### II. Source of Truth Hierarchy
 
@@ -349,4 +411,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.6.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.7.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)

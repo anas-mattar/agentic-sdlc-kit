@@ -122,7 +122,14 @@ Gates apply at two different points, not uniformly at every phase:
    attestation remains the owner's to audit — but it is now a falsifiable written
    statement, not an unstated assumption.
 
+   The review reads the phase diff **including any amendment to the feature's own approved
+   documents**: a phase that rewrote its plan or its tasks changed the standard it is being
+   graded against, and a review that does not say so is grading the agent's homework against
+   the agent's marking scheme (constitution I, Amendment authority).
+
    <!-- digest: Gate 5: AI review by a fresh-context agent or second model with the Reviewer Provenance block — never self-graded. -->
+
+   <!-- digest: Gate 5 reads a phase's amendments to its own plan or tasks — they change the standard it is graded by. -->
 
 6. **Human review approved (once per feature, at merge)** — after the feature's final phase
    passes gates 1–5, a human reviewer verified business requirements, domain correctness,
@@ -130,7 +137,9 @@ Gates apply at two different points, not uniformly at every phase:
    **full feature diff**, and approved the change. **Human review is required before merge**
    (constitution IX). The review is recorded at `specs/NNN-name/human-pr-review.md`, written
    from `specs/_templates/human-pr-review-template.md` — the template is where the shape
-   lives, never where a review is filed.
+   lives, never where a review is filed. The full feature diff includes every amendment made
+   to the feature's approved documents after approval; each one names an approver, and this
+   reviewer is who judges whether that approval was real (constitution I).
 
    <!-- digest: Gate 6: a human reviews the full feature diff and approves before merge — once per feature. -->
 

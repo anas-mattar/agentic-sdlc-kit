@@ -89,6 +89,11 @@ links to prevail).
 - Do not refactor unrelated files or change unrelated features.
 - Do not add packages unless approved in `plan.md`.
 - Do not change architecture unless approved in `plan.md`.
+- Amending an approved `spec.md`, `plan.md`, `tasks.md` or `contracts/` file records who
+  approved it — an `**Amendment approved by**: <name>, <YYYY-MM-DD>` line on the amended
+  section, the same name in the amending commit — and **you never approve your own
+  amendment** (constitution I). Ticking a task off in `tasks.md` is progress, not an
+  amendment; every other change to an approved document is one.
 - Do not claim success until the user runs the gate and confirms the exit code — or, on a
   Lite/Micro/Standard feature whose approved plan (Micro: mini-spec) declares
   `**Gate Certification**: ci-held`,

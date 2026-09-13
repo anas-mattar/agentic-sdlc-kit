@@ -62,32 +62,32 @@ it; `ritual-checks.ps1` is green; the digests match their markers.
 - `docs/sdlc/definition-of-done.md`
 - `docs/digests/`
 
-- [ ] T001 Add **Amendment authority** to constitution Principle I, adopting FitForge 1.1.0's
+- [x] T001 Add **Amendment authority** to constitution Principle I, adopting FitForge 1.1.0's
       wording (D9): scope (`spec.md`, `plan.md`, `tasks.md`, `contracts/`), the record shape
       `**Amendment approved by**: <name>, <YYYY-MM-DD>`, the same approver named in the commit,
       and "an implementing agent MUST NOT approve its own amendment". Keep the sentence
       "Amending before implementing satisfies the sequence; it does not satisfy this rule" —
       it is the finding F3 lesson in one line
-- [ ] T002 Add the checkbox exemption to the clause (D3): completion state is progress, not
+- [x] T002 Add the checkbox exemption to the clause (D3): completion state is progress, not
       amendment. It belongs in the law, not only in the script — a rule whose survivability
       lives in an implementation detail is one nobody can reason about
-- [ ] T003 Add the honesty paragraph (D10): the record is a written claim a reviewer can
+- [x] T003 Add the honesty paragraph (D10): the record is a written claim a reviewer can
       falsify, not an authentication; in a solo project the approver is the same human who ran
       the session. State it the way `docs/sdlc/critical-delivery.md` states it of the team arm
-- [ ] T004 Record where the kit's wording differs from FitForge 1.1.0 and why, in this file
+- [x] T004 Record where the kit's wording differs from FitForge 1.1.0 and why, in this file
       under a "Phase 1 — wording reconciliation" section, so the flow-down reconciles rather
       than collides (D9)
-- [ ] T005 Update the SYNC IMPACT REPORT header and bump the version to **0.7.0** (MINOR — a
+- [x] T005 Update the SYNC IMPACT REPORT header and bump the version to **0.7.0** (MINOR — a
       new rule inside an existing principle). Confirm `scripts/enforcement-pack.ps1` is already
       in the sync list (it is, since the GAP-002 fix) and that no other sync-listed file's
       reading changed
-- [ ] T006 `CLAUDE.md` Strict Rules: one line — an amendment to an approved feature document
+- [x] T006 `CLAUDE.md` Strict Rules: one line — an amendment to an approved feature document
       records its approver. Point at the constitution; do not restate the clause
-- [ ] T007 `docs/sdlc/review-process.md`: the human reviewer's checks gain "every amendment in
+- [x] T007 `docs/sdlc/review-process.md`: the human reviewer's checks gain "every amendment in
       the feature diff carries its record" (FR-012)
-- [ ] T008 `docs/sdlc/definition-of-done.md`: gates 5 and 6 read the amendment record as part
+- [x] T008 `docs/sdlc/definition-of-done.md`: gates 5 and 6 read the amendment record as part
       of the full feature diff (FR-012)
-- [ ] T009 Add digest markers for the new rule where the pack conventions call for one, run
+- [x] T009 Add digest markers for the new rule where the pack conventions call for one, run
       `pwsh -File scripts/build-digests.ps1`, and confirm `ritual-checks.ps1` is green
 
 ---
@@ -197,3 +197,53 @@ passes silently (FR-011, spec US4 scenario 2).
       (SC-005)
 - [ ] T030 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
       ci-held evidence triplet for the final phase
+
+---
+
+## Phase 1 — wording reconciliation (T004)
+
+Where the kit's clause differs from the FitForge 1.1.0 wording it adopts, and why. Recorded
+so the flow-down reconciles instead of colliding (D9).
+
+| Kit 0.7.0 | FitForge 1.1.0 | Why they differ |
+|---|---|---|
+| Adds **Progress is not amendment** | absent | FitForge wrote the rule against its 001 review, where every failing change was content. The kit's clause has to survive `tasks.md` being touched on nearly every phase commit, so the exemption is stated in the law rather than left to whatever grades it |
+| **What is verified, and what is not** | **Enforcement, honestly stated** | FitForge's paragraph says the check cannot live in that project because `scripts/*.ps1` is verbatim. The kit can host it, so what survives is honesty about what the check can *see*, not about where it lives. FitForge's paragraph stops being true at flow-down and is edited there, by its owner, under its own ritual (T029) |
+| Rationale kept near-verbatim, including "quietly conflated" | same | it is the finding in one sentence; rewriting it would lose the provenance |
+
+No other difference. Scope, record shape, the same-approver-in-the-commit requirement and
+the self-approval prohibition are FitForge's words.
+
+### Finding — evidence recording sits outside both categories
+
+Discovered while executing this phase, before the check exists, and it matters for phase 2's
+design.
+
+The clause exempts exactly one thing: task completion state. But this kit's convention is to
+record a phase's **results inside `tasks.md`** — 013 carries "Phase 1 — scenario results",
+"Phase 2 — doctor results", "Phase 3 — the sweep"; this very section is another. Under the
+clause as ratified, appending such a section is an amendment, and the rule would demand an
+approver for writing down what happened.
+
+Three candidate resolutions, none free:
+
+- **(a) An edit an approved task instructs is execution, not amendment.** T004 says "record
+  … in this file", so writing this section performs the approved plan rather than changing
+  it. This is the reading phase 1 acted under. It is honest but not directly machine-checkable
+  — the check would have to know which task asked for the edit.
+- **(b) Exempt additions that add no task line and delete or modify nothing.** Rejected here
+  and worth recording as rejected: a `**Territory**` bullet is a non-task line, so this would
+  exempt a widened Territory — one of the five amendments SC-002 requires the check to catch.
+- **(c) Move phase evidence out of `tasks.md`** into a per-feature evidence document, leaving
+  `tasks.md` as agreed work alone. Cleanest for a machine; the largest change to kit
+  convention, and it would touch every template and several shipped features.
+
+**Decision: deferred to phase 3 (D3a), with replay data rather than taste.** Phase 1 changed
+no ratified wording on its own authority — the clause stands as approved, and this finding is
+recorded rather than acted on. If phase 3 confirms the class, the fix is an amendment to
+`plan.md` and possibly to the clause, carrying its own approver line, which is exactly the
+procedure this feature exists to install.
+
+## Phase 1 — gate (ci-held)
+
+Evidence triplet to be recorded here once CI has run on the phase commit.
