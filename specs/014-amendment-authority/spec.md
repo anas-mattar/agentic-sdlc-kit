@@ -229,7 +229,12 @@ runs in that project's CI, and grades that project's feature documents.
 - **SC-002**: The five amendments recorded in FitForge 001's finding F3 — a new package, a
   changed contract value, two widened Territory blocks, an added phase — would each have
   failed the check as they were actually committed. Verified against the real commits, not
-  against reconstructions.
+  against reconstructions, with the enforcement boundary lifted for the replay (D2b bounds
+  *enforcement*, never *analysis*; the switch is `-IgnoreAmendmentBoundary` and no gate ever
+  passes it). Without that lift this criterion is unsatisfiable by construction, since those
+  commits predate the check.
+
+  **Amendment approved by**: anas.m, 2026-09-13.
 - **SC-003**: A full phase commit that ticks tasks off an approved `tasks.md` and changes no
   agreed text passes with no approver record, measured across this kit's own existing
   feature branches: **zero** retroactive failures attributable to progress marks.

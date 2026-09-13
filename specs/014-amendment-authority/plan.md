@@ -114,6 +114,22 @@ one phase, on one branch, and recorded here.
 
 **Amendment approved by**: anas.m, 2026-09-13.
 
+**D2c — The boundary bounds enforcement, not analysis** (added by amendment; owner decision
+on the phase 2 review). `-IgnoreAmendmentBoundary` lifts D2b so the check can be pointed at
+commits made before it existed. It exists for one purpose: SC-002's replay over real history,
+which D2b would otherwise make ungradeable — the FitForge 001 commits predate every version of
+this check, so with the boundary in force the replay grades nothing and the criterion proves
+nothing.
+
+The switch is **never** passed by a gate, by `scripts/ritual-checks.ps1`, or by any CI
+workflow, and the script's own parameter comment says so. Enforcement stays exactly where the
+owner put it; what changes is that the check can be *studied* against history it does not
+govern. A check that can only ever be tested against fixtures its author designed is a check
+that passes 18 of 18 while eight real shapes walk through it — which is what the phase 2 review
+demonstrated, and the reason this switch is worth its risk.
+
+**Amendment approved by**: anas.m, 2026-09-13.
+
 **D4 — One record per commit, not per file.** A single approval covers everything the commit
 amends (spec, Edge Cases). The commit's diff across the feature's documents must add at least
 one conforming record line. Requiring the line in each amended file would make a plan-plus-tasks

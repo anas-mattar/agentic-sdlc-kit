@@ -216,6 +216,46 @@ enforcement-pack message is byte-identical to a baseline captured before the edi
 
 ---
 
+### Phase 2 remediation (added by amendment 2026-09-13 — third review, H1–H6)
+
+Source: `specs/014-amendment-authority/ai-code-review-phase-2.md`. The review demonstrated
+**seven false-PASS shapes** with runnable fixtures, against a suite that still passed 18 of 18
+— the check and its tests had the same author, so it only ever proved the cases already
+imagined. Verification for this round is `scratchpad/attack-verify.ps1`, built from the
+reviewer's shapes rather than mine.
+
+**Amendment approved by**: anas.m, 2026-09-13.
+
+- [x] T047 **H1** — a record inside an HTML comment was accepted. Records are now read from
+      the commit's added lines **intersected with the visible text of the resulting file**,
+      the same visible-text rule `Get-VisiblePlanLines` has enforced since 008 phase 2
+- [x] T048 **H2** — the checkbox exemption compared *sorted* multisets, so any moved line read
+      as progress: a `**Territory**` bullet moved from phase 2 into phase 1 silently widened
+      scope and passed. Now paired in file order, and a pair whose raw text is identical is a
+      move, not a state change — the exemption requires the marker itself to differ
+- [x] T049 **H3** — rename rows were skipped regardless of similarity, so rename-plus-rewrite
+      escaped. Only `R100` (content intact) is creation now; a partial rename is an amendment
+      wearing a new path
+- [x] T050 **H4** — the record was searched across the whole spec directory, so a record in
+      `notes.md` approved a silent change to `plan.md`. It is now searched only in the files
+      the commit actually amended, which is what FR-002 and the failure message both say
+- [x] T051 **H5** — a pre-existing record line merely moved counted as a new one. A record now
+      counts only if it is absent from the parent's visible text of that same file
+- [x] T052 **H6** (the only false FAIL) — `[datetime]::Parse` of `%aI` converted to the
+      runner's timezone, so a conforming record was green locally and red in CI whenever CI
+      trailed the author's offset. Now `%ad --date=short`: the author's own calendar day,
+      compared as text, identical on every machine
+- [x] T053 **D5 hardening** — the approver's name is matched as a whole word against the
+      message **body**, trailers excluded: `Al` no longer matches "Also", and an approver
+      named Claude is no longer auto-satisfied by the mandated `Co-Authored-By` trailer
+- [x] T054 **SC-006, measured at last** — the review measured the check at +1.0–1.2 s (+110 %
+      on the pack) because a 39 KB parent blob was re-read per commit. The boundary is
+      monotonic along a linear history, so it is now tested once against `HEAD^` and
+      short-circuits when absent. Pack runtime **3743 ms → 2719 ms** on this repository,
+      measured both ways — the check is now cheaper than the version without it was
+- [x] T055 Re-run both suites: the original 18 (no regression) and `attack-verify.ps1`
+      (A1–A6 must fail, A7 must pass on any timezone). Record both in `notes.md`
+
 ## Phase 3: Replay over real history
 
 **Goal**: the check is proven against commits nobody wrote for it, and what that finds is fixed
