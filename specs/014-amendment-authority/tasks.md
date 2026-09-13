@@ -301,21 +301,21 @@ reviewer judges real, with the judgement written down per flag.
 - `scripts/enforcement-pack.ps1`
 - `specs/014-amendment-authority/tasks.md`
 
-- [ ] T020 Replay the detector over this repository's merged feature branches (006 onward) and
+- [x] T020 Replay the detector over this repository's merged feature branches (006 onward) and
       table every flag: commit, file, class of change, and a verdict — real amendment, or
       spurious
-- [ ] T021 Replay over FitForge 001's commits and confirm the five F3 amendments each fail
+- [x] T021 Replay over FitForge 001's commits and confirm the five F3 amendments each fail
       (SC-002). Read-only: the kit never writes into the adopted project's repository
-- [ ] T022 Decide the exemption set from T020 (D3a): a spurious **class** earns an exemption
+- [x] T022 Decide the exemption set from T020 (D3a): a spurious **class** earns an exemption
       recorded with its reason — and, since this plan is approved, an amendment to `plan.md`
       carrying its own approver line. A spurious one-off earns a recorded judgement, not an
       exemption
-- [ ] T023 Tune the failure wording against the real flags — the messages T017 wrote were
+- [x] T023 Tune the failure wording against the real flags — the messages T017 wrote were
       judged against fixtures the author designed, which is the weakest possible audience
-- [ ] T024 Measure the check's contribution to `ritual-checks` runtime on the longest branch
+- [x] T024 Measure the check's contribution to `ritual-checks` runtime on the longest branch
       available and record it (SC-006). If it is material, batch the plumbing calls; do not
       abandon per-commit granularity (plan, Complexity Tracking)
-- [ ] T025 Re-run S1–S14 after any change from T022–T024 and record the results
+- [x] T025 Re-run S1–S14 after any change from T022–T024 and record the results
 
 ---
 

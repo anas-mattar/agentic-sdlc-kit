@@ -130,6 +130,25 @@ demonstrated, and the reason this switch is worth its risk.
 
 **Amendment approved by**: anas.m, 2026-09-13.
 
+**D3c — A task's text is fixed at approval** (added by amendment; owner decision on the
+phase 3 replay, T022). `tasks.md` holds the agreed work and its completion state. What was
+actually done — evidence, results, corrections, the narrative of a phase — goes to
+`notes.md`, exactly as phase evidence already did under D3b.
+
+This overturns thirteen features of the kit's own practice, so the reason matters. The replay
+found 51 flags on `tasks.md` across merged history, and sampling showed they were not ticks:
+commits added 22, 37, 23 lines while removing 7, 5, 7 — they **rewrote task descriptions while
+ticking them**, expanding each line to say what had been done. That changes what the approved
+document records the work as being, which is the benign form of the failure F3 recorded in an
+adopted project. D3a's exemption route was considered and rejected on exactly that ground: an
+exemption for "append to a task while ticking it" is an exemption for rewriting the standard
+you are judged against.
+
+No exemption is therefore added. The rule stays sharp and the habit changes; phase 4 documents
+the convention where a future feature will read it.
+
+**Amendment approved by**: anas.m, 2026-09-14.
+
 **D4 — One record per commit, not per file.** A single approval covers everything the commit
 amends (spec, Edge Cases). The commit's diff across the feature's documents must add at least
 one conforming record line. Requiring the line in each amended file would make a plan-plus-tasks
