@@ -333,3 +333,20 @@ That is J2's own failure shape, reproduced in the thing built to detect it: a ve
 grades nothing is output-identical to a verification that passes. It is recorded here because
 it argues for something this feature does not yet have — a check that reports *how many*
 commits it graded, so that zero is visible instead of silent.
+
+## Phase 2 (round 2) — gate, and the fifth review that was not held
+
+Certified by the owner 2026-09-14: `pwsh -File scripts/ritual-checks.ps1` → RESULT OK on
+`f9276fd`, with `scope-check: PASS phase 2 commit f9276fd (2 file(s))` and CI green
+(https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34770302683).
+
+**No fifth fresh-context review was held.** Four rounds ran: 6, 3, 6, 6 blocking. The character
+of the fourth differs from the third — it found no new attack on the check's *purpose*, only
+regressions in how the third round's fixes were implemented — so the risk it was catching has
+changed shape. Phase 3 replays the detector over real history under `-IgnoreAmendmentBoundary`,
+which tests the same logic against commits nobody wrote for it, and is the strongest check
+available short of another reviewer.
+
+**The condition attached to that decision**: any logic error the replay surfaces is a **phase 2
+finding**, remediated as such, not absorbed into phase 3's conclusions. Phase 3 must not be
+allowed to quietly become the place where phase 2's defects are discovered and not recorded.
