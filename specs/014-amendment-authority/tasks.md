@@ -54,6 +54,12 @@ still leaves a ratified rule enforced by review, which is exactly where FitForge
 what a conforming amendment record looks like and what the kit does and does not verify about
 it; `ritual-checks.ps1` is green; the digests match their markers.
 
+<!-- Widened by amendment 2026-09-13 for the phase 1 remediation — the last three entries.
+  The marker line below must stay exactly `**Territory**:` with its entries immediately after:
+  scripts/scope-lib.ps1 matches the marker literally and stops collecting at the first line
+  that is not a backtick-wrapped entry, so an annotation on the marker line or a comment
+  between marker and entries silently empties the declaration. -->
+
 **Territory**:
 
 - `.specify/memory/constitution.md`
@@ -61,6 +67,11 @@ it; `ritual-checks.ps1` is green; the digests match their markers.
 - `docs/sdlc/review-process.md`
 - `docs/sdlc/definition-of-done.md`
 - `docs/digests/`
+- `.specify/templates/tasks-template.md`
+- `specs/_templates/ai-code-review-template.md`
+- `specs/_templates/human-pr-review-template.md`
+
+**Amendment approved by**: anas.m, 2026-09-13.
 
 - [x] T001 Add **Amendment authority** to constitution Principle I, adopting FitForge 1.1.0's
       wording (D9): scope (`spec.md`, `plan.md`, `tasks.md`, `contracts/`), the record shape
@@ -89,6 +100,50 @@ it; `ritual-checks.ps1` is green; the digests match their markers.
       of the full feature diff (FR-012)
 - [x] T009 Add digest markers for the new rule where the pack conventions call for one, run
       `pwsh -File scripts/build-digests.ps1`, and confirm `ritual-checks.ps1` is green
+
+### Phase 1 remediation (added by amendment 2026-09-13 — six blocking findings)
+
+Source: `specs/014-amendment-authority/ai-code-review-phase-1.md`. Lands as a second
+`phase 1` commit; the Territory above was widened first, in its own commit.
+
+**Amendment approved by**: anas.m, 2026-09-13.
+
+- [ ] T031 **F1** — the clause asserts in the present tense that `scripts/enforcement-pack.ps1`
+      grades the record, but no such check exists until phase 2. Remove the claim from the
+      normative sentence: state what *can* and *cannot* be verified about a record, and leave
+      where the machine half lands to the SYNC IMPACT REPORT, which already says it. Same fix
+      in the `docs/sdlc/review-process.md` mirror. A constitution that describes a check it
+      does not yet have is the state this whole feature exists to end
+- [ ] T032 **F2** — un-ticking a checkbox is currently both exempt (completion state) and an
+      amendment (a task "re-opened"). State that completion state moving in **either**
+      direction is progress, and that "re-opened" means the task's **text** changed — which is
+      also what D3's multiset comparison actually implements
+- [ ] T033 **F3** — FR-003 is undelivered. The honesty paragraph must say that **nothing**
+      verifies the self-approval prohibition (no machine can identify the implementing agent),
+      and that "approved" is proxied by a document's first appearance (D2), not observed
+- [ ] T034 **F4** — restore the provenance the rationale dropped: the date, the "feature 001
+      governance review, finding F3" attribution, and the named checks. Then correct the
+      reconciliation row, which claims the rationale was kept near-verbatim *to preserve
+      provenance* while the committed text had rewritten it away
+- [ ] T035 **F5** — create `specs/014-amendment-authority/notes.md` and move the "wording
+      reconciliation" and "gate" sections into it (D3b). `tasks.md` keeps agreed work and
+      checkboxes alone
+- [ ] T036 **F6** — sweep the three documents that still say a Territory amendment needs only
+      "owner approval": `.specify/templates/tasks-template.md` (**on the constitution's sync
+      list** — T005's claim that no other sync-listed file changed reading was wrong),
+      `docs/sdlc/definition-of-done.md`, `docs/sdlc/review-process.md`. Add the amendment item
+      to both review templates in `specs/_templates/`
+- [ ] T037 **F7** — `CLAUDE.md` restates the clause in five lines against T006's own "point, do
+      not restate". Cut it to a pointer; restating law in the always-loaded file is the drift
+      GAP-021 is a row about
+- [ ] T038 **F8** — "a silent amendment becomes impossible" overstates. It becomes visible in
+      the diff and gradeable by a machine; a determined implementer can still write a name
+- [ ] T039 **F9** — the gate-record commit `f49ad61` carries a `phase 1` token in its subject,
+      so `scope-check` now grades it instead of `ced1302`. Record the rule that non-phase
+      commits must not carry a phase token; the remediation commit re-establishes the real one
+- [ ] T040 Rebuild digests, run `pwsh -File scripts/ritual-checks.ps1`, and request a second
+      fresh-context review of the remediation — the first reviewer graded a diff this one
+      replaces
 
 ---
 

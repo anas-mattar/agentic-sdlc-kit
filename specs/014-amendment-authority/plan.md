@@ -36,6 +36,17 @@ the verbatim update channel, every adopted project with no per-project wiring (F
 **Constraints**: zero new dependencies; read-only; `git` plumbing only, no network; the verdict
 for a given commit must never change with the calendar (D7).
 
+**Amendment — phase 1 remediation added 2026-09-13.** The fresh-context review of phase 1
+(`specs/014-amendment-authority/ai-code-review-phase-1.md`) returned REQUEST CHANGES with six
+blocking findings. They are remediated as a second `phase 1` commit rather than a new phase
+number: the work corrects phase 1's own output and must not be revertible separately from it.
+Three findings reach files outside phase 1's declared Territory, so this amendment widens that
+Territory and lands **before** the remediation commit, per the mechanism in
+`.specify/templates/tasks-template.md` — a stray file can never be legalised by the commit that
+introduces it.
+
+**Amendment approved by**: anas.m, 2026-09-13.
+
 **Phase-sizing**: four phases, each independently revertible. Phase 1 states the law and leaves
 the machine untouched — reverting anything later still leaves a ratified rule enforced by
 review, which is where FitForge already stands. Phase 2 adds the check, provable on fixtures
@@ -71,6 +82,18 @@ repository's merged history. If it flags a *class* of routine change that no rev
 an amendment, that class is added to the exemption with its reason recorded — as an amendment to
 this plan, carrying its own approver line. A one-off flag is not a class and does not earn an
 exemption; it earns a judgement recorded in `tasks.md`.
+
+**D3b — Evidence lives outside `tasks.md`** (added by amendment; owner decision on the
+phase 1 review, finding F5). Phase results, scenario tables and gate records are recorded in
+`specs/NNN-name/notes.md`, not in `tasks.md`. `tasks.md` then holds agreed work and its
+completion state alone, which makes the clause true as written: every change to it is either a
+checkbox flip or an amendment. This supersedes D3a's deferral **for this question only** — D3a
+still governs any other exemption class the phase 3 replay turns up. The kit convention this
+changes is documented in phase 4; `notes.md` is already an allowed optional file
+(`docs/sdlc/branch-strategy.md`, Spec Directory Contents), so nothing about the structure law
+moves.
+
+**Amendment approved by**: anas.m, 2026-09-13.
 
 **D4 — One record per commit, not per file.** A single approval covers everything the commit
 amends (spec, Edge Cases). The commit's diff across the feature's documents must add at least
@@ -162,6 +185,10 @@ CLAUDE.md                           # MOD  phase 1 — Strict Rules: an amendmen
 docs/sdlc/review-process.md         # MOD  phase 1 — the reviewer checks the record (FR-012)
 docs/sdlc/definition-of-done.md     # MOD  phase 1 — gate 5/6 read the amendment record (FR-012)
 docs/digests/*.md                   # GEN  phase 1 — regenerated if a marker moved
+.specify/templates/tasks-template.md          # MOD  phase 1R — Territory amendment wording (F6; sync-listed)
+specs/_templates/ai-code-review-template.md   # MOD  phase 1R — gate 5 reads amendments (F6)
+specs/_templates/human-pr-review-template.md  # MOD  phase 1R — gate 6 judges the approval (F6)
+specs/014-amendment-authority/notes.md        # NEW  phase 1R — evidence leaves tasks.md (F5, D3b)
 scripts/enforcement-pack.ps1        # MOD  phase 2 — Invoke-AmendmentAuthorityCheck (D1–D8, FR-004)
 scripts/scope-lib.ps1               # MOD  phase 2 — base resolution reused, only if a shared helper is needed
 scripts/enforcement-pack.ps1        # MOD  phase 3 — exemption set and message wording from replay (D3a, FR-008)
