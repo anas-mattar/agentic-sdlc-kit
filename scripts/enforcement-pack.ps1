@@ -651,7 +651,7 @@ function Test-AmendmentCheckPresent {
     if (-not $Ref) { return $false }
     $blob = git show "${Ref}:scripts/enforcement-pack.ps1" 2>$null
     if (-not $blob) { return $false }
-    return [bool]($blob | Where-Object { $_ -match 'function Invoke-AmendmentAuthorityCheck' })
+    return (($blob -join "`n") -match 'function Invoke-AmendmentAuthorityCheck')
 }
 
 # Visible lines of a text blob — HTML comments stripped, same rule as Get-VisiblePlanLines
@@ -659,7 +659,11 @@ function Test-AmendmentCheckPresent {
 function Get-VisibleFromText {
     param([string[]]$Lines)
     $raw = ($Lines -join "`n")
-    return ([regex]::Replace($raw, '(?s)<!--.*?-->', '')) -split "`r?`n"
+    $stripped = [regex]::Replace($raw, '(?s)<!--.*?-->', '')
+    # An UNTERMINATED '<!--' hides everything after it in every renderer, so it must hide it
+    # here too (J5). The pack's CriticalEvidence check already warns about this exact trap.
+    $stripped = [regex]::Replace($stripped, '(?s)<!--.*$', '')
+    return $stripped -split "`r?`n"
 }
 
 # Lines a commit ADDED to the given paths that are also VISIBLE in the resulting file, and
@@ -675,16 +679,31 @@ function Get-AddedRecordLines {
             Where-Object { $_ -match '^\+' -and $_ -notmatch '^\+\+\+' } |
             ForEach-Object { $_.Substring(1) })
         if ($added.Count -eq 0) { continue }
-        $visible = @(Get-VisibleFromText -Lines @(git show "${Commit}:${path}" 2>$null) |
-            ForEach-Object { $_.Trim() } | Where-Object { $_ })
-        $before = @(Get-VisibleFromText -Lines @(git show "${Parent}:${path}" 2>$null) |
-            ForEach-Object { $_.Trim() } | Where-Object { $_ })
-        foreach ($line in $added) {
-            $t = $line.Trim()
-            if (-not $t) { continue }
-            if ($visible -notcontains $t) { continue }   # H1: added inside a comment
-            if ($before -contains $t) { continue }       # H5: pre-existing, merely moved
-            $result += $t
+        # Only lines that LOOK like a record can be one. Filtering first keeps the expensive
+        # visibility and occurrence work proportional to the number of candidate records
+        # (normally one) instead of to the size of the commit — a 600-line commit was costing
+        # seconds per file before this.
+        $candidates = @($added | ForEach-Object { $_.Trim() } |
+            Where-Object { $_ -match $script:AmendmentRecordPattern } | Sort-Object -Unique)
+        if ($candidates.Count -eq 0) { continue }
+        $visCount = @{}
+        foreach ($l in (Get-VisibleFromText -Lines @(git show "${Commit}:${path}" 2>$null))) {
+            $t = $l.Trim(); if ($t) { $visCount[$t] = 1 + [int]$visCount[$t] }
+        }
+        $beforeCount = @{}
+        foreach ($l in (Get-VisibleFromText -Lines @(git show "${Parent}:${path}" 2>$null))) {
+            $t = $l.Trim(); if ($t) { $beforeCount[$t] = 1 + [int]$beforeCount[$t] }
+        }
+        foreach ($line in $candidates) {
+            # H1: a line added inside a comment renders as nothing, so it is not a record.
+            if (-not $visCount.ContainsKey($line)) { continue }
+            # H5/J1: a record counts when the file gained one. Counting occurrences separates a
+            # RECYCLED record (moved within the file — count unchanged) from a legitimately
+            # REPEATED one (a second amendment, same approver, same day — count increased).
+            # The previous "absent from the parent" rule could not tell those apart and rejected
+            # the honest case.
+            if ([int]$visCount[$line] -le [int]$beforeCount[$line]) { continue }
+            $result += $line
         }
     }
     return $result
@@ -693,30 +712,24 @@ function Get-AddedRecordLines {
 # D3: a tasks.md change that alters nothing but checkbox state is progress, not amendment.
 # Completion state moves in EITHER direction (constitution I; review finding F2). The test is
 # the text: strip the marker from every added and removed line and compare the multisets.
+# D3: progress, not amendment. Compares the WHOLE FILE with every checkbox marker neutralised,
+# in order — not the diff hunks (H2, J6). A tick changes markers and nothing else, so the
+# neutralised files are identical. Anything that moves, adds, removes or rewords a line changes
+# the neutralised sequence and is an amendment. Reasoning about whole files rather than about
+# paired hunks removes a class of bug rather than another special case: a line moved between
+# phase blocks while being ticked defeated hunk pairing, and could not defeat this.
 function Test-CheckboxOnlyChange {
-    param([string]$Commit, [string]$Path)
-    $diff = git show -U0 --format='' $Commit -- $Path 2>$null
-    $removed = @(); $added = @()
-    foreach ($line in $diff) {
-        if ($line -match '^---' -or $line -match '^\+\+\+') { continue }
-        if ($line -match '^-') {
-            $raw = $line.Substring(1)
-            $removed += @{ Raw = $raw; Stripped = ($raw -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
-        } elseif ($line -match '^\+') {
-            $raw = $line.Substring(1)
-            $added += @{ Raw = $raw; Stripped = ($raw -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
-        }
+    param([string]$Commit, [string]$Parent, [string]$Path, [string]$ParentPath)
+    if (-not $ParentPath) { $ParentPath = $Path }
+    $neutral = { param($lines)
+        $out = [System.Collections.Generic.List[string]]::new()
+        foreach ($l in $lines) { $out.Add(($l -replace '^(\s*(?:[-*]|\d+\.)\s*)\[[ xX]\]', '${1}[]').TrimEnd()) }
+        return $out
     }
-    if ($removed.Count -eq 0 -and $added.Count -eq 0) { return $true }
-    if ($removed.Count -ne $added.Count) { return $false }
-    # Pairwise IN FILE ORDER, never sorted (H2). Every pair must be the same task text with a
-    # different marker: identical raw text means the line MOVED rather than changed state, and
-    # a move can relocate a Territory entry between phases — the "widened Territory" class
-    # SC-002 exists to catch. Sorting made a move indistinguishable from a tick.
-    for ($i = 0; $i -lt $removed.Count; $i++) {
-        if ($removed[$i].Stripped -ne $added[$i].Stripped) { return $false }
-        if ($removed[$i].Raw -eq $added[$i].Raw) { return $false }
-    }
+    $now  = & $neutral @(git show "${Commit}:${Path}" 2>$null)
+    $then = & $neutral @(git show "${Parent}:${ParentPath}" 2>$null)
+    if ($now.Count -ne $then.Count) { return $false }
+    for ($i = 0; $i -lt $now.Count; $i++) { if ($now[$i] -ne $then[$i]) { return $false } }
     return $true
 }
 
@@ -761,16 +774,15 @@ function Invoke-AmendmentAuthorityCheck {
     $commits = @((git rev-list --reverse "$Base..HEAD" 2>$null) | Where-Object { $_ })
     if ($commits.Count -eq 0) { return }
 
-    # D2b, and SC-006. The boundary is monotonic along a linear history: once the check exists
-    # in a commit's parent it exists in every later parent. So test the NEWEST commit's parent
-    # once — if the check is not there, nothing in range is graded and we stop without reading
-    # a 39 KB blob per commit. -IgnoreAmendmentBoundary lifts the boundary for ANALYSIS ONLY
-    # (phase 3's replay over real history, SC-002); no gate and no CI invocation passes it.
+    # D2b. The boundary is evaluated PER COMMIT against that commit's own parent. An earlier
+    # version short-circuited on HEAD^ alone to save blob reads (SC-006); that failed open,
+    # silently, on every pull_request run, because GitHub checks out a merge preview whose first
+    # parent is the base branch — so HEAD^ was `main`, which has no check, and the required CI
+    # graded nothing while printing exactly what a clean branch prints (J2). Correctness over
+    # the second: the sticky flag below still stops re-testing once the boundary is crossed.
+    # -IgnoreAmendmentBoundary lifts the boundary for ANALYSIS ONLY (SC-002's replay over real
+    # history); no gate, no ritual-checks and no CI workflow passes it.
     $graded = $IgnoreAmendmentBoundary.IsPresent
-    if (-not $graded) {
-        $headParent = (git rev-parse --verify --quiet "HEAD^" 2>$null)
-        if (-not (Test-AmendmentCheckPresent -Ref $headParent)) { return }
-    }
 
     foreach ($commit in $commits) {
         $lineage = @((git rev-list --parents -n 1 $commit 2>$null) -split '\s+' | Where-Object { $_ })
@@ -788,19 +800,31 @@ function Invoke-AmendmentAuthorityCheck {
             if ($parts.Count -lt 2) { continue }
             $status = $parts[0]
             $path = $parts[$parts.Count - 1]                          # renames: the NEW path
+            $oldPath = if ($status -match '^[RC]' -and $parts.Count -ge 3) { $parts[1] } else { $path }
             if ($path -notlike "$dir/*") { continue }
             $leaf = $path.Substring($dir.Length + 1)
             if ($leaf -notin @('spec.md', 'plan.md', 'tasks.md') -and $leaf -notlike 'contracts/*') { continue }
-            # D2: first appearance is creation. A rename is creation at the new path ONLY when
-            # the content came across intact — git reports similarity as R100. A rename that
-            # also rewrote the file (R087, say) is an amendment wearing a new path (H3).
-            if ($status -match '^A') { continue }
-            if ($status -match '^R(\d+)?') {
-                $sim = if ($matches[1]) { [int]$matches[1] } else { 100 }
-                if ($sim -ge 100) { continue }
+            if ($status -match '^A') { continue }                     # D2: first appearance
+            # A rename is creation at the new path when the CONTENT came across — decided by
+            # comparing the blobs, not by git's similarity percentage (J3). A renumbered branch
+            # whose spec.md also gained its mandated header edit is R080, not R100, and the
+            # percentage rule graded it as an unapproved amendment with no legal path to green.
+            if ($status -match '^[RC]') {
+                # FR-010 and the spec's Edge Cases name ONE rename that must never be graded:
+                # a branch renumbered by a lost claim race, where the whole specs/NNN-name
+                # directory moves and every document is added at a new path — header edits
+                # included, since claim-feature.ps1 mandates them. Detect exactly that: the
+                # feature-directory segment changed (J3).
+                $oldFeatureDir = if ($oldPath -match '^(specs/[^/]+)/') { $matches[1] } else { '' }
+                if ($oldFeatureDir -and $oldFeatureDir -ne $dir) { continue }
+                # A rename WITHIN the same feature directory is not renumbering. It is creation
+                # only if the content came across intact; otherwise it is an amendment wearing a
+                # new path (H3 — a contract renamed and reinterpreted in one commit).
+                $sameContent = (git rev-parse "${commit}:${path}" 2>$null) -eq (git rev-parse "$($lineage[1]):${oldPath}" 2>$null)
+                if ($sameContent) { continue }
             }
-            if ($status -match '^M' -and $leaf -eq 'tasks.md' -and
-                (Test-CheckboxOnlyChange -Commit $commit -Path $path)) { continue }   # D3
+            if ($leaf -eq 'tasks.md' -and
+                (Test-CheckboxOnlyChange -Commit $commit -Parent $lineage[1] -Path $path -ParentPath $oldPath)) { continue }
             $amended += $path
         }
         if ($amended.Count -eq 0) { continue }
@@ -819,11 +843,14 @@ function Invoke-AmendmentAuthorityCheck {
             $script:failures += "AmendmentAuthority: commit $short amends $files after approval with no conforming approver record.$why Add '$script:AmendmentRecordExample' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt; changing what a document says is not"
             continue
         }
-        # Whole-word match over the message BODY only: git trailers are excluded, because a
-        # mandated 'Co-Authored-By: Claude ...' trailer would otherwise auto-satisfy an
-        # approver named Claude, and an unanchored search let 'Al' match the word 'Also'.
-        $message = (@(git show -s --format=%B $commit 2>$null) |
-            Where-Object { $_ -notmatch '^[A-Za-z-]+:\s' -or $_ -match '^\s*$' }) -join "`n"
+        # Whole-word match over the message with git's OWN trailers removed — a mandated
+        # 'Co-Authored-By: Claude' trailer must not auto-satisfy an approver named Claude, and
+        # an unanchored search let 'Al' match the word 'Also'. Asking git which lines are
+        # trailers, instead of dropping every 'Word: ' line, keeps the SUBJECT ('docs: …',
+        # 'spec: …') and ordinary body lines ('Note: approved by bob') in the message (J4).
+        $full = @(git show -s --format=%B $commit 2>$null)
+        $trailers = @(git show -s --format='%(trailers:only)' $commit 2>$null | Where-Object { $_ })
+        $message = (@($full | Where-Object { $trailers -notcontains $_ })) -join "`n"
         if ($message -notmatch ('(?<![\w-])' + [regex]::Escape($record.Name) + '(?![\w-])')) {
             $script:failures += "AmendmentAuthority: commit $short records '$($record.Name)' as the approver of its change to $files, but its commit message does not name them — the message is fixed at commit time and is the half a later edit cannot fake (constitution I; plan D5)"
         }

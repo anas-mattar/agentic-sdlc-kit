@@ -273,3 +273,63 @@ only, and generalising from that single line to a claim about what is graded. Th
 of a stray token is a **mislabel** — a docs commit graded as a phase commit, which it then
 passes — not a lost verdict. Both reviews' G4/H-class notes on this point inherit the same
 overstatement.
+
+## Phase 2 remediation round 2 — J1–J6 (fourth review)
+
+The fourth fresh-context review confirmed the seven earlier shapes genuinely closed, using its
+own 17 fixtures, and then found six blocking findings — **four of them regressions introduced
+by my round-1 fixes**. That is the number worth remembering: fixing seven holes opened four
+new ones, all in the same function, all by adding a condition to it. The owner's direction was
+therefore to simplify rather than patch, and each fix below replaces a special case with a
+rule that is total.
+
+| | Was | Now |
+|---|---|---|
+| J1 | "absent from the parent" rejected an honest repeat record | occurrence counting — a record counts when the file gains one |
+| J2 | `HEAD^` short-circuit; failed open on every PR run | boundary evaluated per commit again |
+| J3 | `R100`-only; graded a renumbered branch as an amendment | renumbering = the feature directory moved (what FR-010 says) |
+| J4 | dropped every `Word: ` line, subjects included | git's own `%(trailers:only)` decides what a trailer is |
+| J5 | an unterminated `<!--` hid a record from readers, not from the check | it now hides everything after it, as renderers do |
+| J6 | hunk pairing; a moved-and-ticked line read as progress | whole neutralised file compared in order |
+
+J6 is the one that removes a class rather than a case. Reasoning about whole files instead of
+paired hunks makes "moved between phase blocks while ticked" inexpressible as progress, rather
+than merely detected.
+
+### Verification — 33 scenarios, three suites
+
+| Suite | What it covers | Result |
+|---|---|---|
+| S1–S14, N1–N3 | the original 18, fixed before any code existed | all unchanged |
+| A1–A7 | the third review's seven false-PASS shapes | all still closed |
+| J1–J7 | the fourth review's findings, incl. a PR merge preview | all correct |
+
+Every mechanism the A-series tests was **rewritten** in this round (J1 replaced H5's rule, J5
+replaced H1's, J6 replaced H2's, J3 replaced H3's, J4 replaced D5's), so re-running it was not
+a formality: the occurrence-counting rule could have reopened the recycled-record hole while
+fixing the repeat-record false FAIL. It did not.
+
+### What could not be measured, and why
+
+**SC-006 has no trustworthy number at this commit.** Removing the `HEAD^` short-circuit genuinely
+costs git invocations back — that is real and expected. But during this round a single
+`git rev-parse HEAD` on the development machine began taking **2.5–3.3 seconds**, where earlier
+in the same session a full `ritual-checks` run — hundreds of git calls — completed in 18 s. The
+pack makes roughly eighty git calls, which accounts for the 150 s readings taken afterwards.
+
+Those readings were first reported as a severe regression in the check. **That was wrong**, and
+the earlier figures (3743 ms → 2719 ms) are equally unreliable, having been taken before the
+degradation. Removing fixture repositories did not restore speed, so the cause is system-level
+and outside this feature. SC-006 is therefore **unmeasured**, deliberately, rather than
+carrying a number that has already had to be retracted once.
+
+### The verification that graded nothing, twice
+
+The J2 fixture — a pull-request merge preview — was wrong twice before it was right. The first
+version merged onto `main`, where the check correctly does not run at all; the second left
+`merge-base..HEAD` empty, so there were no commits to walk. **Both printed a confident PASS.**
+
+That is J2's own failure shape, reproduced in the thing built to detect it: a verification that
+grades nothing is output-identical to a verification that passes. It is recorded here because
+it argues for something this feature does not yet have — a check that reports *how many*
+commits it graded, so that zero is visible instead of silent.
