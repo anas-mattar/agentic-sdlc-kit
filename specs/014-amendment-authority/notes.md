@@ -188,3 +188,21 @@ The fixture table expected S4 to "name both" names. The check names the recorded
 states that the message does not name them — it cannot name the *other* name, because it has
 no way to know which word in a commit message was meant as a person. Recorded as a limit of
 the check rather than a defect of it; the failure is still unambiguous to the person reading it.
+
+## Phase 2 — gate (ci-held)
+
+Certified by the owner 2026-09-13 on the evidence triplet.
+
+| | |
+|---|---|
+| Phase commit | `14cf1d6` |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34758348672 |
+| CI conclusion | success |
+| Scope check | PASS phase 2 commit `14cf1d6` (3 files) |
+| Approved by | anas.m, 2026-09-13 |
+
+**The check is now live on this branch**, which makes every commit from here a test of it. This
+very commit is the first: it touches `notes.md` alone, and `notes.md` is not in the graded set
+(`spec.md`, `plan.md`, `tasks.md`, `contracts/`). That is D3b working as intended rather than by
+luck — evidence recording was moved here precisely so that writing down what happened never
+requires an approval.
