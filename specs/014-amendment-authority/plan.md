@@ -81,7 +81,7 @@ machine can judge without inferring intent.
 repository's merged history. If it flags a *class* of routine change that no reviewer would call
 an amendment, that class is added to the exemption with its reason recorded — as an amendment to
 this plan, carrying its own approver line. A one-off flag is not a class and does not earn an
-exemption; it earns a judgement recorded in `tasks.md`.
+exemption; it earns a judgement recorded in `notes.md` (D3b).
 
 **D3b — Evidence lives outside `tasks.md`** (added by amendment; owner decision on the
 phase 1 review, finding F5). Phase results, scenario tables and gate records are recorded in
@@ -92,6 +92,25 @@ still governs any other exemption class the phase 3 replay turns up. The kit con
 changes is documented in phase 4; `notes.md` is already an allowed optional file
 (`docs/sdlc/branch-strategy.md`, Spec Directory Contents), so nothing about the structure law
 moves.
+
+**Amendment approved by**: anas.m, 2026-09-13.
+
+**D2b — The check binds from when the check exists** (added by amendment; owner decision on
+the phase 1 remediation review, finding G2). A commit is graded only if
+`Invoke-AmendmentAuthorityCheck` existed before that commit was made. Nothing earlier is
+graded, in this repository or in any adopted one.
+
+Three reasons, none of them convenience. The spec's Out of scope already says this feature
+does not enforce retroactively. An adopted project's update day must be **silent**, not a day
+on which every in-flight branch turns red at once — which is the surprise T027 exists to
+prevent, and which no adopter could remedy anyway, because D5 puts half of every record in an
+immutable commit message. And this feature's own branch carries two commits (`ced1302`,
+`f49ad61`) made after the clause landed but before the evidence convention (D3b) was decided;
+without a boundary they fail forever and T019 is unsatisfiable.
+
+The cost is stated rather than hidden: between the clause landing (phase 1) and the check
+landing (phase 2) the rule is law and ungraded — the state this feature dislikes — bounded to
+one phase, on one branch, and recorded here.
 
 **Amendment approved by**: anas.m, 2026-09-13.
 
@@ -128,7 +147,7 @@ negotiable: the constitution states the rule (phase 1), the machine grades it (p
 reverse order would have the kit enforcing something it had not yet ratified — the precise
 failure this feature exists to end. The clause adopts FitForge's wording; where the kit's
 version must differ it is only to speak in the kit's voice about adopted projects, and the
-difference is recorded in `tasks.md` so the flow-down reconciles instead of colliding.
+difference is recorded in `notes.md` so the flow-down reconciles instead of colliding.
 
 **D10 — The check records; it does not authenticate.** It verifies that a name and a date are
 present, well-formed, and consistent between document and commit. It cannot verify that the

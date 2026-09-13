@@ -70,6 +70,7 @@ it; `ritual-checks.ps1` is green; the digests match their markers.
 - `.specify/templates/tasks-template.md`
 - `specs/_templates/ai-code-review-template.md`
 - `specs/_templates/human-pr-review-template.md`
+- `docs/sdlc/repository-strategy.md`
 
 **Amendment approved by**: anas.m, 2026-09-13.
 
@@ -100,6 +101,29 @@ it; `ritual-checks.ps1` is green; the digests match their markers.
       of the full feature diff (FR-012)
 - [x] T009 Add digest markers for the new rule where the pack conventions call for one, run
       `pwsh -File scripts/build-digests.ps1`, and confirm `ritual-checks.ps1` is green
+
+### Phase 1 remediation, round 2 (added by amendment 2026-09-13 — second review, G1–G3)
+
+Source: `specs/014-amendment-authority/ai-code-review-phase-1-remediation.md`. The second
+fresh-context review confirmed F1, F2, F3, F4, F7, F8 fixed and F6, F9 fixed-as-scoped, and
+raised three blocking findings of its own.
+
+**Amendment approved by**: anas.m, 2026-09-13.
+
+- [x] T043 **G1** — a duplicated sentence shipped in the constitution's rewritten rationale,
+      in the paragraph the remediation existed to repair. Removed. The edit had anchored on
+      the old paragraph's final sentence and left the sentence after it
+- [x] T044 **G2** — bound the check's range (D2b, owner decision): a commit is graded only if
+      the check existed before it was made. Updates T019 and T027, which were written against
+      an unbounded rule that no adopter could have complied with
+- [x] T045 **G3** — remove the counter-instructions left by the evidence move: T018's "record
+      the verdicts in this file", D3a's and D9's "recorded in `tasks.md`"
+- [x] T046 **G6, G10, G11, G12** — sweep the multi-repo twin in
+      `docs/sdlc/repository-strategy.md`; drop the intent test ("an annotation that changes
+      what the task means") the check cannot grade, in favour of the text test it can; correct
+      the SYNC IMPACT header, which still described the pre-remediation clause; and replace
+      the new absolute ("no check can tell which session produced a diff") with what is
+      actually true — the kit records no link between a commit and the session behind it
 
 ### Phase 1 remediation (added by amendment 2026-09-13 — six blocking findings)
 
@@ -184,10 +208,11 @@ enforcement-pack message is byte-identical to a baseline captured before the edi
       conforming record verbatim (FR-008). A developer must never have to read the script to
       learn what the check wants
 - [ ] T018 Run S1–S14 and the two negative-space cases; diff every pre-existing message against
-      T010's baseline; record all sixteen verdicts in this file under "Phase 2 — scenario
-      results"
-- [ ] T019 Run `pwsh -File scripts/ritual-checks.ps1` here and confirm green — this branch's own
-      commits must satisfy the rule the check now grades
+      T010's baseline; record all sixteen verdicts in `notes.md` under "Phase 2 — scenario
+      results" (D3b — evidence never lands in this file)
+- [ ] T019 Run `pwsh -File scripts/ritual-checks.ps1` here and confirm green — every commit
+      the check grades must satisfy it. Under D2b that is the commits made after the check
+      lands; `ced1302` and `f49ad61` predate it and are out of scope by rule, not by exception
 
 ---
 
@@ -229,21 +254,28 @@ reviewer judges real, with the judgement written down per flag.
 adopted project's CI starts failing silent amendments — that must be an announcement, not a
 surprise.
 
-**Independent Test**: an adopter reading `adoption/updating.md` alone can predict exactly which
-of their branches will newly go red and what to write to fix one; a project with no amendments
-passes silently (FR-011, spec US4 scenario 2).
+**Independent Test**: an adopter reading `adoption/updating.md` alone can predict exactly what
+the boundary means for their in-flight branches (D2b — nothing before the update is graded),
+and a future feature reading the kit's own docs can tell where evidence belongs without
+reading this feature (FR-011, spec US4 scenario 2).
 
-**Territory**:
+**Territory** (widened by amendment 2026-09-13 — the last two entries, for G5):
 
 - `adoption/updating.md`
 - `adoption/greenfield.md`
 - `docs/digests/`
+- `docs/sdlc/branch-strategy.md`
+- `.specify/templates/tasks-template.md`
+
+**Amendment approved by**: anas.m, 2026-09-13.
 
 - [ ] T026 `adoption/updating.md`: what the check grades, what a conforming record looks like,
       and the honest statement of what it does not verify (D10)
-- [ ] T027 `adoption/updating.md`: the newly-failing case, stated plainly — a project with an
-      in-flight feature whose documents were amended without records will go red on its next
-      push, and the remediation is to record the approver, not to edit history
+- [ ] T027 `adoption/updating.md`: state the boundary (D2b) — nothing committed before the
+      update that delivers the check is graded, so arrival day is silent and no in-flight
+      branch turns red. Say why the boundary exists rather than only that it does: half of
+      every record lives in an immutable commit message, so a retroactive rule would be one
+      no adopter could comply with
 - [ ] T028 `adoption/greenfield.md`: one line, so a new project meets the rule at feature 001
       rather than discovering it at feature 004
 - [ ] T029 Note the FitForge follow-up as a flow-down task, **not** a task of this branch: its
@@ -252,6 +284,18 @@ passes silently (FR-011, spec US4 scenario 2).
       (SC-005)
 - [ ] T030 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
       ci-held evidence triplet for the final phase
+
+#### Added by amendment 2026-09-13 (G5 — the convention needs a home outside this feature)
+
+- [ ] T041 `docs/sdlc/branch-strategy.md` (Spec Directory Contents): say what `notes.md` is
+      for — phase results, gate records and findings — and that `tasks.md` holds agreed work
+      and completion state alone. Today `notes.md` is listed as an optional file with no
+      stated purpose, so D3b is a convention this feature follows and the kit never states
+- [ ] T042 `.specify/templates/tasks-template.md:14` still tells an author to "record that
+      determination in this file". Point it at `notes.md` instead, or the next feature
+      reproduces F5 exactly
+
+**Amendment approved by**: anas.m, 2026-09-13.
 
 ---
 

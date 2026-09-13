@@ -18,8 +18,16 @@ the flow-down reconciles instead of colliding (D9).
 | Rationale **rewritten**, provenance restored | original wording | Corrected in the phase 1 remediation (F4). The first draft paraphrased the rationale and dropped the date, the "feature 001 governance finding F3" attribution and the named checks — while this table claimed the text had been kept near-verbatim *to preserve provenance*. The record was wrong before the text was. The rationale now carries the date, the attribution and the four checks by name; the sentence order is the kit's, the facts are FitForge's |
 
 The normative clause itself — scope, record shape, same-approver-in-the-commit, and the
-self-approval prohibition — is byte-identical to FitForge 1.1.0. The phase 1 reviewer verified
-this with a direct `diff` rather than by reading.
+self-approval prohibition — is byte-identical to FitForge 1.1.0. Both reviewers verified this
+with a direct `diff` rather than by reading.
+
+Two sentences in the kit's rationale have no FitForge counterpart, recorded here because the
+first draft of this table did not (second review, G7): the sentence naming the four checks that
+stayed green, and the closing "Getting the order right … is a check on retroactivity, not a
+check on consent". The first is kit-specific by necessity — those are the kit's scripts. The
+second is FitForge's sentence, kept verbatim. The sentence order is FitForge's; only the
+opening clause was re-cast to read as the kit's own law rather than as an adopting project's
+amendment note.
 
 ## Phase 1 — finding: evidence recording sat outside both categories (F5, resolved)
 
@@ -45,6 +53,15 @@ Three candidates were considered:
 - **(c) Move phase evidence out of `tasks.md`.** **Chosen** (D3b). Cleanest for a machine, and it
   makes the law true as written rather than true-with-an-asterisk. The cost is a kit convention
   change, documented in phase 4.
+
+**This resolved F5 forward, not backward** — a correction to the first draft of this section,
+which called F5 "resolved" without qualification. The second review (G2) pointed out what that
+hid: `ced1302` and `f49ad61` were already on the branch, each amending `tasks.md` without a
+record, and no rule bounded the range the check would grade — so the branch still failed its own
+check and T019 was still unsatisfiable. The boundary is D2b, decided by the owner on the second
+review: a commit is graded only if the check existed before it was made. Those two commits are
+out of scope **by rule, not by exception**, and the same boundary is what makes an adopted
+project's update day silent.
 
 ## Phase 1 — gate
 
@@ -82,6 +99,28 @@ this feature:
   its subject.** History is not rewritten for this; the remediation commit re-establishes a
   correctly-scoped phase 1 commit, and both remain visible.
 
+## Phase 1 — second review (the remediation of the remediation)
+
+`ai-code-review-phase-1-remediation.md`: **REQUEST CHANGES**, 3 blocking, 10 non-blocking, with
+a per-finding roll-up confirming F1, F2, F3, F4, F7, F8 fixed and F6, F9 fixed-as-scoped. It
+verified clean: the normative clause still byte-identical to FitForge 1.1.0, the Territory
+declaration parsing (`PASS phase 1 commit 0803049`, 10 files) with the warning comment placed
+where it provably cannot break parsing, and both amendment commits conforming under D4/D5/D6.
+
+Two findings worth carrying beyond this feature:
+
+- **G1** — a duplicated sentence shipped in the constitution, inside the paragraph the
+  remediation was written to repair. The mechanism is worth naming because it will recur: the
+  edit anchored on the old paragraph's last sentence, so the sentence *after* it survived. An
+  anchor that ends mid-paragraph silently keeps whatever follows.
+- **G4** — the amendment commit `6fbffae` carries "phase 1" in its subject while its own
+  message states it is not a phase commit. **F9 reproduced, one commit after being recorded.**
+  It is already pushed, so history is not rewritten for it; `scope-check` grades the last
+  phase-token commit, which is the real phase commit, so nothing is mis-graded — but the
+  subject is wrong and the record says so. The durable lesson is that a rule written in a
+  notes file is not a rule anything enforces, which is this feature's own thesis turned on
+  itself.
+
 ## Phase 1 remediation — gate
 
-To be recorded here once the remediation commit has been gated and re-reviewed.
+To be recorded here once the remediation commits have been gated and re-reviewed.
