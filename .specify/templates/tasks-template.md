@@ -51,7 +51,10 @@ and fails on any undeclared file (Definition of Done gate 4). Rules:
   path — all must be in territory.
 - Territory may be amended only with owner approval and only in a commit made **before** the
   phase commit that relies on it: the check reads the declaration from the commit's parent,
-  so a stray file can never be legalized in the commit that introduces it.
+  so a stray file can never be legalized in the commit that introduces it. That approval is
+  **recorded, not assumed** — the amended section carries an
+  `**Amendment approved by**: <name>, <YYYY-MM-DD>` line and the amending commit names the
+  same approver, and an implementing agent never approves its own (constitution I).
 - Phase commits MUST carry a `phase N` token in the commit subject (e.g. `phase 2: entry
   form`) so the check can attribute them.
 - A phase with no declaration produces a non-blocking warning (compatibility with features

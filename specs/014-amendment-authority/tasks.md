@@ -108,40 +108,40 @@ Source: `specs/014-amendment-authority/ai-code-review-phase-1.md`. Lands as a se
 
 **Amendment approved by**: anas.m, 2026-09-13.
 
-- [ ] T031 **F1** — the clause asserts in the present tense that `scripts/enforcement-pack.ps1`
+- [x] T031 **F1** — the clause asserts in the present tense that `scripts/enforcement-pack.ps1`
       grades the record, but no such check exists until phase 2. Remove the claim from the
       normative sentence: state what *can* and *cannot* be verified about a record, and leave
       where the machine half lands to the SYNC IMPACT REPORT, which already says it. Same fix
       in the `docs/sdlc/review-process.md` mirror. A constitution that describes a check it
       does not yet have is the state this whole feature exists to end
-- [ ] T032 **F2** — un-ticking a checkbox is currently both exempt (completion state) and an
+- [x] T032 **F2** — un-ticking a checkbox is currently both exempt (completion state) and an
       amendment (a task "re-opened"). State that completion state moving in **either**
       direction is progress, and that "re-opened" means the task's **text** changed — which is
       also what D3's multiset comparison actually implements
-- [ ] T033 **F3** — FR-003 is undelivered. The honesty paragraph must say that **nothing**
+- [x] T033 **F3** — FR-003 is undelivered. The honesty paragraph must say that **nothing**
       verifies the self-approval prohibition (no machine can identify the implementing agent),
       and that "approved" is proxied by a document's first appearance (D2), not observed
-- [ ] T034 **F4** — restore the provenance the rationale dropped: the date, the "feature 001
+- [x] T034 **F4** — restore the provenance the rationale dropped: the date, the "feature 001
       governance review, finding F3" attribution, and the named checks. Then correct the
       reconciliation row, which claims the rationale was kept near-verbatim *to preserve
       provenance* while the committed text had rewritten it away
-- [ ] T035 **F5** — create `specs/014-amendment-authority/notes.md` and move the "wording
+- [x] T035 **F5** — create `specs/014-amendment-authority/notes.md` and move the "wording
       reconciliation" and "gate" sections into it (D3b). `tasks.md` keeps agreed work and
       checkboxes alone
-- [ ] T036 **F6** — sweep the three documents that still say a Territory amendment needs only
+- [x] T036 **F6** — sweep the three documents that still say a Territory amendment needs only
       "owner approval": `.specify/templates/tasks-template.md` (**on the constitution's sync
       list** — T005's claim that no other sync-listed file changed reading was wrong),
       `docs/sdlc/definition-of-done.md`, `docs/sdlc/review-process.md`. Add the amendment item
       to both review templates in `specs/_templates/`
-- [ ] T037 **F7** — `CLAUDE.md` restates the clause in five lines against T006's own "point, do
+- [x] T037 **F7** — `CLAUDE.md` restates the clause in five lines against T006's own "point, do
       not restate". Cut it to a pointer; restating law in the always-loaded file is the drift
       GAP-021 is a row about
-- [ ] T038 **F8** — "a silent amendment becomes impossible" overstates. It becomes visible in
+- [x] T038 **F8** — "a silent amendment becomes impossible" overstates. It becomes visible in
       the diff and gradeable by a machine; a determined implementer can still write a name
-- [ ] T039 **F9** — the gate-record commit `f49ad61` carries a `phase 1` token in its subject,
+- [x] T039 **F9** — the gate-record commit `f49ad61` carries a `phase 1` token in its subject,
       so `scope-check` now grades it instead of `ced1302`. Record the rule that non-phase
       commits must not carry a phase token; the remediation commit re-establishes the real one
-- [ ] T040 Rebuild digests, run `pwsh -File scripts/ritual-checks.ps1`, and request a second
+- [x] T040 Rebuild digests, run `pwsh -File scripts/ritual-checks.ps1`, and request a second
       fresh-context review of the remediation — the first reviewer graded a diff this one
       replaces
 
@@ -255,68 +255,10 @@ passes silently (FR-011, spec US4 scenario 2).
 
 ---
 
-## Phase 1 — wording reconciliation (T004)
+**Evidence lives in `notes.md`** (D3b, owner decision 2026-09-13 on review finding F5): phase
+results, scenario tables, gate records and findings are recorded in
+`specs/014-amendment-authority/notes.md`. This file holds agreed work and its completion state
+alone, so that every change to it is either a checkbox flip or an amendment — which is what
+makes the clause true as written.
 
-Where the kit's clause differs from the FitForge 1.1.0 wording it adopts, and why. Recorded
-so the flow-down reconciles instead of colliding (D9).
-
-| Kit 0.7.0 | FitForge 1.1.0 | Why they differ |
-|---|---|---|
-| Adds **Progress is not amendment** | absent | FitForge wrote the rule against its 001 review, where every failing change was content. The kit's clause has to survive `tasks.md` being touched on nearly every phase commit, so the exemption is stated in the law rather than left to whatever grades it |
-| **What is verified, and what is not** | **Enforcement, honestly stated** | FitForge's paragraph says the check cannot live in that project because `scripts/*.ps1` is verbatim. The kit can host it, so what survives is honesty about what the check can *see*, not about where it lives. FitForge's paragraph stops being true at flow-down and is edited there, by its owner, under its own ritual (T029) |
-| Rationale kept near-verbatim, including "quietly conflated" | same | it is the finding in one sentence; rewriting it would lose the provenance |
-
-No other difference. Scope, record shape, the same-approver-in-the-commit requirement and
-the self-approval prohibition are FitForge's words.
-
-### Finding — evidence recording sits outside both categories
-
-Discovered while executing this phase, before the check exists, and it matters for phase 2's
-design.
-
-The clause exempts exactly one thing: task completion state. But this kit's convention is to
-record a phase's **results inside `tasks.md`** — 013 carries "Phase 1 — scenario results",
-"Phase 2 — doctor results", "Phase 3 — the sweep"; this very section is another. Under the
-clause as ratified, appending such a section is an amendment, and the rule would demand an
-approver for writing down what happened.
-
-Three candidate resolutions, none free:
-
-- **(a) An edit an approved task instructs is execution, not amendment.** T004 says "record
-  … in this file", so writing this section performs the approved plan rather than changing
-  it. This is the reading phase 1 acted under. It is honest but not directly machine-checkable
-  — the check would have to know which task asked for the edit.
-- **(b) Exempt additions that add no task line and delete or modify nothing.** Rejected here
-  and worth recording as rejected: a `**Territory**` bullet is a non-task line, so this would
-  exempt a widened Territory — one of the five amendments SC-002 requires the check to catch.
-- **(c) Move phase evidence out of `tasks.md`** into a per-feature evidence document, leaving
-  `tasks.md` as agreed work alone. Cleanest for a machine; the largest change to kit
-  convention, and it would touch every template and several shipped features.
-
-**Decision: deferred to phase 3 (D3a), with replay data rather than taste.** Phase 1 changed
-no ratified wording on its own authority — the clause stands as approved, and this finding is
-recorded rather than acted on. If phase 3 confirms the class, the fix is an amendment to
-`plan.md` and possibly to the clause, carrying its own approver line, which is exactly the
-procedure this feature exists to install.
-
-## Phase 1 — gate
-
-Certified 2026-09-13. The plan declares `ci-held`, and the evidence triplet is recorded
-below — but the owner also ran the gate locally on the same commit, which is the stronger
-of the two and is what certifies this phase.
-
-| | |
-|---|---|
-| Phase commit | `ced1302` |
-| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/34756014814 |
-| CI conclusion | success |
-| Owner-run gate | `pwsh -File scripts/ritual-checks.ps1` → RESULT OK, confirmed by anas.m |
-| Scope check | PASS phase 1 commit `ced1302` (7 files) |
-
-Noted from that run and not acted on: `PhaseSizeWarning` on `aa3b194`, the `plan:` commit —
-407 lines across `plan.md` and `tasks.md`, seven over the guideline. Not a phase commit
-(scope-check skips it), documents rather than code, and recorded here so it is not
-re-discovered at review.
-
-Gate 5 (fresh-context AI review) is outstanding — it is never self-graded by the
-implementing session, so it is not recorded here by the session that wrote the phase.
+**Amendment approved by**: anas.m, 2026-09-13.

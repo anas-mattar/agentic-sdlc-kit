@@ -82,7 +82,9 @@ Gates apply at two different points, not uniformly at every phase:
    mini-spec `spec.md` (constitution X, Micro lane; the lane has no tasks.md). A PASS verdict is required; a WARN verdict (no territory declared) is
    acceptable only for features specified before the verification pack. Undeclared
    changes are reverted — or, when the scope discovery is legitimate, the territory is
-   amended with owner approval in a commit made **before** the phase commit that relies
+   amended with owner approval — **recorded** as constitution I requires, an
+   `**Amendment approved by**: <name>, <YYYY-MM-DD>` line with the same name in the commit —
+   in a commit made **before** the phase commit that relies
    on it (the check reads the declaration from the commit's parent, so a stray file can
    never be legalized in the commit that introduces it). The owner still reviews
    `git diff --stat` for intent; the machine makes a skipped or sloppy scope check

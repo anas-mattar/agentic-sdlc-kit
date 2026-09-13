@@ -63,7 +63,8 @@ pwsh -File scripts/scope-check-repos.ps1   # multi-repo only; n/a elsewhere
    scope-repos + digests + roadmap-claims, plus the adoption doctor in adopted projects).
 4. On `FAIL`, remediate and redo the phase commit: revert the undeclared change — or, if
    it is legitimate scope discovery, amend the phase's **Territory** in `tasks.md` (owner
-   approval) in a commit made **before** the re-committed phase. The check reads the
+   approval, recorded as constitution I requires) in a commit made **before** the
+   re-committed phase. The check reads the
    declaration from the commit's parent, so same-commit widening never passes. On a
    Micro feature the territory amendment lives in `spec.md`, must stay within the lane's
    file cap, and the standing alternative is always **promotion to Standard** (full spec
@@ -133,9 +134,10 @@ Human reviewer checks (record in `specs/NNN-name/human-pr-review.md`, written fr
 - No unrelated changes
 - Every amendment in the feature diff carries its record — each change to an approved
   `spec.md`, `plan.md`, `tasks.md` or `contracts/` file names an approver who is not the
-  implementing agent (constitution I). The machine grades that a record exists and agrees
-  with its commit; **whether the named person actually agreed is this reviewer's to judge**,
-  and it is the half no check can reach.
+  implementing agent (constitution I). A machine can grade that a record exists and agrees
+  with its commit; **whether the named person actually agreed — and whether the agent
+  approved its own amendment — is this reviewer's to judge**, and it is the half no check
+  reaches.
 
 ## Merge
 
