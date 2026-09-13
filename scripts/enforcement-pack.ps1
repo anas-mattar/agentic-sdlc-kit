@@ -81,7 +81,12 @@
 [CmdletBinding()]
 param(
     [string]$Root = (Split-Path -Parent $PSScriptRoot),
-    [string]$Branch
+    [string]$Branch,
+    # ANALYSIS ONLY (014 plan D2c): lift the amendment-authority boundary so the check grades
+    # commits made before it existed. Used to replay the check over real history (SC-002).
+    # No gate, no CI workflow and no ritual-checks invocation passes this — enforcement stays
+    # bounded by D2b. Passing it in a gate would grade commits nobody could have complied with.
+    [switch]$IgnoreAmendmentBoundary
 )
 
 $ErrorActionPreference = 'Stop'
@@ -649,13 +654,40 @@ function Test-AmendmentCheckPresent {
     return [bool]($blob | Where-Object { $_ -match 'function Invoke-AmendmentAuthorityCheck' })
 }
 
-# Lines a commit ADDED to the given paths (no context, no +++ headers).
-function Get-AddedLines {
-    param([string]$Commit, [string[]]$Paths)
+# Visible lines of a text blob — HTML comments stripped, same rule as Get-VisiblePlanLines
+# (008 phase-2 F1). Commented-out text is not law and is not a record (H1).
+function Get-VisibleFromText {
+    param([string[]]$Lines)
+    $raw = ($Lines -join "`n")
+    return ([regex]::Replace($raw, '(?s)<!--.*?-->', '')) -split "`r?`n"
+}
+
+# Lines a commit ADDED to the given paths that are also VISIBLE in the resulting file, and
+# that did not already exist in the parent (H1, H5). A record hidden in a comment renders as
+# nothing; a record merely moved from elsewhere in the same file was not granted by this
+# commit.
+function Get-AddedRecordLines {
+    param([string]$Commit, [string]$Parent, [string[]]$Paths)
     if (-not $Paths -or $Paths.Count -eq 0) { return @() }
-    $out = git show -U0 --format='' $Commit -- @Paths 2>$null
-    return @($out | Where-Object { $_ -match '^\+' -and $_ -notmatch '^\+\+\+' } |
-        ForEach-Object { $_.Substring(1) })
+    $result = @()
+    foreach ($path in ($Paths | Sort-Object -Unique)) {
+        $added = @(git show -U0 --format='' $Commit -- $path 2>$null |
+            Where-Object { $_ -match '^\+' -and $_ -notmatch '^\+\+\+' } |
+            ForEach-Object { $_.Substring(1) })
+        if ($added.Count -eq 0) { continue }
+        $visible = @(Get-VisibleFromText -Lines @(git show "${Commit}:${path}" 2>$null) |
+            ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $before = @(Get-VisibleFromText -Lines @(git show "${Parent}:${path}" 2>$null) |
+            ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        foreach ($line in $added) {
+            $t = $line.Trim()
+            if (-not $t) { continue }
+            if ($visible -notcontains $t) { continue }   # H1: added inside a comment
+            if ($before -contains $t) { continue }       # H5: pre-existing, merely moved
+            $result += $t
+        }
+    }
+    return $result
 }
 
 # D3: a tasks.md change that alters nothing but checkbox state is progress, not amendment.
@@ -667,19 +699,30 @@ function Test-CheckboxOnlyChange {
     $removed = @(); $added = @()
     foreach ($line in $diff) {
         if ($line -match '^---' -or $line -match '^\+\+\+') { continue }
-        if ($line -match '^-')  { $removed += ($line.Substring(1) -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
-        elseif ($line -match '^\+') { $added += ($line.Substring(1) -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
+        if ($line -match '^-') {
+            $raw = $line.Substring(1)
+            $removed += @{ Raw = $raw; Stripped = ($raw -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
+        } elseif ($line -match '^\+') {
+            $raw = $line.Substring(1)
+            $added += @{ Raw = $raw; Stripped = ($raw -replace '^(\s*[-*]\s*)\[[ xX]\]', '$1[]') }
+        }
     }
     if ($removed.Count -eq 0 -and $added.Count -eq 0) { return $true }
-    $r = @($removed | Sort-Object); $a = @($added | Sort-Object)
-    if ($r.Count -ne $a.Count) { return $false }
-    for ($i = 0; $i -lt $r.Count; $i++) { if ($r[$i] -ne $a[$i]) { return $false } }
+    if ($removed.Count -ne $added.Count) { return $false }
+    # Pairwise IN FILE ORDER, never sorted (H2). Every pair must be the same task text with a
+    # different marker: identical raw text means the line MOVED rather than changed state, and
+    # a move can relocate a Territory entry between phases — the "widened Territory" class
+    # SC-002 exists to catch. Sorting made a move indistinguishable from a tick.
+    for ($i = 0; $i -lt $removed.Count; $i++) {
+        if ($removed[$i].Stripped -ne $added[$i].Stripped) { return $false }
+        if ($removed[$i].Raw -eq $added[$i].Raw) { return $false }
+    }
     return $true
 }
 
 # D6: an unfilled or impossible record is no record.
 function Get-ConformingRecord {
-    param([string[]]$AddedLines, [datetime]$CommitDate)
+    param([string[]]$AddedLines, [string]$CommitDay)
     $result = @{ Name = $null; Malformed = @() }
     foreach ($line in $AddedLines) {
         if ($line -notmatch $script:AmendmentRecordPattern) { continue }
@@ -697,8 +740,11 @@ function Get-ConformingRecord {
             $result.Malformed += "date '$dateText' is not a real YYYY-MM-DD date"
             continue
         }
-        if ($parsed.Date -gt $CommitDate.Date) {
-            $result.Malformed += "date '$dateText' is later than the commit's own author date ($($CommitDate.ToString('yyyy-MM-dd')))"
+        # String comparison of two YYYY-MM-DD values taken in the AUTHOR's own timezone (H6).
+        # [datetime]::Parse of an ISO offset converts to the runner's local time, which made the
+        # same commit green locally and red in CI — the machine-dependence D6 exists to forbid.
+        if ($dateText -gt $CommitDay) {
+            $result.Malformed += "date '$dateText' is later than the commit's own author date ($CommitDay)"
             continue
         }
         $result.Name = $name
@@ -708,15 +754,31 @@ function Get-ConformingRecord {
 }
 
 function Invoke-AmendmentAuthorityCheck {
-    param([string]$Branch, [string]$Base)
+    param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary)
     if ($Branch -notmatch '^\d{3}-') { return }
     if (-not $Base) { return }
     $dir = "specs/$Branch"
     $commits = @((git rev-list --reverse "$Base..HEAD" 2>$null) | Where-Object { $_ })
+    if ($commits.Count -eq 0) { return }
+
+    # D2b, and SC-006. The boundary is monotonic along a linear history: once the check exists
+    # in a commit's parent it exists in every later parent. So test the NEWEST commit's parent
+    # once — if the check is not there, nothing in range is graded and we stop without reading
+    # a 39 KB blob per commit. -IgnoreAmendmentBoundary lifts the boundary for ANALYSIS ONLY
+    # (phase 3's replay over real history, SC-002); no gate and no CI invocation passes it.
+    $graded = $IgnoreAmendmentBoundary.IsPresent
+    if (-not $graded) {
+        $headParent = (git rev-parse --verify --quiet "HEAD^" 2>$null)
+        if (-not (Test-AmendmentCheckPresent -Ref $headParent)) { return }
+    }
+
     foreach ($commit in $commits) {
         $lineage = @((git rev-list --parents -n 1 $commit 2>$null) -split '\s+' | Where-Object { $_ })
         if ($lineage.Count -gt 2) { continue }                       # D7: merge commit authored nothing
-        if (-not (Test-AmendmentCheckPresent -Ref $lineage[1])) { continue }   # D2b
+        if (-not $graded) {
+            if (-not (Test-AmendmentCheckPresent -Ref $lineage[1])) { continue }   # D2b
+            $graded = $true                                          # monotonic: stop re-testing
+        }
         $short = $commit.Substring(0, 7)
 
         $amended = @()
@@ -729,17 +791,27 @@ function Invoke-AmendmentAuthorityCheck {
             if ($path -notlike "$dir/*") { continue }
             $leaf = $path.Substring($dir.Length + 1)
             if ($leaf -notin @('spec.md', 'plan.md', 'tasks.md') -and $leaf -notlike 'contracts/*') { continue }
-            if ($status -match '^[AR]') { continue }                  # D2: first appearance is creation
+            # D2: first appearance is creation. A rename is creation at the new path ONLY when
+            # the content came across intact — git reports similarity as R100. A rename that
+            # also rewrote the file (R087, say) is an amendment wearing a new path (H3).
+            if ($status -match '^A') { continue }
+            if ($status -match '^R(\d+)?') {
+                $sim = if ($matches[1]) { [int]$matches[1] } else { 100 }
+                if ($sim -ge 100) { continue }
+            }
             if ($status -match '^M' -and $leaf -eq 'tasks.md' -and
                 (Test-CheckboxOnlyChange -Commit $commit -Path $path)) { continue }   # D3
             $amended += $path
         }
         if ($amended.Count -eq 0) { continue }
 
-        $dateText = (git show -s --format=%aI $commit 2>$null)
-        $commitDate = [datetime]::Now
-        if ($dateText) { $commitDate = [datetime]::Parse($dateText) }
-        $record = Get-ConformingRecord -AddedLines (Get-AddedLines -Commit $commit -Paths @("$dir")) -CommitDate $commitDate
+        $commitDay = (git show -s --format=%ad --date=short $commit 2>$null)
+        if (-not $commitDay) { $commitDay = (Get-Date).ToString('yyyy-MM-dd') }
+        # H4: the record must be added to a file this commit actually AMENDED — a record in
+        # notes.md cannot approve a silent change to plan.md, and the failure message says
+        # "on the amended section", which this now means.
+        $recordLines = Get-AddedRecordLines -Commit $commit -Parent $lineage[1] -Paths $amended
+        $record = Get-ConformingRecord -AddedLines $recordLines -CommitDay $commitDay
         $files = ($amended | Sort-Object -Unique) -join ', '
 
         if (-not $record.Name) {
@@ -747,8 +819,12 @@ function Invoke-AmendmentAuthorityCheck {
             $script:failures += "AmendmentAuthority: commit $short amends $files after approval with no conforming approver record.$why Add '$script:AmendmentRecordExample' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt; changing what a document says is not"
             continue
         }
-        $message = (git show -s --format=%B $commit 2>$null) -join "`n"
-        if ($message -notmatch [regex]::Escape($record.Name)) {
+        # Whole-word match over the message BODY only: git trailers are excluded, because a
+        # mandated 'Co-Authored-By: Claude ...' trailer would otherwise auto-satisfy an
+        # approver named Claude, and an unanchored search let 'Al' match the word 'Also'.
+        $message = (@(git show -s --format=%B $commit 2>$null) |
+            Where-Object { $_ -notmatch '^[A-Za-z-]+:\s' -or $_ -match '^\s*$' }) -join "`n"
+        if ($message -notmatch ('(?<![\w-])' + [regex]::Escape($record.Name) + '(?![\w-])')) {
             $script:failures += "AmendmentAuthority: commit $short records '$($record.Name)' as the approver of its change to $files, but its commit message does not name them — the message is fixed at commit time and is the half a later edit cannot fake (constitution I; plan D5)"
         }
     }
@@ -770,7 +846,7 @@ if ($Branch -in @('main', 'master')) {
     Invoke-GateBatchingCheck -Branch $Branch
     Invoke-GateCertificationCheck -Branch $Branch
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
-    Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase
+    Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles

@@ -206,3 +206,52 @@ very commit is the first: it touches `notes.md` alone, and `notes.md` is not in 
 (`spec.md`, `plan.md`, `tasks.md`, `contracts/`). That is D3b working as intended rather than by
 luck — evidence recording was moved here precisely so that writing down what happened never
 requires an approval.
+
+## Phase 2 remediation — the seven shapes, verified closed
+
+The third fresh-context review (`ai-code-review-phase-2.md`) demonstrated seven false-PASS
+shapes with runnable fixtures. The lesson is not the count: **my own suite still passed 18 of
+18 throughout**, because I wrote both the check and its tests, so it proved only the cases I
+had already imagined. Verification for this round therefore uses the reviewer's shapes, in
+`scratchpad/attack-verify.ps1`.
+
+| Attack | Was | Now |
+|---|---|---|
+| A1 record hidden in an HTML comment | PASS | **FAIL** |
+| A2 `**Territory**` bullet moved between phases | PASS | **FAIL** |
+| A3 contract renamed and rewritten in one commit | PASS | **FAIL** |
+| A4 record parked in `notes.md`, `plan.md` amended | PASS | **FAIL** |
+| A5 a pre-existing record recycled | PASS | **FAIL** |
+| A6a approver `Al` "named" by the word *Also* | PASS | **FAIL** |
+| A6b approver `Claude` named only by the mandated trailer | PASS | **FAIL** |
+| A7 conforming same-day record on a `+08:00` commit | red in CI | **PASS everywhere** |
+
+The original 18 scenarios were re-run unchanged and still produce their fixed verdicts — the
+hardening cost no legitimate case.
+
+### SC-006, measured at last
+
+The review measured what I had left unmeasured: +1.0–1.2 s, about +110 % on the pack, because
+a 39 KB parent blob was re-read for every commit — including commits D2b then discarded. The
+boundary is monotonic along a linear history, so it is now tested once against `HEAD^` and
+short-circuits when absent.
+
+| | |
+|---|---|
+| Pack, phase 2 as shipped | 3743 ms |
+| Pack, after the remediation | **2719 ms** |
+| `ritual-checks` total | 18261 ms |
+
+The check is now cheaper than the version that did not have it, because the short-circuit also
+skips work the old code did per commit. Measured on this repository, both directions, not
+estimated.
+
+### The phase token, a third time
+
+`a976f6d` ("docs: record the phase 2 gate") carries "phase 2" in its subject, so `scope-check`
+grades it rather than `14cf1d6`, and the phase 2 gate row above is no longer reproducible from
+the command alone. F9 recorded the rule, G4 reproduced it, and this is the third occurrence —
+by the same session that wrote the rule down. It is the feature's own thesis applied to its
+author: **a rule written in a notes file is not a rule anything enforces.** Recorded here as a
+candidate for a real check (a `phase N` token on a commit whose diff declares no phase
+territory), not as another note promising to remember.
