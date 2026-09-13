@@ -115,9 +115,9 @@ Two findings worth carrying beyond this feature:
   anchor that ends mid-paragraph silently keeps whatever follows.
 - **G4** — the amendment commit `6fbffae` carries "phase 1" in its subject while its own
   message states it is not a phase commit. **F9 reproduced, one commit after being recorded.**
-  It is already pushed, so history is not rewritten for it; `scope-check` grades the last
-  phase-token commit, which is the real phase commit, so nothing is mis-graded — but the
-  subject is wrong and the record says so. The durable lesson is that a rule written in a
+  It is already pushed, so history is not rewritten for it. Under `ritual-checks` every
+  phase-token commit is graded individually and this one passes — see the correction at the end
+  of this file; the defect is a mislabel, not a lost or displaced verdict. The durable lesson is that a rule written in a
   notes file is not a rule anything enforces, which is this feature's own thesis turned on
   itself.
 
@@ -248,10 +248,28 @@ estimated.
 
 ### The phase token, a third time
 
-`a976f6d` ("docs: record the phase 2 gate") carries "phase 2" in its subject, so `scope-check`
-grades it rather than `14cf1d6`, and the phase 2 gate row above is no longer reproducible from
-the command alone. F9 recorded the rule, G4 reproduced it, and this is the third occurrence —
-by the same session that wrote the rule down. It is the feature's own thesis applied to its
-author: **a rule written in a notes file is not a rule anything enforces.** Recorded here as a
-candidate for a real check (a `phase N` token on a commit whose diff declares no phase
-territory), not as another note promising to remember.
+`a976f6d` ("docs: record the phase 2 gate") carries "phase 2" in its subject, so it is graded
+as a phase commit although it is not one. F9 recorded the rule, G4 reproduced it, and this is
+the third occurrence — by the same session that wrote the rule down. It is the feature's own
+thesis applied to its author: **a rule written in a notes file is not a rule anything
+enforces.** Recorded here as a candidate for a real check (a `phase N` token on a commit whose
+diff declares no phase territory), not as another note promising to remember.
+
+**Correction, 2026-09-13 — the consequence was overstated three times, including in the first
+draft of this section.** It was claimed that `scope-check` grades `a976f6d` *instead of*
+`14cf1d6`, displacing the real phase commit and making the gate row above irreproducible. That
+is false. Under `scripts/ritual-checks.ps1` — the command CI runs — every phase-token commit on
+the branch is graded individually, and all eight pass:
+
+```text
+PASS phase 1 commit ced1302 (7)   PASS phase 1 commit f49ad61 (1)
+PASS phase 1 commit 6fbffae (2)   PASS phase 1 commit 0803049 (10)
+PASS phase 1 commit 370a28b (2)   PASS phase 2 commit 14cf1d6 (3)
+PASS phase 2 commit a976f6d (1)   PASS phase 2 commit 4b846ae (2)
+```
+
+The error came from reading `scope-check.ps1` standalone, which reports the latest phase commit
+only, and generalising from that single line to a claim about what is graded. The real defect
+of a stray token is a **mislabel** — a docs commit graded as a phase commit, which it then
+passes — not a lost verdict. Both reviews' G4/H-class notes on this point inherit the same
+overstatement.
