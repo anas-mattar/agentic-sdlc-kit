@@ -9,10 +9,13 @@ Bump rationale: MINOR — Amendment authority clause added to Principle I (featu
   **Amendment approved by**: <name>, <YYYY-MM-DD> line and the amendment commit names the
   same approver, and an implementing agent MUST NOT approve its own amendment. One
   exemption, stated in the rule rather than left to the implementation: a tasks.md change
-  that alters nothing but task completion state is progress, not amendment. The clause
-  states plainly what the machine verifies (a record exists, is well-formed, and agrees
-  with its commit) and what it does not (that the named person agreed) — the record has
-  the strength of the Reviewer Provenance block, not of an authentication. Nothing is
+  that alters nothing but task completion state — a checkbox moving in either direction —
+  is progress, not amendment; the test everywhere else is the document's text, never the
+  intent behind it. The clause states plainly what a machine can verify (a record exists, is
+  well-formed, and agrees with its commit) and the three things it cannot: that the named
+  person agreed, the self-approval prohibition (held by review alone), and approval itself,
+  which is proxied by a document's first appearance because this kit has no approval token.
+  The record has the strength of the Reviewer Provenance block, not of an authentication. Nothing is
   redefined and no principle is removed: I's workflow, its Micro arm and every other
   principle are unchanged, and a branch that amends nothing after approval is unaffected.
   The rule is adopted from the wording an adopting project ratified in the field
@@ -207,7 +210,9 @@ completion state — a checkbox moving in **either** direction — records progr
 already approved and requires no approver. Un-ticking is progress too: it records that work
 proved incomplete, and changes nothing about what was agreed. Every other change to an
 approved document is an amendment, including any task whose **text** changes — re-worded,
-re-scoped, or re-opened by an annotation that changes what the task means. This exemption is
+re-scoped, or annotated. The test is the text, not the intent behind it: an annotation is an
+amendment because it changes what the document says, and no reader has to judge why. This
+exemption is
 part of the rule rather than a detail of whatever grades it: without it the rule would demand
 an approval for finishing a task, and a rule that is absurd in its commonest case is one
 people route around.
@@ -215,9 +220,10 @@ people route around.
 **What can be verified, and what cannot**: a machine can grade that a record exists, is
 well-formed, and names the same approver as the commit carrying it. Three things it cannot.
 It cannot verify that the named person agreed — on a solo project the approver will be the
-same human who drove the session. It cannot enforce the self-approval prohibition at all: no
-check can tell which session produced a diff, so **that half of this rule is held by review
-alone**, and saying otherwise would be the pretence this clause exists to remove. And it does
+same human who drove the session. It does not enforce the self-approval prohibition: the kit records no
+link between a commit and the session that produced its diff, so **that half of this rule is
+held by review alone**, and saying otherwise would be the pretence this clause exists to
+remove. And it does
 not observe approval — a document counts as approved once it exists, because this kit has no
 separate approval token; the proxy is deliberate and it is the reason a document's first
 appearance owes no record. What the rule buys is that an amendment is now *visible in the
@@ -236,8 +242,7 @@ check caught it, because `scripts/scope-check.ps1`, `scripts/scope-check-repos.p
 none of them grades authority — so an agent that widens its own Territory passes the scope
 check by construction, because the check reads the Territory that same agent just wrote.
 Every one of those amendments happened to be correct, which is exactly why the mechanism
-would have survived one that was not. Each of those amendments happened to be correct, which is precisely why the
-mechanism would have survived one that was not. Getting the order right — amend, then
+would have survived one that was not. Getting the order right — amend, then
 implement — is a check on retroactivity, not a check on consent, and the two had been
 quietly conflated.
 
