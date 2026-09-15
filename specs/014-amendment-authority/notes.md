@@ -350,3 +350,171 @@ available short of another reviewer.
 **The condition attached to that decision**: any logic error the replay surfaces is a **phase 2
 finding**, remediated as such, not absorbed into phase 3's conclusions. Phase 3 must not be
 allowed to quietly become the place where phase 2's defects are discovered and not recorded.
+
+## Phase 3 — the replay over real history (T020, T021)
+
+Run 2026-09-14 with `-IgnoreAmendmentBoundary` (D2c) and the new `-ReplayBase`/`-ReplayTip`
+analysis parameters, over commits nobody wrote for this feature.
+
+### SC-002 — MET
+
+FitForge 001, range `bed2c26..db25cb7`: **23 of 25 commits graded**, 14 flagged. The five
+amendments recorded in that feature's governance review as finding F3 each fail the check **as
+they were actually committed**, identified by sha rather than by reconstruction:
+
+| Commit | What F3 recorded | Flagged on |
+|---|---|---|
+| `26d9108` | the §5 **new package** amendment | `plan.md` |
+| `7d3f297` | the amendment made **two seconds** before the phase | `contracts/health.md`, `tasks.md` |
+| `8785678` | widened Territory (a `scope-check` WARN "correct-by-parent") | `contracts/health.md`, `plan.md`, `tasks.md` |
+| `92455d6` | widened Territory (the second WARN) | `plan.md`, `tasks.md` |
+| `3cb6e34` | the added phase | `plan.md`, `spec.md` |
+
+This is the criterion the whole feature was aimed at, and it is the one result here that no
+fixture could have produced.
+
+### SC-004 — 67 flags across the merged kit features, and they are NOT spurious
+
+| | |
+|---|---|
+| Features replayed | 12 (002 → 013) |
+| Flags | 67 |
+| On `tasks.md` | 51 |
+| On `contracts/**` | 11 |
+| On `spec.md` / `plan.md` | 4 |
+| D5 violations (record present, commit message silent) | 1 — `e1dcf0c`, feature 013 |
+
+**The concentration on `tasks.md` looked like a spurious class and is not one.** Sampling the
+diffs (`66b3dff`: 22 lines added, 7 removed; `dc6bbd6`: 37 added, 5 removed; `aad06e1`: 23
+added, 7 removed) shows these commits did not tick tasks — they **rewrote the task text while
+ticking it**, expanding each line to describe what had actually been done. That changes what
+the approved document says the work was. It is the benign form of exactly the failure this
+feature exists to catch, and the check is right to flag it.
+
+So D3a does **not** apply: this is not a class of routine change a reviewer would wave through,
+it is a practice that the rule is incompatible with. The kit did it on essentially every
+feature it has ever shipped, including the three whose reviews caught nothing.
+
+**Correction, 2026-09-16.** This section first said thirteen features. The replay covers the
+twelve merged feature branches from 002 to 013 — 121 graded commits. The flag count, 67, was
+and is right; the feature count was one too many. `plan.md` D3c and the commit message that
+carried it inherited the same figure. The decision does not turn on it, and correcting an
+approved document needs an approver who is not me (constitution I), so it is recorded here and
+left for the owner to fold in if they think it worth an amendment.
+
+The single D5 flag is worth naming separately: feature 013's `e1dcf0c` carries three genuine
+`**Amendment approved by**: anas.m` lines in `plan.md` — the kit's own best-practice
+amendments — and its commit message names nobody. Half-recorded, by the feature that
+established the convention.
+
+### The decision (T022)
+
+Two ways forward, and it was the owner's call, not the agent's:
+
+- **(a) The practice changes.** `tasks.md` holds agreed work and completion state only; what
+  was actually done goes to `notes.md`, exactly as phase evidence already did under D3b. The
+  rule then costs nothing in normal work. This is consistent with D3b and needs no exemption.
+- **(b) An exemption is carved** for appending to a task line while ticking it. Cheaper for
+  habit, and it reopens the smuggling vector deliberately: "expand the task text to match what
+  the code does" is how an agent rewrites the standard it is judged against.
+
+**Decided 2026-09-14: (a).** Recorded as plan decision D3c, amended into `plan.md` with the
+owner's approver line (`4d0dbb9`). `tasks.md` holds the agreed work and its completion state;
+what was actually done goes to `notes.md`. No exemption is added, so the rule stays sharp and
+the habit changes — the cost lands on the kit's own practice rather than on the check's
+precision. The failure message now says so in the sentence a reader meets at the moment they
+trip on it (T023).
+
+### SC-006 (T024) — the cost was real, and it was all plumbing
+
+Wall-clock is still unusable on this machine: the process-spawn degradation recorded under
+"What could not be measured, and why" has not gone away. Ten bare `cmd /c echo` spawns cost
+**22 s** — 2.2 s to start a process that does nothing. Within one session the pack was timed at
+15.7 s, 18.3 s and 22.2 s before the batching below, and at **201 s** after it, while making
+half as many git calls. That last number measures the machine, not the check, and it is the
+reason nothing here is reported in seconds.
+
+So the check was measured in the unit that actually drives its cost and does not vary with the
+machine: **child processes**. Every git question is one spawn.
+
+| On this branch (17 commits, 8 graded) | git calls | share of the pack |
+|---|---|---|
+| Amendment check, as phase 2 shipped it | 66 | 74 % of 89 |
+| Amendment check, after batching (T024) | **20** | 47 % of 43 |
+
+Seventy-four per cent of every git call the whole enforcement pack made was this one check.
+The one timing that is worth anything is a *ratio* taken back to back in the same minute: the
+pack ran in 15.7 s and 18.3 s with the check and 4.5 s and 5.0 s with it disabled — three
+quarters of its time, matching three quarters of its git calls, and about a third of the 35.5 s
+`ritual-checks` run measured beside them. **SC-006 asks for "a small, stated fraction". That
+was not one**, and the plan named the remedy in advance: batch the plumbing, never the
+granularity (Complexity Tracking).
+
+Three questions now cover the range instead of being asked commit by commit:
+
+| Batch | Replaced | Calls |
+|---|---|---|
+| `git log --format=<sha,parents,date,body,trailers>` | one `rev-list --parents` per commit, plus `%ad`, `%B` and `%(trailers:only)` per amendment | 27 → 1 |
+| `git log --name-status` | one `show --name-status` per graded commit | 8 → 1 |
+| `git grep -l <function> <every first parent>` | one 39 KB blob read per ungraded commit (the D2b boundary) | 10 → 1 |
+| a per-run blob cache | the same two `tasks.md` blobs read twice — once for visibility, once for the checkbox comparison | 16 → 12 |
+
+What is graded did not change. The walk is still per commit, the boundary is still evaluated
+per commit against that commit's own parent (J2), and the sticky flag still stops re-testing
+once crossed. The batches change **who is asked**, not what for. The remaining 20 calls are
+five per-file diffs and twelve blob reads — proportionate to the documents actually amended,
+not to the length of the branch, which is the shape the plan wanted.
+
+`Test-AmendmentCheckPresent` is gone: the batched presence set makes the same content test, and
+a second implementation of a boundary this feature has already got wrong once is a liability.
+
+### The control character that "started" every line
+
+The name-status batch parsed as one enormous record on its first run. `String.StartsWith`
+defaults to a **culture-sensitive** comparison, which treats an ASCII record separator as
+ignorable — so every line, the empty ones included, started with it. The fix is an ordinal
+test on the first character.
+
+It is the same lesson as the H6 timezone finding and the J4 trailer finding: the failure was
+never in the rule, it was in a library default that is *helpful* about text. Worth naming
+because this check now has three of them.
+
+
+### Verification after the batching (T025) — 33 scenarios, three suites, no change
+
+Re-run in full against the batched check, on 2026-09-16. Every scenario returned the verdict
+fixed for it before the code existed.
+
+| Suite | Scenarios | Result |
+|---|---|---|
+| S1–S14, S9b, N1–N3 | the originals, written before any code | every verdict as specified |
+| A1–A7 | the third review's false-PASS shapes | A1–A6b still fail, A7 still passes |
+| J1–J7 | the fourth review's findings, incl. the PR merge preview | all seven correct |
+
+J2 is the one to look at twice. It is the merge-preview case whose whole point is that the
+boundary must be judged per commit and not from `HEAD^`, and it is the case the batching had
+most room to break, because the presence test now runs once for the whole range instead of
+commit by commit. It still fails the silent amendment, which is what it must do.
+
+The suites needed one change themselves: their pass/fail filter matched **any** line mentioning
+`AmendmentAuthority`, and the check now prints a line on every run saying how many commits it
+graded. Narrowed to the failure lines the pack indents under `enforcement-pack: FAIL`. Worth
+recording as its own small lesson — a harness that greps for a name rather than for a verdict
+breaks the moment the thing it grades learns to talk.
+
+
+### The replays, re-run against the batched check (T020, T021)
+
+The fixtures were designed by the author; the replay was not. Both ranges were re-run after the
+batching and reproduce to the commit:
+
+| | before | after |
+|---|---|---|
+| FitForge 001, `bed2c26..db25cb7` | 23 of 25 graded, 14 flags | **identical** |
+| This repository, 12 merged features | 67 flags | **identical** |
+
+The five amendments recorded as finding F3 in FitForge 001 — `26d9108`, `7d3f297`, `8785678`,
+`92455d6`, `3cb6e34` — are each still flagged, by sha. SC-002 and SC-004 stand exactly as
+phase 3 first recorded them, which is the only evidence that matters here: 66 git calls and 20
+git calls reached the same verdict on the 23 + 121 commits they graded, none of which
+was written for this check.
