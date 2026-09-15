@@ -86,7 +86,13 @@ param(
     # commits made before it existed. Used to replay the check over real history (SC-002).
     # No gate, no CI workflow and no ritual-checks invocation passes this — enforcement stays
     # bounded by D2b. Passing it in a gate would grade commits nobody could have complied with.
-    [switch]$IgnoreAmendmentBoundary
+    [switch]$IgnoreAmendmentBoundary,
+    # ANALYSIS ONLY (014 plan D2c), like -IgnoreAmendmentBoundary: grade an explicit commit
+    # range instead of the branch's own. Used to replay the amendment check over history it
+    # does not govern (SC-002, SC-004). No gate, CI workflow or ritual-checks invocation
+    # passes these; with both empty the check reads the branch exactly as before.
+    [string]$ReplayBase,
+    [string]$ReplayTip
 )
 
 $ErrorActionPreference = 'Stop'
@@ -645,13 +651,88 @@ function Invoke-PhaseSizeWarningCheck {
 $script:AmendmentRecordPattern = '^\*\*Amendment approved by\*\*:\s*(.+?)\s*,\s*(\d{4}-\d{2}-\d{2})\s*\.?\s*$'
 $script:AmendmentRecordExample = '**Amendment approved by**: <name>, <YYYY-MM-DD>'
 
-# D2b boundary. Self-bootstrapping: reads the parent's blob of this very script.
-function Test-AmendmentCheckPresent {
-    param([string]$Ref)
-    if (-not $Ref) { return $false }
-    $blob = git show "${Ref}:scripts/enforcement-pack.ps1" 2>$null
-    if (-not $blob) { return $false }
-    return (($blob -join "`n") -match 'function Invoke-AmendmentAuthorityCheck')
+# --- Plumbing batches (phase 3, T024 / SC-006) --------------------------------------------
+# The check's cost is dominated by CHILD PROCESSES, not by the work inside them. Measured on
+# this branch, the per-commit shape of D1 asked git 66 questions — three quarters of every git
+# call the whole pack made, and about a third of `ritual-checks`. Each batch below asks ONE
+# question whose answer covers the range. None of them changes WHAT is graded: per-commit
+# granularity is what makes D5's message test possible and it is untouched (plan, Complexity
+# Tracking: "batch the plumbing calls, not the granularity").
+$script:GitRS = [string][char]30   # ASCII record separator — cannot occur in a commit message
+$script:GitFS = [string][char]31   # ASCII unit separator
+
+# sha -> @{ Parents; Day; Body; Trailers } for every commit in the range, in one git call.
+# Replaces one `rev-list --parents -n 1` per commit plus three `show -s` calls per amendment.
+function Get-CommitMetaBatch {
+    param([string]$Range)
+    $fmt = "$script:GitRS%H$script:GitFS%P$script:GitFS%ad$script:GitFS%B$script:GitFS%(trailers:only)"
+    $raw = (@(git log --reverse --date=short --format=$fmt $Range 2>$null) -join "`n")
+    $meta = [ordered]@{}
+    foreach ($rec in ($raw -split $script:GitRS)) {
+        if (-not $rec.Trim()) { continue }
+        $f = $rec -split $script:GitFS
+        if ($f.Count -lt 5) { continue }
+        $meta[$f[0].Trim()] = @{
+            Parents  = @($f[1].Trim() -split '\s+' | Where-Object { $_ })
+            Day      = $f[2].Trim()
+            Body     = @($f[3] -split "`r?`n")
+            Trailers = @($f[4] -split "`r?`n" | Where-Object { $_.Trim() })
+        }
+    }
+    return $meta
+}
+
+# sha -> the commit's raw name-status rows, for every commit in the range, in one git call.
+# Merge commits produce no rows here exactly as `git show --name-status` produced none; D7
+# discards them before this is read, so the two agree by construction.
+function Get-NameStatusBatch {
+    param([string]$Range)
+    $map = @{}
+    $current = $null
+    foreach ($line in @(git log --reverse --format="$script:GitRS%H" --name-status $Range 2>$null)) {
+        # ORDINAL comparison, deliberately. String.StartsWith defaults to a CULTURE-SENSITIVE
+        # comparison that treats a control character as ignorable, so every line — including
+        # the empty ones — "starts with" the record separator and the parse collapses.
+        if ($line.Length -gt 0 -and $line[0] -eq [char]30) {
+            $current = $line.Substring(1).Trim()
+            $map[$current] = @()
+            continue
+        }
+        if (-not $current -or -not $line) { continue }
+        $map[$current] += $line
+    }
+    return $map
+}
+
+# The set of refs that already carry the check (D2b), in one git call. `git grep` searches many
+# trees at once and prints '<rev>:<path>' per hit, so the boundary question that cost one 39 KB
+# blob read per ungraded commit now costs one process for the whole branch. Self-bootstrapping,
+# as the per-ref version was: the test is whether that tree's copy of THIS script defines the
+# check function.
+function Get-CheckPresenceSet {
+    param([string[]]$Refs)
+    $set = @{}
+    $unique = @($Refs | Where-Object { $_ } | Sort-Object -Unique)
+    if ($unique.Count -eq 0) { return $set }
+    $hits = @(git grep -l -F -e 'function Invoke-AmendmentAuthorityCheck' @unique -- 'scripts/enforcement-pack.ps1' 2>$null)
+    foreach ($hit in $hits) {
+        if ($hit -match '^(.+):scripts/enforcement-pack\.ps1$') { $set[$matches[1]] = $true }
+    }
+    return $set
+}
+
+# One blob, read at most once per run. The visibility test, the occurrence count and the
+# checkbox comparison all want the same two blobs of the same tasks.md; without this they read
+# each of them twice.
+$script:AmendmentBlobCache = @{}
+function Get-BlobLines {
+    param([string]$Ref, [string]$Path)
+    if (-not $Ref) { return @() }
+    $key = "${Ref}:${Path}"
+    if ($script:AmendmentBlobCache.ContainsKey($key)) { return $script:AmendmentBlobCache[$key] }
+    $lines = @(git show $key 2>$null)
+    $script:AmendmentBlobCache[$key] = $lines
+    return $lines
 }
 
 # Visible lines of a text blob — HTML comments stripped, same rule as Get-VisiblePlanLines
@@ -687,11 +768,11 @@ function Get-AddedRecordLines {
             Where-Object { $_ -match $script:AmendmentRecordPattern } | Sort-Object -Unique)
         if ($candidates.Count -eq 0) { continue }
         $visCount = @{}
-        foreach ($l in (Get-VisibleFromText -Lines @(git show "${Commit}:${path}" 2>$null))) {
+        foreach ($l in (Get-VisibleFromText -Lines (Get-BlobLines -Ref $Commit -Path $path))) {
             $t = $l.Trim(); if ($t) { $visCount[$t] = 1 + [int]$visCount[$t] }
         }
         $beforeCount = @{}
-        foreach ($l in (Get-VisibleFromText -Lines @(git show "${Parent}:${path}" 2>$null))) {
+        foreach ($l in (Get-VisibleFromText -Lines (Get-BlobLines -Ref $Parent -Path $path))) {
             $t = $l.Trim(); if ($t) { $beforeCount[$t] = 1 + [int]$beforeCount[$t] }
         }
         foreach ($line in $candidates) {
@@ -726,8 +807,8 @@ function Test-CheckboxOnlyChange {
         foreach ($l in $lines) { $out.Add(($l -replace '^(\s*(?:[-*]|\d+\.)\s*)\[[ xX]\]', '${1}[]').TrimEnd()) }
         return $out
     }
-    $now  = & $neutral @(git show "${Commit}:${Path}" 2>$null)
-    $then = & $neutral @(git show "${Parent}:${ParentPath}" 2>$null)
+    $now  = & $neutral (Get-BlobLines -Ref $Commit -Path $Path)
+    $then = & $neutral (Get-BlobLines -Ref $Parent -Path $ParentPath)
     if ($now.Count -ne $then.Count) { return $false }
     for ($i = 0; $i -lt $now.Count; $i++) { if ($now[$i] -ne $then[$i]) { return $false } }
     return $true
@@ -767,12 +848,25 @@ function Get-ConformingRecord {
 }
 
 function Invoke-AmendmentAuthorityCheck {
-    param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary)
+    param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary,
+          [string]$ReplayBase, [string]$ReplayTip)
     if ($Branch -notmatch '^\d{3}-') { return }
     if (-not $Base) { return }
     $dir = "specs/$Branch"
-    $commits = @((git rev-list --reverse "$Base..HEAD" 2>$null) | Where-Object { $_ })
-    if ($commits.Count -eq 0) { return }
+    $range = if ($ReplayTip) { "$ReplayBase..$ReplayTip" } else { "$Base..HEAD" }
+    # Three git calls now answer everything the walk below used to ask commit by commit: the
+    # commits and their parents, dates, messages and trailers; every commit's name-status; and
+    # which parents already carried the check (T024 — the walk itself is unchanged).
+    $meta = Get-CommitMetaBatch -Range $range
+    $commits = @($meta.Keys)
+    if ($commits.Count -eq 0) {
+        Write-Host "AmendmentAuthority: no commits in $range — nothing to grade"
+        return
+    }
+    # Report what was actually graded. A run that grades nothing must not be output-identical
+    # to a run that grades everything and finds it clean: that silence is what let a fail-open
+    # boundary (J2) and two broken fixtures pass for green.
+    $gradedCount = 0
 
     # D2b. The boundary is evaluated PER COMMIT against that commit's own parent. An earlier
     # version short-circuited on HEAD^ alone to save blob reads (SC-006); that failed open,
@@ -784,17 +878,26 @@ function Invoke-AmendmentAuthorityCheck {
     # history); no gate, no ritual-checks and no CI workflow passes it.
     $graded = $IgnoreAmendmentBoundary.IsPresent
 
+    $nameStatus = Get-NameStatusBatch -Range $range
+    # Every first parent in the range, tested in one call. The sticky flag below still decides
+    # PER COMMIT whether that commit is graded — the batch changes who is asked, not what for.
+    $presence = @{}
+    if (-not $graded) { $presence = Get-CheckPresenceSet -Refs @($commits | ForEach-Object { @($meta[$_].Parents)[0] }) }
+
     foreach ($commit in $commits) {
-        $lineage = @((git rev-list --parents -n 1 $commit 2>$null) -split '\s+' | Where-Object { $_ })
-        if ($lineage.Count -gt 2) { continue }                       # D7: merge commit authored nothing
+        $parents = @($meta[$commit].Parents)
+        if ($parents.Count -gt 1) { continue }                       # D7: merge commit authored nothing
+        if ($parents.Count -eq 0) { continue }                       # a root commit creates; D2
+        $parent = $parents[0]
         if (-not $graded) {
-            if (-not (Test-AmendmentCheckPresent -Ref $lineage[1])) { continue }   # D2b
+            if (-not $presence.ContainsKey($parent)) { continue }     # D2b
             $graded = $true                                          # monotonic: stop re-testing
         }
+        $gradedCount++
         $short = $commit.Substring(0, 7)
 
         $amended = @()
-        foreach ($row in (git show --name-status --format='' $commit 2>$null)) {
+        foreach ($row in @($nameStatus[$commit])) {
             if (-not $row) { continue }
             $parts = $row -split "`t"
             if ($parts.Count -lt 2) { continue }
@@ -820,27 +923,27 @@ function Invoke-AmendmentAuthorityCheck {
                 # A rename WITHIN the same feature directory is not renumbering. It is creation
                 # only if the content came across intact; otherwise it is an amendment wearing a
                 # new path (H3 — a contract renamed and reinterpreted in one commit).
-                $sameContent = (git rev-parse "${commit}:${path}" 2>$null) -eq (git rev-parse "$($lineage[1]):${oldPath}" 2>$null)
+                $sameContent = (git rev-parse "${commit}:${path}" 2>$null) -eq (git rev-parse "${parent}:${oldPath}" 2>$null)
                 if ($sameContent) { continue }
             }
             if ($leaf -eq 'tasks.md' -and
-                (Test-CheckboxOnlyChange -Commit $commit -Parent $lineage[1] -Path $path -ParentPath $oldPath)) { continue }
+                (Test-CheckboxOnlyChange -Commit $commit -Parent $parent -Path $path -ParentPath $oldPath)) { continue }
             $amended += $path
         }
         if ($amended.Count -eq 0) { continue }
 
-        $commitDay = (git show -s --format=%ad --date=short $commit 2>$null)
+        $commitDay = $meta[$commit].Day
         if (-not $commitDay) { $commitDay = (Get-Date).ToString('yyyy-MM-dd') }
         # H4: the record must be added to a file this commit actually AMENDED — a record in
         # notes.md cannot approve a silent change to plan.md, and the failure message says
         # "on the amended section", which this now means.
-        $recordLines = Get-AddedRecordLines -Commit $commit -Parent $lineage[1] -Paths $amended
+        $recordLines = Get-AddedRecordLines -Commit $commit -Parent $parent -Paths $amended
         $record = Get-ConformingRecord -AddedLines $recordLines -CommitDay $commitDay
         $files = ($amended | Sort-Object -Unique) -join ', '
 
         if (-not $record.Name) {
             $why = if ($record.Malformed.Count -gt 0) { " Rejected record(s): $($record.Malformed -join '; ')." } else { '' }
-            $script:failures += "AmendmentAuthority: commit $short amends $files after approval with no conforming approver record.$why Add '$script:AmendmentRecordExample' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt; changing what a document says is not"
+            $script:failures += "AmendmentAuthority: commit $short amends $files after approval with no conforming approver record.$why Add '$script:AmendmentRecordExample' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt — in either direction — but rewriting a task's text while ticking it is not: record what was done in notes.md, and leave the task saying what was agreed (plan D3c)"
             continue
         }
         # Whole-word match over the message with git's OWN trailers removed — a mandated
@@ -848,13 +951,16 @@ function Invoke-AmendmentAuthorityCheck {
         # an unanchored search let 'Al' match the word 'Also'. Asking git which lines are
         # trailers, instead of dropping every 'Word: ' line, keeps the SUBJECT ('docs: …',
         # 'spec: …') and ordinary body lines ('Note: approved by bob') in the message (J4).
-        $full = @(git show -s --format=%B $commit 2>$null)
-        $trailers = @(git show -s --format='%(trailers:only)' $commit 2>$null | Where-Object { $_ })
+        $full = @($meta[$commit].Body)
+        $trailers = @($meta[$commit].Trailers)
         $message = (@($full | Where-Object { $trailers -notcontains $_ })) -join "`n"
         if ($message -notmatch ('(?<![\w-])' + [regex]::Escape($record.Name) + '(?![\w-])')) {
             $script:failures += "AmendmentAuthority: commit $short records '$($record.Name)' as the approver of its change to $files, but its commit message does not name them — the message is fixed at commit time and is the half a later edit cannot fake (constitution I; plan D5)"
         }
     }
+    $skipped = $commits.Count - $gradedCount
+    $why = if ($skipped -gt 0) { " ($skipped not graded: merge commits, or made before the check existed — plan D2b)" } else { '' }
+    Write-Host "AmendmentAuthority: graded $gradedCount of $($commits.Count) commit(s) in $range$why"
 }
 
 # --- Dispatch ---
@@ -873,7 +979,7 @@ if ($Branch -in @('main', 'master')) {
     Invoke-GateBatchingCheck -Branch $Branch
     Invoke-GateCertificationCheck -Branch $Branch
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
-    Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary
+    Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary -ReplayBase $ReplayBase -ReplayTip $ReplayTip
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles
