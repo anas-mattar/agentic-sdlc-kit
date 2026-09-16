@@ -409,6 +409,11 @@ Nothing you committed before the update that delivers the check is graded, here 
 adopted project. No in-flight branch turns red on arrival; the first commit the rule can fail
 is one you make afterwards, knowing it applies.
 
+One exception, worth checking *before* you update rather than after: if your CI clones
+shallowly, the check fails on the first `NNN-*` branch it sees, because it will not guess at a
+boundary it cannot compute. That is a verdict on the checkout, not on your history — set
+`fetch-depth: 0` (below) and arrival day is silent as described.
+
 The boundary is not a courtesy, and it is worth understanding rather than just relying on.
 Half of every record lives in the commit message, and a commit message is immutable. A
 retroactive rule would therefore be one **no adopter could comply with** — the only remedy
@@ -419,17 +424,17 @@ did on its own branch.
 
 **Give CI the whole history.** The boundary is computed by reading each commit's own tree, so
 the check needs real objects to read. In a shallow or partial clone — `actions/checkout`
-defaults to depth 1 — there is nothing to read, and a check that grades nothing looks exactly
-like a branch that is legitimately pre-boundary: green, and meaningless. The kit's
-`.github/workflows/ritual-checks.yml` ships with `fetch-depth: 0` for this reason; if you wrote
-your own workflow, or fetch shallowly on a build agent, set it there too. The check cannot
-detect that it is in that position: with no base to diff against it returns without printing,
-and where refs are unreadable each commit simply never enters the presence set and is reported
-as made before the check existed. Either way the run is green and says nothing, so
-`fetch-depth: 0` is the only defence — there is no failure waiting to catch you.
+defaults to depth 1 — those objects are not there, and a check that grades nothing would look
+exactly like a branch that is legitimately pre-boundary: green, and meaningless. So on an
+`NNN-*` branch the check refuses to guess. It fails, and names the condition it met: a shallow
+clone, an `origin/main` that does not resolve, or a parent commit this clone cannot read. A
+Lite branch (`fix/`, `chore/`, `docs/`) is unaffected — the check returns before it consults
+history at all. The kit's `.github/workflows/ritual-checks.yml` ships with `fetch-depth: 0`;
+if you wrote your own workflow, or fetch shallowly on a build agent, set it there too. That is
+still the fix. What it buys you is a red build instead of a green one that graded nothing.
 
 <!-- digest: The amendment check binds forward only — nothing committed before it arrived is graded. -->
-<!-- digest: The amendment check needs full history — fetch-depth 0 in CI, or it grades nothing and looks green. -->
+<!-- digest: The amendment check needs full history — fetch-depth 0 in CI, or it fails naming the shallow clone. -->
 
 ## 3. Other surgical files
 

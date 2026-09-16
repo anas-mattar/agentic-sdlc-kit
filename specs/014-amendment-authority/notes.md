@@ -1331,3 +1331,81 @@ None is fixable inside any phase's Territory; all three are `scripts/` changes.
 
 They are one family: each passes quietly where it should speak. A feature arguing that a check
 which fails open is worse than one that is noisy should not leave three of them in the drawer.
+
+## Phase 5 — the check speaks when it cannot grade (T078–T084)
+
+Phase 4's review found F1 by measuring rather than reasoning, and phase 5 was built the same
+way: every claim below is a run, and two of them overturned a design I had already written.
+
+### What the check did before
+
+| Condition | Old behaviour | Now |
+|---|---|---|
+| Shallow clone (`--depth 1`) | `return` with nothing printed, exit 0 | FAIL naming the shallow clone |
+| No `origin/main` or `main` | `return` with nothing printed, exit 0 | FAIL naming the unreachable base |
+| Parent commit unreadable | counted into `skipBoundary`, reported as "made before the check existed", exit 0 | FAIL naming the parent |
+| Lite branch (`fix/`, `chore/`, `docs/`) | returns before the base is consulted | unchanged (FR-009) |
+
+### The four fixtures
+
+Run with the modified script against each tree via `-Root`, which is the omission that made an
+earlier local verdict meaningless on this branch.
+
+```text
+full clone      exit 0   graded 24 of 33 commit(s) … (9 made before the check existed)   ← control, unchanged
+--depth 1       exit 1   cannot grade '014-…' — this is a shallow clone …
+no main ref     exit 1   cannot grade '014-…' — no integration branch to diff against …
+deleted blob    exit 1   cannot grade '015-test' — parent commit 197418c of 1f13d76 is not readable …
+fix/ on shallow exit 0   no AmendmentAuthority line at all                                ← FR-009 held
+```
+
+### Two things the fixtures overturned
+
+**`git grep` exits 1 for "unreadable", not 2.** The B3 hardening in `Get-CheckPresenceSet`
+assumes an unresolvable ref aborts the search with exit ≥ 2 and falls back to a per-ref probe.
+Measured on the deleted-blob fixture, `git grep` prints `error: … unable to read <blob>` to
+**stderr and exits 1** — indistinguishable from "searched it, found nothing". So the fallback
+never ran, the ref never entered the presence set, and absence from that set was never evidence
+of absence. My first attempt at T080 guarded the fallback and changed nothing: the fixture still
+graded 0 of 2 commits, let an unapproved amendment through, and reported "made before the check
+existed" about a tree that contained the check. Replaced with `Test-CheckAbsentForReal`, which
+proves absence at the point of use instead of inferring it.
+
+**A missing commit object is not the only way a ref goes unreadable.** The first discriminator
+tested `git cat-file -e <ref>^{commit}` alone. In the fixture the commit and tree are intact and
+only the blob is gone, so that test passed and the ref was still treated as pre-boundary. The
+helper now asks three questions in order — is the commit here, does the tree list the script,
+can the blob be read — and only the middle answer ("the tree does not list it") means the script
+genuinely did not exist yet.
+
+The fixture that settled both: a throwaway repository with two commits on an `NNN-*` branch, an
+unapproved `plan.md` amendment, and the base commit's copy of `scripts/enforcement-pack.ps1`
+deleted from `.git/objects` by hand. Commit and tree readable, blob not — the state a partial
+clone produces and the one `--depth 1` hides behind an earlier failure.
+
+### What is deliberately unchanged
+
+The guards live inside `Invoke-AmendmentAuthorityCheck`, after the branch-name return. Other
+pack members read the same diff base and were left alone: a null base is a real condition for
+checks that legitimately grade a worktree, and turning it into a pack-wide failure would be a
+scope change this phase did not declare and did not need. Proven rather than assumed — a `fix/`
+branch on the shallow fixture still exits 0 with no `AmendmentAuthority` line.
+
+### The adopter paragraph, corrected a second time
+
+Phase 4 was made to write, truthfully, that no failure was waiting to catch a shallow fetch.
+Phase 5 makes that false, so `adoption/updating.md` says what the check now does, and two other
+statements in the same section had to move with it: the "arrival day is silent" promise now
+carries its one exception (a shallow CI clone fails immediately, which is a verdict on the
+checkout and not on the adopter's history), and the digest marker that read *"it grades nothing
+and looks green"* now reads *"it fails naming the shallow clone"*. Leaving either would have
+reproduced F1 in a new paragraph, which is the specific mistake this phase exists to answer.
+
+### A miss in this phase's own Territory declaration
+
+Changing a digest marker forces `scripts/build-digests.ps1` to rewrite
+`docs/digests/adoption-digest.md`, and CI fails on any drift between a rule and its digest — so
+the regeneration is not optional. Phase 5's Territory declared `scripts/enforcement-pack.ps1`
+and `adoption/updating.md` and not `docs/digests/`, which phase 4's Territory did declare. The
+gap is mine: I wrote the Territory before knowing the marker text would have to change. It needs
+a one-line amendment, and not one I can approve.

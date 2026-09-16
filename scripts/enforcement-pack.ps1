@@ -724,6 +724,23 @@ function Get-NameStatusBatch {
 # blob read per ungraded commit now costs one process for the whole branch. Self-bootstrapping,
 # as the per-ref version was: the test is whether that tree's copy of THIS script defines the
 # check function.
+
+# A ref is pre-boundary only if the check is provably absent from a tree we could actually read.
+# `git grep` exits 1 both for "searched it, no match" and for "could not read the blob" — it
+# prints the error to stderr and exits 1 either way — so B3's `>= 2` guard never fires for an
+# unreadable object and absence from the presence set is not evidence of absence. Measured on a
+# fixture whose blob was deleted: the check graded 0 of 2 commits, let an unapproved amendment
+# through, and reported "made before the check existed" about a tree that contained it (T080).
+function Test-CheckAbsentForReal {
+    param([string]$Ref)
+    git cat-file -e "${Ref}^{commit}" 2>$null
+    if ($LASTEXITCODE -ne 0) { return $false }                       # the commit itself is gone
+    $entry = @(git ls-tree --name-only "$Ref" -- 'scripts/enforcement-pack.ps1' 2>$null)
+    if ($LASTEXITCODE -ne 0) { return $false }
+    if (@($entry | Where-Object { $_ }).Count -eq 0) { return $true } # the script did not exist yet
+    git cat-file -e "${Ref}:scripts/enforcement-pack.ps1" 2>$null
+    return ($LASTEXITCODE -eq 0)                                     # readable and without it, or unknown
+}
 function Get-CheckPresenceSet {
     param([string[]]$Refs)
     $set = @{}
@@ -1052,7 +1069,19 @@ function Invoke-AmendmentAuthorityCheck {
     param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary,
           [string]$ReplayBase, [string]$ReplayTip)
     if ($Branch -notmatch '^\d{3}-') { return }
-    if (-not $Base) { return }
+    # Silence is not compliance (phase 4 review F1). Two conditions make the boundary
+    # uncomputable, and both used to `return` bare — printing nothing, exiting 0, and looking
+    # exactly like a branch that is legitimately pre-boundary. Ask git directly rather than
+    # inferring: a shallow clone can still resolve origin/main, so a base that looks fine says
+    # nothing about whether the history behind it is present.
+    if ("$(git rev-parse --is-shallow-repository 2>$null)".Trim() -eq 'true') {
+        $script:failures += "AmendmentAuthority: cannot grade '$Branch' — this is a shallow clone, so the boundary (plan D2b) would be computed from history that is not present, and every commit would report as predating the check. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' on a build agent (constitution I, Amendment authority)"
+        return
+    }
+    if (-not $Base) {
+        $script:failures += "AmendmentAuthority: cannot grade '$Branch' — no integration branch to diff against: neither 'origin/main' nor 'main' resolves here. Fetch it ('git fetch origin main'), or run the check where it is reachable (constitution I, Amendment authority)"
+        return
+    }
     $dir = "specs/$Branch"
     $range = if ($ReplayTip) { "$ReplayBase..$ReplayTip" } else { "$Base..HEAD" }
     # Three git calls now answer everything the walk below used to ask commit by commit: the
@@ -1105,7 +1134,15 @@ function Invoke-AmendmentAuthorityCheck {
         if ($parents.Count -eq 0) { $skipRoot++; continue }           # a root commit creates; D2
         $parent = $parents[0]
         if (-not $graded) {
-            if (-not $presence.ContainsKey($parent)) { $skipBoundary++; continue }   # D2b
+            if (-not $presence.ContainsKey($parent)) {
+                # Absence must be proven, not inferred (T080). An unreadable parent is unknown,
+                # and "unknown" reported as "predates the check" is a wrong reason printed green.
+                if (-not (Test-CheckAbsentForReal -Ref $parent)) {
+                    $script:failures += "AmendmentAuthority: cannot grade '$Branch' — parent commit $($parent.Substring(0, 7)) of $($commit.Substring(0, 7)) is not readable in this clone, so whether it predates the check is unknown; treating it as pre-boundary would skip a commit on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' (constitution I, Amendment authority)"
+                    return
+                }
+                $skipBoundary++; continue                             # D2b
+            }
             $graded = $true                                          # monotonic: stop re-testing
         }
         $gradedCount++

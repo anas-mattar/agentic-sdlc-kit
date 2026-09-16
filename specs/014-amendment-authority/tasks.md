@@ -480,26 +480,26 @@ false, and a phase that leaves the document behind reopens F1 in the other direc
 
 **Amendment approved by**: anas.m, 2026-09-16.
 
-- [ ] T078 `Invoke-AmendmentAuthorityCheck`: on an `NNN-*` branch, a null diff base is a
+- [x] T078 `Invoke-AmendmentAuthorityCheck`: on an `NNN-*` branch, a null diff base is a
       failure, not a bare `return` (`scripts/enforcement-pack.ps1:1054`). Name both causes an
       adopter can actually have — no reachable `origin/main` or `main`, and a clone too shallow
       to contain one — and say what to do about each
-- [ ] T079 Detect the condition directly rather than inferring it: `git rev-parse
+- [x] T079 Detect the condition directly rather than inferring it: `git rev-parse
       --is-shallow-repository` answers the shallow case in one call, and a shallow repository
       fails the check whether or not a base happened to resolve, because the boundary it would
       compute is not trustworthy
-- [ ] T080 `Get-CheckPresenceSet`: separate "this ref's tree has no check" (legitimately
+- [x] T080 `Get-CheckPresenceSet`: separate "this ref's tree has no check" (legitimately
       pre-boundary, D2b) from "this ref could not be read at all". The B3 per-ref fallback
       treats both as absence, which is what let unreadable refs report as
       `made before the check existed` — an affirmatively wrong reason. Collect the unreadable
       refs and fail naming them
-- [ ] T081 Keep the blast radius inside this check. Other pack members read the same diff base
+- [x] T081 Keep the blast radius inside this check. Other pack members read the same diff base
       and are not in scope; a null base must not newly fail a Lite branch (`fix/`, `chore/`,
       `docs/`), which returns before the base is consulted (FR-009)
-- [ ] T082 Prove it on fixtures, not by reasoning: a full clone (unchanged verdict), a
+- [x] T082 Prove it on fixtures, not by reasoning: a full clone (unchanged verdict), a
       `--depth 1` clone (fails, names the shallow clone), and a repository with no `main` ref
       (fails, names the unreachable base). Record the three runs in `notes.md`
-- [ ] T083 `adoption/updating.md`: rewrite the "Give CI the whole history" close. It now says
+- [x] T083 `adoption/updating.md`: rewrite the "Give CI the whole history" close. It now says
       no failure is waiting to catch you, which phase 5 makes false. Say what the check does
       instead, and keep `fetch-depth: 0` as the fix rather than the defence
 - [ ] T084 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
