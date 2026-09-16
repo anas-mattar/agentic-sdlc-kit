@@ -518,3 +518,39 @@ The five amendments recorded as finding F3 in FitForge 001 — `26d9108`, `7d3f2
 phase 3 first recorded them, which is the only evidence that matters here: 66 git calls and 20
 git calls reached the same verdict on the 23 + 121 commits they graded, none of which
 was written for this check.
+
+
+## Phase 3 — gate (ci-held)
+
+Certified by the owner 2026-09-16 on the evidence triplet.
+
+| | |
+|---|---|
+| Phase commit | `502cf55` |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35059554648 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 3 commit `502cf55` (1 file) |
+| Approved by | anas.m, 2026-09-16 |
+
+The agent-run `pwsh -File scripts/ritual-checks.ps1` returned RESULT OK / EXIT 0 on `593c5e3`.
+That is corroboration and nothing more: an agent-run gate never certifies, in either mode
+(`docs/sdlc/gate-command.md`).
+
+Five `PhaseSizeWarning`s appear in the run — `69b17cf`, `61c57d5`, `9c7fb00`, `0803049`,
+`aa3b194`. All five are amendment or remediation commits from phases 1 and 2, all documents
+rather than code, and none is new to this phase. Non-blocking, as they were when each was made.
+
+**A note on assembling the triplet.** The branch stood four commits ahead of `origin` when the
+gate was called, so the only CI evidence in existence was the phase 2 round-2 run on `f9276fd`.
+Pushing the whole branch would have produced a run on the tip, `593c5e3` — a green run on the
+wrong commit, which certifies nothing (triplet element 3). `502cf55` was therefore pushed alone,
+its run allowed to complete, and `593c5e3` pushed after. Worth writing down because the mistake
+is invisible when it happens: the run is green, the branch is right, the sha is silently one
+commit off, and the evidence reads as valid to anyone who does not check the third element.
+
+**Gate 5 is not held.** The fresh-context AI review of phase 3 has not been run. The phase 2
+round-2 decision to skip a fifth review rested on the replay standing in its place; the replay
+has now happened, so that argument is spent and does not carry forward to this phase's own
+findings — the exemption decision (D3a, T022) and the rewritten failure wording (T023) are
+author judgements no second reader has yet seen.
