@@ -422,7 +422,7 @@ and its phase commit degraded to WARN rather than being graded. The entry list i
       constitution 1.1.0 clause carries an "Enforcement, honestly stated" paragraph that stops
       being true, and it is edited in that repository, by its owner, under its own ritual
       (SC-005)
-- [ ] T030 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
+- [x] T030 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
       ci-held evidence triplet for the final phase
 
 #### Added by amendment 2026-09-13 (G5 — the convention needs a home outside this feature)

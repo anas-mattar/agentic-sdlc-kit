@@ -1184,3 +1184,50 @@ explanation now sits in its own paragraph above the record.
 The fix to `Get-Territory` — accept a decorated marker, or fail rather than WARN when sibling
 phases declare territory — is a check change, outside phase 4's territory, and belongs with the
 other parser work.
+
+## Phase 4 — gate (T030)
+
+Certified by the owner 2026-09-16 on the evidence triplet. This is the last phase of the
+feature, and the first whose phase commit was graded against a `**Territory**` block the
+parser could actually read.
+
+| | |
+|---|---|
+| Phase commit | `fd07952` (`fd07952a2d69b9c365392333799a8f131f6c284a`) |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35083906952 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 4 commit `fd07952` (8 files) |
+| Approved by | anas.m, 2026-09-16 |
+
+`**Gate Batching**: none`, so the triplet cites phase 4's final commit rather than a batch end.
+Three commits pushed together — `c359429` (the round-2 gate record), `3a51f5c` (the approved
+Territory repair) and `fd07952` (the phase) — and the push-event run landed on the phase commit
+as branch head. CI also reported `AmendmentAuthority: graded 20 of 29 commit(s)`, the nine
+ungraded ones being those made before the check existed (D2b).
+
+Digests were regenerated as part of the phase commit: 5 fresh, 80 markers, four of them new in
+`adoption/updating.md`.
+
+### The WARN this gate produced, and why it is cosmetic
+
+```text
+scope-check: WARN commit 3a51f5c: no territory declared for phase 4 ...
+```
+
+The repair commit's own subject reads `docs: repair the phase 4 Territory marker`, and
+`scope-check` matches `\bphase\s+(\d+)\b` in the subject, so the repair is read as a phase 4
+commit and graded against its parent `c359429` — which still carries the decorated marker the
+commit exists to fix. The `phase N`-in-a-`docs:`-subject trap, walked into while fixing the
+neighbouring one.
+
+It is cosmetic in substance: the commit touches one file,
+`specs/014-amendment-authority/tasks.md`, inside the implicit `specs/NNN-name/**` glob, so a
+correctly-read grading passes it too. Left as-is rather than rewritten, because the commit is
+pushed and the subject is the honest description of what it does.
+
+It does sharpen the P2 finding above. `Get-Territory`'s blind spot now fails open twice on this
+one branch — once through a decorated marker, once through a stale parent — and in both cases
+the WARN's "pre-006 compatibility" wording reads as reassurance rather than as a gap. A phase
+that declares no territory in a `tasks.md` whose sibling phases all declare it is not a pre-006
+file, and the check has the evidence to know that.
