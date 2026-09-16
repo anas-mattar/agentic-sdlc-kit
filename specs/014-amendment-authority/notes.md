@@ -879,3 +879,55 @@ The residual risk is written into D3d rather than left for the next reviewer to 
 exemption keys on the line, so `Approved` → `Draft` is exempt too. It buys nothing. Approval is
 proxied by a document's first appearance (D10) and never by this line, so un-setting it
 un-approves nothing the check believes.
+
+
+## Phase 3 — gate, re-run after the remediation (T070)
+
+Certified by the owner 2026-09-16 on the evidence triplet, for the phase's final state.
+
+| | |
+|---|---|
+| Phase commit | `5d49cde` (`5d49cde307665346046ac16a2ec4ea262f7ef468`) |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35067823536 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 3 commits `d606b2e` (4 files), `28d2f0a` (1 file), `5d49cde` (4 files) |
+| Approved by | anas.m, 2026-09-16 |
+
+`**Gate Batching**: none`, so this is not a batch end. It is phase 3's gate held a second time,
+on the commit that carries the phase's final state after the fifth review's remediation. The
+three remediation commits were each graded individually inside the one run — the batching
+declaration governs whether the *gate* may be deferred across phases, not how many commits a
+single phase took to reach its end.
+
+`502cf55`'s certification above stands as the record of what was gated then. It is not
+superseded, and it is not sufficient either: `d606b2e` changed the check's core in five places
+after it.
+
+### The re-runs, and what they proved
+
+| Re-run | Result | Reading |
+|---|---|---|
+| Kit replay, 12 merged features, 121 graded commits | **65 flags** | identical to the post-D3d figure: 011 `0`, 013 `11`, every other feature commit-for-commit unchanged |
+| FitForge 001, `bed2c26..db25cb7` | **23 of 25 graded, 14 flags** | unchanged from the 2026-09-14 run; all five F3 amendments still fail, by sha — `26d9108`, `7d3f297`, `8785678`, `92455d6`, `3cb6e34` |
+
+SC-002 therefore survives B1, B2, B3, B7 and the D3d exemption. The FitForge replay exits 1 by
+design: it is analysis over history full of real violations, `-IgnoreAmendmentBoundary` (D2c),
+and FitForge was read and never written. Both replays need `-Root` pointed at the repository
+being replayed; without it the pack runs against the kit and reports "no commits in range",
+which looks like a clean result and is not one.
+
+### The local run that proved less than it appeared to
+
+The first local `ritual-checks: RESULT OK` of this round was taken against a working tree that
+still held phase 4's uncommitted edits. Every member reads the working tree, so that verdict was
+about a tree CI would never see — green there implies nothing about green on the pushed commit.
+Re-run in a detached worktree at `5d49cde`, the committed tree alone, it was green as well, and
+that is the run worth citing. Recorded because the failure mode is silent: the command is right,
+the output is right, and the subject of the sentence is wrong.
+
+**Gate 5 is still not held.** No fresh-context reviewer has seen this remediation round. Five
+rounds have now returned 6, 3, 6, 6 and 6+1 blocking findings, and this round rewrote the
+commit-set provenance, the name-status batch, the presence batch, the comment stripper and the
+exemption set. The gate above is gate 3, and it certifies that the checks pass — not that the
+changes are right.
