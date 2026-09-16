@@ -53,6 +53,17 @@ review, which is where FitForge already stands. Phase 2 adds the check, provable
 with no history involved. Phase 3 proves it against real commits and fixes what that finds.
 Phase 4 tells adopters what arrives before it arrives.
 
+**Amended 2026-09-16 — a fifth phase.** The phase 4 fresh-context review (F1) measured the
+check against a `--depth 1` clone and found it grades nothing, prints nothing and exits 0: the
+fail-open this feature's own prose warned adopters about, in this feature's own check. Phase 5
+closes it — the check says so when it cannot establish the boundary — and corrects the adopter
+paragraph that phase 4 had to write truthfully about a gap that is now shut. Scope is limited to
+this feature's own check; the two sibling fail-opens the phase 4 work surfaced
+(`build-digests.ps1`, `Get-Territory`) are separate rows and are recorded as such, because
+"Out of scope" in `spec.md` forbids this feature absorbing them.
+
+**Amendment approved by**: anas.m, 2026-09-16.
+
 ## Decisions
 
 **D1 — The check grades commits, not the worktree.** Every other member of the pack grades the
@@ -299,6 +310,8 @@ scripts/enforcement-pack.ps1        # MOD  phase 3 — exemption set and message
 adoption/updating.md                # MOD  phase 4 — what arrives, and what newly fails (FR-011)
 adoption/greenfield.md              # MOD  phase 4 — the record a new project will be asked for
 docs/digests/*.md                   # GEN  phase 4 — regenerated if a marker moved
+scripts/enforcement-pack.ps1        # MOD  phase 5 — the check speaks when it cannot grade (F1)
+adoption/updating.md                # MOD  phase 5 — the paragraph phase 4 wrote is now out of date
 ```
 
 ## Testing Strategy
