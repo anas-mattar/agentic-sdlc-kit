@@ -393,7 +393,7 @@ the boundary means for their in-flight branches (D2b — nothing before the upda
 and a future feature reading the kit's own docs can tell where evidence belongs without
 reading this feature (FR-011, spec US4 scenario 2).
 
-**Territory** (widened by amendment 2026-09-13 — the last two entries, for G5):
+**Territory**: widened by amendment 2026-09-13 — the last two entries, for G5
 
 - `adoption/updating.md`
 - `adoption/greenfield.md`
@@ -402,6 +402,12 @@ reading this feature (FR-011, spec US4 scenario 2).
 - `.specify/templates/tasks-template.md`
 
 **Amendment approved by**: anas.m, 2026-09-13.
+
+Marker form repaired 2026-09-16: the decorated `**Territory** (…):` spelling is invisible to
+`Get-Territory`, which matches `**Territory**:` at line start, so phase 4 declared no territory
+and its phase commit degraded to WARN rather than being graded. The entry list is unchanged.
+
+**Amendment approved by**: anas.m, 2026-09-16.
 
 - [ ] T026 `adoption/updating.md`: what the check grades, what a conforming record looks like,
       and the honest statement of what it does not verify (D10)
