@@ -317,6 +317,43 @@ reviewer judges real, with the judgement written down per flag.
       abandon per-commit granularity (plan, Complexity Tracking)
 - [x] T025 Re-run S1–S14 after any change from T022–T024 and record the results
 
+### Phase 3 remediation (added by amendment 2026-09-16 — fifth review, B1–B6)
+
+**Territory** (unchanged): `scripts/enforcement-pack.ps1`, `specs/014-amendment-authority/tasks.md`
+
+- [x] T063 **B1** — `Get-CommitMetaBatch` split its record stream on `0x1E`, which git carries
+      through a commit message untouched, so one byte let a commit delete itself from the graded
+      set and overwrite an earlier commit's parentage. Records now split on NUL (`-z`), which git
+      refuses in a message; the message-derived fields moved last with the split capped at five;
+      the commit set now comes from `git rev-list`, and a sha it lists that the batch did not
+      parse is a named failure, not a skip
+- [x] T064 **B2** — add `-c core.quotepath=off` to the `--name-status` batch, so a non-ASCII path
+      is graded instead of silently skipped (spec US1 scenario 3). Rider: `Test-CheckboxOnlyChange`
+      returns `$false`, not `$true`, when both blob reads come back empty
+- [x] T065 **B3** — chunk the presence batch at 200 refs and check `$LASTEXITCODE`; on an error
+      exit fall back to the per-ref probe. One unresolvable ref aborted the whole `git grep` and
+      left an empty presence set, which grades nothing while printing what a clean branch prints
+- [x] T066 **N3** — the "not graded" line counted skips but asserted their causes. Count merges,
+      roots and boundary skips separately and report what actually happened
+- [x] T067 **B4** — write the per-flag judgement SC-004 requires into `notes.md`: 67 rows, every
+      sha present, every sha carrying a verdict. Verify independently first that no flag is a
+      pure tick, and re-run both replays as the regression test
+- [x] T068 **B6** — correct the SC-002 table in `notes.md`: `3cb6e34` is the owner's approval
+      commit, not one of F3's five; the real fifth is `cff8c57`
+- [x] T071 **B7** (found while remediating, by the check failing this very round's own
+      amendment record) — a backticked `<!--` in T060's description made the unterminated-comment
+      rule truncate `tasks.md` from that line on, hiding every approver record added after it.
+      Markdown renders code as literal text, so neutralise the markers inside fenced blocks and
+      inline code spans before comment detection. Verified it does not reopen H1 or J5
+- [ ] T069 **B5** — the owner decides whether a diff whose only change is the `**Status**` line
+      earns a D3a class exemption, and the decision is recorded in `plan.md` with its own
+      approver line. Blocked on that decision: an implementing agent must not approve its own
+      amendment (constitution I). Phase 3's **Territory** must gain `plan.md` first (reviewer N10)
+- [ ] T070 Re-run the replays and `pwsh -File scripts/ritual-checks.ps1`, then report the
+      ci-held evidence triplet for this remediation round
+
+**Amendment approved by**: anas.m, 2026-09-16.
+
 ---
 
 ## Phase 4: The adoption surface

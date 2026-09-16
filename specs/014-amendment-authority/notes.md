@@ -554,3 +554,289 @@ round-2 decision to skip a fifth review rested on the replay standing in its pla
 has now happened, so that argument is spent and does not carry forward to this phase's own
 findings — the exemption decision (D3a, T022) and the rewritten failure wording (T023) are
 author judgements no second reader has yet seen.
+
+
+## Phase 3 — the fifth review, and the remediation it forced (B1–B6)
+
+`ai-code-review-phase-3.md`: **REQUEST CHANGES**, 6 blocking, 10 non-blocking. The reviewer
+built seventeen fixtures of its own and declined to run mine, which is the only reason B1 was
+found: my suite could not have produced it, because I wrote both the check and the suite.
+
+**The accounting matters here.** The phase 2 round-2 note attached a condition to skipping the
+fifth review: any logic error the replay surfaced would be a *phase 2* finding. B1, B2 and B3
+are not that. They are defects in the **batching** — phase 3's own T024 work — so they are
+phase 3 findings. Skipping the fifth review did not cost us something the replay was meant to
+catch. It cost us review of the optimisation the replay motivated, which is the one piece of
+this feature no fixture suite had ever seen.
+
+All three blocking code defects **fail open**: each returns a clean PASS on a branch carrying a
+silent amendment.
+
+### B1 — a commit could delete itself from the graded set
+
+`Get-CommitMetaBatch` split its record stream on `0x1E`, under a comment asserting that byte
+"cannot occur in a commit message". It can. Demonstrated here, not taken on trust:
+
+```text
+$ printf 'subject\n\nbody with \036 separator\n' > m.txt ; git commit -F m.txt
+$ git log -1 --format=%B | od -c   →   b o d y   w i t h   036   s e p a r a t o r
+```
+
+git carries `0x1E` through untouched. It **refuses** a NUL: `error: a NUL byte in commit log
+message not allowed`. So the fix is not a better rare byte, it is the byte git guarantees:
+records are now separated with `-z`, the two message-derived fields moved **last**, and the
+field split is capped at five — so an injected `0x1F` can only truncate message text, and lost
+message text can only make the D5 name test fail, never pass.
+
+The set of commits no longer comes from the message stream at all. It comes from
+`git rev-list --reverse`, which reads commit objects; and any sha rev-list lists that the batch
+did not parse is now a **named failure**, not a skip. That assertion is the thing whose absence
+made B1 work.
+
+| Fixture: a silent `plan.md` widening, message carrying one `0x1E` | Verdict |
+|---|---|
+| Pre-fix (`502cf55`) | `no commits in <range> — nothing to grade` — **clean pass** |
+| Post-fix | `commit 8018ef8 amends specs/014-x/plan.md after approval with no conforming approver record` |
+
+### B2 — a non-ASCII path was never graded
+
+`Get-NameStatusBatch` omitted `-c core.quotepath=off`, so `contracts/café-api.md` arrived
+quoted-octal, failed the `"$dir/*"` filter, and was skipped. This is spec US1 scenario 3
+verbatim, and the third appearance of this shape in the kit: `scope-lib.ps1` carries the flag
+citing 006 review F3, and `enforcement-pack.ps1:577` carries it citing phase 2 review F2. The
+batching lifted the read into a new function and left the flag behind.
+
+| Fixture: `contracts/café-api.md`, rate limit 100 → 10000, no record | Verdict |
+|---|---|
+| Pre-fix | `graded 1 of 1 commit(s)` — **no failure** |
+| Post-fix | `commit a862aec amends specs/014-x/contracts/café-api.md after approval …` |
+
+A rider from the same finding: `Test-CheckboxOnlyChange` returned `$true` when both blob reads
+came back empty, so an unreadable `tasks.md` read as "checkbox-only" and was exempted.
+`--name-status` said the path was modified, so two empty reads are a failed read. Now `$false`.
+
+### B3 — one bad ref disabled the check for the whole branch
+
+`git grep` aborts the entire search on a single unresolvable ref, and the empty presence set
+that follows grades **nothing** while printing what a legitimately pre-boundary branch prints.
+J2's fail-open shape with a new trigger. Measured:
+
+```text
+raw git grep exit: 128        (one bogus sha alongside one good ref)
+pre-fix  presence set size: 0    good ref present: False   → nothing graded, silently
+post-fix presence set size: 1    good ref present: True
+```
+
+The batch is now chunked at 200 refs (a ~32 767-byte Windows command line puts the ceiling near
+700 shas) and checks `$LASTEXITCODE`; on an error exit it falls back to the pre-batching
+per-ref probe for that chunk. Slower on the error path, never silent.
+
+### Regression evidence — the replay is the test
+
+The 33-scenario suite from phases 2–3 lived in a session scratchpad and no longer exists, which
+is its own lesson: **a fixture suite that is never committed cannot be re-run by the next
+session**, and T025's "re-run the suites" is unverifiable today. The replay is committed
+history and reproduces exactly, so it is what stands in:
+
+| | phase 3 recorded | after B1–B3 |
+|---|---|---|
+| Merged features replayed | 12 (002 → 013) | **12** |
+| Commits graded | 121 | **121** |
+| Flags | 67 | **67** |
+
+Per-feature graded counts and flag counts are identical branch by branch. The three fixes
+changed no verdict on any commit anyone actually wrote.
+
+### B4 — the per-flag judgement SC-004 asks for
+
+The reviewer was right that this did not exist: `notes.md` had a six-row aggregate, three
+sampled diffs and one named flag, and sampling three of fifty-one is exactly how B5 got past
+T022. Two independent verifications came first.
+
+**No flag is a pure tick.** Re-implementing the D3 neutralise test outside the pack — strip
+every checkbox marker from both blobs, compare in order — over all 60 `tasks.md` flags:
+
+```text
+tasks.md flags with real text change: 60 ; pure-tick false positives: 0
+```
+
+**Two flags are status-only**, found by asking of every flag whether its whole diff is a
+`**Status**` line: `a9ddeb7` ("spec: approve 011-roadmap-claim-check mini-spec") and `4e87018`
+(the 013 plan approval), both `+1/-1`. That is B5, and it is a class, not a one-off.
+
+The table: 67 rows, one per flag, every sha present, every sha carrying a verdict.
+
+| # | Feature | Commit | File(s) flagged | +/- | Class | Verdict |
+|---|---|---|---|---|---|---|
+| 1 | field-lesson-harvest | `42b9cd9` | tasks.md | +13/-3 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 2 | verification-pack | `b0df0fa` | tasks.md | +23/-7 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 3 | verification-pack | `632d958` | scope-check-cli.md, tasks.md | +19/-5, +23/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 4 | verification-pack | `24103a0` | tasks.md | +26/-7 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 5 | verification-pack | `7597c5d` | tasks.md | +8/-1 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 6 | verification-pack | `f548b1b` | ritual-checks-ci.md, tasks.md | +6/-1, +7/-7 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 7 | verification-pack | `b91bdde` | tasks.md | +15/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 8 | verification-pack | `d02c36f` | tasks.md | +13/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 9 | verification-pack | `327ce02` | tasks.md | +8/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 10 | verification-pack | `8fd95f6` | tasks.md | +4/-4 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 11 | verification-pack | `5c8e456` | tasks.md | +13/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 12 | verification-pack | `29e6988` | ritual-checks-ci.md | +1/-1 | contract text changed | **REAL** - a reinterpreted contract clause |
+| 13 | verification-pack | `ce3c3ce` | tasks.md | +10/-7 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 14 | adoption-doctor | `6410ffb` | tasks.md | +32/-5 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 15 | adoption-doctor | `9530fd4` | verify-kit-cli.md, tasks.md | +6/-2, +22/-1 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 16 | adoption-doctor | `8b033b7` | verify-kit-cli.md | +1/-1 | contract text changed | **REAL** - a reinterpreted contract clause |
+| 17 | adoption-doctor | `61869bc` | tasks.md | +33/-7 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 18 | adoption-doctor | `2462b41` | tasks.md | +12/-4 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 19 | adoption-doctor | `3a37d57` | tasks.md | +6/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 20 | adoption-doctor | `dddcf1f` | tasks.md | +13/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 21 | adoption-doctor | `1fe7b9b` | tasks.md | +11/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 22 | adoption-doctor | `b0fe413` | tasks.md | +3/-3 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 23 | adoption-doctor | `7463076` | tasks.md | +9/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 24 | adoption-doctor | `316f4f0` | tasks.md | +14/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 25 | ci-held-gate | `aad06e1` | tasks.md | +23/-7 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 26 | ci-held-gate | `583f573` | tasks.md | +35/-2 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 27 | ci-held-gate | `31467cc` | plan.md, tasks.md | +2/-0, +18/-3 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 28 | ci-held-gate | `45a924e` | gate-certification.md, tasks.md | +10/-2, +18/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 29 | ci-held-gate | `c72b54c` | tasks.md | +13/-4 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 30 | ci-held-gate | `dc11b12` | tasks.md | +14/-1 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 31 | ci-held-gate | `63fed28` | tasks.md | +24/-4 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 32 | ci-held-gate | `1fa3a04` | tasks.md | +11/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 33 | ci-held-gate | `18b4749` | tasks.md | +7/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 34 | ci-held-gate | `4429624` | tasks.md | +3/-2 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 35 | ci-held-gate | `3d10915` | tasks.md | +10/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 36 | micro-lane | `66b3dff` | tasks.md | +22/-7 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 37 | micro-lane | `46697d7` | tasks.md | +37/-5 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 38 | micro-lane | `d5dfad5` | tasks.md | +11/-6 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 39 | micro-lane | `c7a5287` | tasks.md | +1/-1 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 40 | micro-lane | `84e47ba` | tasks.md | +8/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 41 | micro-lane | `d9e45e8` | micro-lane-checks.md, tasks.md | +1/-1, +1/-1 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 42 | micro-lane | `ba32a24` | tasks.md | +6/-1 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 43 | micro-lane | `79a3b86` | tasks.md | +7/-2 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 44 | law-digests | `dc6bbd6` | tasks.md | +37/-5 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 45 | law-digests | `374163c` | digest-checks.md, tasks.md | +15/-0, +20/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 46 | law-digests | `040dbd2` | tasks.md | +31/-4 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 47 | law-digests | `0b0627c` | tasks.md | +11/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 48 | law-digests | `0f4da69` | tasks.md | +27/-3 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 49 | law-digests | `2d1c691` | spec.md, tasks.md | +13/-5, +15/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 50 | law-digests | `c1fc834` | tasks.md | +25/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 51 | roadmap-claim-check | `a9ddeb7` | spec.md | +1/-1 | `**Status**` Draft -> Approved | **SPURIOUS** - the approval edit the templates mandate |
+| 52 | cross-repo-scope-check | `21c938c` | scope-check-repos-cli.md | +11/-3 | contract text changed | **REAL** - a reinterpreted contract clause |
+| 53 | cross-repo-scope-check | `7aac1ec` | scope-check-repos-cli.md | +14/-6 | contract text changed | **REAL** - a reinterpreted contract clause |
+| 54 | cross-repo-scope-check | `12e6c3d` | tasks.md | +35/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 55 | cross-repo-scope-check | `dedd0ab` | scope-check-repos-cli.md | +3/-2 | contract text changed | **REAL** - a reinterpreted contract clause |
+| 56 | critical-independence-signal | `4e87018` | spec.md | +1/-1 | `**Status**` Draft -> Approved | **SPURIOUS** - the approval edit the templates mandate |
+| 57 | critical-independence-signal | `c28e1f9` | tasks.md | +43/-9 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 58 | critical-independence-signal | `1b30e99` | tasks.md | +50/-5 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 59 | critical-independence-signal | `20bda18` | tasks.md | +47/-4 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 60 | critical-independence-signal | `b60b868` | tasks.md | +9/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 61 | critical-independence-signal | `43e52cf` | tasks.md | +89/-12 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 62 | critical-independence-signal | `a76e877` | tasks.md | +8/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 63 | critical-independence-signal | `e1dcf0c` | plan.md, spec.md, tasks.md | +15/-2, +8/-1, +46/-0 | record present, commit message silent | **REAL** - D5 half-recorded |
+| 64 | critical-independence-signal | `9054e97` | tasks.md | +87/-8 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 65 | critical-independence-signal | `7ef6e8d` | tasks.md | +8/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 66 | critical-independence-signal | `aeac7f8` | tasks.md | +67/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+| 67 | critical-independence-signal | `bcee4e5` | tasks.md | +33/-0 | task text rewritten while ticking | **REAL** - changes what the document says was agreed |
+
+
+**Reading the table.** 65 of 67 are real: 60 `tasks.md` flags where the task text was rewritten
+while being ticked, 11 file-level flags on `contracts/**` (a reinterpreted contract clause is
+the rule's own worked example), 4 on `spec.md`/`plan.md`, and one D5 case — feature 013's
+`e1dcf0c`, which carries three genuine `**Amendment approved by**: anas.m` lines in `plan.md`
+and a commit message naming nobody. Half-recorded, by the feature that established the
+convention. (Flag counts and file counts differ because one commit can flag several files: 67
+flags span 77 flagged files.)
+
+### B5 — the one spurious class, NOT decided here
+
+`a9ddeb7` and `4e87018` flip `**Status**: Draft` → `**Status**: Approved` and change nothing
+else. That edit is **mandated** by the kit's own `spec-template.md` and `micro-spec-template.md`,
+and the constitution's own scope sentence — "once a feature's `spec.md` or `plan.md` has been
+**approved**" — places the approval act outside the rule it starts. The check currently grades
+the commit that begins approval as an amendment to an already-approved document.
+
+Demonstrated forward, not just historically: the next feature's approval commit turns its
+branch red. This is D3a's exemption route exactly — a spurious **class**, not a one-off — and
+T022's conclusion that "D3a does not apply" was reached from a three-flag sample that did not
+include either of these.
+
+**This is the owner's decision and it is not made here.** Recording an exemption amends an
+approved `plan.md` (D3a lives there), and an implementing agent must not approve its own
+amendment (constitution I). The options, stated without a recommendation dressed as a finding:
+exempt a diff whose only change is the `**Status**` line; or require the approval commit to
+carry its own record; or accept the flag and let every future approval commit fail.
+
+Phase 3's **Territory** names `tasks.md` but not `plan.md` (reviewer N10), so recording the
+decision needs a Territory amendment too — also the owner's, also before the commit that uses it.
+
+### B6 — SC-002's table names the wrong commit
+
+`3cb6e34` is titled "spec: owner approves 001 and accepts ADR-001". It is an approval commit,
+not one of finding F3's five amendments; F3's actual fifth, `cff8c57`, is absent from the table.
+The reviewer verified independently that all five real shas do fail the check, so **SC-002 is
+substantively met** — but the evidence table for the feature's headline criterion cites the
+wrong commit, and one row's gap is given as "two seconds" where F3 records twenty-nine.
+
+The corrected table belongs in this file and the correction is mine to make; the row that
+inherited the same error into approved `plan.md` prose is not. Left for the owner with B6.
+
+**The corrected SC-002 table**, re-run 2026-09-16 over `bed2c26..db25cb7` (23 of 25 graded, 14
+flags — identical to the original run):
+
+| Commit | What F3 recorded | Flagged on |
+|---|---|---|
+| `26d9108` | the §5 **new package** amendment | `plan.md` |
+| `7d3f297` | the readiness bound moved onto the document | `contracts/health.md`, `tasks.md` |
+| `8785678` | widened Territory (a `scope-check` WARN "correct-by-parent") | `contracts/health.md`, `plan.md`, `tasks.md` |
+| `92455d6` | widened Territory (the second WARN) | `plan.md`, `tasks.md` |
+| `cff8c57` | the changed decision — host wiring to `Api/Hosting`, not `Api/Infrastructure` | `tasks.md` |
+
+`3cb6e34` is removed from the table and is **not** one of F3's five: it is "spec: owner approves
+001 and accepts ADR-001". It does still fail the check — it touches `plan.md` and `spec.md`
+beyond the status line — so nothing about the replay changes; only the claim about what that sha
+*is*. Note what the corrected row exposes: the same B5 class is present in FitForge too, where
+the approval act and an accepted ADR travel in one commit.
+
+I have not verified the "twenty-nine seconds" figure the reviewer cites against F3's own text —
+the "two seconds" phrase in this file came from `7d3f297`'s own commit subject, so the two may
+be describing different commits. Left as the reviewer recorded it, unresolved, for the owner.
+
+### B7 — the check hid this round's own approver record
+
+Not from the review. Found because the remediation commit **failed its own check**: the
+`tasks.md` amendment above carried a conforming `**Amendment approved by**: anas.m, 2026-09-16`
+line and the commit message named her, and the check still reported "no conforming approver
+record".
+
+The cause is T060's own description. Closing J5 taught the check that an **unterminated** `<!--`
+hides everything after it, because that is what every renderer does. T060 documents that fix,
+and in documenting it, quotes the syntax in backticks. Markdown renders a backticked `<!--` as
+literal text; the check read it as a comment opener:
+
+```text
+lines in tasks.md:          411
+after paired-comment strip: 407
+after unterminated strip:   277   <- truncated from T060's own line onward
+record still visible?       False
+```
+
+Every approver record added below line 277 was invisible. The rule had become impossible to
+comply with in any graded document that mentions the syntax — including the document belonging
+to the feature that introduced the rule.
+
+The fix neutralises `<!--` and `-->` inside fenced blocks and inline code spans before either
+comment rule runs, which is what a renderer does. Verified against all four cases, because the
+risk of this fix is reopening the two findings that produced the rule:
+
+| Case | Required | Result |
+|---|---|---|
+| Real `tasks.md`, backticked `<!--` at T060 | record visible | visible |
+| H1 — record inside a closed comment | invisible | invisible |
+| J5 — genuine unterminated comment | hides what follows | hides |
+| Fenced example containing `<!--` | record visible | visible |
+
+**This one fails closed.** It never passed a silent amendment; it refused to accept an honest
+record. That is the safe direction, and it is still a defect — a rule nobody can satisfy gets
+routed around, which is the reasoning the constitution's own checkbox exemption rests on.
+
+Worth naming the mechanism that caught it: the check was pointed at the commit that was
+remediating the check, and the feature's own compliance was the test. Five fresh-context reviews
+did not find this. The branch grading itself did, on the first commit where it mattered.

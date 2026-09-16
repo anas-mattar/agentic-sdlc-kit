@@ -658,19 +658,30 @@ $script:AmendmentRecordExample = '**Amendment approved by**: <name>, <YYYY-MM-DD
 # question whose answer covers the range. None of them changes WHAT is graded: per-commit
 # granularity is what makes D5's message test possible and it is untouched (plan, Complexity
 # Tracking: "batch the plumbing calls, not the granularity").
-$script:GitRS = [string][char]30   # ASCII record separator — cannot occur in a commit message
+$script:GitRS = [string][char]30   # ASCII record separator — line marker only, never a record split
 $script:GitFS = [string][char]31   # ASCII unit separator
 
 # sha -> @{ Parents; Day; Body; Trailers } for every commit in the range, in one git call.
 # Replaces one `rev-list --parents -n 1` per commit plus three `show -s` calls per amendment.
+#
+# Records are separated by NUL (`-z`), not by a C0 byte picked for rarity. git REFUSES a NUL in
+# a commit log message ("error: a NUL byte in commit log message not allowed") and carries 0x1E
+# through untouched, so the old 0x1E split was injectable: one byte in a message deleted that
+# commit from the graded set AND from the count's denominator, and a crafted record overwrote an
+# earlier commit's parentage so it was skipped as a root (review B1).
+#
+# Field order is part of the fix. The two message-derived fields come LAST and the split is
+# capped at five, so an injected 0x1F can only truncate them — never shift the sha, the parents
+# or the date. Every corruption still reachable here loses message text, and losing message text
+# can only make the D5 name test fail, never pass.
 function Get-CommitMetaBatch {
     param([string]$Range)
-    $fmt = "$script:GitRS%H$script:GitFS%P$script:GitFS%ad$script:GitFS%B$script:GitFS%(trailers:only)"
-    $raw = (@(git log --reverse --date=short --format=$fmt $Range 2>$null) -join "`n")
+    $fmt = "%H$script:GitFS%P$script:GitFS%ad$script:GitFS%B$script:GitFS%(trailers:only)"
+    $raw = (@(git log -z --reverse --date=short --format=$fmt $Range 2>$null) -join "`n")
     $meta = [ordered]@{}
-    foreach ($rec in ($raw -split $script:GitRS)) {
+    foreach ($rec in ($raw -split "`0")) {
         if (-not $rec.Trim()) { continue }
-        $f = $rec -split $script:GitFS
+        $f = $rec -split $script:GitFS, 5
         if ($f.Count -lt 5) { continue }
         $meta[$f[0].Trim()] = @{
             Parents  = @($f[1].Trim() -split '\s+' | Where-Object { $_ })
@@ -689,7 +700,11 @@ function Get-NameStatusBatch {
     param([string]$Range)
     $map = @{}
     $current = $null
-    foreach ($line in @(git log --reverse --format="$script:GitRS%H" --name-status $Range 2>$null)) {
+    # quotepath=off so a non-ASCII path arrives verbatim rather than quoted-octal: quoted, it
+    # fails the "$dir/*" filter and the document is never graded at all (review B2). The pack
+    # already carries this at scripts/scope-lib.ps1 (006 F3) and at line 577 (phase 2 F2); this
+    # reader was the one that did not.
+    foreach ($line in @(git -c core.quotepath=off log --reverse --format="$script:GitRS%H" --name-status $Range 2>$null)) {
         # ORDINAL comparison, deliberately. String.StartsWith defaults to a CULTURE-SENSITIVE
         # comparison that treats a control character as ignorable, so every line — including
         # the empty ones — "starts with" the record separator and the parse collapses.
@@ -714,9 +729,28 @@ function Get-CheckPresenceSet {
     $set = @{}
     $unique = @($Refs | Where-Object { $_ } | Sort-Object -Unique)
     if ($unique.Count -eq 0) { return $set }
-    $hits = @(git grep -l -F -e 'function Invoke-AmendmentAuthorityCheck' @unique -- 'scripts/enforcement-pack.ps1' 2>$null)
-    foreach ($hit in $hits) {
-        if ($hit -match '^(.+):scripts/enforcement-pack\.ps1$') { $set[$matches[1]] = $true }
+    # Chunked and error-checked, because this batch had two ways to come back empty without
+    # saying so, and an empty presence set grades NOTHING while printing exactly what a
+    # legitimately pre-boundary branch prints — J2's fail-open shape with a new trigger
+    # (review B3). (a) `git grep` aborts the WHOLE search on one unresolvable ref (exit >= 2:
+    # a shallow or partial clone, a grafted history, a missing object); (b) ~41 bytes per sha
+    # against a 32 767-byte Windows command line puts the ceiling near 700 refs in one call.
+    # On an error exit the pre-batching per-ref probe runs for that chunk: slower, never silent.
+    for ($i = 0; $i -lt $unique.Count; $i += 200) {
+        $chunk = @($unique[$i..([Math]::Min($i + 199, $unique.Count - 1))])
+        $hits = @(git grep -l -F -e 'function Invoke-AmendmentAuthorityCheck' @chunk -- 'scripts/enforcement-pack.ps1' 2>$null)
+        if ($LASTEXITCODE -ge 2) {
+            foreach ($ref in $chunk) {
+                $blob = @(git show "${ref}:scripts/enforcement-pack.ps1" 2>$null)
+                if ($LASTEXITCODE -eq 0 -and @($blob -match 'function Invoke-AmendmentAuthorityCheck').Count -gt 0) {
+                    $set[$ref] = $true
+                }
+            }
+            continue
+        }
+        foreach ($hit in $hits) {
+            if ($hit -match '^(.+):scripts/enforcement-pack\.ps1$') { $set[$matches[1]] = $true }
+        }
     }
     return $set
 }
@@ -740,6 +774,17 @@ function Get-BlobLines {
 function Get-VisibleFromText {
     param([string[]]$Lines)
     $raw = ($Lines -join "`n")
+    # Markdown renders code as literal text, so a '<!--' inside a fenced block or an inline code
+    # span is NOT a comment opener. Neutralise the markers inside code BEFORE the rules below.
+    # Without this, T060's own description — which quotes a backticked `<!--` — made the
+    # unterminated-comment rule truncate tasks.md from that line on, hiding every approver
+    # record added after it. The rule became impossible to comply with in any document that
+    # mentions the syntax, this feature's own included (B7, found while remediating B1-B6).
+    # It fails closed, so it never passed a silent amendment — it just could not be satisfied.
+    $neutralise = { param($m) ($m.Value -replace '<!--', '<!@@') -replace '-->', '@@>' }
+    $raw = [regex]::Replace($raw, '(?s)```.*?```', $neutralise)
+    $raw = [regex]::Replace($raw, '`[^`
+]*`', $neutralise)
     $stripped = [regex]::Replace($raw, '(?s)<!--.*?-->', '')
     # An UNTERMINATED '<!--' hides everything after it in every renderer, so it must hide it
     # here too (J5). The pack's CriticalEvidence check already warns about this exact trap.
@@ -807,8 +852,14 @@ function Test-CheckboxOnlyChange {
         foreach ($l in $lines) { $out.Add(($l -replace '^(\s*(?:[-*]|\d+\.)\s*)\[[ xX]\]', '${1}[]').TrimEnd()) }
         return $out
     }
-    $now  = & $neutral (Get-BlobLines -Ref $Commit -Path $Path)
-    $then = & $neutral (Get-BlobLines -Ref $Parent -Path $ParentPath)
+    $nowRaw  = Get-BlobLines -Ref $Commit -Path $Path
+    $thenRaw = Get-BlobLines -Ref $Parent -Path $ParentPath
+    # --name-status said this path was modified, so two empty reads are a FAILED read, not an
+    # unchanged file. Returning $true there would call an unreadable amendment "checkbox-only"
+    # and exempt it; return $false and it is graded like any other change (review B2, rider).
+    if ($nowRaw.Count -eq 0 -and $thenRaw.Count -eq 0) { return $false }
+    $now  = & $neutral $nowRaw
+    $then = & $neutral $thenRaw
     if ($now.Count -ne $then.Count) { return $false }
     for ($i = 0; $i -lt $now.Count; $i++) { if ($now[$i] -ne $then[$i]) { return $false } }
     return $true
@@ -858,15 +909,29 @@ function Invoke-AmendmentAuthorityCheck {
     # commits and their parents, dates, messages and trailers; every commit's name-status; and
     # which parents already carried the check (T024 — the walk itself is unchanged).
     $meta = Get-CommitMetaBatch -Range $range
-    $commits = @($meta.Keys)
+    # The commit SET comes from the object graph, never from the message stream. Taking it from
+    # the parsed metadata let a commit delete itself by writing one byte into its own message
+    # (review B1); rev-list reads commit objects and cannot be written to from a message.
+    $commits = @(git rev-list --reverse $range 2>$null | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
     if ($commits.Count -eq 0) {
         Write-Host "AmendmentAuthority: no commits in $range — nothing to grade"
+        return
+    }
+    # A commit git lists but the batch did not parse is a parse failure, not a commit to skip.
+    # Skipping silently is the whole of B1; this is the assertion whose absence made it work.
+    $missing = @($commits | Where-Object { -not $meta.Contains($_) })
+    if ($missing.Count -gt 0) {
+        $names = ($missing | ForEach-Object { $_.Substring(0, 7) }) -join ', '
+        $script:failures += "AmendmentAuthority: could not parse commit metadata for $($missing.Count) commit(s) in $range ($names) — the check refuses to grade a range it cannot read in full, because a commit missing from the batch would otherwise be silently ungraded (review B1). Re-run; if it persists the repository or the range is unreadable and the branch must not be certified on this check"
         return
     }
     # Report what was actually graded. A run that grades nothing must not be output-identical
     # to a run that grades everything and finds it clean: that silence is what let a fail-open
     # boundary (J2) and two broken fixtures pass for green.
     $gradedCount = 0
+    # Counted per reason, so the count line reports what actually happened instead of naming
+    # causes it never established (review N3, and B1's action on the same string).
+    $skipMerge = 0; $skipRoot = 0; $skipBoundary = 0
 
     # D2b. The boundary is evaluated PER COMMIT against that commit's own parent. An earlier
     # version short-circuited on HEAD^ alone to save blob reads (SC-006); that failed open,
@@ -886,11 +951,11 @@ function Invoke-AmendmentAuthorityCheck {
 
     foreach ($commit in $commits) {
         $parents = @($meta[$commit].Parents)
-        if ($parents.Count -gt 1) { continue }                       # D7: merge commit authored nothing
-        if ($parents.Count -eq 0) { continue }                       # a root commit creates; D2
+        if ($parents.Count -gt 1) { $skipMerge++; continue }         # D7: merge commit authored nothing
+        if ($parents.Count -eq 0) { $skipRoot++; continue }           # a root commit creates; D2
         $parent = $parents[0]
         if (-not $graded) {
-            if (-not $presence.ContainsKey($parent)) { continue }     # D2b
+            if (-not $presence.ContainsKey($parent)) { $skipBoundary++; continue }   # D2b
             $graded = $true                                          # monotonic: stop re-testing
         }
         $gradedCount++
@@ -959,7 +1024,11 @@ function Invoke-AmendmentAuthorityCheck {
         }
     }
     $skipped = $commits.Count - $gradedCount
-    $why = if ($skipped -gt 0) { " ($skipped not graded: merge commits, or made before the check existed — plan D2b)" } else { '' }
+    $reasons = @()
+    if ($skipMerge -gt 0)    { $reasons += "$skipMerge merge commit(s)" }
+    if ($skipRoot -gt 0)     { $reasons += "$skipRoot root commit(s)" }
+    if ($skipBoundary -gt 0) { $reasons += "$skipBoundary made before the check existed (plan D2b)" }
+    $why = if ($skipped -gt 0) { " ($skipped not graded: $($reasons -join '; '))" } else { '' }
     Write-Host "AmendmentAuthority: graded $gradedCount of $($commits.Count) commit(s) in $range$why"
 }
 
