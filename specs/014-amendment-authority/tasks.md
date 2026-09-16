@@ -409,16 +409,16 @@ and its phase commit degraded to WARN rather than being graded. The entry list i
 
 **Amendment approved by**: anas.m, 2026-09-16.
 
-- [ ] T026 `adoption/updating.md`: what the check grades, what a conforming record looks like,
+- [x] T026 `adoption/updating.md`: what the check grades, what a conforming record looks like,
       and the honest statement of what it does not verify (D10)
-- [ ] T027 `adoption/updating.md`: state the boundary (D2b) — nothing committed before the
+- [x] T027 `adoption/updating.md`: state the boundary (D2b) — nothing committed before the
       update that delivers the check is graded, so arrival day is silent and no in-flight
       branch turns red. Say why the boundary exists rather than only that it does: half of
       every record lives in an immutable commit message, so a retroactive rule would be one
       no adopter could comply with
-- [ ] T028 `adoption/greenfield.md`: one line, so a new project meets the rule at feature 001
+- [x] T028 `adoption/greenfield.md`: one line, so a new project meets the rule at feature 001
       rather than discovering it at feature 004
-- [ ] T029 Note the FitForge follow-up as a flow-down task, **not** a task of this branch: its
+- [x] T029 Note the FitForge follow-up as a flow-down task, **not** a task of this branch: its
       constitution 1.1.0 clause carries an "Enforcement, honestly stated" paragraph that stops
       being true, and it is edited in that repository, by its owner, under its own ritual
       (SC-005)
@@ -427,11 +427,11 @@ and its phase commit degraded to WARN rather than being graded. The entry list i
 
 #### Added by amendment 2026-09-13 (G5 — the convention needs a home outside this feature)
 
-- [ ] T041 `docs/sdlc/branch-strategy.md` (Spec Directory Contents): say what `notes.md` is
+- [x] T041 `docs/sdlc/branch-strategy.md` (Spec Directory Contents): say what `notes.md` is
       for — phase results, gate records and findings — and that `tasks.md` holds agreed work
       and completion state alone. Today `notes.md` is listed as an optional file with no
       stated purpose, so D3b is a convention this feature follows and the kit never states
-- [ ] T042 `.specify/templates/tasks-template.md:14` still tells an author to "record that
+- [x] T042 `.specify/templates/tasks-template.md:14` still tells an author to "record that
       determination in this file". Point it at `notes.md` instead, or the next feature
       reproduces F5 exactly
 

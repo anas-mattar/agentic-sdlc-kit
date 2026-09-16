@@ -1079,3 +1079,108 @@ local `ritual-checks: RESULT OK` cited here was taken in a detached worktree at 
 repository. Both of the failure modes this feature has recorded — grading the working tree, and
 omitting `-Root` — are silent, so the guard against them is procedural, not a warning the tools
 will give.
+
+## Phase 4 — the adopter-facing prose (T026–T029, T041, T042)
+
+The phase 4 draft was written before the fifth and sixth reviews, so its job here was less
+"write the docs" than "make the docs describe the check that now exists". Three things had
+changed under it.
+
+**The exemption count.** The draft said "One exemption" and described the checkbox flip. D3d
+added a second, and K2 narrowed that second one to the approval transition alone. The bullet
+now says two, and spells out the exact shape the second is limited to — one differing line, the
+document's first `**Status**:` line outside any fence, `Draft` on the old side, `Approved` plus
+at most a date, an `(owner: …)` parenthetical and the template's trailing comment on the new
+one. An adopter who learns the exemption as "status-line changes are free" would learn the
+thing that was wrong for one round, so the conditions are stated rather than summarised.
+
+**What "not inside a comment" means.** B7 and K1 made comment visibility a renderer question,
+and the answer is adopter-facing: a graded document may discuss comment syntax and still carry
+a visible record. `adoption/updating.md` now shows the four cases in a fenced example, with the
+kit's own near-miss named — the rule was briefly impossible to comply with in any document that
+mentioned it, which is the kind of failure an adopter should be able to recognise in one look.
+The troubleshooting line is the practical half: if a record you can see is reported missing,
+look upward for an opener that was never closed.
+
+**Full history in CI.** B3's chunked presence set falls back rather than aborting, but neither
+path can read objects a shallow clone does not have, and grading nothing looks exactly like a
+legitimately pre-boundary branch — green, and meaningless. The kit's own workflow already sets
+`fetch-depth: 0`; an adopter who wrote their own workflow has no way to know that matters, so
+the boundary section now says it.
+
+`adoption/greenfield.md` gained the two non-amendments (approval flip, checkbox tick) for the
+same reason: 001 is where they are free to learn. T041 and T042 stand as drafted — the
+`notes.md`/`tasks.md` split they state is unchanged by either review.
+
+### Finding: `build-digests.ps1` makes the B7 mistake (P3, not fixed here)
+
+Writing the sentence about a quoted comment opener being mistaken for a real one caused exactly
+that mistake, in a different tool. The digest parser is line-based: any line holding `<!--`
+with no `-->` after it opens a comment (`scripts/build-digests.ps1:123`), and it honours fenced
+blocks but not inline code spans. The prose paragraph mentioning the opener in backticks
+therefore opened a comment, and the next marker line was consumed as its closer:
+
+```text
+markers harvested, prose version:  79   (the 'grades spec.md …' marker silently dropped)
+markers harvested, fenced version: 80
+```
+
+Silent, and symmetrical: the generator and the `-Check` share the parser, so both agree the
+marker was never there and CI stays green. The blast radius is small — digests are explicitly
+not a source-of-truth rung, and a lost line is a lost orientation note, not a lost rule — which
+is why this is recorded rather than fixed. `scripts/` is outside phase 4's Territory, and the
+fix belongs with the other parser work, not smuggled into a prose phase. The prose was routed
+around it instead: the syntax examples live in a fenced block, which the parser skips.
+
+### Finding: phase 4 was never graded — a decorated `**Territory**` marker (P2)
+
+`scope-check` on the phase 4 commit returned **WARN, not PASS**:
+
+```text
+scope-check: WARN commit 3e9b7d5: no territory declared for phase 4 in
+specs/014-amendment-authority/tasks.md (declare territory in tasks.md — non-blocking,
+pre-006 compatibility)
+```
+
+`Get-Territory` (`scripts/scope-lib.ps1:84`) matches `^\*\*Territory\*\*:` — the colon
+immediately after the bold run. Phase 4's marker reads `**Territory** (widened by amendment
+2026-09-13 — the last two entries, for G5):`, with the colon at the end of the decoration, so
+no marker was found and the phase declared nothing. Both of this feature's *widening
+amendments* used that decorated spelling; phase 3's (line 322) is harmless only because the
+paths it adds are inside the implicit `specs/NNN-name/**` glob, so the phase still graded
+correctly on its real territory.
+
+Two things make this worth more than a typo note.
+
+**It fails open, and quietly.** A phase with no parsed territory degrades to a non-blocking
+WARN carrying a pre-006 compatibility excuse, in a `tasks.md` whose other three phases all
+declare territory properly — which is positive evidence that this is not a pre-006 file. A
+phase commit could have touched anything. Verified by hand that this one did not: of its 8
+paths, 6 are declared entries and 2 are the feature's own spec directory.
+
+**The amendment that widened the territory is what disabled the check on it.** That is
+GAP-019's own shape — an agent's edit removing the grading of its own scope — arrived at by
+accident rather than intent, which is the version no rule about approval can catch. The
+approver record is present and correct on both amendments; the machine simply stopped reading
+the block they approved.
+
+Remediation, proven in a sandbox clone before being proposed (`scope-check` reads the
+declaration **as of the parent** — D3, anti-widening — so the repair cannot ride in the phase
+commit; it must precede it):
+
+```text
+docs: repair the phase 4 Territory marker   →  enforcement-pack: OK
+phase 4: <the prose commit, rebuilt on top> →  scope-check: PASS phase 4 commit (8 file(s))
+                                               ritual-checks: RESULT OK
+```
+
+Two details the sandbox settled rather than assumed. The repair commit is itself an amendment
+to an approved `tasks.md`, so it needs its own record — the 2026-09-13 line already in the
+block does not carry it. And that record must be a **bare** line: `AmendmentRecordPattern`
+(`scripts/enforcement-pack.ps1:651`) anchors at `$` after the date, so an explanatory clause
+appended to it is not a record at all. The first attempt failed for exactly that reason; the
+explanation now sits in its own paragraph above the record.
+
+The fix to `Get-Territory` — accept a decorated marker, or fail rather than WARN when sibling
+phases declare territory — is a check change, outside phase 4's territory, and belongs with the
+other parser work.
