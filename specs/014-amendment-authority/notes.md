@@ -360,7 +360,11 @@ analysis parameters, over commits nobody wrote for this feature.
 
 FitForge 001, range `bed2c26..db25cb7`: **23 of 25 commits graded**, 14 flagged. The five
 amendments recorded in that feature's governance review as finding F3 each fail the check **as
-they were actually committed**, identified by sha rather than by reconstruction:
+they were actually committed**, identified by sha rather than by reconstruction.
+
+> **Superseded — the sha list below is wrong.** `3cb6e34` is not one of F3's five and `cff8c57`
+> is; see B6 below for the corrected table, which is the one to read. The rows are left in place
+> because the correction is part of this feature's record.
 
 | Commit | What F3 recorded | Flagged on |
 |---|---|---|
@@ -514,7 +518,9 @@ batching and reproduce to the commit:
 | This repository, 12 merged features | 67 flags | **identical** |
 
 The five amendments recorded as finding F3 in FitForge 001 — `26d9108`, `7d3f297`, `8785678`,
-`92455d6`, `3cb6e34` — are each still flagged, by sha. SC-002 and SC-004 stand exactly as
+`92455d6` and `cff8c57` — corrected under B6 below, where `3cb6e34` turns out to be a sixth
+flagged commit rather than one of F3's five — are each still flagged, by sha. SC-002 and
+SC-004 stand exactly as
 phase 3 first recorded them, which is the only evidence that matters here: 66 git calls and 20
 git calls reached the same verdict on the 23 + 121 commits they graded, none of which
 was written for this check.
@@ -790,8 +796,10 @@ flags — identical to the original run):
 | `cff8c57` | the changed decision — host wiring to `Api/Hosting`, not `Api/Infrastructure` | `tasks.md` |
 
 `3cb6e34` is removed from the table and is **not** one of F3's five: it is "spec: owner approves
-001 and accepts ADR-001". It does still fail the check — it touches `plan.md` and `spec.md`
-beyond the status line — so nothing about the replay changes; only the claim about what that sha
+001 and accepts ADR-001". It does still fail the check, though after D3d it fails on `plan.md`
+alone: its `spec.md` hunk is
+a lone `Draft` -> `Approved 2026-09-10 (owner: anas.m)` flip, which is exactly what the
+exemption covers. So nothing about the replay changes; only the claim about what that sha
 *is*. Note what the corrected row exposes: the same B5 class is present in FitForge too, where
 the approval act and an accepted ADR travel in one commit.
 
@@ -909,7 +917,7 @@ after it.
 | Re-run | Result | Reading |
 |---|---|---|
 | Kit replay, 12 merged features, 121 graded commits | **65 flags** | identical to the post-D3d figure: 011 `0`, 013 `11`, every other feature commit-for-commit unchanged |
-| FitForge 001, `bed2c26..db25cb7` | **23 of 25 graded, 14 flags** | unchanged from the 2026-09-14 run; all five F3 amendments still fail, by sha — `26d9108`, `7d3f297`, `8785678`, `92455d6`, `3cb6e34` |
+| FitForge 001, `bed2c26..db25cb7` | **23 of 25 graded, 14 flags** | unchanged from the 2026-09-14 run; all five F3 amendments still fail, by sha — `26d9108`, `7d3f297`, `8785678`, `92455d6`, `cff8c57` |
 
 SC-002 therefore survives B1, B2, B3, B7 and the D3d exemption. The FitForge replay exits 1 by
 design: it is analysis over history full of real violations, `-IgnoreAmendmentBoundary` (D2c),
@@ -931,3 +939,111 @@ rounds have now returned 6, 3, 6, 6 and 6+1 blocking findings, and this round re
 commit-set provenance, the name-status batch, the presence batch, the comment stripper and the
 exemption set. The gate above is gate 3, and it certifies that the checks pass — not that the
 changes are right.
+
+
+## Phase 3 — the sixth review, and what it caught (K1–K4)
+
+REQUEST CHANGES, 4 blocking and 7 non-blocking, by a fresh-context agent that built 26 fixtures
+of its own and checked every comment-visibility claim against a real CommonMark render rather
+than against this file. Six rounds have now returned 6, 3, 6, 6, 6+1 and 4 blocking findings.
+
+### K1 — the B7 fix reopened H1
+
+`(?s)```.*?``` ` over the whole blob pairs triple-backtick runs left to right. It does not
+require a line start, does not require the two runs to be the same length, and spans any
+distance. So an **odd** number of fence runs before a comment puts that comment inside a region
+the check calls code, disarms both its markers, and makes a record no reader can see count as a
+grant. A second trigger: `\`` is a literal backtick to CommonMark and a delimiter to the old
+inline-span regex, so a comment opened between two escaped backticks was "code" to the check and
+a real comment to a renderer.
+
+Both are closed by finding the code regions **structurally** instead of textually —
+`Get-FencedLineMap` walks lines the way CommonMark does (a fence opens on a line whose first
+non-space run is three or more backticks or tildes and closes on a later line whose run is at
+least as long), and `Convert-CodeSpanMarkers` pairs equal-length backtick runs within one line,
+skipping any run a backslash escapes.
+
+Differential against the pack as gated (`5d49cde`), same fixtures, both directions:
+
+| Fixture | 5d49cde | now | must be |
+|---|---|---|---|
+| `k1-c9` — a stray fence run, then a genuine block comment holding the record | clean | **FLAG** | FLAG |
+| `k1-c10` — the same file with the stray run removed (control) | FLAG | FLAG | FLAG |
+| `k1-c5b2` — a mid-line `<!--` between two escaped backticks | clean | **FLAG** | FLAG |
+| `h1-comment` — the plain H1 case | FLAG | FLAG | FLAG |
+| `j5-unterminated` — an unterminated `<!--` hides the record | FLAG | FLAG | FLAG |
+| `b7-quoted-marker` — a backticked `<!--` quoted in prose, record visible after it | clean | clean | clean |
+
+The last row is the one that matters in the other direction: B7 stays closed. A document may
+still discuss the syntax without becoming impossible to comply with.
+
+### K2 — D3d exempted far more than the approval act
+
+Neutralising everything after `**Status**:` meant the status line could carry a payload on its
+own line-end, any `**Status**:` line qualified (a second one in the body, an ADR's, one inside a
+fenced block), and it fired in either direction at any time. The claim in `plan.md` that such a
+diff "cannot carry a payload" was false; the single shape tested — a smuggled `FR-002` on its
+own line — was the only shape that failed.
+
+The exemption is now the **approval transition**: exactly one differing line, which must be the
+document's first `**Status**:` line outside a fence, `Draft` on the old side, and on the new side
+`Approved` plus at most an ISO date, an `(owner: …)` parenthetical and the template's trailing
+comment. Differential, same fixtures:
+
+| Fixture | 5d49cde | now | must be |
+|---|---|---|---|
+| `k2-d10-payload` — normative text appended to an approved plan's status line | clean | **FLAG** | FLAG |
+| `k2-d11-second-line` — a second `**Status**:` line rewritten while the first is flipped | clean | **FLAG** | FLAG |
+| `k2-d12-fenced` — a `**Status**:` line inside a fenced block rewritten | clean | **FLAG** | FLAG |
+| `k2-reverse` — `Approved` → `Draft` | clean | **FLAG** | FLAG |
+| `k2-d2-own-line` — the flip carrying a smuggled `FR-002` (the shape already tested) | FLAG | FLAG | FLAG |
+| `ok-011-form` — `Draft <!-- guidance -->` → `Approved (owner, 2026-09-16)` | clean | clean | clean |
+| `ok-013-form` — `Draft — awaiting owner approval` → `Approved 2026-09-16 (owner: anas.m)` | clean | clean | clean |
+
+The last two are the forms this repository has actually used (011's `a9ddeb7`, 013's `4e87018`).
+Narrowing that broke them would have traded a hole for a rule nobody can obey.
+
+### K3 — and why the narrowing settles it
+
+The constitution says its one exemption is "part of the rule rather than a detail of whatever
+grades it", and that **every other change** to an approved document is an amendment. A plan
+decision may read that rule; it may not subtract a class from it. Narrowed to the Draft →
+Approved transition, D3d no longer subtracts anything: the clause binds changes made *once a
+document has been approved*, and this is the act that starts it. No constitutional amendment,
+no MINOR bump, no sync sweep.
+
+### K4 — the gate record repeated the error the same round corrected
+
+The FitForge row written into the certification record named `3cb6e34` as one of F3's five and
+omitted `cff8c57` — the exact error B6 raised, re-committed 120 lines below the correction, in
+the newest and most authoritative place it appears, and repeated in `fa396ee`'s commit message.
+Corrected here; the two superseded tables are now marked as superseded rather than left to be
+read as current.
+
+The reviewer also caught a second error riding with it, which is a real observation about the
+exemption rather than a typo: after D3d, `3cb6e34` fails on `plan.md` **alone** — its `spec.md`
+hunk is a lone `Draft` → `Approved 2026-09-10 (owner: anas.m)` flip, which is precisely what the
+exemption covers. "Unchanged from the 2026-09-14 run" was true of the totals and false of the
+detail, and the detail was the most interesting thing the FitForge re-run had to say.
+
+### What the sixth review confirmed rather than found
+
+B1, B2, B3 and B4 were each independently reproduced as closed — NUL genuinely refused by
+`git commit-tree`, four injection attacks caught, a non-ASCII path flagged, a presence-set
+differential of 0 → 2 in a shallow clone, chunk arithmetic exhaustive to n=401, and all 67 rows
+of the B4 table cross-checked against the reviewer's own replay. The two rows that stopped
+flagging are exactly the two the table marks spurious.
+
+### Cost
+
+`Get-VisibleFromText` is called for every graded path of every graded commit, so a per-character
+walk over each line was affordable in a fixture and not in a replay: it made one feature's replay
+9x slower before the short-circuits went in (a line with no backtick, or no comment marker, is
+returned untouched; a blob with no `<!--` skips the machinery entirely; a document with no fence
+run gets an all-false map). Measured after, on 006 (15 commits), interleaved: **119.3 s before,
+120.9 s after** — no regression.
+
+That 9x was also nearly mismeasured. The first "before" number was 13 s, taken by running the
+gated pack from a scratchpad copy **without `-Root`**, so it graded the scratchpad instead of the
+kit and reported a clean, fast, meaningless result. It is the same trap the reviewer filed as N3,
+hit twice in one session by the person who wrote the note about it.

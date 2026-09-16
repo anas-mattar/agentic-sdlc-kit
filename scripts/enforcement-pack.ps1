@@ -769,11 +769,84 @@ function Get-BlobLines {
     return $lines
 }
 
+# Disarm comment markers in one string. Both substitutions preserve length, which is what
+# lets Convert-CodeSpanMarkers patch a line in place by offset.
+function Disable-CommentMarkers {
+    param([string]$Text)
+    return ($Text -replace '<!--', '<!@@') -replace '-->', '@@>'
+}
+
+# Disarm comment markers inside the inline code spans of ONE line. CommonMark pairs a run of
+# N backticks with the next run of EXACTLY N, and a backslash-escaped backtick is literal and
+# delimits nothing (K1's second trigger). A run with no partner on the line opens no span:
+# an unrecognised span leaves its markers armed, which HIDES text rather than revealing it —
+# the safe direction for a check whose job is to refuse an invisible record.
+function Convert-CodeSpanMarkers {
+    param([string]$Line)
+    # Nothing to disarm, or nothing to disarm it with: the overwhelming majority of lines, and
+    # the reason this is a string scan rather than a character walk (a per-character loop over
+    # every line of every graded blob cost ~9x the whole check's runtime — SC-006).
+    if ($Line -notmatch '`') { return $Line }
+    if ($Line -notmatch '<!--' -and $Line -notmatch '-->') { return $Line }
+    # Backtick runs, skipping any run a backslash escapes — '\`' is a literal backtick to
+    # CommonMark and delimits nothing (K1's second trigger).
+    $runs = @([regex]::Matches($Line, '(?<!\\)`+') | ForEach-Object { @{ Start = $_.Index; Len = $_.Length } })
+    if ($runs.Count -lt 2) { return $Line }
+    $result = $Line
+    $r = 0
+    while ($r -lt $runs.Count - 1) {
+        $open = $runs[$r]
+        $closeIdx = -1
+        for ($k = $r + 1; $k -lt $runs.Count; $k++) {
+            if ($runs[$k].Len -eq $open.Len) { $closeIdx = $k; break }
+        }
+        if ($closeIdx -lt 0) { $r++; continue }
+        $from = $open.Start + $open.Len
+        $len  = $runs[$closeIdx].Start - $from
+        if ($len -gt 0) {
+            $result = $result.Substring(0, $from) +
+                      (Disable-CommentMarkers -Text $result.Substring($from, $len)) +
+                      $result.Substring($from + $len)
+        }
+        $r = $closeIdx + 1
+    }
+    return $result
+}
+
+# True for each line that Markdown renders as CODE rather than as content: the lines of a
+# fenced block, fences included. A fence OPENS on a line whose first non-space run (at most
+# three spaces of indent) is three or more backticks or tildes, and CLOSES on a later line
+# whose run is the same character and at least as long — CommonMark's rule, line by line.
+# An unclosed fence runs to the end of the document, exactly as a renderer treats it.
+function Get-FencedLineMap {
+    param([string[]]$Lines)
+    $map = New-Object 'bool[]' $Lines.Count
+    # A document with no fence run at all has no fenced lines, and most do not.
+    if (($Lines -join "`n") -notmatch '(?m)^ {0,3}(`{3,}|~{3,})') { return $map }
+    $fenceChar = ''
+    $fenceLen = 0
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        $m = [regex]::Match($Lines[$i], '^ {0,3}(`{3,}|~{3,})')
+        if ($fenceLen -gt 0) {
+            $map[$i] = $true
+            if ($m.Success -and $m.Groups[1].Value[0] -eq $fenceChar -and $m.Groups[1].Value.Length -ge $fenceLen) {
+                $fenceChar = ''; $fenceLen = 0
+            }
+            continue
+        }
+        if ($m.Success) {
+            $fenceChar = $m.Groups[1].Value[0]
+            $fenceLen = $m.Groups[1].Value.Length
+            $map[$i] = $true
+        }
+    }
+    return $map
+}
+
 # Visible lines of a text blob — HTML comments stripped, same rule as Get-VisiblePlanLines
 # (008 phase-2 F1). Commented-out text is not law and is not a record (H1).
 function Get-VisibleFromText {
     param([string[]]$Lines)
-    $raw = ($Lines -join "`n")
     # Markdown renders code as literal text, so a '<!--' inside a fenced block or an inline code
     # span is NOT a comment opener. Neutralise the markers inside code BEFORE the rules below.
     # Without this, T060's own description — which quotes a backticked `<!--` — made the
@@ -781,10 +854,22 @@ function Get-VisibleFromText {
     # record added after it. The rule became impossible to comply with in any document that
     # mentions the syntax, this feature's own included (B7, found while remediating B1-B6).
     # It fails closed, so it never passed a silent amendment — it just could not be satisfied.
-    $neutralise = { param($m) ($m.Value -replace '<!--', '<!@@') -replace '-->', '@@>' }
-    $raw = [regex]::Replace($raw, '(?s)```.*?```', $neutralise)
-    $raw = [regex]::Replace($raw, '`[^`
-]*`', $neutralise)
+    #
+    # The code regions are found STRUCTURALLY, line by line (K1). The first fix used
+    # '(?s)```.*?```' over the whole blob, which pairs triple-backtick runs left to right with
+    # no regard for line starts: one stray fence run in prose re-paired every fence after it,
+    # put a REAL comment inside a region the check called code, and made a record no reader can
+    # see count as a grant — H1, reopened by its own fix.
+    $raw = ($Lines -join "`n")
+    # No marker anywhere means no comment anywhere: nothing to neutralise and nothing to strip.
+    if ($raw -notmatch '<!--') { return $raw -split "`r?`n" }
+    $fenced = Get-FencedLineMap -Lines $Lines
+    $processed = [System.Collections.Generic.List[string]]::new()
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        if ($fenced[$i]) { $processed.Add((Disable-CommentMarkers -Text $Lines[$i])) }
+        else             { $processed.Add((Convert-CodeSpanMarkers -Line $Lines[$i])) }
+    }
+    $raw = ($processed -join "`n")
     $stripped = [regex]::Replace($raw, '(?s)<!--.*?-->', '')
     # An UNTERMINATED '<!--' hides everything after it in every renderer, so it must hide it
     # here too (J5). The pack's CriticalEvidence check already warns about this exact trap.
@@ -872,30 +957,62 @@ function Test-CheckboxOnlyChange {
 # edit (Draft -> Approved before the phase begins). Without this the next feature's approval
 # commit turned its own branch red, which the replay demonstrated forward, not just in history.
 #
-# Whole-file comparison with the status VALUE neutralised, in order — the same shape as the
-# checkbox exemption, and for the same reason (H2, J6): reasoning about paired hunks let a line
-# moved elsewhere in the file ride along on an exempt change. Everything after '**Status**:' is
-# neutralised, including a trailing HTML comment, because the templates ship one on that line.
+# Whole-file comparison — the same shape as the checkbox exemption, and for the same reason
+# (H2, J6): reasoning about paired hunks let a line moved elsewhere in the file ride along on
+# an exempt change. EXACTLY ONE line may differ, and it must be the approval transition itself.
+#
+# The first implementation neutralised everything after '**Status**:' on every line that began
+# that way, which exempted far more than the approval act (K2): a payload appended to the status
+# line rode in ('Approved 2026-09-16 (owner: ada). D2 is withdrawn; ...' compared equal to the
+# line without it), any '**Status**:' line qualified including one inside a fenced block or on
+# an ADR sub-section, and it fired in either direction at any time. So the new value is matched
+# against a bounded approval vocabulary instead of being discarded, and only the document's
+# FIRST status line outside code counts. That also puts the exemption inside the constitution's
+# own scope sentence rather than beside it (K3): what is exempt is the Draft -> Approved
+# transition, which is the act that STARTS the rule, not a later change to an approved document.
+#
+# The old side is required only to BE Draft; an annotation on it ('Draft — awaiting owner
+# approval', the template's trailing guidance comment) may be dropped by the approval. New text
+# cannot ride in, which is the direction a payload travels; a plan that puts normative text on
+# its Draft status line is already misusing the line, and this is written into plan.md D3d
+# rather than left for the next reviewer to discover.
+$script:StatusDraftPattern = '^\s*\*\*Status\*\*:\s*Draft\b'
+$script:StatusApprovedPattern =
+    '^\s*\*\*Status\*\*:\s*Approved' +
+    '(?:\s+\d{4}-\d{2}-\d{2})?' +
+    '(?:\s+\(owner[:,]?\s*[A-Za-z0-9._@\- ]{1,40}(?:,\s*\d{4}-\d{2}-\d{2})?\))?' +
+    '(?:\s*<!--[^\r\n]*-->)?\s*$'
 function Test-StatusOnlyChange {
     param([string]$Commit, [string]$Parent, [string]$Path, [string]$ParentPath)
     if (-not $ParentPath) { $ParentPath = $Path }
-    $neutral = { param($lines)
-        $out = [System.Collections.Generic.List[string]]::new()
-        foreach ($l in $lines) { $out.Add(($l -replace '^(\s*\*\*Status\*\*:).*$', '${1}<status>').TrimEnd()) }
-        return $out
-    }
     $nowRaw  = Get-BlobLines -Ref $Commit -Path $Path
     $thenRaw = Get-BlobLines -Ref $Parent -Path $ParentPath
     # Two empty reads are a failed read, not an unchanged file (the B2 rider, same reasoning).
     if ($nowRaw.Count -eq 0 -and $thenRaw.Count -eq 0) { return $false }
-    $now  = & $neutral $nowRaw
-    $then = & $neutral $thenRaw
-    if ($now.Count -ne $then.Count) { return $false }
-    for ($i = 0; $i -lt $now.Count; $i++) { if ($now[$i] -ne $then[$i]) { return $false } }
-    # A file with no status line at all cannot have had a status-only change: neutralising
-    # nothing on both sides makes every unchanged file look exempt, and --name-status already
-    # told us this path was modified.
-    return @($nowRaw | Where-Object { $_ -match '^\s*\*\*Status\*\*:' }).Count -gt 0
+    if ($nowRaw.Count -ne $thenRaw.Count) { return $false }
+    $diffAt = -1
+    for ($i = 0; $i -lt $nowRaw.Count; $i++) {
+        if ($nowRaw[$i].TrimEnd() -ne $thenRaw[$i].TrimEnd()) {
+            if ($diffAt -ge 0) { return $false }
+            $diffAt = $i
+        }
+    }
+    if ($diffAt -lt 0) { return $false }
+    # The status line of the document is the first one Markdown RENDERS — a '**Status**:' line
+    # inside a fenced block is sample text, and an ADR's or a sub-section's status is prose that
+    # gets graded like any other prose.
+    $nowFence  = Get-FencedLineMap -Lines $nowRaw
+    $thenFence = Get-FencedLineMap -Lines $thenRaw
+    $nowFirst = -1; $thenFirst = -1
+    for ($i = 0; $i -lt $nowRaw.Count; $i++) {
+        if (-not $nowFence[$i] -and $nowRaw[$i] -match '^\s*\*\*Status\*\*:') { $nowFirst = $i; break }
+    }
+    for ($i = 0; $i -lt $thenRaw.Count; $i++) {
+        if (-not $thenFence[$i] -and $thenRaw[$i] -match '^\s*\*\*Status\*\*:') { $thenFirst = $i; break }
+    }
+    if ($nowFirst -lt 0 -or $nowFirst -ne $thenFirst -or $diffAt -ne $nowFirst) { return $false }
+    return ($thenRaw[$diffAt] -match $script:StatusDraftPattern) -and
+           ($nowRaw[$diffAt]  -match $script:StatusApprovedPattern)
 }
 
 # D6: an unfilled or impossible record is no record.

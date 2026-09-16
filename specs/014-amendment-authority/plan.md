@@ -147,15 +147,36 @@ act outside the rule it starts, so the check was contradicting the clause it enf
 demanded an approver record for obeying the template. And the cost was forward, not historical:
 the replay demonstrated that the next feature's approval commit would turn its own branch red.
 
-Scope is deliberately narrow, and verified narrow: the exemption is a whole-file comparison with
-the status value neutralised, so a commit that flips the status **and** changes anything else
-still fails. Demonstrated on a fixture — an approval commit passes; the same flip carrying one
-smuggled `FR-002` fails. A file with no status line cannot qualify. Residual risk, stated: the
-exemption keys on the line, so `Approved` → `Draft` is exempt too. That buys nothing, because
-approval is proxied by a document's first appearance (D10) and never by this line — un-setting
-it does not un-approve anything in the check's eyes.
+**Scope — narrowed by amendment after the sixth review (K2, K3).** The first implementation
+neutralised everything after `**Status**:` and compared the rest, which exempted far more than
+the approval act: a payload appended to the status line itself rode in unrecorded, *any*
+`**Status**:` line qualified — a second one in the body, an ADR's, one inside a fenced code
+block — and it fired in either direction at any time. The claim made here that such a diff
+"cannot carry a payload" was false, and the one payload shape tested (a smuggled `FR-002` on
+its own line) was the only shape that failed.
 
-Effect on SC-004: 67 flags become 65, and the 65 remaining are unchanged commit for commit.
+What is exempt is now the **approval transition**, and only that:
+
+- exactly one line differs between the commit and its parent, whole file compared;
+- that line is the document's **first** `**Status**:` line outside any fenced block;
+- the old value is `Draft`;
+- the new value is `Approved`, optionally followed by an ISO date and an `(owner: …)`
+  parenthetical and the template's trailing HTML comment — nothing else.
+
+This is also why the exemption needs no constitutional amendment (K3). The clause binds
+"any later change" to a document "once … approved"; the Draft → Approved transition is the act
+that *starts* the rule, so it sits inside the clause's own scope sentence rather than beside it.
+A plan decision may read the rule; it may not subtract a class the rule says is in.
+
+Residual, stated rather than left to be found: the old side is required only to **be** `Draft`,
+so an annotation on it (`Draft — awaiting owner approval`, the template's guidance comment) may
+be dropped by the approval. New text cannot ride in, which is the direction a payload travels,
+and a plan that puts normative text on its Draft status line is already misusing the line.
+`Approved` → `Draft` is no longer exempt at all.
+
+Effect on SC-004: 67 flags become 65, and the 65 remaining are unchanged commit for commit. The
+narrowing does not change that count — the two approval commits it exempts, `a9ddeb7` and
+`4e87018`, are both Draft → Approved transitions on the header line.
 
 **Amendment approved by**: anas.m, 2026-09-16.
 

@@ -358,6 +358,28 @@ reviewer N10): `scripts/enforcement-pack.ps1`, `specs/014-amendment-authority/ta
 
 **Amendment approved by**: anas.m, 2026-09-16.
 
+### Phase 3 remediation, round 2 (added by amendment 2026-09-16 — sixth review, K1–K4)
+
+- [x] T072 **K1** — the B7 fix reopened H1: a textual fence regex pairs triple-backtick runs
+      across the whole blob, so one stray run disarms a genuine comment. Find the code regions
+      structurally, line by line, and honour a backslash-escaped backtick. Prove both triggers
+      closed against the gated pack, and prove B7, H1 and J5 stay closed
+- [x] T073 **K2** — narrow D3d to the approval transition: exactly one differing line, the
+      document's first `**Status**:` line outside a fence, `Draft` on the old side and a bounded
+      `Approved` form on the new. Prove the four fail-open shapes now fail and that both approval
+      forms this repository has used still pass
+- [x] T074 **K3** — record in `plan.md` why the narrowed exemption needs no constitutional
+      amendment: the Draft → Approved transition is the act that starts the rule, not a later
+      change to an approved document
+- [x] T075 **K4** — correct the FitForge sha list in the gate record, mark the two superseded
+      tables as superseded, and record that after D3d `3cb6e34` fails on `plan.md` alone
+- [x] T076 Re-measure the cost (`Get-VisibleFromText` runs per graded path per graded commit)
+      and re-run both replays; append the finding dispositions to the review file
+- [ ] T077 Re-run `pwsh -File scripts/ritual-checks.ps1`, then report the ci-held evidence
+      triplet for this round
+
+**Amendment approved by**: anas.m, 2026-09-16.
+
 ---
 
 ## Phase 4: The adoption surface
