@@ -349,7 +349,7 @@ reviewer N10): `scripts/enforcement-pack.ps1`, `specs/014-amendment-authority/ta
       rule truncate `tasks.md` from that line on, hiding every approver record added after it.
       Markdown renders code as literal text, so neutralise the markers inside fenced blocks and
       inline code spans before comment detection. Verified it does not reopen H1 or J5
-- [ ] T069 **B5** — the owner decides whether a diff whose only change is the `**Status**` line
+- [x] T069 **B5** — the owner decides whether a diff whose only change is the `**Status**` line
       earns a D3a class exemption, and the decision is recorded in `plan.md` with its own
       approver line. Blocked on that decision: an implementing agent must not approve its own
       amendment (constitution I). Phase 3's **Territory** must gain `plan.md` first (reviewer N10)

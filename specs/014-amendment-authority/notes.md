@@ -840,3 +840,34 @@ routed around, which is the reasoning the constitution's own checkbox exemption 
 Worth naming the mechanism that caught it: the check was pointed at the commit that was
 remediating the check, and the feature's own compliance was the test. Five fresh-context reviews
 did not find this. The branch grading itself did, on the first commit where it mattered.
+
+### B5 — decided: the status line is exempt (D3d, owner, 2026-09-16)
+
+The owner exempted a diff whose only change is the `**Status**` line, and approved the `plan.md`
+amendment that records it. D3a's exemption route, used for the first time and for the reason it
+exists: the replay surfaced a class.
+
+Ordering, because this is the part that is easy to get wrong. Phase 3's **Territory** named
+`enforcement-pack.ps1` and `tasks.md` only (reviewer N10), and the decision had to be recorded
+in `plan.md`. `scripts/scope-check.ps1` reads a phase commit's territory from its **parent**, so
+the widening landed in its own commit, `28d2f0a`, with no `phase N` token — it declares
+territory, it does not spend it. Same-commit widening never passes, which is the whole point of
+reading the parent.
+
+Verification, three ways:
+
+| Case | Required | Result |
+|---|---|---|
+| Replay over 12 merged features | the two approval commits stop flagging, nothing else moves | **65 flags**, from 67: 011 `1 → 0`, 013 `12 → 11`, all others identical |
+| A new feature's honest approval commit | passes | passes, no flag |
+| The same status flip carrying one smuggled `FR-002` | fails | fails |
+
+That third row is the one that matters. The exemption is a whole-file comparison with the status
+value neutralised, so it cannot carry a payload: flip the status and touch anything else and the
+commit is graded exactly as before. A file with no status line cannot qualify at all — without
+that guard, neutralising nothing on both sides would make every unchanged file look exempt.
+
+The residual risk is written into D3d rather than left for the next reviewer to find: the
+exemption keys on the line, so `Approved` → `Draft` is exempt too. It buys nothing. Approval is
+proxied by a document's first appearance (D10) and never by this line, so un-setting it
+un-approves nothing the check believes.

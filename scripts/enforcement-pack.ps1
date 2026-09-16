@@ -865,6 +865,39 @@ function Test-CheckboxOnlyChange {
     return $true
 }
 
+# D3d (owner decision 2026-09-16 on review finding B5): a diff whose only change is the
+# **Status** line is the act of approval, not an amendment to an approved document. The
+# constitution's own scope sentence — "once a feature's spec.md or plan.md has been APPROVED" —
+# puts the approval act outside the rule it starts, and the kit's spec templates MANDATE the
+# edit (Draft -> Approved before the phase begins). Without this the next feature's approval
+# commit turned its own branch red, which the replay demonstrated forward, not just in history.
+#
+# Whole-file comparison with the status VALUE neutralised, in order — the same shape as the
+# checkbox exemption, and for the same reason (H2, J6): reasoning about paired hunks let a line
+# moved elsewhere in the file ride along on an exempt change. Everything after '**Status**:' is
+# neutralised, including a trailing HTML comment, because the templates ship one on that line.
+function Test-StatusOnlyChange {
+    param([string]$Commit, [string]$Parent, [string]$Path, [string]$ParentPath)
+    if (-not $ParentPath) { $ParentPath = $Path }
+    $neutral = { param($lines)
+        $out = [System.Collections.Generic.List[string]]::new()
+        foreach ($l in $lines) { $out.Add(($l -replace '^(\s*\*\*Status\*\*:).*$', '${1}<status>').TrimEnd()) }
+        return $out
+    }
+    $nowRaw  = Get-BlobLines -Ref $Commit -Path $Path
+    $thenRaw = Get-BlobLines -Ref $Parent -Path $ParentPath
+    # Two empty reads are a failed read, not an unchanged file (the B2 rider, same reasoning).
+    if ($nowRaw.Count -eq 0 -and $thenRaw.Count -eq 0) { return $false }
+    $now  = & $neutral $nowRaw
+    $then = & $neutral $thenRaw
+    if ($now.Count -ne $then.Count) { return $false }
+    for ($i = 0; $i -lt $now.Count; $i++) { if ($now[$i] -ne $then[$i]) { return $false } }
+    # A file with no status line at all cannot have had a status-only change: neutralising
+    # nothing on both sides makes every unchanged file look exempt, and --name-status already
+    # told us this path was modified.
+    return @($nowRaw | Where-Object { $_ -match '^\s*\*\*Status\*\*:' }).Count -gt 0
+}
+
 # D6: an unfilled or impossible record is no record.
 function Get-ConformingRecord {
     param([string[]]$AddedLines, [string]$CommitDay)
@@ -993,6 +1026,8 @@ function Invoke-AmendmentAuthorityCheck {
             }
             if ($leaf -eq 'tasks.md' -and
                 (Test-CheckboxOnlyChange -Commit $commit -Parent $parent -Path $path -ParentPath $oldPath)) { continue }
+            if ($leaf -in @('spec.md', 'plan.md') -and
+                (Test-StatusOnlyChange -Commit $commit -Parent $parent -Path $path -ParentPath $oldPath)) { continue }
             $amended += $path
         }
         if ($amended.Count -eq 0) { continue }

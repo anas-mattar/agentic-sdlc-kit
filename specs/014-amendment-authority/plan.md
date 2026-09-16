@@ -130,6 +130,35 @@ demonstrated, and the reason this switch is worth its risk.
 
 **Amendment approved by**: anas.m, 2026-09-13.
 
+**D3d — Approving a document is not amending it** (added by amendment; owner decision
+2026-09-16 on review finding B5). A diff whose **only** change is the `**Status**` line is
+exempt. It is the act of approval, not a change to an approved document.
+
+This is D3a's exemption route used for the first time, and it is used because the replay
+surfaced a **class**, not a one-off. Two commits in merged history — `a9ddeb7` ("spec: approve
+011-roadmap-claim-check mini-spec") and `4e87018` (the 013 plan approval) — are the owner's own
+approval commits, `+1/-1` each. T022 concluded D3a did not apply, from a three-flag sample that
+contained neither; the per-flag judgement B4 forced is what found them.
+
+Three reasons it is the right exemption rather than a convenience. The constitution's own scope
+sentence — "once a feature's `spec.md` or `plan.md` has been **approved**" — places the approval
+act outside the rule it starts, so the check was contradicting the clause it enforces. The kit's
+`spec-template.md` and `micro-spec-template.md` **mandate** the edit, so the rule as written
+demanded an approver record for obeying the template. And the cost was forward, not historical:
+the replay demonstrated that the next feature's approval commit would turn its own branch red.
+
+Scope is deliberately narrow, and verified narrow: the exemption is a whole-file comparison with
+the status value neutralised, so a commit that flips the status **and** changes anything else
+still fails. Demonstrated on a fixture — an approval commit passes; the same flip carrying one
+smuggled `FR-002` fails. A file with no status line cannot qualify. Residual risk, stated: the
+exemption keys on the line, so `Approved` → `Draft` is exempt too. That buys nothing, because
+approval is proxied by a document's first appearance (D10) and never by this line — un-setting
+it does not un-approve anything in the check's eyes.
+
+Effect on SC-004: 67 flags become 65, and the 65 remaining are unchanged commit for commit.
+
+**Amendment approved by**: anas.m, 2026-09-16.
+
 **D3c — A task's text is fixed at approval** (added by amendment; owner decision on the
 phase 3 replay, T022). `tasks.md` holds the agreed work and its completion state. What was
 actually done — evidence, results, corrections, the narrative of a phase — goes to
