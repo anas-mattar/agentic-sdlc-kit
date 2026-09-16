@@ -1231,3 +1231,103 @@ one branch — once through a decorated marker, once through a stale parent — 
 the WARN's "pre-006 compatibility" wording reads as reassurance rather than as a gap. A phase
 that declares no territory in a `tasks.md` whose sibling phases all declare it is not a pre-006
 file, and the check has the evidence to know that.
+
+## Phase 4 — the review, and what it caught (F1–F7)
+
+Gate 5, held by a fresh-context reviewer with no session context: the phase diff `fd07952`,
+`spec.md`, `plan.md` and phase 4's `tasks.md` block, and nothing else. Verdict **REQUEST
+CHANGES** — 2 blocking, 5 minor. Filed at `ai-code-review-phase-4.md`; dispositions appended
+below the reviewer's text, which was not edited.
+
+Both blocking findings were the same class, and it is the class this feature exists to fight:
+**prose an adopter trusts, describing behaviour the code does not have.** Neither was findable
+by reading the prose for plausibility. Both required running the scenario the sentence
+describes.
+
+### F1 — the document promised a fail-closed the code does not implement
+
+`adoption/updating.md` warned that a shallow clone makes the check grade nothing and look
+green — then closed by reassuring the reader that "where the check cannot read what it needs it
+now says so and fails rather than skipping quietly." It does not.
+`Invoke-AmendmentAuthorityCheck` (`scripts/enforcement-pack.ps1:1054`) is
+`if (-not $Base) { return }` — a bare return, nothing printed, exit 0. The reviewer measured it
+against a `--depth 1` clone rather than reasoning about it. The partial-clone path is no better:
+`Get-CheckPresenceSet`'s B3 hardening *falls back* rather than failing, so unreadable refs make
+every commit report as "made before the check existed (plan D2b)" — an affirmatively wrong
+reason, still green.
+
+The sentence was the reassurance that made the preceding instruction optional. An adopter who
+writes their own workflow reads "set `fetch-depth: 0` there too", then reads that they will be
+told if they get it wrong, and they will not be. Fixed by saying the true thing: there is no
+failure waiting to catch you, which is exactly why the instruction is not optional.
+
+### F2 — two surgical files listed as arriving verbatim
+
+The flow-down bullet promised `CLAUDE.md` and `docs/sdlc/review-process.md` would arrive with
+the update. `kit-manifest.json:4` and `:16` class both **surgical**, and `update-kit.ps1` never
+writes a surgical path; `docs/sdlc/repository-strategy.md` is surgical too, changed by this
+branch, and was missing from the bullet entirely. All three carry real content — the CLAUDE.md
+strict rule, the gate-5 reviewer check, the multi-repo twin of the clause.
+
+An adopter following that bullet ends up running the machine while their agent instructions and
+their review checklist never mention the rule: live and unenforced, which `spec.md` US4 names as
+the worst state in the kit. The document also already contradicted itself — line 209 calls
+CLAUDE.md surgical — and the house convention for flagging a surgical item inline was sitting
+twenty lines above in the 012 entry, unused here.
+
+### F3–F6, and F7
+
+Four one-sentence corrections, each verified against the code before acting: the status
+exemption is `spec.md`/`plan.md` only (`:1146` — a `tasks.md` status flip fails, demonstrated);
+the example block's margin arrows needed naming as annotations, because a record line ends at
+the date and the kit had already paid for that lesson one commit earlier in `3a51f5c`; the two
+sample failure messages were not faithful transcripts and used `61c57d5`, a real *passing*
+commit, as the example of a failure; and the "two exemptions" count omitted the FR-010
+renumbering carve-out, now named in the *creation* bullet where D2 already places it rather than
+inflating the count. F7 was an observation concurring with the `3a51f5c` WARN already recorded
+above, and needed no change.
+
+### What it verified clean, which is half the value
+
+All four renderer-parity cases plus a fifth the reviewer invented; every clause of the
+approval-transition condition against `Test-StatusOnlyChange`; the boundary claim and
+`fetch-depth: 0` in the workflow; the graded-path set; that T029 touches no other repository;
+and that this phase's diff contains **no amendment at all** — `tasks.md` carries six checkbox
+flips and nothing else, so the self-approval prohibition is not engaged by phase 4.
+
+The reviewer named the gap that let F1 and F2 through: nothing in the repository tests the prose
+against the code. That is reviewer discipline, not a test suite, and it is the third fail-open
+this feature has surfaced in its own tooling.
+
+## Phase 4 — gate, re-run after the review (T030)
+
+| | |
+|---|---|
+| Phase commit | `819abaa` (`819abaa16029c563853c73ca94452c0928f782a8`) |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35096709772 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 4 commit `819abaa` (3 files) |
+| Approved by | anas.m, 2026-09-16 |
+
+`**Gate Batching**: none`. The `fd07952` certification above stands as the record of what was
+gated before the review, and is not sufficient for the phase's final state: `819abaa` changed
+two statements an adopter acts on. Same shape as phase 3, where `43ab9d2` superseded `5d49cde`.
+
+A timing note, recorded because it is now consistent rather than incidental: the `ritual-checks`
+wrapper completes in roughly eight seconds in CI and stalls past ten minutes locally on the same
+commit, while its members' own timings add to about four and a half minutes. The verdicts agree;
+the stall is in the wrapper's exit on Windows, not in the checks.
+
+### Still homeless — three fail-opens in this feature's own tooling
+
+None is fixable inside any phase's Territory; all three are `scripts/` changes.
+
+| | Defect | Found by |
+|---|---|---|
+| F1 | `enforcement-pack.ps1:1054` returns bare on an unreadable history; a run that graded nothing is indistinguishable from a legitimately pre-boundary branch | phase 4 review |
+| — | `build-digests.ps1` opens a comment on a `<!--` inside an inline code span, silently swallowing the next marker | phase 4 implementation |
+| — | `Get-Territory` matches `**Territory**:` at line start only; a decorated marker degrades a phase to a non-blocking WARN carrying a pre-006 excuse | phase 4 implementation |
+
+They are one family: each passes quietly where it should speak. A feature arguing that a check
+which fails open is worse than one that is noisy should not leave three of them in the drawer.
