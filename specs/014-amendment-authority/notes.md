@@ -850,9 +850,17 @@ exists: the replay surfaced a class.
 Ordering, because this is the part that is easy to get wrong. Phase 3's **Territory** named
 `enforcement-pack.ps1` and `tasks.md` only (reviewer N10), and the decision had to be recorded
 in `plan.md`. `scripts/scope-check.ps1` reads a phase commit's territory from its **parent**, so
-the widening landed in its own commit, `28d2f0a`, with no `phase N` token — it declares
-territory, it does not spend it. Same-commit widening never passes, which is the whole point of
-reading the parent.
+the widening landed in its own commit, `28d2f0a`. Same-commit widening never passes, which is
+the whole point of reading the parent.
+
+**Correction, same day.** That commit's message claims it carries no `phase N` token. It does:
+the subject reads "widen **phase 3** territory", and the matcher is `phase\s+(\d+)`, so
+scope-check graded it as a phase 3 commit — `PASS phase 3 commit 28d2f0a (1 file(s))`. It passed
+because the only file it touched, `tasks.md`, was already in the territory it was widening, so
+nothing about the ordering argument changes. But the commit message asserts a fact that is
+false, and the immutable half of a record is the half worth correcting out loud. This is the
+sixth occurrence of this trap in this feature, and the first one written by an agent that had
+just finished documenting it.
 
 Verification, three ways:
 
