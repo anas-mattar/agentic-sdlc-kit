@@ -319,7 +319,11 @@ reviewer judges real, with the judgement written down per flag.
 
 ### Phase 3 remediation (added by amendment 2026-09-16 — fifth review, B1–B6)
 
-**Territory** (unchanged): `scripts/enforcement-pack.ps1`, `specs/014-amendment-authority/tasks.md`
+**Territory** (widened by amendment 2026-09-16 — `plan.md`, for T069's exemption record;
+reviewer N10): `scripts/enforcement-pack.ps1`, `specs/014-amendment-authority/tasks.md`,
+`specs/014-amendment-authority/plan.md`
+
+**Amendment approved by**: anas.m, 2026-09-16.
 
 - [x] T063 **B1** — `Get-CommitMetaBatch` split its record stream on `0x1E`, which git carries
       through a commit message untouched, so one byte let a commit delete itself from the graded
