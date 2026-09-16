@@ -1047,3 +1047,35 @@ That 9x was also nearly mismeasured. The first "before" number was 13 s, taken b
 gated pack from a scratchpad copy **without `-Root`**, so it graded the scratchpad instead of the
 kit and reported a clean, fast, meaningless result. It is the same trap the reviewer filed as N3,
 hit twice in one session by the person who wrote the note about it.
+
+## Phase 3 remediation round 2 — gate (T077)
+
+Certified by the owner 2026-09-16 on the evidence triplet, for the phase's final state after the
+sixth review.
+
+| | |
+|---|---|
+| Phase commit | `43ab9d2` (`43ab9d2101212d3b9597d847890fad81dfe39eaa`) |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35079222815 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 3 commit `43ab9d2` (5 files) |
+| Approved by | anas.m, 2026-09-16 |
+
+`**Gate Batching**: none`. This is phase 3's gate held a third time, on the commit carrying K1–K4.
+`5d49cde`'s certification above stands as the record of what was gated then, and is not
+sufficient: `43ab9d2` changed the check's core again — comment visibility is now structural, and
+the status exemption is narrowed to the approval transition.
+
+The branch was ahead by exactly one commit, so `43ab9d2` pushed alone and the push-event run
+landed on it with nothing else in the way.
+
+### The local run, done the way the last one had to be corrected
+
+Phase 4's edits are still uncommitted, so the working tree is again not the tree CI grades. The
+local `ritual-checks: RESULT OK` cited here was taken in a detached worktree at `43ab9d2`, with
+`-Root` pointed at that worktree: doc-lint OK, enforcement-pack OK, scope-check OK, digests OK
+(5 fresh, 75 markers), roadmap-claims OK, scope-repos and verify-kit `n/a` as they are for this
+repository. Both of the failure modes this feature has recorded — grading the working tree, and
+omitting `-Root` — are silent, so the guard against them is procedural, not a warning the tools
+will give.

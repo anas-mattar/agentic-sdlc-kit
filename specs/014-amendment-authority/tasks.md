@@ -375,7 +375,7 @@ reviewer N10): `scripts/enforcement-pack.ps1`, `specs/014-amendment-authority/ta
       tables as superseded, and record that after D3d `3cb6e34` fails on `plan.md` alone
 - [x] T076 Re-measure the cost (`Get-VisibleFromText` runs per graded path per graded commit)
       and re-run both replays; append the finding dispositions to the review file
-- [ ] T077 Re-run `pwsh -File scripts/ritual-checks.ps1`, then report the ci-held evidence
+- [x] T077 Re-run `pwsh -File scripts/ritual-checks.ps1`, then report the ci-held evidence
       triplet for this round
 
 **Amendment approved by**: anas.m, 2026-09-16.
