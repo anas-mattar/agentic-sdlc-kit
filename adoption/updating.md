@@ -279,12 +279,20 @@ who approved it, and **an implementing agent must not approve its own amendment*
 GAP-019 — until now an agent could widen its own Territory and pass the scope check by
 construction, because the check reads the Territory that same agent just wrote.
 
-- **What arrives verbatim**: `.specify/memory/constitution.md` is **not** one of them — it is
-  yours, and the surgical report names it (§2). Arriving verbatim:
-  `scripts/enforcement-pack.ps1` (the new `Invoke-AmendmentAuthorityCheck`),
-  `.specify/templates/tasks-template.md`, and the kit-side mirrors in `CLAUDE.md`,
-  `docs/sdlc/definition-of-done.md`, `docs/sdlc/review-process.md` and
-  `docs/sdlc/branch-strategy.md`.
+- **What the update writes for you (verbatim)**: `scripts/enforcement-pack.ps1` (the new
+  `Invoke-AmendmentAuthorityCheck`), `.specify/templates/tasks-template.md`,
+  `docs/sdlc/definition-of-done.md` (gates 5 and 6), `docs/sdlc/branch-strategy.md`, and both
+  review templates — `specs/_templates/ai-code-review-template.md` and
+  `specs/_templates/human-pr-review-template.md`, which is what makes your reviewers see
+  amendments at all.
+- **What you mirror by hand (surgical — the update reports these, it never writes them)**:
+  `CLAUDE.md` (the Strict Rules bullet: you never approve your own amendment),
+  `docs/sdlc/review-process.md` (the human-reviewer check — whether the named approver really
+  agreed) and `docs/sdlc/repository-strategy.md` (the multi-repo twin of the clause). Skip these
+  and you get the machine while your agent instructions and your review checklist never mention
+  the rule — live and unenforced, which `spec.md` US4 calls the worst state in the kit.
+  `.specify/memory/constitution.md` is surgical too, and is yours: §2 reports it, nothing
+  writes it.
 - **Ratify the clause first.** The kit shipped the law one phase before the machine
   deliberately: a kit must not enforce a rule it has not ratified. Do the same — adopt the
   Principle I wording into your constitution as its own reviewed change, then let the check
@@ -308,6 +316,11 @@ recording evidence never costs an approval.
 
 - A document's **first appearance is creation**, not amendment, and owes no record. This kit
   has no approval token, so existence is the proxy for approval (stated plainly in the clause).
+  A branch renumbered by a lost claim race is creation too: the whole `specs/NNN-name`
+  directory moves, `claim-feature.ps1` mandates the header edits that ride along, and the check
+  skips a rename whose old path was in a different feature directory (FR-010). It is the one
+  exempted case where a document's text did change — the alternative was a state with no legal
+  path to green.
 - Every later change to the document's **text** is an amendment. The test is the text, never
   the intent: re-wording, re-scoping or annotating a task is an amendment even when the work
   itself was already agreed.
@@ -315,15 +328,17 @@ recording evidence never costs an approval.
   — `- [ ]` to `- [x]` or back — is progress, not amendment. Un-ticking counts too. But
   rewriting a task's text *while* ticking it is an amendment: record what was done in
   `notes.md` and leave the task saying what was agreed.
-- And the **approval transition itself**: `**Status**: Draft` becoming `**Status**: Approved`
-  is the act that starts the rule, not a change to an approved document, so it owes no record.
+- And the **approval transition itself**, on `spec.md` or `plan.md`: `**Status**: Draft`
+  becoming `**Status**: Approved` is the act that starts the rule, not a change to an approved
+  document, so it owes no record.
   The kit's own spec templates mandate that edit; a rule that charged an approver record for
   obeying the template would be charging for the approval. It is exempt only in that exact
   shape — exactly one line differs in the whole file, it is the document's **first**
   `**Status**:` line and not one inside a fenced block, the old value is `Draft`, and the new
   value is `Approved` plus at most a date, an `(owner: …)` parenthetical and the template's
   trailing comment. Anything riding along on that line, a second status line rewritten beside
-  it, or `Approved` going back to `Draft`, is an amendment like any other.
+  it, or `Approved` going back to `Draft`, is an amendment like any other. A `tasks.md` status
+  line is not exempt — no kit template gives it one.
 
 **A conforming record** is two halves, and the check wants both:
 
@@ -336,13 +351,15 @@ in the amended section of the document itself — not in `notes.md`, not inside 
 later edit cannot fake, which is the whole reason it is asked for. Two failures you may meet:
 
 ```text
-AmendmentAuthority: commit 61c57d5 amends plan.md after approval with no conforming
-approver record. Add '**Amendment approved by**: <name>, <YYYY-MM-DD>' to the amended
-section and name the same approver in the commit message …
+AmendmentAuthority: commit a1b2c3d amends specs/014-amendment-authority/plan.md after
+approval with no conforming approver record. Add '**Amendment approved by**: <name>,
+<YYYY-MM-DD>' to the amended section and name the same approver in the commit message
+(constitution I, Amendment authority). Ticking a task off is exempt …
 
-AmendmentAuthority: commit 61c57d5 records 'anas.m' as the approver of its change to
-plan.md, but its commit message does not name them — the message is fixed at commit time
-and is the half a later edit cannot fake
+AmendmentAuthority: commit a1b2c3d records 'anas.m' as the approver of its change to
+specs/014-amendment-authority/plan.md, but its commit message does not name them — the
+message is fixed at commit time and is the half a later edit cannot fake
+(constitution I; plan D5)
 ```
 
 "Not inside a comment" means what a Markdown renderer means by it, and the check reads your
@@ -364,7 +381,10 @@ The syntax is `<!--`.                            <- prose. The record below stil
 ```
 
 So a graded document may freely *discuss* comment syntax and still carry a visible record. The
-kit learned this the hard way: a `tasks.md` task describing this very check quoted a comment
+`<-` notes above are margin annotations, not part of the lines: a real record line ends at the
+date, and anything appended to it — including a note like those — defeats the pattern and is no
+record at all. The kit learned this the hard way:
+ a `tasks.md` task describing this very check quoted a comment
 opener in backticks, an earlier implementation read it as a real one, and every approver record
 below that line went invisible — the rule was briefly impossible to comply with in any document
 that mentioned it. If a record you can see is reported missing, look upward for an opener that
@@ -402,9 +422,11 @@ the check needs real objects to read. In a shallow or partial clone — `actions
 defaults to depth 1 — there is nothing to read, and a check that grades nothing looks exactly
 like a branch that is legitimately pre-boundary: green, and meaningless. The kit's
 `.github/workflows/ritual-checks.yml` ships with `fetch-depth: 0` for this reason; if you wrote
-your own workflow, or fetch shallowly on a build agent, set it there too. Where the check
-cannot read what it needs it now says so and fails rather than skipping quietly, but the
-cheapest fix is to not put it in that position.
+your own workflow, or fetch shallowly on a build agent, set it there too. The check cannot
+detect that it is in that position: with no base to diff against it returns without printing,
+and where refs are unreadable each commit simply never enters the presence set and is reported
+as made before the check existed. Either way the run is green and says nothing, so
+`fetch-depth: 0` is the only defence — there is no failure waiting to catch you.
 
 <!-- digest: The amendment check binds forward only — nothing committed before it arrived is graded. -->
 <!-- digest: The amendment check needs full history — fetch-depth 0 in CI, or it grades nothing and looks green. -->

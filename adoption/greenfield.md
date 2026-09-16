@@ -117,8 +117,8 @@ feature 001 meets it as a habit; one that meets it at feature 004 meets it as a 
 a branch it has already written.
 
 Two edits are deliberately *not* amendments, and 001 is where that is worth learning: approving
-a document in the first place — the `**Status**: Draft` → `**Status**: Approved` flip the
-templates ask for, alone in its commit — and ticking a task box. Everything else in
+a `spec.md` or `plan.md` in the first place — the `**Status**: Draft` → `**Status**: Approved`
+flip the templates ask for, alone in its commit — and ticking a task box. Everything else in
 `spec.md`, `plan.md`, `tasks.md` and `contracts/` is. Evidence of what a phase actually found
 belongs in `notes.md`, which is ungraded precisely so that recording it never costs an
 approval (`docs/sdlc/branch-strategy.md`).
