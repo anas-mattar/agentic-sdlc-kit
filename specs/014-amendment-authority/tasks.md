@@ -465,6 +465,14 @@ unchanged, and the kit's own CI verdict does not move.
 
 - `scripts/enforcement-pack.ps1`
 - `adoption/updating.md`
+- `docs/digests/`
+
+`docs/digests/` added by amendment 2026-09-16: phase 5 changes the wording of a digest marker in
+`adoption/updating.md` (the one that promised the behaviour F1 exposed), and CI fails on any
+drift between a rule and its digest, so regenerating is not optional. Phase 4 declared the same
+entry for the same mechanical reason.
+
+**Amendment approved by**: anas.m, 2026-09-16.
 
 `adoption/updating.md` is in territory because phase 4 was made to write, truthfully, that no
 failure was waiting to catch an adopter who fetched shallowly. Closing F1 makes that sentence
