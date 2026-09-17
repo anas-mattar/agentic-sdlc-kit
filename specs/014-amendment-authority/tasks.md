@@ -515,6 +515,13 @@ replaces a crash that killed the whole run, so no member's verdict moves, and th
 a pack that dies before any check speaks. The two CONFIRM findings (F3, the batching cost; F4,
 the unamended spec) are NOT in this round and remain open.
 
+**Superseded 2026-09-18** (review G2, round 3 H2): the basis above is disproved and the widening
+stands anyway. Replacing the crash made a baseless run *reachable*, and there the Lite-lane check
+graded an empty file list while the members that read the diff returned without grading — a
+`fix/` branch touching 32 files ran green. A verdict did move; the crash had been hiding it.
+Round 2 (T093) names the condition instead. Read this preamble as the approval it was, not as a
+statement that holds.
+
 - [x] T085 **F1** — `Test-CheckAbsentForReal` asks `git cat-file -e`, which answers "is this
       object named in the store" and exits 0 for a present-but-corrupt blob that `git grep`
       then exits 128 trying to read. An unreadable object therefore reported as
@@ -566,3 +573,41 @@ this — they are the digest marker parser and `Get-Territory`, and stay out of 
       itself ungraded rather than clean. Correct the T086 record, whose approval basis ("no
       member's verdict moves") this disproves
 - [x] T094 Re-run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held evidence triplet
+
+### Phase 5 remediation, round 3 (added by amendment 2026-09-18 — third review, H1, H2)
+
+**Amendment approved by**: anas.m, 2026-09-18.
+
+Prose only — no logic changes, and both files the round touches
+(`scripts/enforcement-pack.ps1`, `notes.md`) are already in phase 5's Territory. What needs the
+owner is H2: the round-1 approval preamble above is the standard this phase is graded against,
+and marking its basis superseded edits that standard. That edit is made by this amendment
+commit itself, which is why H2 has no task of its own below.
+
+The round exists because H1 is the third instance of this feature's own defect class — an untrue
+sentence about the check, inside the check — and the second review found the first two. T090, in
+the commit under review, sets that standard; the fix for G2 shipped in the same commit fails it.
+
+This amendment lands BEFORE the commit it authorises, which is what G5 asked for and what the
+branch's first three amendments did.
+
+- [ ] T095 **H1(a)** — the Dispatch comment and the warning string both assert that with no
+      computable base "every member that reads the diff grades an EMPTY file list". True on the
+      Lite lane alone: `Invoke-ReviewProvenanceCheck` and `Invoke-PhaseSizeWarningCheck` return
+      at `if (-not $Base)`, `Invoke-MicroLaneCheck` returns before the phase walk, and
+      `Invoke-AmendmentAuthorityCheck` does not grade an empty list — it fails. On an `NNN-*`
+      branch the string is printed three lines above a failure that contradicts it. Narrow both
+      to what the lanes actually do; the conclusion ("nothing was compared") is true everywhere
+      and stays
+- [ ] T096 **H1(b)** — "the phase 5 fix that replaced the `Get-DiffBase` crash is what made that
+      reachable rather than fatal" is true of one baseless shape, not both. It holds where
+      `origin/main` resolves but shares no commit (F2's `--depth N --no-single-branch` clone).
+      It is false where neither `main` nor `origin/main` exists — the ordinary depth-1
+      `actions/checkout` shape — because there was no crash there to replace: `a57fe3c` was
+      already silently green. Qualify the claim in the comment
+- [ ] T097 **H1, the record** — the same two sentences stand in `notes.md`'s round-2 section and
+      in `9d6b01f`'s commit message. Correct `notes.md` by that file's appended-correction
+      convention. The commit message is fixed at commit time and cannot be rewritten on a pushed
+      branch: record that it carries the uncorrected claims rather than leaving the discrepancy
+      unstated
+- [ ] T098 Re-run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held evidence triplet
