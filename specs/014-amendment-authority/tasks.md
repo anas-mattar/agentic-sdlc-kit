@@ -591,7 +591,7 @@ the commit under review, sets that standard; the fix for G2 shipped in the same 
 This amendment lands BEFORE the commit it authorises, which is what G5 asked for and what the
 branch's first three amendments did.
 
-- [ ] T095 **H1(a)** — the Dispatch comment and the warning string both assert that with no
+- [x] T095 **H1(a)** — the Dispatch comment and the warning string both assert that with no
       computable base "every member that reads the diff grades an EMPTY file list". True on the
       Lite lane alone: `Invoke-ReviewProvenanceCheck` and `Invoke-PhaseSizeWarningCheck` return
       at `if (-not $Base)`, `Invoke-MicroLaneCheck` returns before the phase walk, and
@@ -599,13 +599,13 @@ branch's first three amendments did.
       branch the string is printed three lines above a failure that contradicts it. Narrow both
       to what the lanes actually do; the conclusion ("nothing was compared") is true everywhere
       and stays
-- [ ] T096 **H1(b)** — "the phase 5 fix that replaced the `Get-DiffBase` crash is what made that
+- [x] T096 **H1(b)** — "the phase 5 fix that replaced the `Get-DiffBase` crash is what made that
       reachable rather than fatal" is true of one baseless shape, not both. It holds where
       `origin/main` resolves but shares no commit (F2's `--depth N --no-single-branch` clone).
       It is false where neither `main` nor `origin/main` exists — the ordinary depth-1
       `actions/checkout` shape — because there was no crash there to replace: `a57fe3c` was
       already silently green. Qualify the claim in the comment
-- [ ] T097 **H1, the record** — the same two sentences stand in `notes.md`'s round-2 section and
+- [x] T097 **H1, the record** — the same two sentences stand in `notes.md`'s round-2 section and
       in `9d6b01f`'s commit message. Correct `notes.md` by that file's appended-correction
       convention. The commit message is fixed at commit time and cannot be rewritten on a pushed
       branch: record that it carries the uncorrected claims rather than leaving the discrepancy

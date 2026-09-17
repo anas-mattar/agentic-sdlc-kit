@@ -1610,6 +1610,48 @@ fix/probe on a baseless clone:  WARNING: ... graded an EMPTY file list ... not e
 GAP-025 and GAP-026 were checked against this before it was written: they are the digest marker
 parser and `Get-Territory`, and neither is this. 014 still does not absorb them.
 
+**Correction, 2026-09-18** (third review, H1). Two sentences above are wrong, and they are the
+class this feature exists to remove — an untrue sentence about the check, written into the
+check. Both shipped in `9d6b01f` alongside T090, which declares that class.
+
+"every member that reads the diff grades an **empty** file list" is true of the Lite lane alone.
+`Get-ChangedFiles` returns `@()`, and the one member handed that list is
+`Invoke-LiteAndAbuseCheck` — `fix/` and `chore/` only. The members taking `-Base` return without
+grading: `Invoke-ReviewProvenanceCheck` and `Invoke-PhaseSizeWarningCheck` at
+`if (-not $Base) { return }`, `Invoke-MicroLaneCheck` before its phase walk (its tree-based arms
+still run). `Invoke-AmendmentAuthorityCheck` does neither — it fails. On an `NNN-*` branch the
+warning therefore printed three lines above a failure that contradicted it.
+
+"Replacing the `Get-DiffBase` crash made a previously fatal state reachable" is true of one
+baseless shape, not both. It holds where `origin/main` resolves but shares no commit with HEAD —
+F2's `--depth N --no-single-branch` clone. It is false where neither `main` nor `origin/main`
+resolves, which is the ordinary depth-1 `actions/checkout` shape: the candidate loop is never
+entered, both versions return `$null`, and `a57fe3c` was already silently green there. Nothing
+was made reachable; it had never been fatal. The round-2 review said as much, and the sentence
+written in answer to it dropped the qualification.
+
+Neither is a fail-open — both overstate, and the conclusion they carry ("nothing was compared")
+holds on every lane. That is why round 3 is prose and no logic moves. The comment and the
+warning string are corrected in this round's commit; `9d6b01f`'s message carries both claims
+uncorrected and cannot be rewritten on a pushed branch, so it is corrected here, as `8c1bdad`'s
+was. The evidence block above stands as the output observed at the time.
+
+The corrected string, observed on a purpose-built baseless fixture (no `main`, no `origin`, one
+`fix/` branch and one `NNN-*` branch, run with `-Root`):
+
+```text
+fix/sneaky  WARNING: ... nothing on 'fix/sneaky' was compared — each check that reads the diff
+            either graded an empty file list, returned without grading, or failed for want of a
+            base ...                                        enforcement-pack: OK      exit 0
+001-orphan  same WARNING, then
+            FAIL AmendmentAuthority: cannot grade '001-orphan' — no integration branch ...
+                                                             enforcement-pack: FAIL    exit 1
+```
+
+The disjunction is what makes it true on both: the third arm now names the disposition the
+`NNN-*` lane actually takes, three lines above the failure that takes it. FR-009 is re-checked
+by the same pair — the Lite branch still exits 0.
+
 ### G3 and G6
 
 G3: F5 moved the batching comment but left its blank line on the far side, making

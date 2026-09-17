@@ -1238,14 +1238,19 @@ $changedFiles = Get-ChangedFiles -Base $diffBase
 
 Write-Host "enforcement-pack: branch '$Branch', diff base '$diffBase', $($changedFiles.Count) changed file(s)"
 
-# Silence is not compliance in the other lanes either (review G2). With no computable base,
-# every member that reads the diff grades an EMPTY file list and passes: on a baseless clone a
-# 'fix/' branch touching anything at all went green, and the phase 5 fix that replaced the
-# Get-DiffBase crash is what made that reachable rather than fatal. FR-009 forbids newly FAILING
-# a Lite branch on a null base, so this names the condition instead of failing on it — the run
-# reports itself as ungraded rather than as clean. An NNN-* branch still fails, in the check.
+# Silence is not compliance in the other lanes either (review G2). With no computable base the
+# pack still speaks, but nothing it says is a comparison, and the three dispositions differ by
+# member: Get-ChangedFiles returns an empty list, so the Lite-lane check grades nothing; the
+# members taking -Base (review-provenance, phase-size, the Micro phase walk) return without
+# grading; AmendmentAuthority fails rather than grading. On a baseless clone a 'fix/' branch
+# touching anything at all therefore went green. Where origin/main resolves but shares no
+# commit, the phase 5 fix that replaced the Get-DiffBase crash is what made that state
+# reachable rather than fatal; where neither ref resolves the loop was never entered and it was
+# always this quiet (review H1). FR-009 forbids newly FAILING a Lite branch on a null base, so
+# this names the condition instead of failing on it — the run reports itself as ungraded rather
+# than as clean. An NNN-* branch still fails, in the check.
 if (-not $diffBase -and $Branch -notin @('main', 'master')) {
-    $script:warnings += "enforcement-pack: no integration branch to diff against, so every check that reads the diff graded an EMPTY file list on '$Branch'. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout)."
+    $script:warnings += "enforcement-pack: no integration branch to diff against, so nothing on '$Branch' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout)."
 }
 
 if ($Branch -in @('main', 'master')) {
