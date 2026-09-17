@@ -1624,3 +1624,48 @@ G4 (T088 ticked with no triplet recorded here) is answered by this round's own g
 the branch's earlier amendments happened to land as separate commits. F3 and F4 from the first
 phase 5 review remain open, untouched, and still need the owner: the batching cost SC-006 asks
 to be stated, and a spec amendment for FR-011.
+
+## Phase 5 — gate, after two review rounds (T094)
+
+Certified by the owner 2026-09-17 on the evidence triplet. This supersedes the `a57fe3c`
+certification: that commit was gated before any reviewer had seen it, and the review that
+followed returned REQUEST CHANGES on two blocking findings. `8c1bdad` was never approved — it
+was gated, reviewed, and superseded in turn.
+
+| | |
+|---|---|
+| Phase commit | `9d6b01f` (`9d6b01f3645b025209db07bc2a701b4c6c216233`) |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35242954023 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 5 commit `9d6b01f` (5 files) |
+| Approved by | anas.m, 2026-09-17 |
+
+`**Gate Batching**: none`. CI reported `AmendmentAuthority: graded 30 of 39 commit(s)`, the nine
+ungraded being those made before the check existed (D2b). This answers review finding G4, which
+observed that T088 had been ticked with no `ritual-checks` result and no triplet in this file.
+
+### The three commits, and why there were three
+
+| commit | gated | approved | reviewed | outcome |
+|---|---|---|---|---|
+| `a57fe3c` | yes | yes | yes | REQUEST CHANGES — F1, F2 blocking |
+| `8c1bdad` | yes | no | yes | REQUEST CHANGES — G1 blocking |
+| `9d6b01f` | yes | **yes** | not yet | this record |
+
+Each round's blocking finding was inside the fix for the previous one, and all three were the
+same question answered slightly wrong: *what does it mean for a git object to be readable*.
+`-e` asks whether the store names it. `-s` inflates the header. `cat-file blob` inflates the
+body, which is what a reader does. Three probes, two reviews, and the only one that found each
+error was a reviewer with no part in writing it.
+
+### What this gate does not certify
+
+No fresh-context reviewer has seen `9d6b01f`. Gate 5 is open, and on this branch that has not
+been a formality twice running.
+
+Three findings remain open and are not closed by this gate: **F3** (the per-commit probe undoes
+T024's batching; SC-006 asks for a stated fraction this file still does not state), **F4**
+(`spec.md` FR-011 and US4 scenario 2 carry an exception recorded only in `adoption/updating.md`,
+and amending the spec is the owner's to approve), and **G5** (the round's amendment shipping
+inside the commit it authorises — lawful, but unlike the branch's three earlier amendments).

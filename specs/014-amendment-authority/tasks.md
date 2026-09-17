@@ -565,4 +565,4 @@ this — they are the digest marker parser and `Get-Territory`, and stay out of 
       forbids newly failing a Lite branch, so name the condition instead — the run reports
       itself ungraded rather than clean. Correct the T086 record, whose approval basis ("no
       member's verdict moves") this disproves
-- [ ] T094 Re-run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held evidence triplet
+- [x] T094 Re-run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held evidence triplet
