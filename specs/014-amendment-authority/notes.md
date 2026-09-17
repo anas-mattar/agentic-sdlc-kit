@@ -1554,3 +1554,73 @@ fixture, with SC-006 asking for a stated fraction that `notes.md` still does not
 (`spec.md` FR-011 and US4 scenario 2 now carrying an exception recorded only in
 `adoption/updating.md`) are CONFIRM findings. Both are open, neither is in this round, and F4 in
 particular asks for a spec amendment that only the owner can approve.
+
+## Phase 5 remediation, round 2 — the second review (T089–T094)
+
+The second fresh-context review returned REQUEST CHANGES on the round that answered the first
+one. Two of its findings correct statements *this file* made, which is the part worth reading.
+
+### G1 — the round-1 fix closed two damage modes of three, and said it closed all of them
+
+`git cat-file -s` inflates the object **header** and stops. An object truncated mid-body still
+has an intact header, so `-s` exits 0 on it while every reader fails. Measured on a loose object
+cut to half its bytes:
+
+| probe | deleted | garbage in place | **truncated mid-body** |
+|---|---|---|---|
+| `git cat-file -e` | 1 | **0** | **0** |
+| `git cat-file -s` | 128 | 128 | **0** |
+| `git cat-file blob` | 128 | 128 | 128 |
+| `git grep` | 1 | 128 | 128 |
+
+The `-s` row is why T085 looked complete: it closes the garbage case, which is the case the
+fixture tested. `git cat-file blob` inflates the body and matches `git grep` in every column.
+All three modes now fail naming the unreadable parent; the intact fixture still grades `2 of 2`
+and flags only the genuinely unrecorded amendment; this repository is unchanged at
+`graded 29 of 38`.
+
+### G1's second half — the sentence, which is the worse half
+
+The round-1 comment, the paragraph above it in this file, and the commit message for `8c1bdad`
+each stated that `-s` "fails exactly where a reader fails". That was false when written. The
+feature's whole subject is prose asserting behaviour the code does not have, and the assertion
+was placed in the check's own source, in the round that existed to fix the same class of defect
+one layer down. It is corrected in all three places; the `8c1bdad` message cannot be rewritten
+and is corrected here instead. The earlier table in this file stands as written — it was
+accurate about the two modes it measured, and incomplete about the third.
+
+### G2 — the T086 approval rests on a statement that is not true
+
+Round 1 recorded, and the owner approved T086's scope widening on the basis of, "no member's
+verdict moves". The review disproved it. Replacing the `Get-DiffBase` crash made a previously
+fatal state reachable, and in that state every member that reads the diff grades an **empty**
+file list: on a baseless clone a `fix/` branch touching 32 files ran green. The crash had been
+hiding it.
+
+FR-009 forbids newly *failing* a Lite branch on a null base, so the fix names the condition
+rather than failing on it — the run now reports itself as ungraded instead of as clean:
+
+```text
+fix/probe on a baseless clone:  WARNING: ... graded an EMPTY file list ... not evidence that the
+                                branch is clean — it is evidence that nothing was compared
+                                (exit 0, FR-009 intact)
+014-amendment-authority, same clone: cannot grade — this is a shallow clone (exit 1, unchanged)
+```
+
+GAP-025 and GAP-026 were checked against this before it was written: they are the digest marker
+parser and `Get-Territory`, and neither is this. 014 still does not absorb them.
+
+### G3 and G6
+
+G3: F5 moved the batching comment but left its blank line on the far side, making
+`Get-CheckPresenceSet` the only function in the file fenced off from its own doc comment. G6:
+the adopter paragraph promised failure in a "shallow or **partial**" clone; a `--filter=blob:none`
+clone with a reachable promisor grades correctly by fetching lazily, so the word came out.
+
+### Still open
+
+G4 (T088 ticked with no triplet recorded here) is answered by this round's own gate below. G5
+(the amendment shipping inside the commit it authorises) is noted and unchanged — lawful, and
+the branch's earlier amendments happened to land as separate commits. F3 and F4 from the first
+phase 5 review remain open, untouched, and still need the owner: the batching cost SC-006 asks
+to be stated, and a spec amendment for FR-011.

@@ -730,25 +730,27 @@ function Get-NameStatusBatch {
 # through, and reported "made before the check existed" about a tree that contained it (T080).
 function Test-CheckAbsentForReal {
     param([string]$Ref)
-    git cat-file -s "${Ref}^{commit}" *> $null
+    git cat-file commit "${Ref}^{commit}" *> $null
     if ($LASTEXITCODE -ne 0) { return $false }                       # the commit itself is gone
     $entry = @(git ls-tree --name-only "$Ref" -- 'scripts/enforcement-pack.ps1' 2>$null)
     if ($LASTEXITCODE -ne 0) { return $false }
     if (@($entry | Where-Object { $_ }).Count -eq 0) { return $true } # the script did not exist yet
-    # `-s` and not `-e`: `cat-file -e` answers "is this object named in the store", which a
-    # present-but-corrupt blob satisfies — it exits 0 on an object `git grep` then exits 128
-    # trying to read. `-s` reads the header, so it fails exactly when a reader would fail.
-    # Stdout is suppressed as well as stderr because `-s` prints the size, and a function that
-    # emits it returns an array whose truthiness is not the boolean this asks for.
-    git cat-file -s "${Ref}:scripts/enforcement-pack.ps1" *> $null
+    # Read the whole object, because anything less answers a different question (review G1).
+    # `-e` asks only whether the store names it: exit 0 on a corrupt blob and on a truncated
+    # one. `-s` inflates the HEADER only: still exit 0 on an object truncated mid-body, where
+    # `git grep` exits 128. Only inflating the body fails wherever a reader fails — measured
+    # across all three damage modes (deleted / garbage / truncated) at no measurable cost.
+    # Stdout is suppressed as well as stderr: the content would otherwise join this function's
+    # output stream and return an array whose truthiness is not the boolean the caller tests.
+    git cat-file blob "${Ref}:scripts/enforcement-pack.ps1" *> $null
     return ($LASTEXITCODE -eq 0)                                     # readable and without it
 }
+
 # The set of refs that already carry the check (D2b), in one git call. `git grep` searches many
 # trees at once and prints '<rev>:<path>' per hit, so the boundary question that cost one 39 KB
 # blob read per ungraded commit now costs one process for the whole branch. Self-bootstrapping,
 # as the per-ref version was: the test is whether that tree's copy of THIS script defines the
 # check function.
-
 function Get-CheckPresenceSet {
     param([string[]]$Refs)
     $set = @{}
@@ -1235,6 +1237,16 @@ $diffBase = Get-DiffBase
 $changedFiles = Get-ChangedFiles -Base $diffBase
 
 Write-Host "enforcement-pack: branch '$Branch', diff base '$diffBase', $($changedFiles.Count) changed file(s)"
+
+# Silence is not compliance in the other lanes either (review G2). With no computable base,
+# every member that reads the diff grades an EMPTY file list and passes: on a baseless clone a
+# 'fix/' branch touching anything at all went green, and the phase 5 fix that replaced the
+# Get-DiffBase crash is what made that reachable rather than fatal. FR-009 forbids newly FAILING
+# a Lite branch on a null base, so this names the condition instead of failing on it — the run
+# reports itself as ungraded rather than as clean. An NNN-* branch still fails, in the check.
+if (-not $diffBase -and $Branch -notin @('main', 'master')) {
+    $script:warnings += "enforcement-pack: no integration branch to diff against, so every check that reads the diff graded an EMPTY file list on '$Branch'. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout)."
+}
 
 if ($Branch -in @('main', 'master')) {
     Write-Host "enforcement-pack: '$Branch' is the trunk, not a feature/fix/chore/docs branch — no scripted checks apply"

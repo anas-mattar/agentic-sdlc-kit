@@ -535,3 +535,34 @@ the unamended spec) are NOT in this round and remain open.
       and a `--depth 5 --no-single-branch` clone carrying `origin/main` — record both in
       `notes.md`, then run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held
       evidence triplet
+
+### Phase 5 remediation, round 2 (added by amendment 2026-09-17 — second review, G1–G3, G6)
+
+**Amendment approved by**: anas.m, 2026-09-17.
+
+G2 is fixed rather than merely recorded, approved on that basis. It widens phase 5 a second time,
+for the same reason T086 did: the round-1 fix turned a crash into a reachable state, and a
+reachable state that grades nothing must say so. GAP-025 and GAP-026 were checked and are not
+this — they are the digest marker parser and `Get-Territory`, and stay out of 014.
+
+- [x] T089 **G1** — `cat-file -s` inflates the object HEADER only, so an object truncated
+      mid-body exits 0 where `git grep` exits 128: F1's fail-open with a narrower trigger, and
+      T085 closed two damage modes of three. Probe with `git cat-file blob`, which inflates the
+      body and so fails wherever a reader fails. Prove all three modes — deleted, garbage,
+      truncated
+- [x] T090 **G1, the record** — the T085 comment, the `notes.md` write-up and the commit message
+      each assert that `-s` "fails exactly where a reader fails". It does not. Correct all three
+      surfaces: an untrue sentence about the check, inside the check, is this feature's own
+      defect class
+- [x] T091 **G3** — F5 was half-closed. The batching doc comment moved but kept its blank line
+      on the far side, leaving `Get-CheckPresenceSet` the only function in the file separated
+      from its own comment
+- [x] T092 **G6** — the adopter paragraph promises failure in a "shallow or partial" clone. A
+      partial clone (`--filter=blob:none`) with a reachable promisor grades correctly by fetching
+      lazily. Drop the overpromise
+- [x] T093 **G2** — with no computable base every member that reads the diff grades an EMPTY
+      file list: on a baseless clone a `fix/` branch touching 32 files passed green. FR-009
+      forbids newly failing a Lite branch, so name the condition instead — the run reports
+      itself ungraded rather than clean. Correct the T086 record, whose approval basis ("no
+      member's verdict moves") this disproves
+- [ ] T094 Re-run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held evidence triplet

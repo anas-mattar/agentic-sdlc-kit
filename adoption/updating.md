@@ -423,8 +423,8 @@ and the check landing, the rule is law and ungraded. Keep that window to one pha
 did on its own branch.
 
 **Give CI the whole history.** The boundary is computed by reading each commit's own tree, so
-the check needs real objects to read. In a shallow or partial clone — `actions/checkout`
-defaults to depth 1 — those objects are not there, and a check that grades nothing would look
+the check needs real objects to read. In a shallow clone — `actions/checkout` defaults to
+depth 1 — those objects are not there, and a check that grades nothing would look
 exactly like a branch that is legitimately pre-boundary: green, and meaningless. So on an
 `NNN-*` branch the check refuses to guess. It fails, and names the condition it met: a shallow
 clone, an integration branch it cannot diff against — absent, or present but sharing no
