@@ -1469,3 +1469,88 @@ Gate 5 is not held. No fresh-context reviewer has seen phase 5 — the other fou
 have a review file in this directory and this one has none, and a phase whose entire subject is
 a fail-open found by review is the last place to make an exception. The branch is green at
 `a57fe3c` and green is not reviewed.
+
+## Phase 5 remediation — the review's two blocking findings (T085–T088)
+
+The phase 5 review returned REQUEST CHANGES on two findings, both in the phase whose entire
+subject is closing a fail-open. Each was re-proved here before being fixed, because a finding
+accepted on its description is a finding graded the way this feature exists to forbid.
+
+### F1 — `cat-file -e` answers a different question than the one asked
+
+`Test-CheckAbsentForReal` decided "this ref is legitimately pre-boundary" with
+`git cat-file -e <ref>:scripts/enforcement-pack.ps1`. `-e` answers *is this object named in the
+store*, which is not *can this object be read*. The two diverge on a present-but-corrupt blob:
+
+| probe | blob deleted | blob present, corrupt |
+|---|---|---|
+| `git cat-file -e` | exit 1 | **exit 0** |
+| `git cat-file -s` | exit 128 | exit 128 |
+| `git grep` | exit 1 | exit 128 |
+
+The deleted case was already safe — which is why T080's own fixture did not catch this. Only the
+corrupt case produces the divergence, and there `-e` reports the tree as not carrying the check.
+
+End-to-end, on a fixture with one unapproved amendment and the parent's script blob corrupted
+(`f1fix`, parent `a73e4fb`, head `978ebf2`):
+
+```text
+OLD (a57fe3c, as gated): AmendmentAuthority: graded 0 of 1 commit(s) (1 not graded:
+                         1 made before the check existed (plan D2b))
+NEW: AmendmentAuthority: cannot grade '001-test' — parent commit a73e4fb of 978ebf2 is not
+     readable in this clone, so whether it predates the check is unknown
+```
+
+The old line is not merely silent, it is affirmatively wrong: the parent tree *did* contain the
+check. Intact, both versions catch the amendment identically (`graded 1 of 1`, the missing
+approver record), so the fix costs no true positives.
+
+One honest note on that fixture: the old run exits 1, but from an unrelated `Structure` failure
+(`spec.md has no **Delivery Level** header`) in a deliberately minimal fixture — *not* from the
+amendment check, which passed the unrecorded amendment. The fail-open is in the check; the exit
+code came from elsewhere.
+
+`-s` prints the size, so the probe redirects stdout as well as stderr. A function that emits the
+size returns an array, and `if (-not (Test-CheckAbsentForReal ...))` on a non-empty array is
+true regardless of the boolean — the fix would have inverted the very decision it repairs.
+
+### F2 — a resolvable `origin/main` is not a reachable base
+
+`Get-DiffBase` called `.Trim()` on the bare result of `git merge-base HEAD origin/main`.
+`merge-base` prints nothing and exits non-zero when the two histories share no commit — the
+shape a build agent produces with `--depth N --no-single-branch`, where `origin/main` resolves
+fine and the common ancestor is simply not present. Reproduced on a `--depth 5` clone of this
+repository:
+
+```text
+OLD: enforcement-pack.ps1: You cannot call a method on a null-valued expression.   (exit 1)
+NEW: AmendmentAuthority: cannot grade '014-amendment-authority' — this is a shallow clone ...
+                                                                                   (exit 1)
+```
+
+This is a crash, not a fail-open — both exit 1, and CI would have gone red either way. What was
+wrong is what phase 5 claimed about it. The method call died in `Get-DiffBase`, which runs
+*before* any member of the pack, so the shallow guard T079 added never got to speak, and
+`adoption/updating.md` promised a named condition that no adopter in this shape would ever see.
+
+The message was wrong in a second way the review caught and the fix corrects: it asserted
+"neither 'origin/main' nor 'main' resolves here", a cause it had not tested and which is false
+in exactly this scenario. It now names both possibilities and says it cannot distinguish them.
+The adopter paragraph moved with it — it listed "an `origin/main` that does not resolve", the
+same too-narrow cause in prose.
+
+### T086 crosses a line T081 drew, deliberately
+
+T081 kept phase 5 inside `Invoke-AmendmentAuthorityCheck` on purpose: `Get-DiffBase` is read by
+every member of the pack. Fixing it widens the blast radius past that boundary, which is the
+owner's call and not mine — approved 2026-09-17 on the basis that it replaces a crash that
+killed the whole run before any member executed, so no member's verdict moves. FR-009 re-checked
+on the shallow clone afterwards: `fix/probe` exits 0 with no `AmendmentAuthority` line.
+
+### What this round does not close
+
+F3 (the per-commit probe undoing T024's batching, measured by the review at ~4x on a 61-commit
+fixture, with SC-006 asking for a stated fraction that `notes.md` still does not state) and F4
+(`spec.md` FR-011 and US4 scenario 2 now carrying an exception recorded only in
+`adoption/updating.md`) are CONFIRM findings. Both are open, neither is in this round, and F4 in
+particular asks for a spec amendment that only the owner can approve.

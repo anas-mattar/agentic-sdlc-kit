@@ -136,8 +136,11 @@ function Get-DiffBase {
     foreach ($c in $candidates) {
         git rev-parse --verify --quiet $c *> $null
         if ($LASTEXITCODE -eq 0) {
-            $base = (git merge-base HEAD $c 2>$null).Trim()
-            if ($LASTEXITCODE -eq 0 -and $base) { return $base }
+            # No .Trim() on the bare call: `merge-base` prints nothing when the two histories
+            # share no commit — a truncated clone that still carries origin/main — and the
+            # method call on null killed the whole pack before any member ran.
+            $base = @(git merge-base HEAD $c 2>$null | Where-Object { $_ })
+            if ($LASTEXITCODE -eq 0 -and $base.Count -gt 0) { return $base[0].Trim() }
         }
     }
     return $null
@@ -719,12 +722,6 @@ function Get-NameStatusBatch {
     return $map
 }
 
-# The set of refs that already carry the check (D2b), in one git call. `git grep` searches many
-# trees at once and prints '<rev>:<path>' per hit, so the boundary question that cost one 39 KB
-# blob read per ungraded commit now costs one process for the whole branch. Self-bootstrapping,
-# as the per-ref version was: the test is whether that tree's copy of THIS script defines the
-# check function.
-
 # A ref is pre-boundary only if the check is provably absent from a tree we could actually read.
 # `git grep` exits 1 both for "searched it, no match" and for "could not read the blob" — it
 # prints the error to stderr and exits 1 either way — so B3's `>= 2` guard never fires for an
@@ -733,14 +730,25 @@ function Get-NameStatusBatch {
 # through, and reported "made before the check existed" about a tree that contained it (T080).
 function Test-CheckAbsentForReal {
     param([string]$Ref)
-    git cat-file -e "${Ref}^{commit}" 2>$null
+    git cat-file -s "${Ref}^{commit}" *> $null
     if ($LASTEXITCODE -ne 0) { return $false }                       # the commit itself is gone
     $entry = @(git ls-tree --name-only "$Ref" -- 'scripts/enforcement-pack.ps1' 2>$null)
     if ($LASTEXITCODE -ne 0) { return $false }
     if (@($entry | Where-Object { $_ }).Count -eq 0) { return $true } # the script did not exist yet
-    git cat-file -e "${Ref}:scripts/enforcement-pack.ps1" 2>$null
-    return ($LASTEXITCODE -eq 0)                                     # readable and without it, or unknown
+    # `-s` and not `-e`: `cat-file -e` answers "is this object named in the store", which a
+    # present-but-corrupt blob satisfies — it exits 0 on an object `git grep` then exits 128
+    # trying to read. `-s` reads the header, so it fails exactly when a reader would fail.
+    # Stdout is suppressed as well as stderr because `-s` prints the size, and a function that
+    # emits it returns an array whose truthiness is not the boolean this asks for.
+    git cat-file -s "${Ref}:scripts/enforcement-pack.ps1" *> $null
+    return ($LASTEXITCODE -eq 0)                                     # readable and without it
 }
+# The set of refs that already carry the check (D2b), in one git call. `git grep` searches many
+# trees at once and prints '<rev>:<path>' per hit, so the boundary question that cost one 39 KB
+# blob read per ungraded commit now costs one process for the whole branch. Self-bootstrapping,
+# as the per-ref version was: the test is whether that tree's copy of THIS script defines the
+# check function.
+
 function Get-CheckPresenceSet {
     param([string[]]$Refs)
     $set = @{}
@@ -1079,7 +1087,7 @@ function Invoke-AmendmentAuthorityCheck {
         return
     }
     if (-not $Base) {
-        $script:failures += "AmendmentAuthority: cannot grade '$Branch' — no integration branch to diff against: neither 'origin/main' nor 'main' resolves here. Fetch it ('git fetch origin main'), or run the check where it is reachable (constitution I, Amendment authority)"
+        $script:failures += "AmendmentAuthority: cannot grade '$Branch' — no integration branch to diff against. Either neither 'origin/main' nor 'main' resolves here, or one of them resolves but shares no commit with HEAD (a truncated clone, or unrelated histories) — this check does not distinguish them, and says so rather than naming a cause it did not test. Fetch the full history ('git fetch origin main', 'fetch-depth: 0' on actions/checkout), or run the check where it is reachable (constitution I, Amendment authority)"
         return
     }
     $dir = "specs/$Branch"

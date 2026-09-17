@@ -427,7 +427,8 @@ the check needs real objects to read. In a shallow or partial clone — `actions
 defaults to depth 1 — those objects are not there, and a check that grades nothing would look
 exactly like a branch that is legitimately pre-boundary: green, and meaningless. So on an
 `NNN-*` branch the check refuses to guess. It fails, and names the condition it met: a shallow
-clone, an `origin/main` that does not resolve, or a parent commit this clone cannot read. A
+clone, an integration branch it cannot diff against — absent, or present but sharing no
+commit with your branch — or a parent commit this clone cannot read. A
 Lite branch (`fix/`, `chore/`, `docs/`) is unaffected — the check returns before it consults
 history at all. The kit's `.github/workflows/ritual-checks.yml` ships with `fetch-depth: 0`;
 if you wrote your own workflow, or fetch shallowly on a build agent, set it there too. That is

@@ -504,3 +504,34 @@ false, and a phase that leaves the document behind reopens F1 in the other direc
       instead, and keep `fetch-depth: 0` as the fix rather than the defence
 - [x] T084 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
       ci-held evidence triplet for phase 5
+
+### Phase 5 remediation (added by amendment 2026-09-17 — phase 5 review, F1, F2, F5)
+
+**Amendment approved by**: anas.m, 2026-09-17.
+
+T086 widens phase 5's blast radius past T081, which deliberately kept it inside this one check:
+`Get-DiffBase` is read by every member of the pack. Approved knowingly on that basis — it
+replaces a crash that killed the whole run, so no member's verdict moves, and the alternative is
+a pack that dies before any check speaks. The two CONFIRM findings (F3, the batching cost; F4,
+the unamended spec) are NOT in this round and remain open.
+
+- [x] T085 **F1** — `Test-CheckAbsentForReal` asks `git cat-file -e`, which answers "is this
+      object named in the store" and exits 0 for a present-but-corrupt blob that `git grep`
+      then exits 128 trying to read. An unreadable object therefore reported as
+      `made before the check existed` and let an unrecorded amendment through. Probe with `-s`,
+      which reads the header and so fails exactly where a reader fails, and suppress stdout —
+      `-s` prints the size, and a function that emits it returns an array rather than the
+      boolean the caller tests
+- [x] T086 **F2** — `Get-DiffBase` calls `.Trim()` on the bare result of `git merge-base`, which
+      prints nothing when the two histories share no commit. A truncated clone that still
+      carries `origin/main` therefore died with
+      `You cannot call a method on a null-valued expression` before any member ran, naming no
+      condition — which is the sentence phase 5 wrote into `adoption/updating.md` made false.
+      Guard the call. Correct the failure message too: it asserted
+      "neither 'origin/main' nor 'main' resolves here", a cause it never tested
+- [x] T087 **F5** — the phase 5 function was inserted between `Get-CheckPresenceSet`'s batching
+      doc comment and the function it documents. Move it back
+- [x] T088 Prove F1 and F2 on fixtures rather than by reasoning — a corrupted-blob repository
+      and a `--depth 5 --no-single-branch` clone carrying `origin/main` — record both in
+      `notes.md`, then run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held
+      evidence triplet
