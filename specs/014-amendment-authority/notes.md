@@ -1409,3 +1409,63 @@ the regeneration is not optional. Phase 5's Territory declared `scripts/enforcem
 and `adoption/updating.md` and not `docs/digests/`, which phase 4's Territory did declare. The
 gap is mine: I wrote the Territory before knowing the marker text would have to change. It needs
 a one-line amendment, and not one I can approve.
+
+## Phase 5 — gate (T084)
+
+Certified by the owner 2026-09-17 on the evidence triplet. Phase 5 is the phase that exists
+because the phase 4 review found this check reporting silence as compliance, so its own gate is
+the first one held on a check that fails when it cannot grade.
+
+| | |
+|---|---|
+| Phase commit | `a57fe3c` (`a57fe3ce7a8f3df2df11163cdd6f9a7177e662e5`) |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35230522696 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 5 commit `a57fe3c` (5 files) |
+| Approved by | anas.m, 2026-09-17 |
+
+`**Gate Batching**: none`, so the triplet cites phase 5's own commit rather than a batch end.
+
+### The push was split, deliberately
+
+`e07eea8` (`docs: record GAP-025 and GAP-026`) sat on top of the phase commit locally. Pushing
+the branch whole would have made `e07eea8` the branch head, and a push-event run grades the head
+— the triplet would then have cited a docs commit as the thing CI certified. So `a57fe3c` was
+pushed alone (`git push origin a57fe3c:014-amendment-authority`), the run was taken, and the
+remainder pushed afterwards. The run's `headSha` is the phase commit exactly.
+
+This is the third trap in this family the branch has walked into or around: `phase N` inside a
+`docs:` subject (phase 4's WARN), a stale parent for a Territory grading (the same), and now a
+phase commit buried under a later one at push time. All three come from the same place — the
+checks read the *branch head* and the *commit subject*, and neither of those is the same thing
+as "the slice the owner is certifying".
+
+### The count that differs from the local run, and why
+
+The local run reported `AmendmentAuthority: graded 27 of 36`; CI reported `graded 26 of 35`.
+The difference is exactly one commit — `e07eea8`, present locally and not yet pushed when the
+run executed. Both carry the same `9 not graded: 9 made before the check existed (plan D2b)`,
+which is the N3 wording from phase 3 stating its cause rather than asserting one. A gate record
+that quoted the local numbers against the CI run would have mismatched by one and looked like a
+discrepancy; it is only the split push, visible in the arithmetic.
+
+### `ca88da5` graded as a phase 5 commit
+
+```text
+scope-check: PASS phase 5 commit ca88da5 (1 file(s))
+```
+
+`ca88da5`'s subject is `amend 014: phase 5 territory gains docs/digests/` — the amendment that
+put `docs/digests/` in Territory, the miss recorded in the section above. `scope-check` matches
+`\bphase\s+(\d+)\b` in the subject and so reads the amendment as a phase 5 commit. Unlike phase
+4's WARN this one PASSes: it touches one file, `specs/014-amendment-authority/tasks.md`, inside
+the implicit `specs/NNN-name/**` glob, so the grading is correct by accident rather than by
+design. Recorded, not fixed — the subject is the honest description of what the commit does.
+
+### What this gate does not certify
+
+Gate 5 is not held. No fresh-context reviewer has seen phase 5 — the other four phases each
+have a review file in this directory and this one has none, and a phase whose entire subject is
+a fail-open found by review is the last place to make an exception. The branch is green at
+`a57fe3c` and green is not reviewed.

@@ -502,5 +502,5 @@ false, and a phase that leaves the document behind reopens F1 in the other direc
 - [x] T083 `adoption/updating.md`: rewrite the "Give CI the whole history" close. It now says
       no failure is waiting to catch you, which phase 5 makes false. Say what the check does
       instead, and keep `fetch-depth: 0` as the fix rather than the defence
-- [ ] T084 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
+- [x] T084 Regenerate digests, run `pwsh -File scripts/ritual-checks.ps1`, and report the
       ci-held evidence triplet for phase 5
