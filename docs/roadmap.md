@@ -77,10 +77,11 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Code-repo scope-check reach (governance-side `scope-check-repos.ps1` reads the nested code repos as sibling working trees and grades their phase commits against repo-prefixed Territory, resolved as of each code commit; `codeRepos` in the adoption record; code-repo CI template) | GAP-016 | P1 | shipped | anas.m | `specs/012-cross-repo-scope-check/` |
 | Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | idea | — | — |
 | Critical independence signal (the adoption record states the project's developers; the Critical evidence check requires the solo substitute only when the project is solo, and an equally machine-checked independence artifact when it is not — absent record defaults to strict, so no existing adoption changes behaviour) | GAP-020 | P1 | shipped | anas.m | `specs/013-critical-independence-signal/` |
-| Amendment authority (constitution clause first: any change to an approved `spec.md`, `plan.md`, `tasks.md` or contract records who approved it, and an implementing agent may not approve its own; then an `enforcement-pack.ps1` check that grades it) | GAP-019 | P1 | shipped | anas.m | `[specs/014-amendment-authority/]` |
+| Amendment authority (constitution clause first: any change to an approved `spec.md`, `plan.md`, `tasks.md` or contract records who approved it, and an implementing agent may not approve its own; then an `enforcement-pack.ps1` check that grades it) | GAP-019 | P1 | shipped | anas.m | `specs/014-amendment-authority/` |
 | Cross-repo territory reach (`territory-check.ps1` reads the declared code repositories as sibling working trees and reports overlap across them, the way feature 012 extended the scope check) | GAP-018 | P2 | idea | — | — |
 | Spec-directory single source (`CLAUDE.md`'s Feature Structure summarises and points at `docs/sdlc/branch-strategy.md` for the authoritative file set, rather than asserting an exhaustive list the kit's own shipped features contradict) | GAP-021 | P2 | idea | — | — |
 | Level declaration graded (a **Level Rationale** block in `spec.md` answering the four Critical triggers explicitly, plus criticalSurfaces path globs in the adoption record and a `scripts/enforcement-pack.ps1` check that fails a sub-Critical level whose Territory intersects them — the missing Standard-to-Critical trigger, built the way feature 012 taught a check to read the code repos) | GAP-023 | P1 | idea | — | — |
+| Enforcement assurance (a fixture-based test harness over every enforcement script: real temporary git repositories rather than mocks, expectations written by hand rather than through the scripts' own helpers, and a passing **and** a failing fixture per rule with that coverage itself machine-graded; the verdict vocabulary standardised, including a distinct state for a run that graded nothing; proven by closing the three recorded fail-opens as its first fixtures) | GAP-025, GAP-026, GAP-027 | P1 | idea | — | — |
 
 ## Decisions log *(authored)*
 
@@ -342,3 +343,41 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   member is `Invoke-ReviewProvenanceCheck`, so the check that goes silent is the one that
   polices whether a review happened at all, and the run still says `OK`. Phase 5 made it
   audible; that is the whole of what 014 owes here.
+- 2026-09-18 **Enforcement assurance claimed as feature 015, and sequenced ahead of GAP-023**
+  — which the 2026-09-13 entry above had put first. That ruling stands for the *decision-layer*
+  family it was made about; it did not contemplate a harness, because none was proposed then. The
+  argument for going first: feature 014 needed **nine fresh-context review rounds, every one
+  returning REQUEST CHANGES on first pass**, and almost every blocking finding was the same species
+  — a check that returned green having graded nothing. Every one was found by a human reading code;
+  **none was found by a test, because there are none**: 14 enforcement scripts, 4,264 lines, zero
+  fixtures. GAP-023 is small, P1 and still next — but building it first adds a fifteenth ungraded
+  script to the pile, and every check the kit writes after the harness exists is cheaper to trust.
+  Inputs: `review/framework-trust-improvement-plan.md` (the proposal) and
+  `review/framework-trust-improvement-plan-review.md` (its review), both landed with this commit.
+  Neither is a rung on the source-of-truth ladder — constitution II — and this row is what
+  authorizes the work, not them.
+- 2026-09-18 **015 absorbs GAP-025, GAP-026 and GAP-027**, reversing the "neither is claimed,
+  recommended at P2" posture of the two entries above. The reason is not convenience — the 2026-09-16
+  entry rejected exactly that argument — but proof: a harness demonstrated on invented defects proves
+  it runs, while a harness that closes three fail-opens which really happened proves it *works*, on
+  the failure species that actually occurs here. GAP-027 in particular cannot wait, because 015
+  standardises the verdict vocabulary: ratifying `PASS`/`FAIL`/`WARN`/`PENDING`/`N/A` without a state
+  for **a run that graded nothing** locks the fail-open into the taxonomy and turns GAP-027 into a
+  breaking change later instead of a design input now. The 2026-09-16 entry's ownership line is
+  honoured differently rather than broken: the three defects are not being smuggled into a feature
+  with no claim on them — they are this feature's subject matter.
+- 2026-09-18 **Fixture coverage is machine-graded, not review-graded.** A rule with no
+  passing-and-failing fixture pair fails the harness. The cheaper alternative — coverage as an
+  acceptance criterion a reviewer eyeballs — is the same shape as every gap in this ledger: a rule
+  nothing grades. It costs a rule inventory the check can read, and that inventory is itself a
+  maintenance surface; the spec must say what happens when a rule exists and the inventory does not
+  know it, because "the inventory is short" must not be the state that reads as green.
+- 2026-09-18 Feature 014 **flowed down to all three adopted projects and merged** the same day it
+  shipped: FitForge `aad8ae0` (constitution 1.2.0), flowboard `bc83023` and expense-tracker `faa07bd`
+  (constitutions 2.3.0, carrying 012 + 013 + 014 together). `ritual-checks` green on every main
+  afterwards. This discharges 014's SC-005 — FitForge's clause had carried an "Enforcement, honestly
+  stated" paragraph saying no machine grades this rule, a sentence 014 made false. Noted while
+  verifying and **not** fixed: flowboard's and expense-tracker's nested code repositories carry no
+  `code-repo-scope-check.yml`, so gate 4 still cannot reach their code — feature 012's template
+  reached the governance repo and was never installed in the code repos. That is an adoption task in
+  those projects, not a kit gap, and it is the owner's call.
