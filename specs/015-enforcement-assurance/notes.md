@@ -415,3 +415,32 @@ because the commit message cannot be.
 
 **F2 and F3 are CONFIRM, and stand open for the owner**, recorded in the review file with my
 recommendation rather than decided unilaterally.
+
+### Phase 2 gate — CERTIFIED
+
+> Gate 2 certified (ci-held): run
+> <https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35376670445>, conclusion success,
+> commit `505f9f1` (phase 2) — approved, anas.m, 2026-09-19.
+
+`enforcement-tests` on the same sha
+(<https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35376670461>, conclusion success)
+is cited alongside it, as in phase 1 — the harness is not yet a `ritual-checks` member, so the
+certifying run does not execute it. T045 folds it in.
+
+The phase ends at `505f9f1`, the F1 remediation, not at `c5c7e26`.
+
+### The two CONFIRM findings, decided
+
+The owner adopted both recommendations as written (2026-09-19).
+
+**F2 → GAP-028, filed, not fixed here.** The multi-line code-span case reaches
+`enforcement-pack.ps1`'s `Get-VisibleFromText` through the same shared function, so it touches
+amendment-authority grading and deserves its own demonstration and its own review rather than a
+tail-end edit to a phase already reviewed.
+
+**F3 → fixed here: the near-miss becomes loud.** Not by teaching the parser to join continuation
+lines — a multi-line scanner is new machinery for a rare shape — but by refusing to stay silent
+about a line that begins `**Territory**` and carries no colon. That is the pattern
+`build-digests.ps1` already uses for a malformed digest marker (feature 014 review F6/F7): a line
+that starts like a declaration and breaks the grammar FAILs rather than vanishing. Recorded as an
+amendment to `tasks.md` because it is work the approved task list did not contain.
