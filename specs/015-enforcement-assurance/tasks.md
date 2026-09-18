@@ -32,35 +32,35 @@ fixtures are written against it.
 - `scripts/doc-lint.ps1`
 - `.github/workflows/enforcement-tests.yml`
 
-- [ ] T001 Write `tests/enforcement/rules.json` covering `Invoke-StructureCheck` only: one entry
+- [x] T001 Write `tests/enforcement/rules.json` covering `Invoke-StructureCheck` only: one entry
       per distinct failure condition, each with a stable id, owning script and function, the law
       it enforces, and the literal message shape it emits (FR-001).
-- [ ] T002 Build `tests/enforcement/lib/FixtureRepo.psm1`: materialise a JSON recipe into a real
+- [x] T002 Build `tests/enforcement/lib/FixtureRepo.psm1`: materialise a JSON recipe into a real
       temporary git repository — files, commits, branches, a fixture-local git identity — with
       shallow clone, absent base and corrupt object as first-class recipe states (D12, FR-005).
-- [ ] T003 [P] Build `tests/enforcement/lib/Harness.psm1`: run one case as a child process,
+- [x] T003 [P] Build `tests/enforcement/lib/Harness.psm1`: run one case as a child process,
       capture stdout and exit code, compare against the case's literal expectation file. The
       module MUST NOT import or dot-source any script under test (D1, FR-006, FR-007).
-- [ ] T004 Define the case layout under `tests/enforcement/cases/<script>/<rule-id>/<direction>/`
+- [x] T004 Define the case layout under `tests/enforcement/cases/<script>/<rule-id>/<direction>/`
       — `recipe.json`, `command.json`, `expected.txt` — and document it in a README beside it.
-- [ ] T005 Write the pass-and-fail case pair for every `Invoke-StructureCheck` rule in T001,
+- [x] T005 Write the pass-and-fail case pair for every `Invoke-StructureCheck` rule in T001,
       both directions over the same recipe so a check that never ran fails the pair (D10, FR-008).
-- [ ] T006 Write `tests/enforcement/Coverage.Tests.ps1`: cross-check the inventory against the
+- [x] T006 Write `tests/enforcement/Coverage.Tests.ps1`: cross-check the inventory against the
       scripts' failure-emission sites, and the inventory against the cases present. Reports counts
       and names; does not fail the run yet (D8, D9).
-- [ ] T007 Write `tests/enforcement/Run-Tests.ps1` — the one documented local command, no network
+- [x] T007 Write `tests/enforcement/Run-Tests.ps1` — the one documented local command, no network
       at run time, imports Pester with an explicit minimum version so the machine's Pester 3.4.0
       cannot satisfy it (D2, FR-018).
-- [ ] T008 Add the `kit-only` class to `kit-manifest.json` with its reason, and classify
+- [x] T008 Add the `kit-only` class to `kit-manifest.json` with its reason, and classify
       `.github/workflows/enforcement-tests.yml` under it (D3).
-- [ ] T009 Teach `scripts/update-kit.ps1` to skip `kit-only` paths the way it skips `generated`,
+- [x] T009 Teach `scripts/update-kit.ps1` to skip `kit-only` paths the way it skips `generated`,
       and `scripts/doc-lint.ps1` to count `kit-only` as classified (D3).
-- [ ] T010 Add `.github/workflows/enforcement-tests.yml`: `ubuntu-latest` and a Windows runner,
+- [x] T010 Add `.github/workflows/enforcement-tests.yml`: `ubuntu-latest` and a Windows runner,
       each installing the pinned Pester version explicitly rather than trusting the image
       (FR-017, SC-006).
-- [ ] T011 Prove it: invert one `Invoke-StructureCheck` condition locally, confirm a named case
+- [x] T011 Prove it: invert one `Invoke-StructureCheck` condition locally, confirm a named case
       fails, restore it, confirm green. Record both runs in `notes.md` (SC-002).
-- [ ] T012 Confirm `update-kit.ps1 -DryRun -Target` against one adopted project reports neither
+- [x] T012 Confirm `update-kit.ps1 -DryRun -Target` against one adopted project reports neither
       `tests/` nor the new workflow. Record the output in `notes.md` (D3).
 
 ---
