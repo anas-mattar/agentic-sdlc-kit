@@ -107,6 +107,14 @@ the functions are unchanged, only their home is.
       Demonstrate the current non-blocking WARN, then make it FAIL (FR-015).
 - [x] T019 Add both GAPs' rules to the inventory and confirm the coverage reporter counts them.
 
+- [ ] T019a Make the near-miss loud (phase 2 review, F3): a line that begins `**Territory**` and
+      carries no colon — an annotation that wraps across lines — declares nothing and is
+      currently silent. Report it as a FAIL naming the line, in both scope graders, rather than
+      teaching the parser to join continuation lines. Same pattern `build-digests.ps1` uses for a
+      malformed digest marker (014 review F6/F7). Demonstrate it failing first (D11).
+
+**Amendment approved by**: anas.m, 2026-09-19.
+
 ---
 
 ## Phase 3: The enforcement pack under test (US1)
