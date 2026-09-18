@@ -166,3 +166,18 @@ with conclusion `success` on that exact sha:
 
 The triplet is reported here; **certification is the owner's**, and is recorded in a separate
 commit once given (`docs/sdlc/gate-command.md`).
+
+### Phase 1 gate — CERTIFIED
+
+> Gate 1 certified (ci-held): run
+> <https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35371015826>, conclusion success,
+> commit `c488560` (phase 1) — approved, anas.m, 2026-09-19.
+
+The `enforcement-tests` run on the same sha
+(<https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35371015704>, conclusion success)
+is cited alongside it: the harness this phase builds is not yet a member of `ritual-checks`, so
+its own green is evidence the ritual-checks run does not carry. Phase 6 (T045) folds it in, after
+which one run will.
+
+The two non-blocking phase-size findings were before the owner at certification and are accepted
+as they stand. A second review round on the `c488560` remediation was declined; phase 2 opens.
