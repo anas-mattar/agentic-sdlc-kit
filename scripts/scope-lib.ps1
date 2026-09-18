@@ -70,11 +70,13 @@ function Test-IsMicro {
 # duplicate. Lines are pre-stripped of HTML comments by the caller (Get-VisibleLines).
 function Get-Territory {
     param([string[]]$TasksLines, [int]$PhaseNumber, [switch]$Global)
-    $result = @{ Found = $false; Duplicate = $false; Entries = @(); Invalid = @() }
+    $result = @{ Found = $false; Duplicate = $false; Entries = @(); Invalid = @(); NearMiss = @() }
     $inPhase = [bool]$Global
     $collecting = $false
     $started = $false
+    $lineNo = 0
     foreach ($line in $TasksLines) {
+        $lineNo++
         if (-not $Global -and $line -match '^##\s+Phase\s+(\d+)\b') {
             $inPhase = ([int]$matches[1] -eq $PhaseNumber)
             $collecting = $false
@@ -94,6 +96,17 @@ function Get-Territory {
         if ($line -match '^\*\*Territory\*\*[^:]*:') {
             if ($result.Found) { $result.Duplicate = $true }         # exactly one marker per phase (006 review F8)
             $result.Found = $true; $collecting = $true; $started = $false
+            continue
+        }
+        # NEAR MISS, reported rather than ignored (phase 2 review F3, T019a). A line that begins
+        # '**Territory**' and carries no colon is what an author writes when the annotation wraps
+        # onto the next line — specs/014-amendment-authority/tasks.md:322 is still that shape. It
+        # matches no anchor, so it declared nothing AND said nothing, with a perfectly good entry
+        # list sitting two lines below it. Recording it lets the caller refuse; joining
+        # continuation lines would be new machinery for a rare shape, and a parser that guesses
+        # where a declaration ends is a worse trade than one that asks the author to be plain.
+        if ($line -match '^\*\*Territory\*\*') {
+            $result.NearMiss += $lineNo
             continue
         }
         if (-not $collecting) { continue }

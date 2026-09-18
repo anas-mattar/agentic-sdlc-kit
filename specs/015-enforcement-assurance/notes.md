@@ -444,3 +444,29 @@ about a line that begins `**Territory**` and carries no colon. That is the patte
 `build-digests.ps1` already uses for a malformed digest marker (feature 014 review F6/F7): a line
 that starts like a declaration and breaks the grammar FAILs rather than vanishing. Recorded as an
 amendment to `tasks.md` because it is work the approved task list did not contain.
+
+### T019a: the wrapped marker, demonstrated silent then made loud
+
+Rule `SCOPE-003`, both directions over one recipe that differs only in whether the annotation
+fits on the marker's own line. Before the fix:
+
+```text
+case      : tests/enforcement/cases/scope-check/SCOPE-003/fail
+exit code : expected 1, observed 0
+  observed: scope-check: WARN commit <SHA>: no territory declared for phase 1 in
+            specs/001-thing/tasks.md (declare territory in tasks.md — non-blocking,
+            pre-006 compatibility)
+```
+
+A perfectly good entry list sat two lines below the marker and the check said "no territory
+declared", non-blocking, exit 0.
+
+`Get-Territory` now records a line that begins `**Territory**` and carries no colon as a
+**near miss** rather than ignoring it, and both graders refuse on it, naming the line number. The
+parser is not taught to join continuation lines: a parser that guesses where a declaration ends
+is a worse trade than one that asks the author to be plain, and the same judgement is already
+made in `build-digests.ps1` for a malformed digest marker.
+
+Tests 38 → 42. `ritual-checks: RESULT OK` — the kit's own current branch has no near miss.
+`specs/014-amendment-authority/tasks.md:322` does, and would now be named rather than ignored;
+that branch is merged and is not re-graded, so nothing turns red today.

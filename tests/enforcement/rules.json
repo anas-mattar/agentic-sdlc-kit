@@ -36,6 +36,16 @@
       "notes": "Before FR-015 this was a non-blocking WARN and the check exited 0 having graded nothing - GAP-027's species, reached through GAP-026's door."
     },
     {
+      "id": "SCOPE-003",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "a **Territory** line whose annotation wraps carries no colon and declares nothing",
+      "law": "constitution VI (gate 4); FR-014's intent - a decorated marker must not silently declare nothing",
+      "emitDescription": "the near-miss FAIL added by T019a",
+      "emitAnchor": "but has no ':' on that line",
+      "notes": "Phase 2 review F3. specs/014-amendment-authority/tasks.md:322 is still this shape. Fixed by making the near-miss loud rather than by joining continuation lines - the pattern build-digests.ps1 uses for a malformed digest marker."
+    },
+    {
       "id": "STRUCT-001",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-StructureCheck",
