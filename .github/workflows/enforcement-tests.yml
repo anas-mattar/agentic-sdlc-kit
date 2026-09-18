@@ -1,0 +1,53 @@
+name: enforcement-tests
+
+# The enforcement-assurance harness (feature 015): every fixture case, on both platforms.
+#
+# KIT-ONLY. This workflow is classified `kit-only` in kit-manifest.json and is never copied
+# into an adopted project — it runs the kit's own fixtures (tests/, which is not a shipped
+# surface) against the kit's own scripts. An adopted project has neither (plan D3).
+#
+# Two legs, deliberately: CI has always run ubuntu-latest with `shell: pwsh` while every hour
+# of development here happens on Windows, and that split is itself a source of fail-opens —
+# CRLF, path separators, case sensitivity. SC-006 makes a verdict that differs between the two
+# a failure, so both legs run the same fixtures and both must be green.
+
+on:
+  push:
+    branches:
+      - main
+      - '[0-9][0-9][0-9]-*'
+      - 'fix/**'
+      - 'chore/**'
+      - 'docs/**'
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  enforcement-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fixtures build their own repositories, but the harness still resolves the kit
+          # root from this checkout — and a shallow one is exactly the state GAP-027 is about.
+          fetch-depth: 0
+
+      - name: Install the pinned Pester
+        shell: pwsh
+        # Pinned and installed explicitly rather than trusting the runner image: a preinstalled
+        # module drifts between images and between platforms, and a harness whose assertions
+        # depend on which Pester the image happened to ship is not a harness (plan D2).
+        run: |
+          Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+          (Get-Module -ListAvailable Pester | Select-Object -First 1 Name, Version | Out-String).Trim()
+
+      - name: Run the enforcement harness
+        shell: pwsh
+        run: pwsh -File tests/enforcement/Run-Tests.ps1

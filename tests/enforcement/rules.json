@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "_comment": [
+    "The rule inventory (feature 015, FR-001). One entry per distinct failure-emission site in",
+    "a grading script. 'emitAnchor' is a literal substring of the message as it appears in the",
+    "script source — it is how Coverage.Tests.ps1 ties an inventory entry to the line that",
+    "emits it, so a rule that is deleted or reworded is caught rather than silently orphaned.",
+    "Phase 1 inventories Invoke-StructureCheck only; phases 3 and 4 complete it."
+  ],
+  "rules": [
+    {
+      "id": "STRUCT-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-StructureCheck",
+      "summary": "a required feature document is missing from the spec directory",
+      "law": "CLAUDE.md Feature Structure; constitution I (Specification First)",
+      "emitAnchor": "is missing (every NNN-* branch requires spec.md, plan.md, and tasks.md",
+      "notes": "Fires once per missing document. A Micro feature requires spec.md alone."
+    },
+    {
+      "id": "STRUCT-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-StructureCheck",
+      "summary": "spec.md carries no Delivery Level header",
+      "law": "constitution X (Controlled Delivery — the level selects the lane)",
+      "emitAnchor": "has no **Delivery Level** header",
+      "notes": "Read from visible text only: a header inside an HTML comment sets no lane."
+    },
+    {
+      "id": "STRUCT-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-StructureCheck",
+      "summary": "the Delivery Level header is unfilled or off-menu",
+      "law": "constitution X (legal values: Lite, Micro, Standard, Critical)",
+      "emitAnchor": "**Delivery Level** header is unfilled or invalid",
+      "notes": "This is the only validation the level gets today — spelling, not judgement. GAP-023 is the missing half."
+    }
+  ]
+}

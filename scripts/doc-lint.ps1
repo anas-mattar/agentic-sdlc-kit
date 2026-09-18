@@ -139,6 +139,14 @@ if (Test-Path (Join-Path $Root '.kit-version')) {
             $manifestErrors += "conflict ($($winningClasses -join ' vs ')): $file"
             continue
         }
+        # A class this doesn't recognise counted as classified before, so a typo bought
+        # silence instead of a verdict (feature 015 phase 1). The four legal classes:
+        # verbatim and surgical flow down, generated is rebuilt per project, kit-only never
+        # leaves this repository.
+        if ($winningClasses[0] -notin @('verbatim', 'surgical', 'generated', 'kit-only')) {
+            $manifestErrors += "unrecognised class '$($winningClasses[0])': $file"
+            continue
+        }
         $manifestClassifiedCount++
     }
 } else {
