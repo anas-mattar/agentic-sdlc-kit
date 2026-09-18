@@ -610,4 +610,4 @@ branch's first three amendments did.
       convention. The commit message is fixed at commit time and cannot be rewritten on a pushed
       branch: record that it carries the uncorrected claims rather than leaving the discrepancy
       unstated
-- [ ] T098 Re-run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held evidence triplet
+- [x] T098 Re-run `pwsh -File scripts/ritual-checks.ps1` and report the ci-held evidence triplet

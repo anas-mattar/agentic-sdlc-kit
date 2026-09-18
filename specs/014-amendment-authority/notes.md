@@ -1754,3 +1754,74 @@ three processes per pre-boundary commit, once, and never again on that branch.
 This closes what F3 asked for — a stated fraction — and does not change the code. The cost itself
 was accepted deliberately at T085/T089: the probe is what distinguishes "the check was absent" from
 "the check is unreadable", which is the fail-open this phase exists to close.
+
+## Phase 5 — gate, after three review rounds (T098)
+
+Certified by the owner 2026-09-18 on the evidence triplet. This supersedes the `9d6b01f`
+certification for the same reason that one superseded `a57fe3c`: `9d6b01f` was gated before its
+reviewer had seen it, and the round-3 review returned REQUEST CHANGES on H1.
+
+| | |
+|---|---|
+| Phase commit | `097fccc` (`097fccccac06cf2d98c8fe81d65fc6245e6d8638`) |
+| CI run | https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35246502564 |
+| CI conclusion | success |
+| Run event | push — the run executed the phase commit itself, not a merge preview |
+| Scope check | PASS phase 5 commit `097fccc` (3 files) |
+| Approved by | anas.m, 2026-09-18 |
+
+`**Gate Batching**: none`, so the triplet cites the phase commit itself. The local re-run at
+certification time reported `ritual-checks: RESULT OK` with
+`AmendmentAuthority: graded 34 of 43 commit(s)`, the nine ungraded being those made before the
+check existed (D2b).
+
+### The four commits
+
+| commit | gated | approved | reviewed | outcome |
+|---|---|---|---|---|
+| `a57fe3c` | yes | yes | yes | REQUEST CHANGES — F1, F2 blocking |
+| `8c1bdad` | yes | no | yes | REQUEST CHANGES — G1 blocking |
+| `9d6b01f` | yes | yes | yes | REQUEST CHANGES — H1 blocking |
+| `097fccc` | yes | **yes** | see below | this record |
+
+Rounds 1 and 2 each found a blocking defect in the *logic* of the fix before it. Round 3 found
+none: H1 was prose, two sentences inside the check claiming more than the check does, and the
+fix moved no logic and changed no fixture verdict. That is the shape of a round that is
+converging rather than one that keeps discovering new ground.
+
+### Why there is no fourth fresh-context round
+
+The round-3 reviewer asked for one explicitly and argued against the other: *"A fourth
+fresh-context round is not warranted for a prose fix — the diff can be read by the gate-6 human
+against this review."* `097fccc` is three files, prose only, and every sentence it changes is
+quoted verbatim in `ai-code-review-phase-5-remediation-2.md` beside what the reviewer measured
+the check actually does. The gate-6 human therefore reads the correction against the finding
+that produced it, which is stronger evidence than a fourth reviewer arriving with no memory of
+the first three. Recorded here rather than left implicit, because "we stopped reviewing" is
+exactly the decision that should never be silent on this branch.
+
+### What landed after the phase commit, and under which certification
+
+Four documentation commits followed `097fccc` and none of them is product code:
+
+| commit | what | graded |
+|---|---|---|
+| `3099f07` | the round-3 review file, written before `097fccc` and left out of it | — |
+| `aba2d77` | F3 — the stated fraction SC-006 asks for, measured (above) | — |
+| `3c4809f` | GAP-027 — H4's pre-existing hole, recorded as a roadmap row, not absorbed | — |
+| the F4 amendment | `spec.md` FR-011 and US4 scenario 2 qualified, owner-approved | by the check itself |
+
+`ritual-checks` ran green on `3c4809f` (run 35325062344) and the amendment commit was graded
+green by `Invoke-AmendmentAuthorityCheck` — the feature's own check grading the feature's own
+amendment, which is the property 014 was built to have.
+
+### What this gate does not certify
+
+Gate 6 — the human review — is open, and it is now the only gate between this branch and merge.
+Two findings are addressed to that reader rather than to a machine, and both should be read
+before approval: **H2** (whether the named approver really approved, which no check can reach)
+and **G5** (round 2's amendment shipping inside the commit it authorises — lawful, and unlike
+the branch's three earlier amendments, which landed ahead of the work they permitted).
+
+**F3 and F4 are closed** by the two records above: F3 by stating the fraction, F4 by the
+owner-approved amendment. **GAP-027** carries H4 out of this feature by design.
