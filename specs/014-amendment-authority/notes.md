@@ -1825,3 +1825,25 @@ the branch's three earlier amendments, which landed ahead of the work they permi
 
 **F3 and F4 are closed** by the two records above: F3 by stating the fraction, F4 by the
 owner-approved amendment. **GAP-027** carries H4 out of this feature by design.
+
+### Correction to the G5 sentence above (2026-09-18)
+
+The gate record written earlier today says round 2's amendment shipped inside the commit it
+authorises "unlike the branch's three earlier amendments, which landed ahead of the work they
+permitted". That is the round-3 review's framing, repeated without measuring it, and measuring it
+breaks it. Counted over every commit on this branch that changes the text of `spec.md`, `plan.md`
+or `tasks.md` and carries a record: **seventeen amendments, of which six landed inside the
+implementing commit** — `0803049` (phase 1), `d606b2e`, `5d49cde`, `43ab9d2` (phase 3), `8c1bdad`
+and `9d6b01f` (phase 5) — and eleven landed ahead in a commit of their own.
+
+This makes G5 a better question, not a worse one. It is not an anomaly in round 2 to be explained
+away; it is a habit the branch has had since phase 1, and the gate-6 ruling should be about the
+habit. Constitution I is explicit that both are lawful — "Amending before implementing satisfies
+the sequence; it does not satisfy this rule" — so what is left to rule is whether an amendment
+that arrives already ticked, inside the commit it permits, gives an approver anything to approve.
+Eleven of seventeen say the branch usually thought not.
+
+The record lines standing in the three graded documents: **27, every one naming `anas.m`**, dated
+2026-09-13 (12), 09-14 (2), 09-16 (8), 09-17 (2), 09-18 (3). That list is the H2 surface — it is
+what a reader can check against their own memory, and all a machine can say about it is that the
+lines are well-formed and agree with their commits.
