@@ -76,6 +76,20 @@ happened rather than invented ones.
 - `scripts/build-digests.ps1`
 - `scripts/scope-lib.ps1`
 - `docs/digests/*-digest.md`
+- `scripts/markdown-lib.ps1`
+- `scripts/enforcement-pack.ps1`
+- `scripts/scope-check.ps1`
+- `scripts/scope-check-repos.ps1`
+
+The Territory as approved did not reach two of this phase's own tasks. T014 says to reuse
+feature 014's CommonMark logic rather than write a third parser, and that logic lives in
+`scripts/enforcement-pack.ps1`; sharing it means a new `scripts/markdown-lib.ps1` dot-sourced by
+both, which is what `scripts/scope-lib.ps1` already exists to do for the two scope graders. T018
+makes an undeclared Territory FAIL (FR-015), and that verdict is emitted by `scope-check.ps1` and
+`scope-check-repos.ps1`, neither of which was listed. The enforcement-pack edit is a pure move —
+the functions are unchanged, only their home is.
+
+**Amendment approved by**: anas.m, 2026-09-19.
 
 - [ ] T013 Write the GAP-025 case: a document mentioning a comment opener inside an inline code
       span, with a digest marker after it. Demonstrate it failing against the current
