@@ -125,6 +125,21 @@ failure-emission sites, the largest single surface in the kit.
 **Territory**:
 
 - `tests/**`
+- `scripts/enforcement-pack.ps1`
+- `scripts/scope-lib.ps1`
+
+Phase 2 widened `Get-Territory`'s marker anchor and left `Invoke-MicroLaneCheck`'s inline copy
+of the same grammar strict, so the two now disagree about the same mini-spec — a divergence the
+comment on that very line was written to prevent. The fix is to delete the copy rather than to
+widen it, which needs both files.
+
+**Amendment approved by**: anas.m, 2026-09-19.
+
+- [ ] T020a Close the divergence phase 2 created: `Invoke-MicroLaneCheck` parses the Territory
+      block with its own strict copy of the grammar, so a decorated marker leaves the Micro
+      file cap, the duplicate check and the glob check all passing vacuously. Replace the copy
+      with `Get-Territory -Global` from `scripts/scope-lib.ps1`. Demonstrate it failing first
+      (D11).
 
 - [x] T020 Inventory every rule in `Invoke-StructureCheck`, `Invoke-LiteAndAbuseCheck` and
       `Invoke-MicroLaneCheck`, then write both case directions for each.
