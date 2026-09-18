@@ -1711,3 +1711,46 @@ T024's batching; SC-006 asks for a stated fraction this file still does not stat
 (`spec.md` FR-011 and US4 scenario 2 carry an exception recorded only in `adoption/updating.md`,
 and amending the spec is the owner's to approve), and **G5** (the round's amendment shipping
 inside the commit it authorises — lawful, but unlike the branch's three earlier amendments).
+
+## Phase 5 — the fraction SC-006 asks for (F3)
+
+F3 has been open since the round-1 review: the boundary probe runs per commit, which undoes
+T024's batching for the pre-boundary segment, and SC-006 asks for "no more than a small,
+**stated** fraction" — a number this file did not state. It states one now. Measured on this
+repository at `3099f07`, Windows 11, PowerShell 7, warm filesystem.
+
+**The structural cost, which is exact and does not move with the machine.** `Test-CheckAbsentForReal`
+spends up to three `git` child processes per commit, for pre-boundary commits only
+(`enforcement-pack.ps1`, inside `if (-not $graded)`). The run's own verdict names the count:
+`graded 34 of 43 commit(s) … (9 not graded: 9 made before the check existed (plan D2b))`, so this
+branch pays at most **27 extra `git` calls**. The cost is linear in the pre-boundary segment, not
+in branch length, and it is zero once a branch's history starts after the boundary.
+
+**The isolated cost of those calls**: 27 `git cat-file blob` invocations against this repository
+take **3.65 s** (27 `git rev-parse --verify`: 4.29 s) — about 0.14 s per child process, which is
+the Windows process-spawn floor rather than anything the probe does.
+
+**As a fraction of the command that carries it**: `ritual-checks` runs **82.2 s / 80.0 s** here, so
+the probe's worst case on this branch is **~4.5 % of a full `ritual-checks` run**. That is the
+stated fraction, and it is the number SC-006 wanted.
+
+**What the whole-script comparison could and could not show.** Five interleaved runs each of
+`a57fe3c~1:scripts/enforcement-pack.ps1` (the last pre-phase-5 script) and the current one:
+baseline 23.24 / 19.44 / 18.45 / 21.66 / 19.26 s, current 26.47 / 20.08 / 17.92 / 24.17 / 28.03 s.
+Medians 19.44 s → 24.17 s, delta 4.73 s, which agrees with the 27-call figure — but one current run
+(17.92 s) came in below the baseline median, so **the per-run delta sits inside this machine's
+noise** and the median is not a measurement anyone should quote as precise. The defensible
+statements are the call count and the isolated call cost; the wall-clock delta is consistent with
+them, not independent evidence for them.
+
+**The arrival-day shape, cited rather than re-measured.** The round-1 reviewer built the case T024
+and SC-006 were actually written about — 61 commits on an `NNN-*` branch with no check anywhere in
+its history, so every commit is pre-boundary — and measured 4.02 / 3.73 s before phase 5 against
+13.13 / 16.80 s after, same verdict (`graded 0 of 61`). I did not rebuild that fixture; the number
+is theirs, and it is the number that matters for an adopted project's first run after flow-down,
+where ~3x on the enforcement-pack member is the honest expectation. It is bounded the same way:
+three processes per pre-boundary commit, once, and never again on that branch.
+
+This closes what F3 asked for — a stated fraction — and does not change the code. The cost itself
+was accepted deliberately at T085/T089: the probe is what distinguishes "the check was absent" from
+"the check is unreadable", which is the fail-open this phase exists to close.
