@@ -1,0 +1,21 @@
+{
+  "description": "A single migration file on a fix/ branch. It fires TWICE by design: once as a prohibited category and once as the unconditional migration rule, which is the point — a migration is barred regardless of file count, so the two rules are not redundant.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "db/migrations/001_add_table.sql": "-- fixture\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

@@ -1,0 +1,21 @@
+{
+  "description": "A fix/ branch touching a dependency manifest — a prohibited category for the Lite lane. The lane exists for changes that need no specification; a package.json change is not one.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "package.json": "{ \"name\": \"fixture\" }\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

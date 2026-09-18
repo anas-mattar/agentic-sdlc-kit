@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 3 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - MicroLane: the branch carries commits for phases 1, 2 — a Micro feature has exactly 1 phase; promote to Standard — expand spec.md to the full template (level re-declared Standard), add plan.md + tasks.md (Territory moves there), in a commit before the next phase commit (constitution X, Micro lane)

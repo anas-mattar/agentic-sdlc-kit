@@ -1,0 +1,4 @@
+enforcement-pack: branch 'fix/thing', diff base '<SHA>', 1 changed file(s)
+enforcement-pack: FAIL (2 issue(s)):
+  - LiteAndAbuse: fix/thing touches 'db/migrations/001_add_table.sql', a prohibited category for the Lite lane (schema/migration) — promote to a numbered feature (docs/sdlc/critical-delivery.md)
+  - LiteAndAbuse: fix/thing touches a migration path — migrations are always prohibited on the Lite lane regardless of file count

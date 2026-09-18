@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 2 changed file(s)
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - MicroLane: territory entry 'src/**' in specs/001-thing/spec.md is a glob or subtree — Micro territory entries must be literal file paths, or the 5-file cap is unenforceable; list the files, or promote to Standard — expand spec.md to the full template (level re-declared Standard), add plan.md + tasks.md (Territory moves there), in a commit before the next phase commit (constitution X, Micro lane)

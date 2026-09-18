@@ -1,0 +1,46 @@
+{
+  "description": "Twenty-six ordinary files on a fix/ branch — one past the abuse guard. Nothing here is prohibited by category; the guard is about SIZE, which is how a feature disguises itself as a fix.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "src/f01.ps1": "Write-Host '1'\n",
+        "src/f02.ps1": "Write-Host '2'\n",
+        "src/f03.ps1": "Write-Host '3'\n",
+        "src/f04.ps1": "Write-Host '4'\n",
+        "src/f05.ps1": "Write-Host '5'\n",
+        "src/f06.ps1": "Write-Host '6'\n",
+        "src/f07.ps1": "Write-Host '7'\n",
+        "src/f08.ps1": "Write-Host '8'\n",
+        "src/f09.ps1": "Write-Host '9'\n",
+        "src/f10.ps1": "Write-Host '10'\n",
+        "src/f11.ps1": "Write-Host '11'\n",
+        "src/f12.ps1": "Write-Host '12'\n",
+        "src/f13.ps1": "Write-Host '13'\n",
+        "src/f14.ps1": "Write-Host '14'\n",
+        "src/f15.ps1": "Write-Host '15'\n",
+        "src/f16.ps1": "Write-Host '16'\n",
+        "src/f17.ps1": "Write-Host '17'\n",
+        "src/f18.ps1": "Write-Host '18'\n",
+        "src/f19.ps1": "Write-Host '19'\n",
+        "src/f20.ps1": "Write-Host '20'\n",
+        "src/f21.ps1": "Write-Host '21'\n",
+        "src/f22.ps1": "Write-Host '22'\n",
+        "src/f23.ps1": "Write-Host '23'\n",
+        "src/f24.ps1": "Write-Host '24'\n",
+        "src/f25.ps1": "Write-Host '25'\n",
+        "src/f26.ps1": "Write-Host '26'\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

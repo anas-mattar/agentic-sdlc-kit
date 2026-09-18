@@ -1,0 +1,21 @@
+{
+  "description": "The same fix/ branch touching an ordinary source file. Differs only in the condition under test (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

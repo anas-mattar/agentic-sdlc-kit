@@ -23,8 +23,8 @@
   "scripts": [
     {
       "script": "enforcement-pack.ps1",
-      "accumulators": ["\\$script:failures\\s*\\+="],
-      "note": "Every member appends to one collection; the runner prints and exits 1. Warnings ($script:warnings) are deliberately not counted as failure sites — PhaseSizeWarning is a WARN rule and enters the inventory when phase 5 settles the vocabulary."
+      "accumulators": ["\\$script:failures\\s*\\+=", "\\$script:warnings\\s*\\+="],
+      "note": "Every member appends to one of two collections; the runner prints and exits 1 on failures. Warnings ARE counted as emission sites from phase 3 on: PhaseSizeWarning is a rule with a fixture pair (PHASE-001), and leaving it out of the denominator flattered the coverage number by hiding a rule rather than by covering it. Where WARN sits in the verdict vocabulary is still phase 5's question (D4); whether it is a rule is not."
     },
     {
       "script": "scope-check.ps1",

@@ -481,3 +481,51 @@ made in `build-digests.ps1` for a malformed digest marker.
 Tests 38 → 42. `ritual-checks: RESULT OK` — the kit's own current branch has no near miss.
 `specs/014-amendment-authority/tasks.md:322` does, and would now be named rather than ignored;
 that branch is merged and is not re-graded, so nothing turns red today.
+
+---
+
+## Phase 3 — the enforcement pack under test
+
+### T020: Lite lane and Micro lane inventoried and covered
+
+Eleven new rules with both directions each, on top of phase 1's three `Invoke-StructureCheck`
+rules: `LITE-001..003` (prohibited category, abuse guard, migration path), `MICRO-001..007`
+(halfway promotion, gate batching in a mini-spec, duplicate Territory block, territory cap, glob
+entry, phase line bound, more than one phase) and `PHASE-001` (the phase-size warning).
+
+**Expectations were predicted from the source strings, not copied from a run.** Six of six Lite
+assertions and thirteen of fourteen Micro assertions matched first time. The one miss is recorded
+below rather than quietly corrected.
+
+**Four pairs now pin a boundary that was only ever a comment.** `LITE-002`'s pass case sits at
+exactly 25 files, `MICRO-004`'s at exactly 5 territory entries, `MICRO-006`'s at exactly 400
+lines, `PHASE-001`'s at exactly 400 lines. Each fail case is one past. A fixture, not a reading of
+the code, now says the comparison is `>` and not `>=` — and an off-by-one in any of them stops
+being invisible.
+
+**The one wrong prediction, and why it is a good one to have made.** `MICRO-006`'s 401-line phase
+also trips `PhaseSizeWarning`, which prints a `WARNING:` line before the `FAIL` block. My
+expectation named only the Micro failure. The script is right and the expectation was incomplete,
+so the expectation was corrected — and the pair of cases it produced is now the clearest statement
+of the difference between the lanes: **the same 401 lines are a non-blocking warning on Standard
+(`PHASE-001`, exit 0) and a hard failure on Micro (`MICRO-006`, exit 1).** Two rules read the same
+number and disagree about what it means, and both are now held by fixtures.
+
+### The coverage denominator was flattering itself, and that is fixed here
+
+`emission-idioms.json` declared only `$script:failures +=` for `enforcement-pack.ps1`, with a note
+saying warnings were deliberately excluded until phase 5 settled the vocabulary. That reasoning
+does not survive contact with `PHASE-001`: the phase-size warning **is** a rule, it now has a
+fixture pair, and leaving it out of the denominator improved the coverage percentage by hiding a
+rule rather than by covering one. `$script:warnings +=` is now counted. Where WARN sits in the
+verdict vocabulary is still phase 5's question (D4); whether it is a rule is not.
+
+After T020: **86 tests, 0 failed**; coverage **19 of 92** declared sites, `enforcement-pack.ps1`
+at **14 of 43** with one unclassified candidate left. The denominator grew from 89 to 92 because
+warnings joined it — the number went down for an honest reason, which is the only kind of movement
+worth trusting in a coverage report.
+
+Runtime is now roughly two minutes locally, since every case builds a real git repository. T026's
+git-reality cases will add more. If it becomes a problem the answer is parallel Pester containers,
+not fewer fixtures — but it is not a problem yet, and this note exists so the first person to feel
+it knows it was seen.

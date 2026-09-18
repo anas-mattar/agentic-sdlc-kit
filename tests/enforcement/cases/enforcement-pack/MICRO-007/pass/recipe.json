@@ -1,0 +1,50 @@
+{
+  "description": "Two commits, both carrying phase 1 - remediation, not a second phase. Differs from the fail case only in the second commit's phase number (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Micro Spec: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "",
+          "## Intent",
+          "",
+          "Do the thing.",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "- `src/other.ps1`"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1 fixes: the other thing",
+      "write": {
+        "src/other.ps1": "Write-Host 'other'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

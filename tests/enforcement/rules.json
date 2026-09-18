@@ -46,6 +46,105 @@
       "notes": "Phase 2 review F3. specs/014-amendment-authority/tasks.md:322 is still this shape. Fixed by making the near-miss loud rather than by joining continuation lines - the pattern build-digests.ps1 uses for a malformed digest marker."
     },
     {
+      "id": "LITE-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LiteAndAbuseCheck",
+      "summary": "a Lite-lane branch touches a prohibited category",
+      "law": "constitution X (the Lite lane is for changes that need no specification)",
+      "emitAnchor": "a prohibited category for the Lite lane",
+      "notes": "Fires once per file per matching category, so one file can fire it twice."
+    },
+    {
+      "id": "LITE-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LiteAndAbuseCheck",
+      "summary": "a Lite-lane branch changes more files than the abuse guard allows",
+      "law": "constitution X (the Lite lane is bounded by size as well as by category)",
+      "emitAnchor": "exceeding the Lite-lane abuse guard",
+      "notes": "The pass case sits exactly AT the guard (25 files), which pins the comparison as '>' rather than '>=' - a fixture, not a comment, now holds that boundary."
+    },
+    {
+      "id": "LITE-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LiteAndAbuseCheck",
+      "summary": "a Lite-lane branch touches a migration path, regardless of file count",
+      "law": "constitution X; docs/sdlc/rollback-process.md",
+      "emitAnchor": "migrations are always prohibited on the Lite lane",
+      "notes": "Deliberately overlaps the category rule: one migration file fires both, because a config that dropped the schema globs would silence the category rule alone."
+    },
+    {
+      "id": "MICRO-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a plan.md or tasks.md exists while spec.md still declares Micro",
+      "law": "constitution X, Micro lane (promotion is all-or-nothing)",
+      "emitAnchor": "exists while spec.md still declares Micro",
+      "notes": "Fires once per document present, so a half-promoted feature reports both."
+    },
+    {
+      "id": "MICRO-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a mini-spec declares a gate batch",
+      "law": "constitution X, Micro lane (exactly one phase, so nothing to batch)",
+      "emitAnchor": "a Micro feature is exactly one phase; there is nothing to batch",
+      "notes": ""
+    },
+    {
+      "id": "MICRO-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a mini-spec carries more than one feature-global Territory block",
+      "law": "constitution X, Micro lane",
+      "emitAnchor": "**Territory** markers — a Micro feature declares exactly one",
+      "notes": "scope-check.ps1 FAILs duplicates too; the two are deliberately aligned (014 phase 2 review F7)."
+    },
+    {
+      "id": "MICRO-004",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a Micro Territory declares more files than the cap allows",
+      "law": "constitution X, Micro lane (MicroTerritoryMaxFiles = 5)",
+      "emitAnchor": "territory entries — a Micro feature's Territory covers at most",
+      "notes": "The pass case sits exactly AT five entries, pinning the comparison as '>' rather than '>='."
+    },
+    {
+      "id": "MICRO-005",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a Micro Territory entry is a glob or a subtree rather than a literal path",
+      "law": "constitution X, Micro lane",
+      "emitAnchor": "is a glob or subtree — Micro territory entries must be literal",
+      "notes": "Without this the file cap is unenforceable: one glob covers any number of files."
+    },
+    {
+      "id": "MICRO-006",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a Micro phase changes more lines than the lane's hard bound",
+      "law": "constitution X, Micro lane (MicroPhaseMaxLines = 400)",
+      "emitAnchor": "a Micro phase changes at most",
+      "notes": "The total across every commit carrying the phase token, so splitting the change over remediation commits cannot defeat it. The fail case also trips PhaseSizeWarning, which is how the WARN and the FAIL are shown to be different rules reading the same number."
+    },
+    {
+      "id": "MICRO-007",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a Micro branch carries commits for more than one phase",
+      "law": "constitution X, Micro lane (MicroMaxPhases = 1)",
+      "emitAnchor": "a Micro feature has exactly",
+      "notes": "Distinct phase NUMBERS are counted, not commits: the pass case has two commits both carrying phase 1, which is remediation and stays legal."
+    },
+    {
+      "id": "PHASE-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-PhaseSizeWarningCheck",
+      "summary": "a phase commit exceeds the phase-size guideline",
+      "law": "constitution X (phase-size guideline: 400 lines / 15 files)",
+      "emitAnchor": "exceeds the phase-size guideline",
+      "notes": "The kit's only WARN rule: it does not change the exit code, and the pair proves that - both directions expect exit 0 and differ only in whether the warning line is printed. Phase 5 settles where WARN sits in the vocabulary (D4)."
+    },
+    {
       "id": "STRUCT-001",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-StructureCheck",
