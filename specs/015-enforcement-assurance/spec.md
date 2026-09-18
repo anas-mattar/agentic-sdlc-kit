@@ -2,7 +2,7 @@
 
 **Feature Branch**: `015-enforcement-assurance`  
 **Created**: 2026-09-19  
-**Status**: Draft  
+**Status**: Approved 2026-09-19 (owner: anas.m)  
 **Delivery Level**: Standard  
 **Input**: User description: "Fixture-based test harness over every enforcement script, proven by closing the three recorded fail-opens"
 
