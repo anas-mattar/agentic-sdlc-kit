@@ -126,7 +126,7 @@ failure-emission sites, the largest single surface in the kit.
 
 - `tests/**`
 
-- [ ] T020 Inventory every rule in `Invoke-StructureCheck`, `Invoke-LiteAndAbuseCheck` and
+- [x] T020 Inventory every rule in `Invoke-StructureCheck`, `Invoke-LiteAndAbuseCheck` and
       `Invoke-MicroLaneCheck`, then write both case directions for each.
 - [ ] T021 Inventory and cover `Invoke-CriticalEvidenceCheck`, including both arms — solo
       substitute and team evidence — and the cooling-off boundary.
@@ -136,7 +136,7 @@ failure-emission sites, the largest single surface in the kit.
 - [ ] T024 Inventory and cover `Invoke-AmendmentAuthorityCheck`: creation versus amendment, the
       checkbox exemption, the status-line exemption, the renumbering exemption, a record hidden
       by an unterminated comment, and a record whose commit message does not name its approver.
-- [ ] T025 [P] Inventory and cover `Invoke-PhaseSizeWarningCheck`.
+- [x] T025 [P] Inventory and cover `Invoke-PhaseSizeWarningCheck`.
 - [ ] T026 Cover the git-reality conditions feature 014 paid for in review rounds: a truncated
       object, an empty `merge-base`, a multi-parent commit, and a path affected by
       `core.quotepath` (D12).
