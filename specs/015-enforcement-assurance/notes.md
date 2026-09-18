@@ -354,3 +354,64 @@ string that appears in the script). Recorded now so that T044 cannot inherit the
 number without noticing. This is the same failure shape as the phase 1 review's F1 — a count that
 is plausible and wrong in the flattering direction — and it is being written down rather than
 carried.
+
+### The phase 2 fresh-context review, and what it changed
+
+`ai-code-review-phase-2.md` (claude-sonnet-5, fresh context) returned **REQUEST CHANGES**: one
+BLOCKING finding and two CONFIRMs. Every claim was reproduced before acting on it.
+
+**F1 (BLOCKING) — the launcher reported exit 0 for a script that never ran.** `RunChild.ps1`
+ended in `exit $LASTEXITCODE`, and a parameter-binding failure writes an error while leaving
+`$LASTEXITCODE` untouched, so the launcher exited 0. Reproduced against the real script:
+
+```text
+pwsh -File tests/enforcement/lib/RunChild.ps1 scripts/build-digests.ps1 -Root -Check
+build-digests.ps1: Missing an argument for parameter 'Root'.
+exit=0
+```
+
+A case expecting exit 0 would have gone green against a script that produced nothing but an error
+message. None of phase 2's three fixtures triggers it; phases 3–6 add roughly eighty more, all
+through this one file. That is the feature's own thesis pointed at the feature: **a fail-open in
+the thing that grades the graders.**
+
+Closed by tracking whether the script ran separately from what it returned. The four shapes,
+measured rather than assumed:
+
+| shape | `$?` | `$LASTEXITCODE` | launcher exits |
+|---|---|---|---|
+| ran, returned normally | True | 0 | 0 |
+| ran, called `exit 1` (a real FAIL verdict) | True | 1 | 1 |
+| never ran — parameter binding failed | False | 0 | **97** |
+| threw before returning a verdict | (caught) | 0 | **97** |
+
+97 is not a verdict any kit script emits, so no case's expected exit code can collide with it, and
+the launcher also prints a line saying it is the launcher speaking — a case fails on both channels.
+
+**`tests/enforcement/Harness.Tests.ps1` is new**, because a fail-open in shared harness
+infrastructure should not depend on a fixture happening to trip it. Eight tests assert the exit
+shapes, argument binding, the non-ASCII round trip, and a single quote inside a value.
+
+**Those self-tests immediately found a second defect, in `Harness.psm1` rather than the launcher.**
+`Start-Process` joins an `-ArgumentList` **array** with spaces and quotes nothing, so
+`-Root 'C:\Users\A B\Temp\fix'` reached the child as `-Root C:\Users\A`. Every fixture so far has
+run from a temporary path with no space in it, so no case could have caught it. Fixed by quoting
+elements that contain whitespace (`ConvertTo-ProcessArgument`). Tests 30 → 38.
+
+**A correction to the phase 2 commit message (F3).** It says the decorated marker is what feature
+014 wrote "TWICE", citing `ca88da5` and `3a51f5c`. Both citations are wrong, and I did not measure
+them before writing the sentence — the same mistake as feature 014's G5:
+
+- `ca88da5` touches no `**Territory**` line in `tasks.md` at all.
+- `3a51f5c` is the **repair**, not an instance: it rewrites `**Territory** (widened …):` to
+  `**Territory**: widened …` and says in the diff that the decorated spelling is invisible.
+- `28d2f0a` is the uncited one, and it shows the form appearing **at least three times**: its
+  parent line already read `**Territory** (unchanged):`, and it wrote the wrapped marker that is
+  still standing in that file today.
+
+The claim the fix rests on is unharmed and if anything stronger — 014 wrote the decorated form
+repeatedly and had to hand-repair it once. Only my citation was wrong, and it is corrected here
+because the commit message cannot be.
+
+**F2 and F3 are CONFIRM, and stand open for the owner**, recorded in the review file with my
+recommendation rather than decided unilaterally.

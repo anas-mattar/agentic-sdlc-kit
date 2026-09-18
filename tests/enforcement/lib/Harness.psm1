@@ -40,6 +40,18 @@ $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path $PSScriptRoot 'FixtureRepo.psm1') -Force
 
+# Start-Process joins an -ArgumentList ARRAY with spaces and quotes nothing, so an element
+# containing a space arrives at the child as two arguments: '-Root C:\Users\A B\Temp\fix'
+# became '-Root C:\Users\A' and the case ran against a path that does not exist. Found by the
+# launcher's own self-tests (Harness.Tests.ps1) while closing the phase 2 review's F1, not by a
+# fixture — every fixture so far has run from a temporary path with no space in it.
+function ConvertTo-ProcessArgument {
+    param([string[]]$Arguments)
+    return @($Arguments | ForEach-Object {
+        if ($_ -match '[\s"]') { '"' + ($_ -replace '"', '\"') + '"' } else { $_ }
+    })
+}
+
 function ConvertTo-NormalisedOutput {
     param([Parameter(Mandatory)][AllowEmptyString()][string]$Text, [Parameter(Mandatory)][string]$RepoPath)
 
@@ -100,7 +112,8 @@ function Invoke-FixtureCase {
         $stdoutFile = [IO.Path]::GetTempFileName()
         $stderrFile = [IO.Path]::GetTempFileName()
         try {
-            $process = Start-Process -FilePath (Get-Process -Id $PID).Path -ArgumentList $arguments `
+            $process = Start-Process -FilePath (Get-Process -Id $PID).Path `
+                -ArgumentList (ConvertTo-ProcessArgument -Arguments $arguments) `
                 -NoNewWindow -Wait -PassThru -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile
             $rawOut = [IO.File]::ReadAllText($stdoutFile)
             $rawErr = [IO.File]::ReadAllText($stderrFile)

@@ -42,5 +42,34 @@ foreach ($t in $rest) {
     else { $tokens += "'" + ($t -replace "'", "''") + "'" }
 }
 
-& ([scriptblock]::Create($tokens -join ' '))
+# A script that never RAN must never look like a script that ran and passed. 'exit $LASTEXITCODE'
+# alone did exactly that: a parameter-binding failure ('-Root -Check', where the switch is eaten
+# as Root's argument) writes an error and leaves $LASTEXITCODE untouched, so the launcher exited
+# 0 and a fixture expecting 0 went green against a script that printed nothing but an error.
+# Found by the phase 2 fresh-context review, F1, and reproduced against the real
+# build-digests.ps1 before this fix.
+#
+# So success is tracked separately from the exit code. $? distinguishes the three shapes that
+# matter, measured rather than assumed:
+#
+#   ran, returned normally         $? True,  $LASTEXITCODE 0   -> 0
+#   ran, called exit 1             $? True,  $LASTEXITCODE 1   -> 1   (a real FAIL verdict)
+#   never ran (binding failure)    $? False, $LASTEXITCODE 0   -> 97
+#   threw                          caught                      -> 97
+#
+# 97 is not a verdict any kit script emits, so no case's expected exit code can collide with it,
+# and the printed line lands in the captured output as well — a case fails on both channels.
+$global:LASTEXITCODE = 0
+$ran = $true
+try {
+    & ([scriptblock]::Create($tokens -join ' '))
+    $ran = $?
+} catch {
+    Write-Host "RunChild: the script under test threw before returning a verdict: $($_.Exception.Message)"
+    $ran = $false
+}
+if (-not $ran -and $LASTEXITCODE -eq 0) {
+    Write-Host "RunChild: $target did not run to a verdict (see the error above) — this is the launcher reporting, not the script"
+    exit 97
+}
 exit $LASTEXITCODE
