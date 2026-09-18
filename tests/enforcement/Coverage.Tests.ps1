@@ -12,6 +12,19 @@
       anchor no longer appears in its script is stale, and a rule with only one direction is a
       coverage claim the harness cannot keep. Neither of those is "not yet covered"; both are
       the inventory lying, and an inventory that can lie is the thing D8 exists to prevent.
+
+    HOW SITES ARE FOUND, and why it is two passes. The first version of this file hard-coded six
+    regexes modelled on enforcement-pack.ps1 and applied them to all nine scripts. They
+    undercounted three of them silently — the phase 1 review's F1. Partial blindness is worse
+    than total blindness, because a half-seen script reports a plausible number instead of a
+    visible zero. So:
+
+      PRECISE  — emission-idioms.json declares, per script, how that script actually emits.
+      RECALL   — a deliberately broad sweep looks for anything that smells like a failure.
+
+    Sites the sweep finds and the declaration does not are printed as UNCLASSIFIED. That
+    difference is the honest measure of what the declaration may still be missing, and it is the
+    number to watch rather than the coverage percentage.
 #>
 
 BeforeAll {
@@ -20,55 +33,58 @@ BeforeAll {
     $script:KitRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $script:ScriptsDir = Join-Path $script:KitRoot 'scripts'
     $script:Inventory = Get-RuleInventory -TestsRoot $PSScriptRoot
+    $script:Idioms = Get-Content (Join-Path $PSScriptRoot 'emission-idioms.json') -Raw | ConvertFrom-Json
 
-    # Failure-emission sites, found by their idiom rather than by parsing PowerShell. Each
-    # grading script has its own; all of them put the message in a double-quoted literal on
-    # the emitting line. A site this misses is a site the inventory can never be measured
-    # against, so the patterns are listed here in the open rather than hidden in a helper.
-    $script:EmissionPatterns = @(
-        '\$script:failures\s*\+=\s*"(?<msg>.*)"',
-        '\$failures\s*\+=\s*"(?<msg>.*)"',
-        '\$problems\s*\+=\s*"(?<msg>.*)"',
-        '\$manifestErrors\s*\+=\s*"(?<msg>.*)"',
-        'Add-Finding\s+FAIL\s+''[^'']+''\s+"(?<msg>.*)"',
-        'Write-Host\s+"(?<msg>[^"]*FAIL[^"]*)"'
+    # The recall pass. Broad on purpose: it is allowed — expected — to hit lines that are not
+    # rules. Its job is not to be right, it is to be impossible to slip past, so that a genuine
+    # emission site written in a new idiom shows up as UNCLASSIFIED rather than as nothing.
+    $script:CandidateSweep = @(
+        '\+=\s*.*(?i:fail|issue|error|problem|broken|missing|stale|invalid)',
+        '\$(?i:[a-z:]*)(failures|issues|errors|problems|broken|findings)\s*\+=',
+        'Add-Finding\s+FAIL',
+        # Any Write-*, not Write-Host alone: scope-check-repos.ps1 emits through a Write-Line
+        # wrapper, and a sweep that named only Write-Host reported zero candidates for it —
+        # the recall pass reproducing the precise pass's blindness, which defeats its purpose.
+        'Write-\w+\s+["''][^"'']*(FAIL|ERROR)',
+        'Write-Error\s'
     )
 
-    function Get-EmissionSites {
-        param([string]$ScriptPath)
-        $sites = @()
+    function Test-LineMatches {
+        param([string]$Line, [string[]]$Patterns)
+        foreach ($p in $Patterns) { if ([regex]::IsMatch($Line, $p)) { return $true } }
+        return $false
+    }
+
+    function Get-ScriptSites {
+        param([string]$ScriptPath, [string[]]$Accumulators)
+        $precise = @()
+        $candidates = @()
         $lineNumber = 0
         foreach ($line in [IO.File]::ReadAllLines($ScriptPath)) {
             $lineNumber++
-            $trimmed = $line.TrimStart()
-            if ($trimmed.StartsWith('#')) { continue }
-            foreach ($pattern in $script:EmissionPatterns) {
-                $m = [regex]::Match($line, $pattern)
-                if ($m.Success) {
-                    $sites += [pscustomobject]@{
-                        Script  = Split-Path -Leaf $ScriptPath
-                        Line    = $lineNumber
-                        Message = $m.Groups['msg'].Value
-                    }
-                    break
-                }
+            if ($line.TrimStart().StartsWith('#')) { continue }
+            $entry = [pscustomobject]@{
+                Script = Split-Path -Leaf $ScriptPath
+                Line   = $lineNumber
+                Text   = $line.Trim()
+            }
+            if ($Accumulators.Count -gt 0 -and (Test-LineMatches -Line $line -Patterns $Accumulators)) {
+                $precise += $entry
+            } elseif (Test-LineMatches -Line $line -Patterns $script:CandidateSweep) {
+                $candidates += $entry
             }
         }
-        return $sites
+        return [pscustomobject]@{ Precise = $precise; Unclassified = $candidates }
     }
 
-    $script:GradingScripts = @(
-        'enforcement-pack.ps1', 'scope-check.ps1', 'scope-check-repos.ps1', 'doc-lint.ps1',
-        'verify-kit.ps1', 'build-digests.ps1', 'roadmap-claim-check.ps1', 'territory-check.ps1',
-        'ritual-checks.ps1'
-    )
-
-    $script:AllSites = @()
-    foreach ($name in $script:GradingScripts) {
-        $path = Join-Path $script:ScriptsDir $name
-        if (Test-Path $path) { $script:AllSites += Get-EmissionSites -ScriptPath $path }
+    $script:Scan = @{}
+    foreach ($declared in $script:Idioms.scripts) {
+        $path = Join-Path $script:ScriptsDir $declared.script
+        if (Test-Path $path) {
+            $script:Scan[$declared.script] = Get-ScriptSites -ScriptPath $path -Accumulators @($declared.accumulators)
+        }
     }
-
+    $script:AllSites = @($script:Scan.Values | ForEach-Object { $_.Precise })
     $script:CaseDirs = @(Get-CaseDirectories -TestsRoot $PSScriptRoot)
 }
 
@@ -115,43 +131,70 @@ Describe 'rule inventory integrity' {
     }
 }
 
+Describe 'emission-idiom declaration' {
+
+    It 'declares an idiom entry for every grading script' {
+        $missing = @()
+        foreach ($name in $script:Idioms.scripts.script) {
+            if (-not (Test-Path (Join-Path $script:ScriptsDir $name))) { $missing += "$name is declared but does not exist" }
+        }
+        $declaredNames = @($script:Idioms.scripts.script)
+        foreach ($name in @('enforcement-pack.ps1', 'scope-check.ps1', 'scope-check-repos.ps1', 'doc-lint.ps1',
+                'verify-kit.ps1', 'build-digests.ps1', 'roadmap-claim-check.ps1', 'territory-check.ps1',
+                'ritual-checks.ps1')) {
+            if ($name -notin $declaredNames) { $missing += "$name has no entry in emission-idioms.json" }
+        }
+        if ($missing.Count -gt 0) { throw ($missing -join "`n") }
+        $missing.Count | Should -Be 0
+    }
+
+    It 'every undeclared script says so in writing' {
+        # An empty accumulator list is legal, but only as a stated position with a reason and the
+        # task that resolves it — never as an omission nobody noticed.
+        $silent = @()
+        foreach ($declared in $script:Idioms.scripts) {
+            if (@($declared.accumulators).Count -eq 0 -and $declared.note -notmatch 'UNDECLARED') {
+                $silent += "$($declared.script): no accumulators declared and the note does not say UNDECLARED with a reason"
+            }
+        }
+        if ($silent.Count -gt 0) { throw ($silent -join "`n") }
+        $silent.Count | Should -Be 0
+    }
+}
+
 Describe 'coverage report' {
 
-    It 'reports how much of the kit is under test' {
+    It 'reports how much of the kit is under test, and how much it may not be seeing' {
         $covered = @()
-        $uncovered = @()
         foreach ($site in $script:AllSites) {
             $match = $script:Inventory.rules | Where-Object {
-                $_.script -eq $site.Script -and $site.Message.Contains($_.emitAnchor)
+                $_.script -eq $site.Script -and $site.Text.Contains($_.emitAnchor)
             }
-            if ($match) { $covered += $site } else { $uncovered += $site }
+            if ($match) { $covered += $site }
         }
 
+        $unclassifiedTotal = 0
         Write-Host ''
-        Write-Host ('coverage: {0} of {1} failure-emission site(s) inventoried across {2} grading script(s)' -f `
-                $covered.Count, $script:AllSites.Count, $script:GradingScripts.Count)
+        Write-Host ('coverage: {0} of {1} declared failure-emission site(s) inventoried across {2} grading script(s)' -f `
+                $covered.Count, $script:AllSites.Count, @($script:Idioms.scripts).Count)
 
-        # Every script is listed, including the ones the scanner found nothing in. A script
-        # silently absent from this report would be a denominator that shrank to fit — which is
-        # the shape of the defect this whole feature exists to close, committed by the tool
-        # built to close it.
-        $blind = @()
-        foreach ($name in ($script:GradingScripts | Sort-Object)) {
-            $sites = @($script:AllSites | Where-Object Script -eq $name)
-            $done = @($covered | Where-Object Script -eq $name)
-            if ($sites.Count -eq 0) {
-                Write-Host ('coverage: {0,-24} NO EMISSION SITE FOUND — the scanner misses this script''s idiom, or it reports no failures' -f $name)
-                $blind += $name
+        foreach ($declared in ($script:Idioms.scripts | Sort-Object script)) {
+            $scan = $script:Scan[$declared.script]
+            if (-not $scan) { continue }
+            $done = @($covered | Where-Object Script -eq $declared.script).Count
+            $unclassifiedTotal += $scan.Unclassified.Count
+            if (@($declared.accumulators).Count -eq 0) {
+                Write-Host ('coverage: {0,-24} IDIOM UNDECLARED — {1} unclassified candidate line(s)' -f $declared.script, $scan.Unclassified.Count)
             } else {
-                Write-Host ('coverage: {0,-24} {1} of {2} site(s) inventoried' -f $name, $done.Count, $sites.Count)
+                $suffix = if ($scan.Unclassified.Count -gt 0) { ", {0} unclassified candidate(s)" -f $scan.Unclassified.Count } else { '' }
+                Write-Host ('coverage: {0,-24} {1} of {2} site(s) inventoried{3}' -f $declared.script, $done, $scan.Precise.Count, $suffix)
             }
         }
-        if ($blind.Count -gt 0) {
-            Write-Host ("coverage: {0} script(s) the scanner is blind to — resolve each while inventorying it (phases 3-4): {1}" -f $blind.Count, ($blind -join ', '))
-        }
+
+        Write-Host ("coverage: {0} unclassified candidate line(s) in total — each is either a rule the declaration misses or a false positive of the recall sweep, and phases 3-4 resolve every one." -f $unclassifiedTotal)
         Write-Host 'coverage: reporting only until phase 6 (plan D9) — T044 makes an uncovered site a failure.'
 
-        # Asserted here: the report ran and found something to measure. A scanner that silently
+        # Asserted here: the scan ran and found something to measure. A scanner that silently
         # matched nothing would report 0 of 0 and read as clean — the exact shape of GAP-027.
         $script:AllSites.Count | Should -BeGreaterThan 0
     }

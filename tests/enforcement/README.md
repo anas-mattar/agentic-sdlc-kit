@@ -74,8 +74,21 @@ GAP-027 exactly. The pair is what proves the rule fired.
 `Coverage.Tests.ps1` scans the nine grading scripts for failure-emission sites and reports how
 many are inventoried in `rules.json`. Until phase 6 it **reports**; T044 makes an uncovered site
 a failure. What it asserts today is narrower and stricter: that the inventory is honest about
-what it already claims — no stale rule, no rule missing a direction, no orphan case.
+what it already claims — no stale rule, no rule missing a direction, no orphan case — and that
+every grading script has an idiom entry, with any undeclared one saying so in writing.
 
-A script the scanner finds *no* sites in is printed as `NO EMISSION SITE FOUND` rather than
-omitted. A denominator that quietly shrinks to fit is the defect this whole feature exists to
-close.
+**The scan is two passes, and the second one is the point.** `emission-idioms.json` declares how
+each script actually emits a failure; that is the precise pass. A deliberately broad sweep then
+looks for anything that merely *smells* like a failure; that is the recall pass. Lines the sweep
+finds and the declaration does not are printed as `unclassified candidate(s)`.
+
+That number exists because the first version of this scanner got it wrong in the way that is
+hardest to notice. Six regexes modelled on `enforcement-pack.ps1` were applied to all nine
+scripts and **silently undercounted three of them** — `doc-lint.ps1` missed its own headline
+rule (which accumulates an object, not a string), `verify-kit.ps1` missed 7 of 16 sites (single
+quotes), and `build-digests.ps1` missed all 10 of its real rules while counting the wrapper that
+prints them. Every one still reported a plausible non-zero number.
+
+**Partial blindness is worse than total blindness.** A script the scanner cannot see at all
+reports `IDIOM UNDECLARED` and provokes a question. A script it half-sees reports a number
+nobody questions. Watch the unclassified count, not the coverage percentage.
