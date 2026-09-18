@@ -107,7 +107,7 @@ the functions are unchanged, only their home is.
       Demonstrate the current non-blocking WARN, then make it FAIL (FR-015).
 - [x] T019 Add both GAPs' rules to the inventory and confirm the coverage reporter counts them.
 
-- [ ] T019a Make the near-miss loud (phase 2 review, F3): a line that begins `**Territory**` and
+- [x] T019a Make the near-miss loud (phase 2 review, F3): a line that begins `**Territory**` and
       carries no colon — an annotation that wraps across lines — declares nothing and is
       currently silent. Report it as a FAIL naming the line, in both scope graders, rather than
       teaching the parser to join continuation lines. Same pattern `build-digests.ps1` uses for a
