@@ -155,8 +155,16 @@ runs in that project's CI, and grades that project's feature documents.
    `update-kit.ps1` runs, **Then** the check arrives with the rest of the verbatim set and
    the project's CI runs it without further wiring.
 2. **Given** an adopted project that has never heard of this rule, **When** the check runs
-   over a branch with no amendments, **Then** it passes silently — arrival never turns an
-   innocent project red.
+   over a branch with no amendments **and CI checks out full history**, **Then** it passes
+   silently — arrival never turns an innocent project red. Where history cannot be read the
+   run fails naming the condition instead (FR-011, plan D2b); that is not an innocent
+   project passing, it is an ungradable one refusing to be called clean.
+
+Scenario 2 amended 2026-09-18 with FR-011 and for the same reason (phase 5 review, finding
+F4): the scenario stated the promise the requirement makes, so leaving it unqualified would
+have kept the pre-amendment reading alive in the document a reader reaches first.
+
+**Amendment approved by**: anas.m, 2026-09-18.
 
 ---
 
@@ -214,7 +222,26 @@ runs in that project's CI, and grades that project's feature documents.
 - **FR-010**: Branch renumbering, rebases and merge commits MUST NOT be graded as amendments.
 - **FR-011**: The rule and its check MUST reach adopted projects through the existing
   verbatim update channel, requiring no per-project wiring, and MUST pass silently on a
-  project with no amendments.
+  project with no amendments **whose CI checks out full history**. Where the check cannot
+  read the history it is asked to grade — a shallow or truncated clone, an unresolvable
+  base, an unreadable parent object — it MUST fail naming the condition rather than pass
+  silently (plan D2b): a run that graded nothing is not an innocent project, and a green
+  verdict there is the fail-open this feature exists to end. The Lite lane stays exempt in
+  every clone shape (FR-009).
+
+Amended 2026-09-18, after phase 5's third review round (finding F4). The original sentence
+promised silence unconditionally, and phase 5 made that false for one reader: an adopter
+whose CI fetches shallowly now goes red on its first `NNN-*` branch with no amendments
+anywhere. The exception had been written only into `adoption/updating.md`, which left the
+spec one reading behind the code — the state this feature exists to end. Recording it here
+rather than dropping the behaviour, because the behaviour is right: the alternative is the
+check reporting `OK` on history it never read. The blast radius is small and was measured,
+not assumed — `kit-manifest.json` classes `.github/**` verbatim and the kit's own
+`ritual-checks.yml` ships `fetch-depth: 0`, so every adopter on the kit's workflow receives
+the full-history checkout in the same update that delivers the failure; the exposure is the
+adopter who wrote their own workflow.
+
+**Amendment approved by**: anas.m, 2026-09-18.
 - **FR-012**: The amendment MUST be reflected wherever the kit already restates the law —
   the sync list, the affected templates, the task-scoped reading table, and the relevant law
   digest — so that no document keeps the pre-amendment reading.
