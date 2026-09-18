@@ -91,21 +91,21 @@ the functions are unchanged, only their home is.
 
 **Amendment approved by**: anas.m, 2026-09-19.
 
-- [ ] T013 Write the GAP-025 case: a document mentioning a comment opener inside an inline code
+- [x] T013 Write the GAP-025 case: a document mentioning a comment opener inside an inline code
       span, with a digest marker after it. Demonstrate it failing against the current
       `build-digests.ps1` and record that run in `notes.md` before any fix (D11).
-- [ ] T014 Fix `scripts/build-digests.ps1` to treat a comment opener inside an inline code span as
+- [x] T014 Fix `scripts/build-digests.ps1` to treat a comment opener inside an inline code span as
       literal text, reusing feature 014's CommonMark-shaped visibility logic rather than writing a
       third line-based parser (FR-013).
-- [ ] T015 Regenerate the digests and confirm the marker count changes by exactly the markers the
+- [x] T015 Regenerate the digests and confirm the marker count changes by exactly the markers the
       old parser swallowed; record before and after in `notes.md`.
-- [ ] T016 Write the GAP-026 case: a `tasks.md` phase whose marker reads
+- [x] T016 Write the GAP-026 case: a `tasks.md` phase whose marker reads
       `**Territory** (widened by amendment …):`. Demonstrate it failing first (D11).
-- [ ] T017 Fix `Get-Territory` in `scripts/scope-lib.ps1` to accept a decorated marker — annotation
+- [x] T017 Fix `Get-Territory` in `scripts/scope-lib.ps1` to accept a decorated marker — annotation
       between the marker and its colon — as a declaration (FR-014).
-- [ ] T018 Write the second GAP-026 case: one phase declares Territory, another declares none.
+- [x] T018 Write the second GAP-026 case: one phase declares Territory, another declares none.
       Demonstrate the current non-blocking WARN, then make it FAIL (FR-015).
-- [ ] T019 Add both GAPs' rules to the inventory and confirm the coverage reporter counts them.
+- [x] T019 Add both GAPs' rules to the inventory and confirm the coverage reporter counts them.
 
 ---
 

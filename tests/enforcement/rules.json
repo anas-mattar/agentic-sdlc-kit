@@ -5,9 +5,36 @@
     "a grading script. 'emitAnchor' is a literal substring of the message as it appears in the",
     "script source — it is how Coverage.Tests.ps1 ties an inventory entry to the line that",
     "emits it, so a rule that is deleted or reworded is caught rather than silently orphaned.",
-    "Phase 1 inventories Invoke-StructureCheck only; phases 3 and 4 complete it."
+    "Phase 1 inventories Invoke-StructureCheck only; phase 2 adds the two GAP rules it closes; phases 3 and 4 complete it."
   ],
   "rules": [
+    {
+      "id": "DIGEST-001",
+      "script": "build-digests.ps1",
+      "function": "(check mode)",
+      "summary": "a digest on disk does not match what its sources produce",
+      "law": "CLAUDE.md Task-Scoped Reading (a digest is never a source-of-truth rung, so it may never drift from the law it digests)",
+      "emitAnchor": "stale or hand-edited digest: docs/digests/",
+      "notes": "The pass direction over this recipe is the GAP-025 demonstration: a '<!--' inside an inline code span opened a phantom comment that swallowed every later marker, so a CORRECT digest was reported stale and a regenerated one silently lost rules."
+    },
+    {
+      "id": "SCOPE-001",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "a phase commit touches a file outside the phase's declared Territory",
+      "law": "CLAUDE.md Workflow step 7; constitution VI (gate 4, the machine scope check)",
+      "emitAnchor": "not in territory",
+      "notes": "Both directions of this recipe carry a DECORATED Territory marker - the GAP-026 demonstration. Get-Territory anchored on '**Territory**:' and read an annotated marker as no declaration, so the check WARNed and exited 0 having graded nothing."
+    },
+    {
+      "id": "SCOPE-002",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "a phase declares no Territory while another phase in the same tasks.md declares one",
+      "law": "constitution VI (gate 4); FR-015 - the pre-006 compatibility WARN covers a document that predates the convention, not a phase that skipped it",
+      "emitAnchor": "but another phase in that file declares one",
+      "notes": "Before FR-015 this was a non-blocking WARN and the check exited 0 having graded nothing - GAP-027's species, reached through GAP-026's door."
+    },
     {
       "id": "STRUCT-001",
       "script": "enforcement-pack.ps1",

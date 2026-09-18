@@ -66,7 +66,7 @@ function Test-IsMicro {
 # have begun — so a following task checklist can never be swallowed as territory (006 review F1).
 # Returns @{ Found = bool; Duplicate = bool; Entries = string[]; Invalid = string[] }
 # -Global (Micro lane): the block is feature-global in spec.md, not under a phase heading —
-# the first '**Territory**:' marker anywhere counts, and a second one anywhere is a
+# the first '**Territory**' marker anywhere counts (decorated or not), and a second one is a
 # duplicate. Lines are pre-stripped of HTML comments by the caller (Get-VisibleLines).
 function Get-Territory {
     param([string[]]$TasksLines, [int]$PhaseNumber, [switch]$Global)
@@ -81,7 +81,17 @@ function Get-Territory {
             continue
         }
         if (-not $inPhase) { continue }
-        if ($line -match '^\*\*Territory\*\*:') {
+        # A DECORATED marker counts (GAP-026, FR-014): '**Territory** (widened by amendment …):'
+        # is what feature 014 wrote twice while amending its own territory, and the old anchor —
+        # the colon fixed hard against the marker — read it as no declaration at all. The phase
+        # then reached the pre-006 compatibility WARN and the check exited 0 having graded
+        # nothing, on the very branch that was widening its scope.
+        #
+        # Anything up to the first colon is allowed as annotation, deliberately the permissive
+        # direction. The two errors are not symmetrical: reading a non-marker AS a marker ends in
+        # a loud duplicate-marker or empty-list FAIL that names the line, while reading a real
+        # marker as prose ends in silence. Only one of those can hide an undeclared change.
+        if ($line -match '^\*\*Territory\*\*[^:]*:') {
             if ($result.Found) { $result.Duplicate = $true }         # exactly one marker per phase (006 review F8)
             $result.Found = $true; $collecting = $true; $started = $false
             continue
@@ -104,6 +114,20 @@ function Get-Territory {
         $collecting = $false                                         # anything else (incl. task checkboxes) ends the list
     }
     return $result
+}
+
+# True when ANY phase in this tasks.md blob declares a Territory (FR-015). The pre-006
+# compatibility WARN was written for a document that predates the convention entirely; a
+# document where one phase declares and another does not is not legacy, it is an omission, and
+# treating the two alike is how an undeclared phase commit reached exit 0 having been graded
+# against nothing. Same anchor as Get-Territory, so the two cannot disagree about what a
+# declaration looks like.
+function Test-AnyTerritoryDeclared {
+    param([string[]]$TasksLines)
+    foreach ($line in $TasksLines) {
+        if ($line -match '^\*\*Territory\*\*[^:]*:') { return $true }
+    }
+    return $false
 }
 
 function Test-InTerritory {

@@ -250,6 +250,14 @@ function Invoke-RepoScopeCheck {
             Write-Line "${RepoName}: FAIL phase $phaseN commit ${sha7}: the phase $phaseN **Territory** in $($tip.Source) POST-DATES this commit ($when) — a declaration only governs code committed after it lands; re-commit the phase on top of the declaration (or declare the territory first, then re-commit)"
             return 'FAIL'
         }
+        # FR-015, the same rule scope-check.ps1 applies to this repository's own commits: the
+        # compatibility WARN covers a history that predates the convention, not a phase that
+        # skipped it while its siblings declared. Standard lane only - the Micro lane above has
+        # already FAILed an absent block, and $tasksBlob belongs to that branch.
+        if ($tasksBlob -and (Test-AnyTerritoryDeclared -TasksLines @($tasksBlob))) {
+            Write-Line "${RepoName}: FAIL phase $phaseN commit ${sha7}: no territory declared for phase $phaseN in $source, but another phase in that file declares one — declare this phase's **Territory** (the compatibility WARN covers only a tasks.md that declares none at all)"
+            return 'FAIL'
+        }
         Write-Line "${RepoName}: WARN phase $phaseN commit ${sha7}: no territory declared for phase $phaseN in $source, at this commit's date or since (non-blocking — a history predating the declaration)"
         return 'SKIP'
     }

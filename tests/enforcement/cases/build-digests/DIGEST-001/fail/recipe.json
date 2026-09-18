@@ -1,0 +1,33 @@
+{
+  "description": "The same sources and the same prose line, with one bullet of the generated digest reworded by hand. Differs from the pass case only in the condition under test (plan D10) - which is what proves the rule fires rather than the check returning early and grading nothing.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: A rule marked before any prose that mentions the marker syntax. -->",
+          "",
+          "A digest marker opens with `<!--` and closes with the matching arrow run.",
+          "",
+          "<!-- digest: A rule marked after that prose, which GAP-025 made invisible. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- A rule marked before any prose that mentions the marker syntax. (`docs/sdlc/fixture-law.md`)",
+          "- A rule marked after that prose, reworded by a human editing the generated file. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

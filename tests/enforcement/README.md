@@ -21,6 +21,13 @@ mean something different, and a harness that ran green under it would have asser
 
 No network at run time. Nothing is written to this repository.
 
+Every case runs through `lib/RunChild.ps1`, which sets UTF-8 on the child before the script under
+test starts. Without it a fresh `pwsh` on Windows writes redirected stdout in the console code
+page and **transliterates every non-ASCII character as it writes** — the em dash in a kit message
+arrives as a hyphen, and an expectation can only ever assert on the ASCII half of a line. Nothing
+reader-side recovers it. Phase 1 passed with the defect present because no phase 1 expectation
+happened to contain a non-ASCII character.
+
 ## What a case is
 
 ```text

@@ -87,7 +87,12 @@ function Invoke-FixtureCase {
         $scriptPath = Join-Path (Join-Path $KitRoot 'scripts') $command.script
         if (-not (Test-Path $scriptPath)) { throw "case $CaseDir names a script that does not exist: $($command.script)" }
 
-        $arguments = @('-NoProfile', '-NonInteractive', '-File', $scriptPath, '-Root', $repo)
+        # Through RunChild.ps1, never straight to the script: a fresh pwsh on Windows writes
+        # redirected stdout in the console code page and transliterates every non-ASCII
+        # character on the way out, so an em dash in a kit message would reach the expectation
+        # as a hyphen. The launcher sets UTF-8 inside the child before the script runs.
+        $launcher = Join-Path $PSScriptRoot 'RunChild.ps1'
+        $arguments = @('-NoProfile', '-NonInteractive', '-File', $launcher, $scriptPath, '-Root', $repo)
         if ($command.PSObject.Properties.Name -contains 'args' -and $command.args) {
             $arguments += @($command.args)
         }
