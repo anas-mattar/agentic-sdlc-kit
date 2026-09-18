@@ -422,6 +422,17 @@ recommendation rather than decided unilaterally.
 > <https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35376670445>, conclusion success,
 > commit `505f9f1` (phase 2) — approved, anas.m, 2026-09-19.
 
+> **Superseded. Gate 2 re-certified (ci-held)**: run
+> <https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35377283515>, conclusion success,
+> commit `8a0291b` (phase 2, T019a) — approved, anas.m, 2026-09-19.
+
+The first certification was taken too early, and the sequence is the lesson: the gate was
+certified on `505f9f1` while the review's two CONFIRM findings were still open, and deciding them
+grew the phase by two commits. **A phase is not finished for gating purposes while any finding of
+its own review is undecided**, even a non-blocking one — decide first, then certify. Both records
+are kept rather than the first being edited away, because what was certified when is exactly the
+kind of thing this feature exists to make unforgeable.
+
 `enforcement-tests` on the same sha
 (<https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35376670461>, conclusion success)
 is cited alongside it, as in phase 1 — the harness is not yet a `ritual-checks` member, so the
