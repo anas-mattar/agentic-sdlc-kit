@@ -104,6 +104,32 @@ Describe 'rule inventory integrity' {
         $stale.Count | Should -Be 0
     }
 
+    It 'every anchor names exactly the emission sites its rule declares' {
+        # T023 found two anchors written in T021 that also matched ReviewProvenance lines they
+        # have nothing to do with. Nothing was red: the coverage number simply counted those two
+        # sites as covered by Critical-evidence fixtures that never reach them. An anchor that
+        # matches a site its rule does not test is the inventory lying in the one direction D8
+        # exists to prevent — upward — so ambiguity is now a failure rather than a rounding error.
+        #
+        # A rule MAY own more than one site (SCOPE-001's Micro and Standard arms print the same
+        # sentence), but only by saying so in 'siteCount'. Declared, never inferred.
+        $ambiguous = @()
+        foreach ($rule in $script:Inventory.rules) {
+            $idiom = $script:Idioms.scripts | Where-Object { $_.script -eq $rule.script }
+            if (-not $idiom -or @($idiom.accumulators).Count -eq 0) { continue }   # idiom undeclared — T030..T034
+            $scan = $script:Scan[$rule.script]
+            if (-not $scan) { continue }
+            $expected = if ($rule.PSObject.Properties.Name -contains 'siteCount' -and $rule.siteCount) { [int]$rule.siteCount } else { 1 }
+            $hits = @($scan.Precise | Where-Object { $_.Text.Contains($rule.emitAnchor) })
+            if ($hits.Count -ne $expected) {
+                $where = ($hits | ForEach-Object { "$($_.Script):$($_.Line)" }) -join ', '
+                $ambiguous += "$($rule.id): anchor matches $($hits.Count) emission site(s) [$where], declared $expected"
+            }
+        }
+        if ($ambiguous.Count -gt 0) { throw ($ambiguous -join "`n") }
+        $ambiguous.Count | Should -Be 0
+    }
+
     It 'every inventoried rule has a passing and a failing case' {
         $incomplete = @()
         foreach ($rule in $script:Inventory.rules) {

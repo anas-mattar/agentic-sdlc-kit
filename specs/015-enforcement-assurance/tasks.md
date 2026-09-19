@@ -135,7 +135,7 @@ widen it, which needs both files.
 
 **Amendment approved by**: anas.m, 2026-09-19.
 
-- [ ] T020a Close the divergence phase 2 created: `Invoke-MicroLaneCheck` parses the Territory
+- [x] T020a Close the divergence phase 2 created: `Invoke-MicroLaneCheck` parses the Territory
       block with its own strict copy of the grammar, so a decorated marker leaves the Micro
       file cap, the duplicate check and the glob check all passing vacuously. Replace the copy
       with `Get-Territory -Global` from `scripts/scope-lib.ps1`. Demonstrate it failing first
@@ -143,19 +143,19 @@ widen it, which needs both files.
 
 - [x] T020 Inventory every rule in `Invoke-StructureCheck`, `Invoke-LiteAndAbuseCheck` and
       `Invoke-MicroLaneCheck`, then write both case directions for each.
-- [ ] T021 Inventory and cover `Invoke-CriticalEvidenceCheck`, including both arms — solo
+- [x] T021 Inventory and cover `Invoke-CriticalEvidenceCheck`, including both arms — solo
       substitute and team evidence — and the cooling-off boundary.
-- [ ] T022 Inventory and cover `Invoke-GateBatchingCheck` and `Invoke-GateCertificationCheck`.
-- [ ] T023 Inventory and cover `Invoke-ReviewProvenanceCheck` — the machine half of gate 5, and
+- [x] T022 Inventory and cover `Invoke-GateBatchingCheck` and `Invoke-GateCertificationCheck`.
+- [x] T023 Inventory and cover `Invoke-ReviewProvenanceCheck` — the machine half of gate 5, and
       the member GAP-027 showed going silent.
-- [ ] T024 Inventory and cover `Invoke-AmendmentAuthorityCheck`: creation versus amendment, the
+- [x] T024 Inventory and cover `Invoke-AmendmentAuthorityCheck`: creation versus amendment, the
       checkbox exemption, the status-line exemption, the renumbering exemption, a record hidden
       by an unterminated comment, and a record whose commit message does not name its approver.
 - [x] T025 [P] Inventory and cover `Invoke-PhaseSizeWarningCheck`.
-- [ ] T026 Cover the git-reality conditions feature 014 paid for in review rounds: a truncated
+- [x] T026 Cover the git-reality conditions feature 014 paid for in review rounds: a truncated
       object, an empty `merge-base`, a multi-parent commit, and a path affected by
       `core.quotepath` (D12).
-- [ ] T027 Run the coverage reporter and record in `notes.md` which enforcement-pack rules remain
+- [x] T027 Run the coverage reporter and record in `notes.md` which enforcement-pack rules remain
       uncovered and why.
 
 ---

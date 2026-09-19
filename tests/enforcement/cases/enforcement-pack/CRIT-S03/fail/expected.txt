@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - CriticalEvidence: specs/001-thing/second-model-review.md was recorded 23.5h ago — cooling-off requires 24h (1 h remaining, docs/sdlc/critical-delivery.md item 5)

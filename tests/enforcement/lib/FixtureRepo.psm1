@@ -28,6 +28,12 @@
         "truncateBlob": "specs/001-thing/plan.md"
       }
 
+    A commit may carry "hoursAgo": 25 to be dated that many hours before the moment the fixture
+    is built. RELATIVE, never absolute: the rules that read a date read an ELAPSED time (the
+    Critical cooling-off period), so an absolute date would be a fixture that passes today and
+    fails whenever someone runs it. Fractions are allowed — "hoursAgo": 23.5 sits inside a
+    24-hour window from either side of midnight.
+
     - "write" values are a string (used verbatim) or an array of lines (joined with LF).
     - "copy" values are paths relative to the case directory — for content too long to inline.
     - "branch" creates the branch from the current HEAD the first time it is named.
@@ -35,6 +41,18 @@
       how a depth-1 CI checkout with no reachable base is reproduced (GAP-027).
     - "truncateBlob" corrupts the object store copy of a committed file, which is the state that
       separates `cat-file -e` from `cat-file blob` (feature 014 phase 5).
+    - "uncommitted" writes files after the last commit and leaves them unstaged, which is the
+      state the "exists only in a working tree" rules refuse.
+    - "merge" makes the commit a MERGE of the named branch into this one, with two parents and
+      no content of its own. It is the one commit a recipe cannot describe with files, and the
+      rule that skips merge commits (a merge authored nothing) had no fixture without it.
+    - "uncommittedDelete" removes files from the working tree after the last commit without
+      staging the removal — the mirror of "uncommitted", and the state the fail-closed rules
+      refuse from the other side: the commit-to-commit diff still names the file, so a check
+      that reads the diff and then reads the file finds nothing to read.
+    - "hoursAgo" back-dates one commit's author AND committer date. Both, because which one a
+      rule reads is the rule's business and a fixture that set only the one today's rule happens
+      to read would quietly stop testing anything the day that changed.
 
     Fixture repositories carry their own git identity. The user's name, email, signing key and
     global configuration are never read or written.
@@ -98,6 +116,15 @@ function New-FixtureRepo {
             }
         }
 
+        # A merge has two parents and no content of its own, so it takes none of the write /
+        # delete / commit path below. D7 skips merge commits because a merge authored nothing;
+        # until this existed, no recipe could produce a second parent and that skip was untested.
+        if ($commit.PSObject.Properties.Name -contains 'merge' -and $commit.merge) {
+            $mergeMessage = if ($commit.PSObject.Properties.Name -contains 'message' -and $commit.message) { $commit.message } else { "merge $($commit.merge)" }
+            Invoke-FixtureGit -RepoPath $root -Arguments @('merge', '--quiet', '--no-ff', '--no-edit', '-m', $mergeMessage, $commit.merge) | Out-Null
+            continue
+        }
+
         if ($commit.PSObject.Properties.Name -contains 'write' -and $commit.write) {
             foreach ($prop in $commit.write.PSObject.Properties) {
                 Write-FixtureFile -RepoPath $root -RelativePath $prop.Name -Content $prop.Value
@@ -120,17 +147,61 @@ function New-FixtureRepo {
 
         Invoke-FixtureGit -RepoPath $root -Arguments @('add', '-A') | Out-Null
         $message = if ($commit.PSObject.Properties.Name -contains 'message' -and $commit.message) { $commit.message } else { 'fixture commit' }
-        Invoke-FixtureGit -RepoPath $root -Arguments @('commit', '--quiet', '--allow-empty', '-m', $message) | Out-Null
+
+        # Back-dating, for the rules that measure elapsed time rather than order. The value is
+        # RELATIVE to now and resolved here, at build time, so a cooling-off fixture cannot
+        # expire: "23 hours ago" means the same thing in every run, which an absolute date does
+        # not. git takes the author date as an argument and the committer date only from the
+        # environment, so both are set and the environment is restored whatever happens.
+        $commitArgs = @('commit', '--quiet', '--allow-empty', '-m', $message)
+        $previousCommitterDate = $env:GIT_COMMITTER_DATE
+        try {
+            if ($commit.PSObject.Properties.Name -contains 'hoursAgo' -and $null -ne $commit.hoursAgo) {
+                $when = [DateTimeOffset]::UtcNow.AddHours(-1 * [double]$commit.hoursAgo)
+                $stamp = $when.ToString('yyyy-MM-ddTHH:mm:sszzz')
+                $env:GIT_COMMITTER_DATE = $stamp
+                $commitArgs += @('--date', $stamp)
+            }
+            Invoke-FixtureGit -RepoPath $root -Arguments $commitArgs | Out-Null
+        } finally {
+            if ($null -eq $previousCommitterDate) { Remove-Item Env:GIT_COMMITTER_DATE -ErrorAction SilentlyContinue }
+            else { $env:GIT_COMMITTER_DATE = $previousCommitterDate }
+        }
     }
 
     if ($Recipe.PSObject.Properties.Name -contains 'checkout' -and $Recipe.checkout) {
         Invoke-FixtureGit -RepoPath $root -Arguments @('checkout', '--quiet', $Recipe.checkout) | Out-Null
     }
 
+    # Files written AFTER the last commit and deliberately left out of it. Two kit rules exist
+    # only to refuse this state — "evidence that exists only in a working tree is not evidence" —
+    # and until now no recipe could produce it, so both rules were unprovable by construction.
+    if ($Recipe.PSObject.Properties.Name -contains 'uncommitted' -and $Recipe.uncommitted) {
+        foreach ($prop in $Recipe.uncommitted.PSObject.Properties) {
+            Write-FixtureFile -RepoPath $root -RelativePath $prop.Name -Content $prop.Value
+        }
+    }
+
+    # The mirror state: a file that IS in the branch's commit-to-commit diff and is NOT on disk.
+    # Staging the removal would change the diff and destroy the condition, so this deletes from
+    # the working tree only.
+    if ($Recipe.PSObject.Properties.Name -contains 'uncommittedDelete' -and $Recipe.uncommittedDelete) {
+        foreach ($rel in @($Recipe.uncommittedDelete)) {
+            $target = Join-Path $root $rel
+            if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Force }
+        }
+    }
+
     if ($Recipe.PSObject.Properties.Name -contains 'truncateBlob' -and $Recipe.truncateBlob) {
         $sha = ((Invoke-FixtureGit -RepoPath $root -Arguments @('rev-parse', "HEAD:$($Recipe.truncateBlob)")) -join '').Trim()
         $objectPath = Join-Path $root (".git/objects/{0}/{1}" -f $sha.Substring(0, 2), $sha.Substring(2))
         if (Test-Path $objectPath) {
+            # git writes loose objects read-only, because nothing is ever meant to rewrite one.
+            # Without clearing the attribute first this throws UnauthorizedAccessException, which
+            # is how a capability that shipped with the harness turned out never to have run:
+            # 'truncateBlob' was documented from phase 1 and had no case until T026 used it.
+            $item = Get-Item -LiteralPath $objectPath -Force
+            $item.Attributes = $item.Attributes -band -bnot [IO.FileAttributes]::ReadOnly
             $bytes = [IO.File]::ReadAllBytes($objectPath)
             [IO.File]::WriteAllBytes($objectPath, $bytes[0..([Math]::Max(0, [int]($bytes.Length / 2)))])
         }

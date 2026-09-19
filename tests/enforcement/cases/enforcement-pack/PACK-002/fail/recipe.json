@@ -1,0 +1,21 @@
+{
+  "description": "A branch outside the taxonomy. 'feature/thing' is the name a newcomer reaches for, and it is precisely the name that dispatches to no lane — every scripted check is skipped, so the run must fail on the name rather than pass on the silence.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "feature/thing",
+      "message": "feat: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "feature/thing"
+}

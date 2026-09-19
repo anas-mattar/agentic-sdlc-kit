@@ -1,0 +1,21 @@
+{
+  "description": "The same tree on a branch the taxonomy knows. Differs only in the branch name — the condition under test (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "chore/thing",
+      "message": "chore: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "chore/thing"
+}

@@ -1,5 +1,5 @@
 {
-  "description": "Six territory entries - one past the lane's five-file cap.",
+  "description": "Six territory entries - one past the lane's five-file cap - under a DECORATED marker, the form an author writes when annotating why the block changed. Before T020a this reported nothing at all: Invoke-MicroLaneCheck carried its own strict copy of the marker grammar, so it counted zero markers and zero entries and the cap passed vacuously while scope-check, sharing the widened parser, enforced the same block.",
   "defaultBranch": "main",
   "commits": [
     {
@@ -24,7 +24,7 @@
           "",
           "Do the thing.",
           "",
-          "**Territory**:",
+          "**Territory** (widened by amendment 2026-01-02, approved by fixture):",
           "",
           "- `src/a1.ps1`",
           "- `src/a2.ps1`",

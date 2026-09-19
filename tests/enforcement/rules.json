@@ -24,7 +24,8 @@
       "summary": "a phase commit touches a file outside the phase's declared Territory",
       "law": "CLAUDE.md Workflow step 7; constitution VI (gate 4, the machine scope check)",
       "emitAnchor": "not in territory",
-      "notes": "Both directions of this recipe carry a DECORATED Territory marker - the GAP-026 demonstration. Get-Territory anchored on '**Territory**:' and read an annotated marker as no declaration, so the check WARNed and exited 0 having graded nothing."
+      "siteCount": 2,
+      "notes": "Two emission sites, declared: the Micro arm reads Territory from the mini-spec and the Standard arm reads it from tasks.md, and both print the same sentence. Declared rather than narrowed because it IS one rule - what differs is which document the territory came from, not what is refused. Both directions of this recipe carry a DECORATED Territory marker - the GAP-026 demonstration. Get-Territory anchored on '**Territory**:' and read an annotated marker as no declaration, so the check WARNed and exited 0 having graded nothing."
     },
     {
       "id": "SCOPE-002",
@@ -143,6 +144,276 @@
       "law": "constitution X (phase-size guideline: 400 lines / 15 files)",
       "emitAnchor": "exceeds the phase-size guideline",
       "notes": "The kit's only WARN rule: it does not change the exit code, and the pair proves that - both directions expect exit 0 and differ only in whether the warning line is printed. Phase 5 settles where WARN sits in the vocabulary (D4)."
+    },
+    {
+      "id": "MICRO-008",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a mini-spec's **Territory** line carries no colon because its annotation wraps",
+      "law": "constitution X, Micro lane; FR-014's intent — a decorated marker must not silently declare nothing",
+      "emitAnchor": "begins '**Territory**' but has no ':' on that line",
+      "notes": "The Micro half of T019a. Both graders now say the same thing about the same malformed line, because both now call the same parser."
+    },
+    {
+      "id": "MICRO-009",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "a Micro territory entry that escapes the repository is refused, not dropped",
+      "law": "constitution X, Micro lane (the five-file cap); FR-014",
+      "emitAnchor": "is not repo-relative — Micro territory entries must be repo-relative paths",
+      "notes": "Found in the phase 3 diff review, and introduced BY phase 3: T020a replaced the inline parser with Get-Territory, whose Invalid field the caller did not read, so an absolute or '..' entry stopped counting toward the cap and was reported by nobody - while scope-check.ps1 FAILed the same entry in the same block. Demonstrated failing first (D11): before the fix the fail recipe exited 0 printing 'enforcement-pack: OK'. A regression a task's own success criteria would not have caught, because T020a's criterion was 'the copy is gone'."
+    },
+    {
+      "id": "CRIT-S01",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalSoloEvidence",
+      "summary": "a Critical feature in solo mode carries no second-model review",
+      "law": "docs/sdlc/critical-delivery.md item 5; constitution X (Critical)",
+      "emitAnchor": "second-model-review.md is missing (required for Critical features",
+      "notes": "Solo mode is the default: no kit-adoption.json means no roster, and the substitute reviewer is the only evidence this lane accepts."
+    },
+    {
+      "id": "CRIT-S02",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalSoloEvidence",
+      "summary": "the second-model review exists only in the working tree, so no clock has started",
+      "law": "docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "has no git history — cannot verify the cooling-off period",
+      "notes": "The first rule the recipe's new 'uncommitted' support made provable; until then this state could not be built at all."
+    },
+    {
+      "id": "CRIT-S03",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalSoloEvidence",
+      "summary": "the second-model review is younger than the cooling-off period",
+      "law": "docs/sdlc/critical-delivery.md item 5 (CoolingOffHours = 24)",
+      "emitAnchor": "cooling-off requires",
+      "notes": "The pair sits either side of 24h by half an hour (23.5 / 24.5), using the recipe's new 'hoursAgo' back-dating. Relative, not absolute: an absolute date would make this fixture expire."
+    },
+    {
+      "id": "CRIT-T01",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "a Critical feature in team mode carries no human PR review",
+      "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md rule 4",
+      "emitAnchor": "requires the independent human review itself, not the solo substitute",
+      "notes": "Team mode is selected by two or more names in kit-adoption.json. The solo substitute does not satisfy it."
+    },
+    {
+      "id": "CRIT-T02",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the human PR review exists only in the working tree",
+      "law": "FR-006 (identities read from committed artifacts)",
+      "emitAnchor": "is not committed — evidence that exists only in a working tree is not evidence",
+      "notes": "The check reads the committed blob, not the file: copying the template in early and filling it locally at review time used to pass on content the branch does not carry (013 phase 4 re-review, N1)."
+    },
+    {
+      "id": "CRIT-T03",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the human PR review has no visible Review Provenance section",
+      "law": "specs/_templates/human-pr-review-template.md",
+      "emitAnchor": "has no visible '## Review Provenance' section",
+      "notes": "Visible means rendered: a section inside an HTML comment does not count, and an unterminated comment earlier in the file hides everything after it."
+    },
+    {
+      "id": "CRIT-T04",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the Review Provenance section leaves Reviewer or Owner unfilled",
+      "law": "docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "human-pr-review.md has no filled '**",
+      "notes": "Fires once per missing identity. Half a pair proves nothing, because the rule the evidence exists for is that the two are different people."
+    },
+    {
+      "id": "CRIT-T05",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "Reviewer or Owner is still the template's bracketed placeholder",
+      "law": "docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "as a template placeholder",
+      "notes": "A bare [bracketed] value only. '[Name](mailto:...)' is an ordinary markdown link and must not be read as a placeholder."
+    },
+    {
+      "id": "CRIT-T06",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the human reviewer of a Critical feature is also its owner",
+      "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md rule 4",
+      "emitAnchor": "as both reviewer and owner",
+      "notes": "The rule the entire team arm exists for. Compared case-insensitively."
+    },
+    {
+      "id": "CRIT-T07",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the Review Provenance section is missing the verbatim attestation sentence",
+      "law": "docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "human-pr-review.md is missing the verbatim attestation sentence",
+      "notes": "Matched inside the provenance slice, not the whole file: an attestation quoted in an unrelated comment used to satisfy it."
+    },
+    {
+      "id": "BATCH-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-GateBatchingCheck",
+      "summary": "the Gate Batching value is neither 'none' nor a span",
+      "law": "constitution X, Batched gates",
+      "emitAnchor": "must be 'none' or 'phases N-M'",
+      "notes": ""
+    },
+    {
+      "id": "BATCH-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-GateBatchingCheck",
+      "summary": "the declared batch span runs backwards",
+      "law": "constitution X, Batched gates",
+      "emitAnchor": "the span is reversed (N must not exceed M)",
+      "notes": ""
+    },
+    {
+      "id": "BATCH-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-GateBatchingCheck",
+      "summary": "the declared batch covers more phases than the cap allows",
+      "law": "constitution X, Batched gates (MaxBatchPhases = 3)",
+      "emitAnchor": "a batch covers at most",
+      "notes": "The pass case sits exactly AT three phases, pinning the comparison as '>' rather than '>='."
+    },
+    {
+      "id": "BATCH-004",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-GateBatchingCheck",
+      "summary": "a Critical feature declares a gate batch",
+      "law": "docs/sdlc/critical-delivery.md item 4",
+      "emitAnchor": "declares a gate batch on a Critical feature",
+      "notes": "Both directions carry a valid, cooled-off second-model review so the case reports this rule and nothing else."
+    },
+    {
+      "id": "CERT-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-GateCertificationCheck",
+      "summary": "the Gate Certification value is not one of the two legal values",
+      "law": "constitution X, CI-held certification",
+      "emitAnchor": "must be 'user-run' or 'ci-held'",
+      "notes": "On a Micro feature the declaration's home is the mini-spec rather than plan.md; that arm is covered in phase 4."
+    },
+    {
+      "id": "CERT-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-GateCertificationCheck",
+      "summary": "a Critical feature declares ci-held certification",
+      "law": "constitution X; docs/sdlc/critical-delivery.md item 4",
+      "emitAnchor": "on a Critical feature — Critical features MUST NOT use CI-held certification",
+      "notes": ""
+    },
+    {
+      "id": "AMEND-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCheck",
+      "summary": "a commit amends an approved feature document with no conforming approver record",
+      "law": "constitution I, Amendment authority (you never approve your own amendment)",
+      "emitAnchor": "after approval with no conforming approver record",
+      "notes": "Nine directions, because the rule is mostly made of what it does NOT fire on: 'fail' (no record), 'fail-hidden-record' (a correct record inside an unterminated HTML comment - H1), 'fail-placeholder' (an unfilled slot, which prints what it rejected - D6), 'fail-rename-content' (a contract renamed and reinterpreted in one commit - H3), and the four exemptions as passing cases: creation (D2), a ticked checkbox (D3c), Draft to Approved (D3d) and a renumbered feature directory (J3). Every fixture commits a stub scripts/enforcement-pack.ps1 defining this function, because the D2b boundary asks the parent tree whether the check existed - without it every commit reports as pre-boundary and the fixture grades nothing while printing green."
+    },
+    {
+      "id": "AMEND-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCheck",
+      "summary": "a conforming record names an approver the commit message does not",
+      "law": "constitution I, Amendment authority; plan D5 (half the record lives where a later edit cannot reach)",
+      "emitAnchor": "as the approver of its change to",
+      "notes": "The pass and fail cases carry the SAME record in the SAME file and differ only in the commit message, which is the point of D5: the document half can be written at any time, the message half only at commit time."
+    },
+    {
+      "id": "AMEND-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCheck",
+      "summary": "the boundary cannot be computed because the clone is shallow",
+      "law": "constitution I, Amendment authority; FR-011 (silence is not compliance)",
+      "emitAnchor": "this is a shallow clone, so the boundary",
+      "notes": "Asked of git directly ('rev-parse --is-shallow-repository') rather than inferred from the base, because a shallow clone can still resolve origin/main - a base that looks fine says nothing about whether the history behind it is present. Phase 4 review F1: this used to return bare, printing nothing and exiting 0, which is indistinguishable from a branch that is legitimately pre-boundary."
+    },
+    {
+      "id": "AMEND-004",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCheck",
+      "summary": "there is no integration branch to compute a range against",
+      "law": "constitution I, Amendment authority; FR-011",
+      "emitAnchor": "no integration branch to diff against. Either neither",
+      "notes": "One site, two causes - no ref resolves, or one resolves and shares no commit with HEAD - and the message says it does not distinguish them rather than naming a cause it did not test. The fixture builds the first; the second needs unrelated histories and is the same emission."
+    },
+    {
+      "id": "AMEND-005",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCheck",
+      "summary": "a commit's parent cannot be read, so whether it predates the check is unknown",
+      "law": "constitution I, Amendment authority; T080 (absence must be proven, not inferred)",
+      "emitAnchor": "is not readable in this clone, so whether it predates the check is unknown",
+      "notes": "Built with 'truncateBlob': an object that is in the store and cannot be inflated. This is the damage mode review G1 measured - 'cat-file -e' and 'cat-file -s' both report it fine, and only reading the body fails where a reader fails. Unknown reported as 'predates the check' is a wrong reason printed green."
+    },
+    {
+      "id": "PACK-001",
+      "script": "enforcement-pack.ps1",
+      "function": "(dispatch)",
+      "summary": "a run with no computable base says that nothing was compared",
+      "law": "FR-009 (the Lite lane must not newly fail on a null base) and FR-011; GAP-027",
+      "emitAnchor": "was compared — each check that reads the diff either graded an empty file list",
+      "notes": "GAP-027's own line. Both directions exit 0 - what differs is whether the run admits it compared nothing - so the fail direction is the shape the roadmap describes: a fix/ branch on a baseless clone, green, having graded nothing. Phase 5 (T039-T041) gives this an UNGRADED verdict state; when it rewords this line the stale-anchor assertion will say so, which is the point of inventorying it now rather than after."
+    },
+    {
+      "id": "PACK-002",
+      "script": "enforcement-pack.ps1",
+      "function": "(dispatch)",
+      "summary": "a branch whose name matches no lane is failed on the name, not passed on the silence",
+      "law": "docs/sdlc/branch-strategy.md (the branch taxonomy); FR-011",
+      "emitAnchor": "does not match a known taxonomy (NNN-*, fix/*, chore/*, docs/*)",
+      "notes": "The last arm of the dispatch chain, and the one that decides what an unrecognised name means. 'feature/thing' reaches no lane at all, so every scripted check is skipped: without this rule the run would be indistinguishable from a clean one. Pass and fail differ only in the branch name (plan D10) - 'chore/thing' over the identical tree."
+    },
+    {
+      "id": "PROV-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewProvenanceCheck",
+      "summary": "a review file is in the branch diff but absent from the working tree",
+      "law": "DoD gate 5; constitution VI - provenance that cannot be read has not been verified",
+      "emitAnchor": "is in the branch diff but missing from the working tree",
+      "notes": "The fail-closed arm. Built with the recipe's 'uncommittedDelete', added here: the commit-to-commit diff still names the file while the working tree does not have it, and no recipe could produce that state before. An open-coded 'continue' with no failure would have read as green on exactly the branch that deleted its own evidence."
+    },
+    {
+      "id": "PROV-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewProvenanceCheck",
+      "summary": "an AI review added on the branch has no Reviewer Provenance section",
+      "law": "DoD gate 5 (the review must be produced by a fresh-context agent or second model, and say so)",
+      "emitAnchor": "has no '## Reviewer Provenance' section",
+      "notes": "Only files ADDED or RENAMED-TO in the branch diff are graded, so reviews predating the verification pack stay grandfathered - the pass direction of every rule here also holds that filter in place."
+    },
+    {
+      "id": "PROV-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewProvenanceCheck",
+      "summary": "the Reviewer Provenance section carries no filled **Reviewer** line",
+      "law": "DoD gate 5",
+      "emitAnchor": "has no filled '**Reviewer**:' line inside its Reviewer Provenance section",
+      "notes": "Both directions carry a FILLED '**Reviewer**:' line in the document header, which is the phase 2 review's F1: the header must never shadow the block. The fail case is green to a reader skimming the top of the document and red to the check, which is the whole point of slicing the section out first."
+    },
+    {
+      "id": "PROV-004",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewProvenanceCheck",
+      "summary": "the reviewer is the implementer, or is still a template placeholder",
+      "law": "DoD gate 5 (the implementing agent must not review its own diff); constitution VI",
+      "emitAnchor": "the implementing agent must not review its own diff",
+      "notes": "One emission site, two conditions, so it carries a third direction: 'fail' is the unfilled bracketed placeholder and 'fail-implementer' is the self-review the law is actually about. A pass/fail pair alone would have covered the site while leaving the condition that matters untested."
+    },
+    {
+      "id": "PROV-005",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewProvenanceCheck",
+      "summary": "the verbatim attestation sentence is absent",
+      "law": "DoD gate 5; specs/_templates/ai-code-review-template.md",
+      "emitAnchor": "ReviewProvenance: $file is missing the verbatim attestation sentence",
+      "notes": "The fail case PARAPHRASES the sentence rather than deleting it - 'did not write the code under review'. A deletion would pass this fixture for the wrong reason: it is the near-miss that tests whether the match is verbatim."
     },
     {
       "id": "STRUCT-001",

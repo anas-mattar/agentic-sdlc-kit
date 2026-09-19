@@ -1,0 +1,3 @@
+enforcement-pack: branch 'feature/thing', diff base '<SHA>', 1 changed file(s)
+enforcement-pack: FAIL (1 issue(s)):
+  - Branch naming: 'feature/thing' does not match a known taxonomy (NNN-*, fix/*, chore/*, docs/*) — see docs/sdlc/branch-strategy.md

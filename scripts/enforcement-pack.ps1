@@ -101,6 +101,12 @@ $ErrorActionPreference = 'Stop'
 try { [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new() } catch {}
 $Root = (Resolve-Path $Root).Path
 . (Join-Path $PSScriptRoot 'adoption-lib.ps1')
+# Territory parsing comes from the same file scope-check.ps1 uses (feature 015, T020a).
+# It used to be a copy here, and phase 2 widened one and not the other: a decorated marker
+# left the Micro file cap, the duplicate check and the glob check all passing vacuously
+# while scope-check enforced the very same block. Nothing in this file may parse that
+# marker again.
+. (Join-Path $PSScriptRoot 'scope-lib.ps1')
 Push-Location $Root
 try {
 
@@ -505,22 +511,36 @@ function Invoke-MicroLaneCheck {
         $script:failures += "MicroLane: $dir/spec.md declares '**Gate Batching**' — a Micro feature is exactly one phase; there is nothing to batch (constitution X, Micro lane); delete the line, or $promote"
     }
 
-    # Territory cap (M5). Same block grammar scope-check parses; entries must be literal
-    # file paths — one glob or subtree entry would defeat the file cap outright.
-    $tEntries = @()
-    $tMarkers = 0
-    $collecting = $false; $started = $false
-    foreach ($line in (Get-VisiblePlanLines -PlanPath $specPath)) {
-        if ($line -match '^\*\*Territory\*\*:') { $tMarkers++; $collecting = $true; $started = $false; continue }
-        if (-not $collecting) { continue }
-        if ($line -match '^\s*$') { if ($started) { $collecting = $false }; continue }
-        if ($line -match '^\s*[-*]\s+`([^`]+)`\s*$') { $started = $true; $tEntries += $matches[1].Trim(); continue }
-        $collecting = $false
+    # Territory cap (M5). The block is parsed by scope-lib's Get-Territory — the SAME function
+    # scope-check.ps1 uses — because this was a copy of that grammar until T020a, and a copy of a
+    # parser is a parser that drifts: phase 2 widened the original to accept a decorated marker
+    # and left this one strict, so a Micro spec could break the file cap while reporting OK.
+    # Entries must still be literal file paths; one glob or subtree entry defeats the cap outright.
+    $territory = Get-Territory -TasksLines (Get-VisiblePlanLines -PlanPath $specPath) -Global
+    $tEntries = @($territory.Entries)
+    $tMarkers = $territory.MarkerCount
+    if ($territory.NearMiss.Count -gt 0) {
+        # A line that starts like a declaration and breaks the grammar FAILs rather than vanishing
+        # (feature 015, T019a in scope-check and T020a here — the two graders say the same thing
+        # about the same malformed line).
+        foreach ($nm in $territory.NearMiss) {
+            $script:failures += "MicroLane: $dir/spec.md line $nm begins '**Territory**' but has no ':' on that line — an annotation that wraps declares nothing the parser can see; keep the marker and its colon on one line"
+        }
     }
     if ($tMarkers -gt 1) {
         # scope-check FAILs duplicates too — kept aligned so the two scripts never diverge
-        # on the same spec (phase 2 review, F7).
+        # on the same spec (phase 2 review, F7). They now share the parser, so they cannot.
         $script:failures += "MicroLane: $dir/spec.md carries $tMarkers **Territory** markers — a Micro feature declares exactly one feature-global block; merge them, or $promote"
+    }
+    foreach ($bad in @($territory.Invalid)) {
+        # Get-Territory routes an absolute or '..' entry to Invalid, NOT to Entries. Sharing the
+        # parser in T020a therefore did something the task did not intend: an escaping entry
+        # stopped counting toward the file cap and was reported by nobody, while scope-check.ps1
+        # — the same function, the same block — FAILs it. That is the divergence T020a exists to
+        # remove, reappearing one field over, so the caller reads the field rather than the task
+        # being called done. Reporting is enough: no spec carrying one can reach the cap check
+        # green, so the under-count cannot be spent.
+        $script:failures += "MicroLane: territory entry '$bad' in $dir/spec.md is not repo-relative — Micro territory entries must be repo-relative paths with no '..'; scope-check.ps1 FAILs the same entry in the same block; fix the entry, or $promote"
     }
     if ($tEntries.Count -gt $Config.MicroTerritoryMaxFiles) {
         $script:failures += "MicroLane: $dir/spec.md declares $($tEntries.Count) territory entries — a Micro feature's Territory covers at most $($Config.MicroTerritoryMaxFiles) files (constitution X, Micro lane); shrink the territory, or $promote"

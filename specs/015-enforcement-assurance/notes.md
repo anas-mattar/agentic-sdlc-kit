@@ -529,3 +529,404 @@ Runtime is now roughly two minutes locally, since every case builds a real git r
 git-reality cases will add more. If it becomes a problem the answer is parallel Pester containers,
 not fewer fixtures — but it is not a problem yet, and this note exists so the first person to feel
 it knows it was seen.
+
+### T020a: the divergence phase 2 created, closed by deleting the copy
+
+**This one is mine, and it was reported to the owner as absent before it was found.** Asked by the
+phase 2 review to check for a second parser of the Territory marker, I ran a grep whose pattern
+(`Territory\*\*`) could not match the escaped regex as it appears in the source, and reported that
+`scope-lib.ps1` was the only parser. A search that cannot find a positive proves nothing when it
+finds nothing. The correct result:
+
+```text
+enforcement-pack.ps1:514   '^\*\*Territory\*\*:'        strict, unchanged
+scope-lib.ps1:96           '^\*\*Territory\*\*[^:]*:'   widened in phase 2
+```
+
+Before phase 2 both were blind and therefore agreed. My GAP-026 fix widened one and left the copy
+strict, on the one lane whose entire meaning is its bounds.
+
+Demonstrated first (D11) by moving `MICRO-004` onto a decorated marker in **both** directions — the
+pair still differs only in the entry count, so D10 holds — and measuring what the check says about
+a mini-spec declaring six files where five is the cap:
+
+```text
+case      : tests/enforcement/cases/enforcement-pack/MICRO-004/fail
+exit code : expected 1, observed 0
+  expected: enforcement-pack: FAIL (1 issue(s)):
+  observed: enforcement-pack: OK
+```
+
+The cap, the duplicate check and the glob check all passed vacuously while `scope-check`, sharing
+the widened parser, enforced the very same block.
+
+**Fixed by deleting the copy rather than widening it.** `Invoke-MicroLaneCheck` now calls
+`Get-Territory -Global` from `scope-lib.ps1`, and nothing in `enforcement-pack.ps1` parses that
+marker any more. Widening the copy would have restored agreement today and left two parsers to
+diverge again at the next change; the comment on the old line had promised alignment and could not
+deliver it, because a promise in a comment is not a mechanism.
+
+`Get-Territory` gained `MarkerCount` rather than making do with `Duplicate`, because the Micro
+message names the number. **A caller forced to soften its wording in order to reuse a shared
+parser is a caller that will keep its own copy instead** — which is the defect being fixed, so the
+shared function was made to fit the caller rather than the other way round.
+
+`MICRO-008` carries the Micro half of T019a: both graders now say the same thing about the same
+wrapped, colon-less marker line, because both now ask the same function.
+
+One behaviour arrives with the shared parser that the copy did not have: an entry that is absolute
+or contains `..` now lands in `Invalid` instead of `Entries`, so it no longer counts toward the
+five-file cap. No rule reports it on this lane. It is not a regression — such an entry was always
+illegal — but it is a gap in the Micro lane's reporting that phase 4 should either cover or
+deliberately leave, and it is written here so the choice is made rather than inherited.
+
+### T021: Critical evidence, both arms — and two harness gaps that had made these rules unprovable
+
+Ten rules: `CRIT-S01..03` on the solo arm (the default — no `kit-adoption.json` means no roster)
+and `CRIT-T01..07` on the team arm, selected by two names in the roster. All 20 cases green.
+
+**The harness could not build the states these rules refuse.** Two of them were unprovable by
+construction, which is worth saying plainly: a rule nobody can write a fixture for is a rule
+nobody has ever tested, and it had been sitting in the kit since feature 013.
+
+- **`hoursAgo`** back-dates a commit's author *and* committer date. The cooling-off rule measures
+  elapsed time, so before this the only testable value was "0 hours ago" — the boundary itself was
+  unreachable. `CRIT-S03` now sits either side of it at **23.5h (fails) and 24.5h (passes)**.
+  Relative and resolved at build time, never absolute: an absolute date is a fixture that passes
+  today and fails on some later Tuesday. Both dates are set, because which one a rule reads is the
+  rule's business, and a fixture that set only the one today's rule happens to read would quietly
+  stop testing anything the day that changed.
+- **`uncommitted`** writes files after the last commit and leaves them unstaged. Two kit rules
+  exist only to refuse that state — *evidence that exists only in a working tree is not evidence* —
+  and no recipe could produce it. `CRIT-S02` and `CRIT-T02` are the first fixtures either has had.
+
+**Every Critical case was wrong on the first run, in the same way, and the mistake was mine.** I
+predicted the `AmendmentAuthority` commit count as the recipe's total. It grades `base..HEAD`, and
+the merge base with `main` **is** the init commit, so it sees one fewer. Twenty expectations
+corrected; the script was right every time. Worth recording because it is the failure mode
+FR-006 is written against, arriving from the other direction: not a tool computing its own
+evidence, but a human mis-modelling what the tool measures. The pass/fail pairs caught it
+instantly because both directions carry the same frame.
+
+The team arm's `CRIT-T02` is the one to keep an eye on in review: it proves the check reads the
+**committed blob** rather than the working-tree file, which is the hole feature 013's phase 4
+re-review found (copy the template in early, fill it locally at review time, never commit, pass).
+
+### T022: gate batching and gate certification
+
+Six rules: `BATCH-001..004` (unparseable value, reversed span, span past the cap, a batch declared
+on a Critical feature) and `CERT-001..002` (an illegal certification value, `ci-held` declared on a
+Critical feature).
+
+`BATCH-003`'s pass case sits at exactly three phases and its fail case at four, so the cap joins
+the other four boundaries a fixture now holds rather than a comment.
+
+**Both Critical cases carry a valid, cooled-off second-model review in _both_ directions.** Without
+it the Critical evidence check fires as well, and the case would be exercising two rules while
+claiming to exercise one — a fixture that fails for the right reason by accident is not evidence
+that the rule under test works. This is the practical cost of D10's "differ only in the condition
+under test": the *rest* of the recipe has to be legal, and making it legal is where the reading
+happens.
+
+`CERT-001` covers the Standard arm, where the declaration lives in `plan.md`. On a Micro feature
+its home is the mini-spec instead — the lane has no `plan.md` — and that arm is phase 4's.
+
+### T023: review provenance — and an anchor that was counting the wrong lines
+
+Five rules, `PROV-001..005`, over `Invoke-ReviewProvenanceCheck`: the machine half of gate 5.
+Eleven cases, because `PROV-004` carries a third direction (below). Every expectation was right on
+the first run.
+
+Three of the five are worth naming for what the fixture pins rather than for the rule:
+
+- **`PROV-003` holds the phase 2 review's F1 in place.** The template puts a `**Reviewer**:` field
+  in the document header *and* one inside the provenance block, and the check slices the block out
+  before reading, so the header cannot answer for it. Both directions of this case carry a
+  **filled** header line; only the block's line differs. The fail case therefore looks answered to
+  anyone skimming the top of the document and is refused by the check — which is the entire reason
+  the slice exists, and it is now a fixture rather than a comment above the regex.
+- **`PROV-004` is one emission site with two conditions**, so it has `pass`, `fail` and
+  `fail-implementer`. `fail` is the bracketed template placeholder; `fail-implementer` is the
+  implementing session named as its own reviewer — the condition gate 5 is actually about. A
+  pass/fail pair alone would have covered the site while leaving the law untested, which is the
+  coverage denominator being satisfied instead of the reader.
+- **`PROV-005` paraphrases the attestation rather than deleting it** — "did not write the code
+  under review" for "did not produce the diff under review." Deleting the sentence tests that
+  something is checked; paraphrasing tests that the match is *verbatim*, which is the only thing
+  the rule says.
+
+**A harness gap, the mirror of T021's.** `uncommittedDelete` removes a file from the working tree
+after the last commit without staging the removal. The commit-to-commit diff still names the file
+and the disk does not have it, which is precisely the state `PROV-001`'s fail-closed branch exists
+to refuse — and no recipe could build it, so that branch had never run. It is the mirror of
+`uncommitted` from T021: one rule family refuses evidence that exists *only* in a working tree, the
+other refuses evidence that has *left* one.
+
+**The finding that mattered here was in the inventory, not in the script.** Two anchors written in
+T021 were substrings of ReviewProvenance lines they have nothing to do with:
+
+| Rule | Anchor as written | Also matched |
+|---|---|---|
+| `CRIT-T04` | `has no filled '**` | the `ReviewProvenance` line at `enforcement-pack.ps1:619` |
+| `CRIT-T07` | `is missing the verbatim attestation sentence` | the same rule's line at `:624` |
+
+Nothing was red. The coverage report simply counted those two provenance sites as **already
+covered** — by Critical-evidence fixtures that never reach them. That is the inventory lying
+*upward*, which is the one direction D8 exists to prevent: an honest zero gets fixed, an inflated
+number gets believed. It also explains an arithmetic that looked wrong and was: adding five rules
+moved the enforcement-pack count by three.
+
+Both anchors now name their own document (`human-pr-review.md …`), and the ambiguity is closed by
+assertion rather than by care — `Coverage.Tests.ps1` now fails when an anchor matches a number of
+emission sites other than the number its rule declares. A rule may legitimately own more than one
+site: `SCOPE-001`'s Micro arm and Standard arm print the same sentence from two places, because it
+is one rule differing only in which document the territory came from. That is now written down as
+`"siteCount": 2` — **declared, never inferred**, so the next duplicate has to be argued for rather
+than absorbed.
+
+**What T023 deliberately does not cover.** `Invoke-ReviewProvenanceCheck` opens with
+`if (-not $Base) { return }`, and that silent return is the member GAP-027 named: on a depth-1
+clone a review file with no provenance block passes green. Covering it needs the `UNGRADED` state
+that does not exist yet, so the fixture belongs to T037 with the rest of phase 5 — recorded here so
+the omission is a decision and not an oversight.
+
+### T024: amendment authority — twelve cases, and a fixture that was green without testing anything
+
+Two rules, `AMEND-001` (a document amended after approval with no conforming record) and
+`AMEND-002` (a record whose commit message does not name its approver), across twelve cases.
+`AMEND-001` carries ten directions, because this rule is mostly made of what it does **not** fire
+on: four failing conditions and five exemptions, each of which is a decision feature 014 paid for
+in a review round and none of which had a fixture until now.
+
+| Direction | What it holds |
+|---|---|
+| `fail` | the plain case: an approved plan rewritten, nobody named |
+| `fail-hidden-record` | a correct record inside an unterminated HTML comment (H1) |
+| `fail-placeholder` | an unfilled `{{APPROVER}}` slot — the failure names what it rejected (D6) |
+| `fail-rename-content` | a contract renamed and reinterpreted in one commit (H3) |
+| `pass` | the same edit with a record and a message that names its approver |
+| `pass-creation` | a document's first appearance (D2) |
+| `pass-checkbox` | a task ticked off (D3c) |
+| `pass-status` | Draft → Approved, the act that starts the rule (D3d) |
+| `pass-renumber` | the whole feature directory moved by a lost claim race (J3) |
+| `pass-rename-identical` | the same move within the directory, content intact (J3, other side) |
+
+**Every fixture commits a stub `scripts/enforcement-pack.ps1`.** The D2b boundary asks a commit's
+parent tree one question — does its copy of that path define `Invoke-AmendmentAuthorityCheck`? —
+so a fixture without it has every commit report as pre-boundary. That is a fixture which grades
+nothing while printing green, and it is the reason each expectation here asserts
+`graded 1 of 2 commit(s)`: the count line is what distinguishes an exemption that was **evaluated**
+from a commit that was never looked at. Five of these twelve cases are passing cases, and without
+that line all five would be indistinguishable from a broken fixture.
+
+**`pass-renumber` was green and testing nothing, and the fixture had to be read to find out.** The
+first version built the pre-rename `spec.md` already carrying the new branch number, so git
+reported `R100` on all three documents and the *blob-identity* shortcut exempted the move. The
+feature-directory rule J3 exists for — a renumbered branch whose `spec.md` also gained the header
+edit `claim-feature.ps1` mandates, which makes the move `R084` and not `R100` — was never reached.
+Corrected, and confirmed by reading `git log --name-status` inside the kept fixture rather than by
+trusting the green: `R084` on `spec.md`, `R100` on the other two.
+
+That is the same species as T023's anchor finding and worth naming as a pattern, because it is the
+failure mode this whole harness is exposed to: **a passing fixture proves the run was green, not
+that the branch under test ran.** Two habits catch it, and both are now in use — assert the
+graded-count line so an unevaluated commit cannot masquerade as an exempt one, and pair every
+exemption with a failing case that differs only in the exempt condition. `fail-rename-content`
+pins rename detection itself: were the move read as an add, the check would exempt it and that
+case would go green for the wrong reason.
+
+**What T024 leaves.** Four `AmendmentAuthority` emission sites remain uncovered — the shallow
+clone, the absent base, unparseable commit metadata and an unreadable parent. All four are the
+git-reality conditions of **T026**, which is where their fixtures belong. One arm of `AMEND-001`
+is deliberately left out and not deferred: a record dated later than its own commit. Reaching it
+needs a commit back-dated by a year, and the message then prints that commit's own date, which
+makes the expectation a hand-written file that changes every day — the one shape a fixture must
+never have (T021). The placeholder arm covers the same `Malformed` path.
+
+### T026: the git-reality conditions, and a harness capability that had never run
+
+Feature 014 spent nine review rounds on states that only a real repository can be in. Four of
+them now have fixtures, and the last one turns out to be unreachable.
+
+| Rule | State | Built with |
+|---|---|---|
+| `AMEND-003` | a depth-1 clone — the ordinary `actions/checkout` shape | `shallow: 1` |
+| `AMEND-004` | no integration branch, so no range to walk | a repository with no `main` |
+| `AMEND-005` | a parent whose blob is in the store and cannot be inflated | `truncateBlob` |
+| `PACK-001` | a run with no base, reporting that nothing was compared | no `main`, on a `fix/` branch |
+
+Plus three cases on rules that already existed: `AMEND-001/pass-merge` (a multi-parent commit,
+D7), and `AMEND-001/fail-nonascii` and `PROV-002/fail-nonascii` — the same `core.quotepath`
+problem read by two different graders. Both non-ASCII cases are **failing** directions on purpose:
+without `-c core.quotepath=off` the path arrives octal-escaped and quoted, fails the directory or
+filename filter, and the document is never graded at all. A passing case there would be
+indistinguishable from not looking.
+
+Every one of the three `cannot grade` rules is paired with a passing direction that carries the
+**same unapproved amendment**. That is deliberate: the interesting claim is not that the check
+declines on a broken clone, it is that declining is the only thing standing between it and a
+verdict — so the pass direction shows it reaching that verdict.
+
+**`truncateBlob` had never run.** It was documented in the recipe shape from phase 1, and the
+first case to use it died with `UnauthorizedAccessException`: git writes loose objects read-only,
+because nothing is ever meant to rewrite one. A capability nobody had exercised was a capability
+that did not work — which is the argument for this whole feature, arriving from inside the harness
+rather than from the kit. Fixed by clearing the attribute first.
+
+**`merge` is new.** A merge has two parents and no content of its own, so it is the one commit a
+recipe could not describe with files, and D7's "a merge authored nothing" skip had no fixture.
+
+**The merge fixture was flaky, and the flake is worth keeping in the record.** It failed two runs
+in four, alternating between `graded 1 of 3` and `graded 2 of 3`. The cause is not the harness:
+`rev-list --reverse` orders by commit date, the two sides of the merge were committed inside the
+same second, and the tie let the walk reach the post-boundary commit first. The boundary flag is
+**sticky** — once a commit is graded, later ones skip the boundary test — so reaching the branch
+in the other order grades the pre-boundary commit as well.
+
+Two things follow. The fixture now dates its sides three and two hours ago, which pins the walk
+order; six consecutive runs agree. And the behaviour itself is worth a reviewer's eye: on a real
+branch whose commits share a second, the D2b boundary can leak by one commit. It leaks in the
+**fail-closed** direction — the sticky flag only ever turns grading on, so the check can grade
+more than it must and never less — but a commit made before the check existed is one nobody could
+have complied with, so what it costs is a false positive rather than a miss. Not fixed here: it is
+the check's semantics, not this phase's territory, and it is recorded so the decision is made
+rather than inherited.
+
+**One emission site is left uncovered on purpose.** `AmendmentAuthority: could not parse commit
+metadata` is B1's guard — the assertion that a commit `rev-list` names but the metadata batch did
+not parse is a parse failure rather than a commit to skip. It is unreachable by construction now
+that the fix it guards is in place: git refuses a NUL in a commit message, records are split on
+NUL, and the field order caps the split at five so an injected separator can only truncate the two
+message-derived fields. No state a repository can be in produces a short record. It stays in the
+count as uncovered, which T027 records and T045 is where a site may formally opt out with its
+reason — inventing a fixture that faked it would be worse than the honest gap.
+
+### T027: the coverage reading, and what a coverage number structurally cannot see
+
+The reporter at the end of phase 3:
+
+```text
+coverage: 48 of 93 declared failure-emission site(s) inventoried across 9 grading script(s)
+coverage: build-digests.ps1        1 of 10 site(s) inventoried, 7 unclassified candidate(s)
+coverage: doc-lint.ps1             0 of 8 site(s) inventoried
+coverage: enforcement-pack.ps1     43 of 44 site(s) inventoried, 1 unclassified candidate(s)
+coverage: ritual-checks.ps1        IDIOM UNDECLARED — 1 unclassified candidate line(s)
+coverage: roadmap-claim-check.ps1  0 of 2 site(s) inventoried, 1 unclassified candidate(s)
+coverage: scope-check-repos.ps1    IDIOM UNDECLARED — 12 unclassified candidate line(s)
+coverage: scope-check.ps1          4 of 13 site(s) inventoried, 2 unclassified candidate(s)
+coverage: territory-check.ps1      IDIOM UNDECLARED — 4 unclassified candidate line(s)
+coverage: verify-kit.ps1           0 of 16 site(s) inventoried, 4 unclassified candidate(s)
+coverage: 32 unclassified candidate line(s) in total
+```
+
+47 rules, 106 cases. (Superseded by the diff review below, which found a regression and added a
+rule: the phase closes at **48 rules, 108 cases, `enforcement-pack.ps1` 44 of 45**. The reading
+above is left as it stood, because it is the reading T027 actually took.)
+
+Phase 3 owns `enforcement-pack.ps1`; the 45 sites outstanding in the other
+eight scripts are phases 4's tasks T028–T035, and T036 is where their full list is recorded.
+
+**One site was uncovered for no reason at all, so it is covered instead of excused.** The
+branch-naming arm at `enforcement-pack.ps1:1216` — `Branch naming: '<branch>' does not match a
+known taxonomy` — had no rule because nobody had written one, and "uncovered because nobody wrote
+it" is a task doing its own paperwork rather than its job. It is now **PACK-002**, with the
+dispatch chain's own shape as its argument: a branch named `feature/thing` reaches no lane, so
+every scripted check is skipped and the run is otherwise indistinguishable from a clean one. The
+pass direction is `chore/thing` over a byte-identical tree, so the two differ only in the branch
+name (D10).
+
+**One site stays uncovered, deliberately.** `AmendmentAuthority: could not parse commit metadata`
+at `:1056` — B1's guard — is unreachable by construction, for the reasons set out in the T026
+section above. It remains in the denominator as an honest gap. T045 is where a site may opt out
+with a written reason; until that exists, faking a fixture for it would be worse than the gap.
+
+**The one UNCLASSIFIED line in this script is a false positive, and stays one.** `:1221` is
+`enforcement-pack: FAIL (N issue(s)):` — the header that prints the count, not a rule that can
+fail. The recall sweep is built to over-report rather than miss, so a header matching
+`Write-Host "...FAIL..."` is the sweep working. Resolving it means writing down which of the two
+it is, not silencing it.
+
+**What 43 of 44 does not mean, and this is the part for the review.** The denominator is built
+from emission lines: the scanner counts the ways a script can *speak*. Every check that returns
+without grading says nothing, so no scan can see it. In this script that is at least
+`Invoke-MicroLaneCheck:551`, `Invoke-ReviewProvenanceCheck:585` and
+`Invoke-PhaseSizeWarningCheck:633` — three `if (-not $Base) { return }` returns — alongside the
+level and lane guards that legitimately skip. So the reading is "43 of the 44 ways this script can
+speak", never "43 of the 44 ways it can be wrong". A coverage figure that measures emissions is
+structurally blind to silence, and silence is precisely GAP-027.
+
+Two consequences, both worth stating before phase 5 rather than during it. The measure must not be
+read as completeness — that is why D9 keeps it reporting-only until T044, and why the unclassified
+count is the number to watch. And when T039 turns those silent returns into `UNGRADED` emissions,
+they enter the denominator and **this percentage will fall**. That fall is the instrument getting
+better, not the coverage getting worse; recorded here so phase 5's review reads it that way.
+
+**A timing measurement, and a first figure against SC-007.** The phase's verifying run reported
+`Tests completed in 479.24s` for 231 assertions over 108 cases, on an otherwise quiet machine.
+An earlier run had read 3202.8s, but two other harness runs were competing for the machine
+throughout it; that number is discarded rather than averaged, because a contended measurement is
+not a slow one, it is not a measurement.
+
+So: roughly 480s against `ritual-checks`'s measured 82.2s / 80.0s — call it six times the current
+local gate, or about 4.4s per case, which is what forking a child `pwsh` and building a real git
+repository costs. That is the honest number for a developer deciding whether to run the harness
+before pushing, and it is offered as phase 3's data point rather than as SC-007 discharged: T047
+owns the criterion, and the figure will move as phases 4 and 5 roughly double the case count.
+The decision it sets up, which phase 6 should not inherit unexamined, is whether CI runs the full
+suite on every push or only the cases a change touches.
+
+### The phase 3 diff review: a regression this phase introduced, caught by reading the diff
+
+Reviewing the working diff for intent before committing — CLAUDE.md step 6 — turned up a defect
+in T020a, and it is the most useful thing in this phase's record.
+
+`Get-Territory` sorts a territory entry into one of two fields: `Entries` for a repo-relative
+path, `Invalid` for one that is absolute or contains `..`. The inline parser T020a deleted had no
+such split — it collected every backtick-wrapped item into one list. So replacing the copy with
+the shared function silently moved escaping entries out of the caller's view: after T020a,
+`- ``../outside/a3.ps1``` in a Micro spec no longer counted toward the five-file cap and was
+reported by **nobody**, while `scope-check.ps1` — the same function, the same block — still
+FAILed it.
+
+That is precisely the divergence T020a was written to remove, reappearing one field over. The task
+was satisfied (the copy is gone) and the check was worse.
+
+Demonstrated failing first, as D11 requires. Before the fix, `MICRO-009/fail` — a Micro spec whose
+Territory escapes the repository — exited 0 and printed:
+
+```text
+enforcement-pack: branch '001-thing', diff base '<SHA>', 2 changed file(s)
+enforcement-pack: OK
+```
+
+The fix reads the field the shared parser fills. Reporting is enough without also counting the
+entry against the cap: no spec carrying an invalid entry can reach the cap check green, so the
+under-count cannot be spent. The rule is **MICRO-009**; pass and fail differ only in whether the
+third entry escapes (D10).
+
+**What this says about how the phase was graded, which is the part worth carrying forward.**
+T020a's success criterion was "the inline copy is gone, both graders share the parser". That
+criterion was met in full by a change that narrowed the check. A criterion phrased as *the edit I
+intend to make* cannot detect a side effect of making it; only a criterion phrased as *what the
+check must still refuse* can. The harness did not catch this either — every existing MICRO case
+passed throughout, because none of them declared an escaping entry, and a fixture suite only
+refuses what someone thought to write down. What caught it was reading the diff and asking what
+`Get-Territory` returns that the old loop did not.
+
+Two things follow for the review. This is an argument for the phase-6 direction rather than
+against it: T044 makes an uncovered site blocking, and the gap here was an *uncovered site* in a
+function the phase had just edited. And it is a caution about the remaining shared-parser work —
+T029's `scope-check-repos.ps1` and T034's `territory-check.ps1` both read territory, and the
+question to ask of each is not "does it call the shared function" but "which of its fields does
+it read, and what happens to the rest".
+
+**Also seen in the diff review, deliberately not changed here.** Two recipe capabilities skip
+silently when their target is absent: `uncommittedDelete` deletes only `if (Test-Path)`, and
+`truncateBlob` truncates only `if (Test-Path $objectPath)` — which is false whenever git has
+packed the object rather than left it loose. Neither can make a case pass wrongly today, because
+the expectation still has to match and a no-op produces the wrong output. But it produces it as a
+mystifying expectation diff rather than as "this recipe names a path that is not there", and the
+diagnosis cost is real: the `truncateBlob` read-only defect above took a `-KeepRepo` session to
+find for exactly this reason. T046 is the task that makes a harness failure name what went wrong,
+and this is a case for it. Left alone here rather than re-opening a verified suite for a
+diagnostics improvement that changes no verdict.

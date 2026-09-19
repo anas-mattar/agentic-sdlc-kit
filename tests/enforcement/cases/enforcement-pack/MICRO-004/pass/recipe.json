@@ -1,5 +1,5 @@
 {
-  "description": "Five entries - exactly at the cap, which is not past it. Differs from the fail case by one entry (plan D10), and pins the comparison as '>' rather than '>='.",
+  "description": "Five entries under the same decorated marker - exactly at the cap, which is not past it. Differs from the fail case by one entry (plan D10), and pins the comparison as '>' rather than '>='.",
   "defaultBranch": "main",
   "commits": [
     {
@@ -24,7 +24,7 @@
           "",
           "Do the thing.",
           "",
-          "**Territory**:",
+          "**Territory** (widened by amendment 2026-01-02, approved by fixture):",
           "",
           "- `src/a1.ps1`",
           "- `src/a2.ps1`",

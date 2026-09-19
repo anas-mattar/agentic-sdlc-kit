@@ -1,0 +1,112 @@
+{
+  "description": "The same contract at a new path inside the same feature directory, byte for byte. A move is creation at the new path when the CONTENT came across, and that is decided by comparing the blobs - the pair with 'fail-rename-content' is the whole of J3: same move, same directory, green or red according to the content alone.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001-thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ],
+        "specs/001-thing/contracts/api.md": [
+          "# Contract: the api",
+          "",
+          "## GET /thing",
+          "",
+          "Returns the thing.",
+          "",
+          "| Field | Type | Notes |",
+          "|---|---|---|",
+          "| id | string | opaque |",
+          "| name | string | display only |",
+          "| createdAt | string | ISO-8601, UTC |",
+          "",
+          "## Errors",
+          "",
+          "- 404 when the thing does not exist.",
+          "- 409 when the thing is being rebuilt.",
+          "",
+          "## Notes",
+          "",
+          "Read-only. No pagination in v1."
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "contract: move the api contract beside its sibling",
+      "delete": [
+        "specs/001-thing/contracts/api.md"
+      ],
+      "write": {
+        "specs/001-thing/contracts/api-core.md": [
+          "# Contract: the api",
+          "",
+          "## GET /thing",
+          "",
+          "Returns the thing.",
+          "",
+          "| Field | Type | Notes |",
+          "|---|---|---|",
+          "| id | string | opaque |",
+          "| name | string | display only |",
+          "| createdAt | string | ISO-8601, UTC |",
+          "",
+          "## Errors",
+          "",
+          "- 404 when the thing does not exist.",
+          "- 409 when the thing is being rebuilt.",
+          "",
+          "## Notes",
+          "",
+          "Read-only. No pagination in v1."
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

@@ -70,7 +70,7 @@ function Test-IsMicro {
 # duplicate. Lines are pre-stripped of HTML comments by the caller (Get-VisibleLines).
 function Get-Territory {
     param([string[]]$TasksLines, [int]$PhaseNumber, [switch]$Global)
-    $result = @{ Found = $false; Duplicate = $false; Entries = @(); Invalid = @(); NearMiss = @() }
+    $result = @{ Found = $false; Duplicate = $false; Entries = @(); Invalid = @(); NearMiss = @(); MarkerCount = 0 }
     $inPhase = [bool]$Global
     $collecting = $false
     $started = $false
@@ -95,6 +95,12 @@ function Get-Territory {
         # marker as prose ends in silence. Only one of those can hide an undeclared change.
         if ($line -match '^\*\*Territory\*\*[^:]*:') {
             if ($result.Found) { $result.Duplicate = $true }         # exactly one marker per phase (006 review F8)
+            # The COUNT as well as the fact, because enforcement-pack's Micro-lane message names
+            # it ("carries 3 **Territory** markers"). Duplicate alone would have forced that
+            # message to be reworded, and a caller that has to soften its wording to reuse a
+            # shared parser is a caller that keeps its own copy instead — which is the defect
+            # this function is being shared to fix.
+            $result.MarkerCount++
             $result.Found = $true; $collecting = $true; $started = $false
             continue
         }
