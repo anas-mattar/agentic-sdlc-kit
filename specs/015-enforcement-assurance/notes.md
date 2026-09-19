@@ -930,3 +930,67 @@ diagnosis cost is real: the `truncateBlob` read-only defect above took a `-KeepR
 find for exactly this reason. T046 is the task that makes a harness failure name what went wrong,
 and this is a case for it. Left alone here rather than re-opening a verified suite for a
 diagnostics improvement that changes no verdict.
+
+### The phase 3 CI result: green on Windows, red on ubuntu, and why that is the important half
+
+`ritual-checks` passed on `cb871ed`. `enforcement-tests` **failed** — and only on one leg:
+
+```text
+enforcement-tests (ubuntu-latest): failure     229 passed, 2 failed
+enforcement-tests (windows-latest): success
+```
+
+The failure is a `Describe` whose `BeforeAll` threw, so Pester could not even expand the case
+name and reported it as the literal template `fixture case <_.Relative>`:
+
+```text
+RuntimeException: fixture shallow clone failed for /tmp/kit-fixture-f239c6341c48
+  at New-FixtureRepo, tests/enforcement/lib/FixtureRepo.psm1
+```
+
+The case is `AMEND-003/fail`, the depth-1 clone, and it is **the only case in the suite that uses
+the `shallow` recipe state**. So this is `truncateBlob` all over again, in the same phase: a
+capability documented in the recipe shape since phase 1, shipped, never once exercised, and
+broken. Two for two on the harness's own untested features.
+
+**The defect.** The clone URI was built by concatenation:
+
+```powershell
+$uri = ([uri]("file:///" + ($root -replace '\', '/'))).AbsoluteUri
+```
+
+A Windows path carries no leading slash, so three are right. A POSIX path brings its own, making
+`file:////tmp/kit-fixture-abc` — and the URI parser reads that run of slashes as an empty
+authority followed by `//tmp/...`, then normalises the whole thing to `file://tmp/kit-fixture-abc`,
+where **`tmp` is now the host**. git dutifully tried to reach a machine called `tmp`. Measured
+rather than reasoned:
+
+```text
+C:\Users\x\Temp\kit-fixture-abc  ->  file:///C:/Users/x/Temp/kit-fixture-abc
+/tmp/kit-fixture-f239c6341c48    ->  file://tmp/kit-fixture-f239c6341c48
+```
+
+What made it durable is that the wrong answer is not malformed. A concatenated URI that means
+something else entirely still parses, still looks right in a log, and fails somewhere far away —
+in git's resolver, not in the code that built it.
+
+**Fixed** by extracting `ConvertTo-FileUri` and choosing the prefix from the path's shape, with
+three self-tests in `Harness.Tests.ps1` asserting **both** platform shapes from either platform,
+plus the property that failed — *the first path segment must never become a host*. Asserting the
+property rather than the two paths is the point: the reason this survived is that every runner
+that executed it only ever saw its own platform's shape.
+
+**The part worth carrying, because it is about how this phase was verified, not about slashes.**
+Four independent verifications passed this defect through:
+
+- the local full suite (231 assertions, green),
+- CI's `windows-latest` leg (green),
+- the fresh-context review's own independently-run 108-case suite (215/215 green),
+- and the review's two self-chosen mutation experiments.
+
+All four ran on a platform where the bug is invisible. The review was thorough and its APPROVE was
+honestly earned on the evidence available to it; the evidence available to it was single-platform.
+**SC-006 is not a portability nicety — on this phase it was the only check that worked.** It is
+worth asking of phase 4 and 5 whether any new fixture state is platform-shaped before CI is the
+thing that finds out, and worth noting that `shallow` remains a sample of one: a second case using
+it would have halved the odds of shipping it untested.

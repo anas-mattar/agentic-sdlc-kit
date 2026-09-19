@@ -13,6 +13,7 @@
 #>
 
 BeforeAll {
+    Import-Module (Join-Path $PSScriptRoot 'lib/FixtureRepo.psm1') -Force
     $script:Launcher = Join-Path $PSScriptRoot 'lib/RunChild.ps1'
     $script:Sandbox = Join-Path ([IO.Path]::GetTempPath()) ("kit-harness-self-" + [guid]::NewGuid().ToString('N').Substring(0, 8))
     New-Item -ItemType Directory -Path $script:Sandbox -Force | Out-Null
@@ -94,5 +95,36 @@ Describe 'RunChild argument and encoding fidelity' {
     It 'preserves a single quote inside a value' {
         $s = New-ProbeScript 'quote.ps1' @('param([string]$Root)', 'Write-Host "root=[$Root]"')
         (Invoke-Launcher -Target $s -Arguments @('-Root', "it's")).Output.Trim() | Should -Be "root=[it's]"
+    }
+}
+
+Describe 'fixture file:// URI construction' {
+    # The shallow-clone recipe state builds a file:// URI from a local path, and it built one that
+    # was well-formed and wrong on POSIX: 'file:///' concatenated with '/tmp/x' gives four slashes,
+    # which the URI parser normalises to 'file://tmp/x' with 'tmp' as the HOST. Every Windows run
+    # passed - the local suite, CI's windows-latest leg, and the fresh-context review's own
+    # independent run - because on Windows three slashes are right. Only CI's ubuntu leg failed.
+    #
+    # Asserted on BOTH shapes from either platform, because a test that exercises only the host
+    # platform's shape is what let this through in the first place.
+
+    It 'gives a POSIX path an empty authority' {
+        $uri = ConvertTo-FileUri -Path '/tmp/kit-fixture-abc'
+        $uri | Should -Be 'file:///tmp/kit-fixture-abc'
+        ([uri]$uri).Host | Should -BeExactly ''
+    }
+
+    It 'gives a Windows path an empty authority' {
+        $uri = ConvertTo-FileUri -Path 'C:\Users\x\Temp\kit-fixture-abc'
+        $uri | Should -Be 'file:///C:/Users/x/Temp/kit-fixture-abc'
+        ([uri]$uri).Host | Should -BeExactly ''
+    }
+
+    It 'never lets the first path segment become a host' {
+        # The defect stated as the property that failed, rather than as the two paths that
+        # happened to expose it.
+        foreach ($p in '/tmp/x', '/var/folders/T/x', 'C:\Temp\x', 'D:\solutions\x') {
+            ([uri](ConvertTo-FileUri -Path $p)).Host | Should -BeExactly '' -Because "$p must not yield a host"
+        }
     }
 }

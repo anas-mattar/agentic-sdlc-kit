@@ -210,7 +210,7 @@ function New-FixtureRepo {
     if ($Recipe.PSObject.Properties.Name -contains 'shallow' -and $Recipe.shallow) {
         $clone = Join-Path ([IO.Path]::GetTempPath()) ("kit-fixture-" + [guid]::NewGuid().ToString('N').Substring(0, 12))
         $branch = if ($Recipe.PSObject.Properties.Name -contains 'checkout' -and $Recipe.checkout) { $Recipe.checkout } else { $defaultBranch }
-        $uri = ([uri]("file:///" + ($root -replace '\\', '/'))).AbsoluteUri
+        $uri = ConvertTo-FileUri -Path $root
         & git clone --quiet --depth $Recipe.shallow --branch $branch $uri $clone 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "fixture shallow clone failed for $root" }
         Invoke-FixtureGit -RepoPath $clone -Arguments @('config', 'user.name', 'Fixture Author') | Out-Null
@@ -222,6 +222,34 @@ function New-FixtureRepo {
     return $root
 }
 
+function ConvertTo-FileUri {
+    <#
+    .SYNOPSIS
+        A local directory as a file:// URI, on either platform.
+
+    .DESCRIPTION
+        git needs a file:// URI rather than a path for '--depth' to mean anything: a plain local
+        path is cloned by hardlinking the object store, which copies the whole history and leaves
+        the fixture with the very base it is supposed to lack.
+
+        The count of slashes is the whole problem. A Windows path carries no leading slash, so the
+        URI needs three; a POSIX path supplies its own, so a third makes 'file:////tmp/x' - and the
+        URI parser reads that run as an empty authority followed by '//tmp/x', then normalises it
+        to 'file://tmp/x', where 'tmp' is now the HOST. git dutifully tries to reach a machine
+        called tmp. Concatenation is what hid it: the result is a perfectly well-formed URI, just
+        not to the thing that was asked for.
+
+        Found by CI's ubuntu leg and by nothing else (SC-006) - the Windows leg, every local run
+        and the fresh-context review's own independent suite run all passed, because all three are
+        the platform where three slashes happen to be right.
+    #>
+    param([Parameter(Mandatory)][string]$Path)
+    $normalised = $Path -replace '\\', '/'
+    $prefix = if ($normalised.StartsWith('/')) { 'file://' } else { 'file:///' }
+    return ([uri]($prefix + $normalised)).AbsoluteUri
+}
+
+
 function Remove-FixtureRepo {
     param([Parameter(Mandatory)][string]$Path)
     if ($Path -and (Test-Path $Path)) {
@@ -229,4 +257,4 @@ function Remove-FixtureRepo {
     }
 }
 
-Export-ModuleMember -Function New-FixtureRepo, Remove-FixtureRepo
+Export-ModuleMember -Function New-FixtureRepo, Remove-FixtureRepo, ConvertTo-FileUri
