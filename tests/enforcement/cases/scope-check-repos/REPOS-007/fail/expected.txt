@@ -1,0 +1,1 @@
+scope-repos: WARN detached HEAD — pass -Branch <NNN-name> to classify the lane (CI wrappers must do this explicitly)

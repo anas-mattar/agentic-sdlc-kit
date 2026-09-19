@@ -1,0 +1,2 @@
+scope-repos: WARN ignoring codeRepos entry '../elsewhere' — entries are plain directory names under this repository, not paths (scripts/verify-kit.ps1 explains the shape)
+scope-repos: code-repo: PASS phase 1 commit <SHA> (1 file(s))

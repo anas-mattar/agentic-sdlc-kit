@@ -1,0 +1,30 @@
+{
+  "description": "A repository with no origin remote — a local clone, or a project that has not pushed yet. There is no claim ledger to hold the roadmap against, so the check declines. Declining OUT LOUD is the requirement: a silent exit 0 here would be indistinguishable from a roadmap that is actually honest.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Roadmap claim check | in progress | anas.m | `specs/011-thing/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main"
+}

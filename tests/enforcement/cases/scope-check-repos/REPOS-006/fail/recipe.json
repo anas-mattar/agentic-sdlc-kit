@@ -1,0 +1,36 @@
+{
+  "description": "A governance repository with no commits at all, so HEAD is unborn and the current branch cannot be read. The lane decides every rule below it, so a check that cannot name the branch must stop rather than guess — and it exits 1, because guessing here is how a feature branch gets graded as if it were the trunk.",
+  "defaultBranch": "main",
+  "commits": [],
+  "uncommitted": {
+    "kit-adoption.json": [
+      "{",
+      "  \"kitVersion\": \"0.9.0\",",
+      "  \"codeRepos\": [\"code-repo\"]",
+      "}"
+    ]
+  },
+  "nestedRepos": {
+    "code-repo": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "hoursAgo": 3,
+          "write": {
+            "README.md": "code\n"
+          }
+        },
+        {
+          "branch": "001-thing",
+          "message": "phase 1: the thing",
+          "hoursAgo": 2,
+          "write": {
+            "src/a.txt": "a\n"
+          }
+        }
+      ]
+    }
+  }
+}

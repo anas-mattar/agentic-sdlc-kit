@@ -1,0 +1,24 @@
+{
+  "description": "A claim on origin and no docs/roadmap.md in the tree. An adopter's roadmap is adopter-authored and may not exist at all, so the check declines rather than manufacturing a failure out of a file the project never promised.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

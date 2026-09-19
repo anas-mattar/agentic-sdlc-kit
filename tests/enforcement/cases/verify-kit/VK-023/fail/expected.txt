@@ -1,0 +1,6 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: ok record — adoption record valid — tiers: backend; gate proven
+verify-kit: FAIL kit-version: .kit-version is neither update-kit's JSON record nor a bare commit sha (hand-edited or empty?) — fix: re-run scripts/update-kit.ps1 from a kit clone to rewrite it (adoption/updating.md)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

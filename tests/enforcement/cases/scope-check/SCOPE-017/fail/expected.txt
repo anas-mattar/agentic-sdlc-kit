@@ -1,0 +1,1 @@
+scope-check: WARN commit <SHA>: specs/001-thing/tasks.md not found at the commit or its parent (declare territory in tasks.md — non-blocking, pre-006 compatibility)

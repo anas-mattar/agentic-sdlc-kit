@@ -1,0 +1,31 @@
+{
+  "description": "A row that mentions the claim and still reads 'idea'. The subtler half of GAP-017 and the one a reader is likelier to trust: the feature IS on the roadmap, so a human skimming it sees the row and believes the status — which is worse than an absence, because an absence at least looks like a gap.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| 011-thing — roadmap claim check | idea | — | — |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

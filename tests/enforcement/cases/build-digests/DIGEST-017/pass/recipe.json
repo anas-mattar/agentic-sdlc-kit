@@ -1,0 +1,26 @@
+{
+  "description": "Generate mode writing two digests. One line per file, because the author needs to know WHICH files changed under them — a single summary would leave a surprising diff unexplained.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: The whole ritual on one page. -->",
+          "",
+          "<!-- digest: One feature branch per feature. -->"
+        ],
+        "docs/sdlc/second-law.md": [
+          "# Second law",
+          "",
+          "<!-- digest: A phase commit carries its phase number. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] },\n    { \"name\": \"second\", \"docs\": [\"docs/sdlc/second-law.md\"] }\n  ]\n}\n"
+      }
+    }
+  ]
+}

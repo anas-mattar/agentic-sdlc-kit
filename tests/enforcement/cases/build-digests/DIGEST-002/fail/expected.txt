@@ -1,0 +1,2 @@
+digests: FAIL — missing document: docs/sdlc/missing.md is named by docs/digests/digest-packs.json but does not exist on disk — fix the manifest or restore the file
+digests: RESULT FAIL (1 issue(s))

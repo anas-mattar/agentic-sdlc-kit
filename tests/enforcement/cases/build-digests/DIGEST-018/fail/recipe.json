@@ -1,0 +1,33 @@
+{
+  "description": "An orphan digest in GENERATE mode. Reported as a NOTE and the run still succeeds — the same file DIGEST-010 fails in check mode. The asymmetry is deliberate: an author mid-edit is told what will fail later, a tree under CI is told it has already failed. Generate mode never deletes a file it did not write.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: The whole ritual on one page. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- The whole ritual on one page. (`docs/sdlc/fixture-law.md`)"
+        ],
+        "docs/digests/ghost-digest.md": [
+          "# ghost pack — law digest (GENERATED)",
+          "",
+          "No pack produces this."
+        ]
+      }
+    }
+  ]
+}

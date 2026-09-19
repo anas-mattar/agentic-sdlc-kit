@@ -1,0 +1,1 @@
+scope-check: FAIL phase 1 commit <SHA>: **Territory** declared for phase 1 in specs/001-thing/tasks.md but the entry list is empty (declare the paths, or remove the marker)

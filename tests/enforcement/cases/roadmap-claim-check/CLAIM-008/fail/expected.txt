@@ -1,0 +1,2 @@
+roadmap-claims: claim '012-other' is on origin but its roadmap row still reads 'idea' — flip the row (Status, Owner, Spec path) in a main-side docs commit at claim time (GAP-017)
+roadmap-claims: FAIL (1 of 1 claim(s) invisible or stale on this tree's roadmap)

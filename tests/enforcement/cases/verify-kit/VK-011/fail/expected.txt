@@ -1,0 +1,6 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: FAIL record: declared tier 'back_end' is not a valid tier name (lowercase letters/digits/hyphens) — fix: fix the tiers list in kit-adoption.json
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

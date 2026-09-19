@@ -1,0 +1,2 @@
+build-digests: FAIL — empty digest marker: docs/sdlc/fixture-law.md:3 — write the one-line rule statement or remove the marker
+build-digests: RESULT FAIL (1 issue(s)) — nothing written

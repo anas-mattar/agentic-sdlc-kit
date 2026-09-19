@@ -1,0 +1,2 @@
+digests: FAIL — digest line too long: docs/sdlc/fixture-law.md:3 is 121 chars (bound: MaxDigestLineLength = 120) — tighten the one-liner
+digests: RESULT FAIL (1 issue(s))

@@ -128,3 +128,93 @@ Describe 'fixture file:// URI construction' {
         }
     }
 }
+
+Describe 'nested fixture repositories' {
+    # scope-check-repos.ps1 grades independent repositories that live INSIDE the governance
+    # repository, and three of its rules exist only to refuse a directory that looks nested but
+    # is not one - present-but-not-a-repository, present-but-part-of-the-outer-repository, no
+    # such branch here. A recipe state that quietly produced an ordinary subdirectory would make
+    # every one of those fixtures pass for the wrong reason, so the shape is asserted here
+    # rather than inferred from a green case.
+
+    BeforeAll {
+        $script:NestedRecipe = [pscustomobject]@{
+            defaultBranch = 'main'
+            commits       = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'kit-adoption.json' = "{}`n" } })
+            nestedRepos   = [pscustomobject]@{
+                'code-repo' = [pscustomobject]@{
+                    defaultBranch = 'main'
+                    commits       = @([pscustomobject]@{ branch = 'main'; message = 'code init'; write = [pscustomobject]@{ 'src/a.txt' = "a`n" } })
+                }
+            }
+        }
+    }
+
+    It 'builds the nested directory as a repository of its own' {
+        $root = New-FixtureRepo -Recipe $script:NestedRecipe
+        try {
+            $nested = Join-Path $root 'code-repo'
+            $top = (& git -C $nested rev-parse --show-toplevel) -join ''
+            $LASTEXITCODE | Should -Be 0
+            (Resolve-Path "$top".Trim()).Path | Should -Be (Resolve-Path $nested).Path
+            (Resolve-Path "$top".Trim()).Path | Should -Not -Be (Resolve-Path $root).Path
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'leaves the nested repository out of every commit of the outer one' {
+        # The real layout has the code repositories untracked in the governance tree. A fixture
+        # that committed them would be grading a directory the outer repository owns, which is
+        # the one thing the script refuses.
+        $root = New-FixtureRepo -Recipe $script:NestedRecipe
+        try {
+            $tracked = @(& git -C $root log --all --name-only --pretty=format: -- 'code-repo' | Where-Object { $_ })
+            $tracked.Count | Should -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses a nested recipe that asks to be shallow instead of ignoring it' {
+        # A shallow clone lands at a fresh temporary path, so honouring it here would return a
+        # repository that is not nested at all - and the case would still go green. T046's rule:
+        # a recipe state that cannot do what it says must say so, never skip quietly.
+        $recipe = [pscustomobject]@{
+            commits     = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            nestedRepos = [pscustomobject]@{
+                'code-repo' = [pscustomobject]@{
+                    commits = @([pscustomobject]@{ branch = 'main'; message = 'c'; write = [pscustomobject]@{ 'b.txt' = "b`n" } })
+                    shallow = 1
+                }
+            }
+        }
+        $root = $null
+        { $root = New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*would not be nested*"
+        if ($root) { Remove-FixtureRepo -Path $root }
+    }
+}
+
+Describe 'output normalisation' {
+    # A third substitution joined <ROOT> and <SHA> in T029. scope-check-repos.ps1's
+    # anti-retroactivity message quotes the code commit's own committer date back to the reader,
+    # so the rule's output is different in every run and no hand-written expectation could ever
+    # match it. The boundary is the point: a run-varying instant is noise, a calendar date a
+    # human wrote in a document is content, and normalising the second would quietly stop the
+    # Critical-lane approval fixtures from pinning anything.
+
+    BeforeAll { Import-Module (Join-Path $PSScriptRoot 'lib/Harness.psm1') -Force }
+
+    It 'replaces an ISO-8601 instant, in either offset spelling' {
+        foreach ($stamp in '2026-09-19T14:03:11+02:00', '2026-09-19T14:03:11Z', '2026-09-19T14:03:11+0200') {
+            $out = ConvertTo-NormalisedOutput -Text "committed at $stamp today" -RepoPath 'no-such-path'
+            $out.Trim() | Should -Be 'committed at <DATE> today'
+        }
+    }
+
+    It 'leaves a calendar date with no time on it exactly as written' {
+        $out = ConvertTo-NormalisedOutput -Text 'approved 2026-09-10 by the owner' -RepoPath 'no-such-path'
+        $out.Trim() | Should -Be 'approved 2026-09-10 by the owner'
+    }
+
+    It 'still replaces the sha inside a line that also carries an instant' {
+        $out = ConvertTo-NormalisedOutput -Text 'commit 8a0291b at 2026-09-19T14:03:11+02:00' -RepoPath 'no-such-path'
+        $out.Trim() | Should -Be 'commit <SHA> at <DATE>'
+    }
+}

@@ -1,0 +1,2 @@
+scope-repos: WARN kit-adoption.json codeRepos is not an array — ignoring it (shape: adoption/updating.md)
+scope-repos: n/a (no codeRepos declared in kit-adoption.json — single-repo project, the kit repository, or a record predating feature 012)

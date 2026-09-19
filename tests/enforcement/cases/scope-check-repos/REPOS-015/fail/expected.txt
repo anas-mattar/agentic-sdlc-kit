@@ -1,0 +1,2 @@
+scope-repos: code-repo: WARN could not resolve a merge base with a trunk (origin/main, main, origin/master, master, origin/HEAD) — NOTHING WAS GRADED in this repository; pass -BaseRef <ref> naming its trunk
+scope-repos: n/a (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)

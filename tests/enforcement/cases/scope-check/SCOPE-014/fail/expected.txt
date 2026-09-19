@@ -1,0 +1,1 @@
+scope-check: not applicable (commit <SHA> is a merge commit)

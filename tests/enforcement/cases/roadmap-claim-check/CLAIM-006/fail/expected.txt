@@ -1,0 +1,2 @@
+roadmap-claims: claim '011-thing' is on origin but no roadmap row mentions it — flip the row (Status, Owner, Spec `specs/011-thing/`) in a main-side docs commit at claim time (GAP-017)
+roadmap-claims: FAIL (1 of 1 claim(s) invisible or stale on this tree's roadmap)

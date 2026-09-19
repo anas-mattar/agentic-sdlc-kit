@@ -1,0 +1,107 @@
+{
+  "description": "No adoption record. WARN, not FAIL: every adoption predating feature 007 has none, and the doctor's posture towards history is to grandfather it and say what is missing rather than to fail a project for being older than the check.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the adopted project",
+      "write": {
+        "CLAUDE.md": [
+          "# CLAUDE.md",
+          "",
+          "Guidance for agents in this project.",
+          "",
+          "## Stack Profile",
+          "",
+          "A .NET service with a React front end."
+        ],
+        "AGENTS.md": [
+          "# AGENTS.md",
+          "",
+          "Same rules as CLAUDE.md."
+        ],
+        "README.md": [
+          "# Fixture Project",
+          "",
+          "An adopted project."
+        ],
+        "kit-manifest.json": [
+          "{",
+          "  \"entries\": [",
+          "    { \"path\": \"**\", \"class\": \"verbatim\" },",
+          "    { \"path\": \"CLAUDE.md\", \"class\": \"surgical\" }",
+          "  ]",
+          "}"
+        ],
+        ".specify/memory/constitution.md": [
+          "# Constitution",
+          "",
+          "**Version**: 2.0.0 | **Ratified**: 2026-01-01",
+          "",
+          "## I. Specification First",
+          "",
+          "Every feature begins with a specification."
+        ],
+        ".specify/templates/spec-template.md": [
+          "# Feature Specification"
+        ],
+        ".specify/scripts/bootstrap.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        ".claude/commands/speckit.specify.md": [
+          "# speckit.specify",
+          "",
+          "Write the spec."
+        ],
+        "docs/sdlc/definition-of-done.md": [
+          "# Definition of Done",
+          "",
+          "Six gates."
+        ],
+        "docs/sdlc/flow.md": [
+          "# Flow",
+          "",
+          "The ritual on one page."
+        ],
+        "docs/sdlc/gate-command.md": [
+          "# Gate Command",
+          "",
+          "The user runs the gate."
+        ],
+        "docs/sdlc/review-process.md": [
+          "# Review Process",
+          "",
+          "Never self-graded."
+        ],
+        "docs/rulebooks/README.md": [
+          "# Rulebooks",
+          "",
+          "One rulebook per tier."
+        ],
+        "specs/_templates/ai-code-review.md": [
+          "# AI Code Review",
+          "",
+          "## Reviewer Provenance"
+        ],
+        "scripts/claim-feature.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        "scripts/territory-check.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        "scripts/update-kit.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        "adoption/updating.md": [
+          "# Updating",
+          "",
+          "Run the doctor after every update."
+        ],
+        ".kit-version": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"kitCommit\": \"1554039abcdef1234567890abcdef1234567890a\",",
+          "  \"updatedOn\": \"2026-01-01\"",
+          "}"
+        ],
+        "docs/rulebooks/backend-rules.md": [
+          "# Backend rules",
+          "",
+          "One page."
+        ]
+      }
+    }
+  ]
+}

@@ -30,6 +30,14 @@
 
       <ROOT>   the fixture repository path, in any slash direction
       <SHA>    a 7-to-40 character hex run that git produced
+      <DATE>   an ISO-8601 instant with a time on it — git's %cI, which scope-check-repos.ps1
+               quotes back in its anti-retroactivity message
+
+    <DATE> was added in T029 for a reason worth recording: the cross-repository POST-DATES rule
+    prints the commit's own committer date, so its message is different in every run and the
+    rule could not be pinned by a fixture at all. A DATE-only string ('2026-09-10') is left
+    alone — the Critical lane's approval dates are content, not run-varying noise, and
+    normalising them would stop a fixture from pinning them.
 
     Line endings are normalised to LF and trailing whitespace is stripped, so a fixture's
     verdict cannot depend on the platform that ran it (SC-006).
@@ -66,6 +74,10 @@ function ConvertTo-NormalisedOutput {
     foreach ($variant in ($variants | Select-Object -Unique | Sort-Object Length -Descending)) {
         $text = $text.Replace($variant, '<ROOT>')
     }
+
+    # Instants, before shas: an ISO-8601 timestamp is the other value a run cannot repeat.
+    # Anchored on the 'T' and a time, so a plain calendar date stays exactly as written.
+    $text = [regex]::Replace($text, '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?', '<DATE>')
 
     # Commit shas. Bounded to hex runs of 7+ so ordinary words survive.
     $text = [regex]::Replace($text, '\b[0-9a-f]{7,40}\b', '<SHA>')
@@ -104,7 +116,32 @@ function Invoke-FixtureCase {
         # character on the way out, so an em dash in a kit message would reach the expectation
         # as a hyphen. The launcher sets UTF-8 inside the child before the script runs.
         $launcher = Join-Path $PSScriptRoot 'RunChild.ps1'
-        $arguments = @('-NoProfile', '-NonInteractive', '-File', $launcher, $scriptPath, '-Root', $repo)
+        # -Root normally IS the fixture. One family of rules needs it not to be: verify-kit.ps1's
+        # first guard refuses a root that does not exist, and a case cannot reach it by passing a
+        # second -Root (PowerShell refuses the duplicate and the script never runs). 'rootSuffix'
+        # appends to the fixture path, so the value stays inside the fixture's own namespace and
+        # normalises to <ROOT>/... identically on both platforms. No self-test: ignoring this
+        # field makes its case FAIL loudly against the healthy fixture, unlike a recipe state
+        # whose silent skip would produce a passing wrong answer.
+        $rootArg = $repo
+        if ($command.PSObject.Properties.Name -contains 'rootSuffix' -and $command.rootSuffix) {
+            $rootArg = "$repo/$($command.rootSuffix)"
+        }
+        $arguments = @('-NoProfile', '-NonInteractive', '-File', $launcher, $scriptPath)
+        # 'noRoot': the one script in scope that has no -Root parameter. territory-check.ps1
+        # locates the repository with 'git rev-parse --show-toplevel' from the CURRENT
+        # DIRECTORY, so passing -Root fails to bind (the launcher would answer 97) and not
+        # passing it would point the script at the kit checkout this suite runs from. Such a
+        # case runs with its working directory set to the fixture instead. The accommodation
+        # lives here rather than in the script because phase 4 may only touch tests/** — and
+        # the inconsistency itself is recorded as a finding, not quietly absorbed: eight
+        # grading scripts can be aimed at another tree and the ninth cannot.
+        $workingDir = $null
+        if ($command.PSObject.Properties.Name -contains 'noRoot' -and $command.noRoot) {
+            $workingDir = $repo
+        } else {
+            $arguments += @('-Root', $rootArg)
+        }
         if ($command.PSObject.Properties.Name -contains 'args' -and $command.args) {
             $arguments += @($command.args)
         }
@@ -112,9 +149,20 @@ function Invoke-FixtureCase {
         $stdoutFile = [IO.Path]::GetTempFileName()
         $stderrFile = [IO.Path]::GetTempFileName()
         try {
-            $process = Start-Process -FilePath (Get-Process -Id $PID).Path `
-                -ArgumentList (ConvertTo-ProcessArgument -Arguments $arguments) `
-                -NoNewWindow -Wait -PassThru -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile
+            $startArgs = @{
+                FilePath               = (Get-Process -Id $PID).Path
+                ArgumentList           = (ConvertTo-ProcessArgument -Arguments $arguments)
+                NoNewWindow            = $true
+                Wait                   = $true
+                PassThru               = $true
+                RedirectStandardOutput = $stdoutFile
+                RedirectStandardError  = $stderrFile
+            }
+            # Only for a 'noRoot' case: every other case names its tree explicitly, and moving
+            # them all into the fixture would change the ground under two hundred green cases
+            # for no rule's sake.
+            if ($workingDir) { $startArgs['WorkingDirectory'] = $workingDir }
+            $process = Start-Process @startArgs
             $rawOut = [IO.File]::ReadAllText($stdoutFile)
             $rawErr = [IO.File]::ReadAllText($stderrFile)
             $exitCode = $process.ExitCode

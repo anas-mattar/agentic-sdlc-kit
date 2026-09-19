@@ -1,0 +1,2 @@
+scope-repos: code-repo: n/a (declared but not present here — a governance-only checkout; the code repository's own CI runs this check for itself)
+scope-repos: n/a (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)

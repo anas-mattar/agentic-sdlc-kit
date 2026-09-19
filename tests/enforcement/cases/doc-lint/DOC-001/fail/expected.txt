@@ -1,0 +1,4 @@
+doc-lint: scanned 10 governance docs under <ROOT>
+ERROR: kit incomplete — 1 required path(s) missing (dot-directories skipped during copy?):
+  docs/sdlc/gate-command.md
+doc-lint: manifest — 17 shipped file(s) classified

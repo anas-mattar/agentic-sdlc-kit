@@ -1,0 +1,1 @@
+scope-repos: code-repo: FAIL phase 1 commit <SHA>: no territory declared for phase 1 in specs/001-thing/tasks.md, but another phase in that file declares one — declare this phase's **Territory** (the compatibility WARN covers only a tasks.md that declares none at all)

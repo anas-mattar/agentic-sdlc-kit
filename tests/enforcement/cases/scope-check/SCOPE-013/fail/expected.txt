@@ -1,0 +1,1 @@
+scope-check: ERROR 'no-such-ref' does not resolve to a commit

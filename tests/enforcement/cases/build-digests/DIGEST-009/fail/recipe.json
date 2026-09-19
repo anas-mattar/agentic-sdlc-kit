@@ -1,0 +1,19 @@
+{
+  "description": "A pack whose documents carry markers and whose digest was never generated. The absence is a failure rather than a silence because the digest is linked from CLAUDE.md: a reader following the pointer would find nothing and conclude the pack has no law.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: The whole ritual on one page. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n"
+      }
+    }
+  ]
+}

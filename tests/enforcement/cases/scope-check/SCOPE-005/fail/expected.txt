@@ -1,0 +1,1 @@
+scope-check: FAIL commit <SHA>: the commit renames specs/001-thing/tasks.md away — a feature's declaration files must never be deleted or renamed on its branch (review F2)

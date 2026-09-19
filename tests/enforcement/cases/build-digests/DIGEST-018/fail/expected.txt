@@ -1,0 +1,3 @@
+build-digests: wrote docs/digests/fixture-digest.md
+build-digests: NOTE — orphan docs/digests/ghost-digest.md (no pack with markers produces it; -Check will FAIL until it is deleted or its pack gains markers)
+build-digests: OK (1 digest(s), 1 marker(s))

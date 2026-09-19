@@ -1,0 +1,5 @@
+doc-lint: scanned 11 governance docs under <ROOT>
+ERROR: kit incomplete — 1 required path(s) missing (dot-directories skipped during copy?):
+  kit-manifest.json
+ERROR: manifest completeness — 1 issue(s):
+  kit-manifest.json not found at kit root

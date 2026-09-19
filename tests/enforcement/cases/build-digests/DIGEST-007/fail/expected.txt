@@ -1,0 +1,2 @@
+digests: FAIL — duplicate pack name: 'fixture' in docs/digests/digest-packs.json collides with 'fixture' — merge the packs or rename one (fix the manifest)
+digests: RESULT FAIL (1 issue(s))

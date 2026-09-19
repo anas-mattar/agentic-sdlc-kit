@@ -1,0 +1,19 @@
+{
+  "description": "A pack name that is not a safe filename fragment. The name is interpolated into a write path, so validating it fail-closed is what stops a manifest from routing a write outside docs/digests/ (feature 010 review F4).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: The whole ritual on one page. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"-bad\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n"
+      }
+    }
+  ]
+}

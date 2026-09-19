@@ -1016,3 +1016,412 @@ What is outstanding is therefore owner work, not implementation work: phase 2's 
 on `8a0291b` (the recorded certification still names `505f9f1`), phase 3's ci-held certification
 on `45b0dfd`, and the human review's half that no machine reaches — whether each amendment's
 named approver actually agreed (`06b1b30`, `d7a1939`, `9aa79c0`).
+
+> **Superseded by events, 2026-09-19.** The section above says this branch does not merge at
+> phase 3. It did: PR #46 was merged by the owner as `2af8503` (`--no-ff`, merge commit
+> preserved), with phases 4–6 unbuilt and the feature branch kept on origin for them. The record
+> is superseded rather than corrected in place, on the same reasoning the phase 2 gate record
+> used — what was decided when is exactly the thing this feature exists to make unforgeable, and
+> a note quietly rewritten to agree with the outcome is worth less than one that shows the
+> argument and then shows what happened.
+
+The merge is the owner's to make and is not second-guessed here. Two consequences are recorded
+because they are facts about the repository rather than opinions about the decision:
+
+- **`main` now carries a CI leg whose green is weaker than it reads.** `enforcement-tests` passing
+  on `main` means 108 fixtures pass. It does not mean the kit is covered — coverage is
+  reporting-only until T044 — and it does not mean a member that graded nothing said so, because
+  `UNGRADED` does not exist until phase 5. Anyone reading that badge between now and phase 6
+  should read it as "the covered rules still behave", nothing wider.
+- **Phases 4–6 continue on the same branch**, which is now fully merged into `main` and will run
+  ahead of it again at the first phase 4 commit. A second PR carries the rest.
+
+### Phase 3 gate — evidence recorded, owner certification NOT recorded
+
+Phases 1 and 2 each carry a certification line in this file. Phase 3 does not, and that absence is
+written down rather than left to be inferred from a merged PR — the feature's own rule that an
+absence must be proven rather than assumed applies to its own paperwork first.
+
+The evidence exists and is verifiable:
+
+> **Gate 3 evidence (ci-held, NOT yet certified)**: run
+> <https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/35426871546>, conclusion success,
+> commit `45b0dfd` (phase 3, T020a + T021–T027). `enforcement-tests` green on both legs on the
+> same commit (run 35426871531). **No owner approval is recorded against this triplet.** The
+> implementing agent does not supply one; under `ci-held` the certification is the owner's
+> recorded approval and nothing else stands in for it — a merge is not a certification, and
+> reading one as the other is the substitution this feature exists to prevent.
+
+Also outstanding: no `human-pr-review.md` exists for this feature, so constitution IX's half —
+whether each amendment's named approver actually agreed (`06b1b30`, `d7a1939`, `9aa79c0`) — has no
+artefact either. Both gaps are the owner's to close and are listed here so they are visible rather
+than quiet.
+
+## Phase 4 — the remaining grading scripts under test
+
+### T028: scope-check, and the phase 3 assertion earning its keep on its first outing
+
+Nine rules with both directions each — `SCOPE-004..SCOPE-012` — taking `scope-check.ps1` from
+4 of 13 emission sites to 13 of 13. Kit-wide: **58 of 94**, 57 rules, 126 cases.
+
+Expectations were predicted from the source strings again, and **14 of 18 matched first time**.
+The three misses were all the same miss: the Micro lane's PASS line carries a provenance suffix,
+`(1 file(s), Micro territory from spec.md)`, which my prediction omitted. Script right,
+expectation incomplete — corrected in the expectation, and the corrected pair now states something
+worth having: the same PASS says *where the territory came from*, which is the one visible
+difference between a Micro grading and a Standard one.
+
+**The harness grew a `rename` recipe state, and it had to.** `SCOPE-005` is the rule that a
+declaration file renamed **away** is refused — "a delete wearing a costume". A fixture built from
+a delete plus an add would have exercised `SCOPE-004`'s arm instead and reported coverage for a
+rule it never reached, so the recipe now stages the move with `git mv` and git records `R`. That
+is the third time this feature has needed a new recipe state to make a rule provable at all
+(`uncommitted`, `merge`, now `rename`), and each time the alternative was a fixture that passes
+without testing anything.
+
+**The anchor-ambiguity assertion caught its first real case, in the phase after the one that built
+it.** `SCOPE-011`'s natural anchor — `(entries must be repo-relative, no '..')` — is printed
+verbatim by *both* the Micro arm (`:170`) and the Standard arm (`:217`), because the Micro line
+simply continues into the promotion remediation afterwards. The suite went red on:
+
+```text
+SCOPE-011: anchor matches 2 emission site(s) [scope-check.ps1:170, scope-check.ps1:217], declared 1
+```
+
+Without that assertion the entry would have marked the Micro site covered by a Standard fixture
+that never reaches it — the inventory flattering itself by exactly one site, silently, which is
+the failure T023 was written after. The anchor now carries its closing quote so it names `:217`
+alone. Two things follow. A rule whose message is a **prefix** of another rule's message needs a
+deliberate anchor, and the check is what tells you which ones those are rather than a reading of
+the source. And a guard written in one phase found its first defect in the next: worth
+remembering when phase 6 weighs whether T044's blocking coverage is worth the friction.
+
+**`SCOPE-009` is the one to read.** T028 names the anti-retroactivity rule and it is the
+load-bearing rule in the whole scope check: the declaration is read from the commit's **parent**,
+so an amendment only ever governs commits made after it lands. The fail case deletes `tasks.md` in
+one commit and **restores it inside the phase commit**, declaring a territory that covers what
+that same commit changes — a declaration post-dating the commit it would legalise. The pass case
+does the identical restoration in *its own commit first*, which is the remediation the failure
+message names. The pair is the difference between "the rule exists" and "the bypass is closed".
+
+### T029: `scope-check-repos.ps1`, and what a coverage number counts as a rule
+
+The task list says "including a code repository on the wrong branch, a missing repository, and a
+trunk that is not `main`" — and every one of those three is an **inert** verdict. Nothing fails.
+That is what made the idiom question real rather than clerical.
+
+`scope-check-repos.ps1` emits everything through one `Write-Line` wrapper, and the idiom file had
+said so since phase 1, with the reason it was left undeclared: *"naming the wrapper alone would
+inflate the denominator with non-rules."* The resolution is that the idiom is not the wrapper, it
+is **the verdict word the message opens with**. Three registers, and all three are counted:
+
+| register | words | why it is in the denominator |
+|---|---|---|
+| adverse | `FAIL`, `ERROR`, `WARN` | uncontroversial — the same choice phase 3 made for warnings |
+| inert | `n/a`, `not applicable` | **SC-004 and GAP-027 are about precisely these lines** |
+| affirmative | `PASS` | a pass over nothing is the failure mode, so the pass is a rule |
+
+Counting the inert register is the decision worth defending. This script's entire risk surface is
+*deciding not to grade*: thirteen of its thirty-two lines are a reason to grade nothing, and the
+last of them (`n/a (nothing was graded …)`) exists only to catch a run made entirely of reasons.
+A denominator that excluded them would have scored this script on the part of it nobody worries
+about. Two `Write-Line` calls stay out: the wrapper's own definition, and `remediation —`, which
+is a continuation of the FAIL above it rather than a verdict of its own.
+
+The consequence for the case directories is a convention that had to be written down (now in
+`rules.json`'s `_comment`): **`fail` is the state in which the rule's condition holds, `pass` is
+the nearest state in which it does not** — which coincides with the exit code only for the adverse
+rules. `REPOS-011/fail` exits 0, because the rule under test *is* the `n/a`. The alternative was
+to name the directions after the exit code and thereby leave the inert verdicts out of the
+inventory entirely, which is the same flattery in a different place.
+
+**31 of 32 sites, 62 cases, all 62 expectations right on the first run.** Better than T028's 14 of
+18, and for a dull reason: the one miss in T028 was a message suffix I had not transcribed, so
+this time every expectation was copied from the source line rather than recalled.
+
+**The uncovered one is a finding, not a gap.** `:199`, `ERROR cannot read the committer date of
+$sha7`, is unreachable by construction: it can only fire when `git show -s --format=%cI` fails on
+a sha that `rev-parse --verify …^{commit}` has already peeled, and peeling reads the object. No
+fixture can produce it, and I have not invented one. **T044 therefore needs a declared category
+for a defensive line that no repository state can reach**, or the line has to go — because a
+blocking "every site is covered" assertion, run against a site that cannot be covered, leaves the
+branch permanently red for being correct. Recorded here so phase 6 decides it deliberately.
+
+A second observation while reading the same function: the fallback territory literal at
+`scope-check-repos.ps1:224` is `@{ Found; Duplicate; Entries; Invalid }` — it does not carry the
+`NearMiss` key `Get-Territory` returns. `$territory.NearMiss.Count` on that literal is `0` today
+only because the script does not `Set-StrictMode`. It is benign now (the path that reaches it
+FAILs earlier, and `REPOS-027` covers that path), and it is exactly the kind of latent divergence
+between a real parser and a hand-written stand-in that this feature exists to notice. Not fixed —
+phase 4's territory is `tests/**`, and changing a grading script here would be the scope creep the
+harness is supposed to make unnecessary.
+
+### Two harness capabilities this rule set could not be written without
+
+`nestedRepos` builds an independent git repository **inside** the fixture repository, recursively
+through the same builder, after the outer one is finished — so no outer commit can contain it,
+which is the actual relationship the nested layout has. Three of this script's rules exist only to
+refuse a directory that *looks* nested and is not (not a repository, part of the outer repository,
+no such branch), and a recipe state that quietly produced an ordinary subdirectory would have made
+all three pass for the wrong reason. So the shape is asserted in `Harness.Tests.ps1` rather than
+inferred from a green case, and a nested recipe asking for `shallow` throws instead of being
+ignored — T046's rule, applied at the moment it first mattered.
+
+`<DATE>` is a **third** output substitution, and it was forced by a rule that could not otherwise
+be pinned at all. The cross-repository anti-retroactivity message quotes the code commit's own
+committer date back to the reader, so its output differs in every run. The boundary is the whole
+of the design: an ISO-8601 *instant* is run-varying noise; a calendar date a human wrote in a
+document is content, and normalising that would quietly stop the Critical-lane approval fixtures
+from pinning anything. Both halves are asserted.
+
+### T028 was reported as 13 of 13 and was 13 of 27
+
+Resolving the idiom by verdict word made the same question ask itself of `scope-check.ps1`, whose
+declaration T028 had written as `Write-Host "scope-check: FAIL`. That is **one of six verdict
+words**. The reporter had been answering "13 of 13 site(s) inventoried" — a perfect score against
+a denominator built from the part of the script already covered.
+
+It was not invisible. The recall sweep had been printing two of the missing sites as
+`UNCLASSIFIED` in every coverage report since phase 3:
+
+```text
+UNCLASSIFIED scope-check.ps1:95   Write-Host "scope-check: ERROR '$Sha' does not resolve to a commit"
+UNCLASSIFIED scope-check.ps1:264  Write-Host "scope-check: ERROR cannot determine the current branch …"
+```
+
+I read those lines when I wrote T028 and treated them as noise from a deliberately broad net,
+which is what the recall pass is documented to produce. The lesson is narrower than "read the
+output": **an UNCLASSIFIED line in the script you are currently inventorying is never sweep noise**
+— it is either a rule the declaration misses or a line the declaration should say it excludes, and
+saying which is part of the task. The other twelve sites were invisible to both passes, because
+the sweep looks for `FAIL|ERROR` and eight of them say `PASS`, `WARN` or `not applicable`.
+
+So T028 was re-opened inside the same phase: fourteen rules added (`SCOPE-013`…`SCOPE-026`),
+twenty-eight cases, and `scope-check.ps1` now reads **27 of 27** against a denominator that counts
+what the script can actually say. Two graders that share `scope-lib.ps1` are now measured by the
+same ruler, which they were not an hour ago.
+
+**A fixture that passed for the wrong reason, caught by the expectation and not by the run.**
+`SCOPE-020/fail` is the unborn-HEAD case — a repository with no commits, where the branch cannot be
+read at all. My first recipe left the harness's default init commit in place and simply omitted the
+checkout, and the script answered:
+
+```text
+expected: scope-check: ERROR cannot determine the current branch (pass -Branch <NNN-name>)
+observed: scope-check: not applicable ('main' is the trunk)
+```
+
+Exit 0 either way is not what saved it — `SCOPE-023` is that rule, and it already has its own
+fixture. What saved it is that the expectation was **written before the run**: a generated
+expectation would have recorded the trunk line as SCOPE-020's truth, and the ERROR site would have
+been marked covered by a fixture that never reaches it. That is the third time this feature has
+caught the same shape (T020a, `SCOPE-011`, now this), and all three were caught by a different
+guard. The recipe now carries the story in its own `description`, where the next reader of that
+fixture will meet it.
+
+### T031–T033: three more graders, and a principle that had to cut both ways
+
+`verify-kit.ps1` (**29 of 30**, 52 cases), `build-digests.ps1` (**19 of 19**, 36 new cases beside
+phase 2's GAP-025 pair), `roadmap-claim-check.ps1` (**8 of 8**, 16 cases). Every expectation right
+on the first run except one, which is in T034 below.
+
+Each of the three needed its declaration widened, and the widening was the work. The principle
+settled in T029 — **a site is a condition the script detects, never a line it prints** — decided
+all three, and it did not always point the same way:
+
+- `verify-kit.ps1` went from 16 to **30**. `Add-Finding FAIL` alone counted one of the doctor's
+  three registers. Its WARNs carry the grandfather posture (an adoption older than the check is
+  reported, never failed) and its `ok` findings are the only thing a green run prints — the only
+  thing most readers ever see it say. Where an `ok` is simply the other arm of a FAIL, one rule
+  owns both sites through `siteCount`, so the fixture pair covers the condition instead of
+  duplicating it.
+- `build-digests.ps1` went from 10 to **19**, and the nine added matter more than their count.
+  Two are the INERT states feature 010 SC-004 exists for — the machinery ships disarmed and arms
+  itself the moment a project marks its own law — and four are the generate-mode half of
+  conditions whose check-mode half already had a rule, with **deliberately different verdicts**.
+  An orphan digest FAILs under `-Check` and is a NOTE while generating; that asymmetry is the
+  script's design and was untested until now.
+- `doc-lint.ps1` went the other way, 8 to **7**, because three of its `ERROR:` lines are the
+  printers for accumulators counted above them. A denominator is only honest if it moves in
+  whichever direction the principle sends it, and a narrowing is the harder half to write down —
+  it looks like the number being managed. It is recorded in `emission-idioms.json` with the
+  reason, beside the widenings, so the two can be judged together.
+
+`roadmap-claim-check.ps1` is the one where the inert half **is** the interesting half. It is the
+only kit check whose input is the claim ledger rather than the tree, so it declines for reasons
+that are entirely ordinary — no remote, offline, an adopter-authored roadmap in another shape —
+and an unspoken exit 0 there reads exactly like a roadmap that is honest. Four n/a states, two
+OKs, and both failure arms of GAP-017: a claim no row mentions, and the subtler one, a row that
+mentions the claim and still says `idea`. The second is worse, because a human skimming the
+roadmap sees the row and believes it, where an absence at least looks like a gap.
+
+### A real defect, found by the fixtures rather than by reading: `verify-kit.ps1` tier names
+
+`VK-011` was written to pin the rule that refuses a tier name which cannot address a rulebook
+file. The obvious fixture is `"tiers": ["Backend"]`, because the message promises *lowercase
+letters/digits/hyphens*. The doctor passed it:
+
+```text
+expected: verify-kit: FAIL record: declared tier 'Backend' is not a valid tier name (lowercase letters/digits/hyphens) …
+observed: verify-kit: ok record — adoption record valid — tiers: Backend; gate proven
+```
+
+The guard is `if ("$tier" -notmatch '^[a-z][a-z0-9-]*$')`, and **PowerShell's `-match` family is
+case-insensitive by default**. Measured, not inferred:
+
+```text
+'Backend' -notmatch '^[a-z][a-z0-9-]*$'   ->  False     (accepted)
+'Backend' -cnotmatch '^[a-z][a-z0-9-]*$'  ->  True      (refused)
+```
+
+So the character class says lowercase and the operator does not enforce it. The one-character fix
+is `-cnotmatch`.
+
+**What makes it worth more than a typo is the second half.** Having accepted `Backend`, the next
+rule looks for `docs/rulebooks/Backend-rules.md`, and `Test-Path` is case-insensitive on Windows
+and case-sensitive on Linux. The same `kit-adoption.json` therefore gets **two different verdicts
+from the adoption doctor depending on the platform CI runs on** — OK on a Windows runner, `FAIL
+record: declared tier 'Backend' has no instantiated rulebook` on ubuntu. That is SC-006's concern
+arriving from a direction the criterion did not anticipate: not the harness disagreeing between
+platforms, but a *kit script* doing it, in a project's CI, silently.
+
+It is the third defect this feature has found in the thing it was pointed at, and the first found
+by a fixture that simply expected the documented behaviour. The pattern is now familiar enough to
+name: **the earlier two were also a mismatch between what a check says it does and what its
+implementation actually compares** (GAP-025's code-span comment opener, T020a's territory entries
+routed to `Invalid` and read by nobody).
+
+Not fixed here. Phase 4's Territory is `tests/**`, and `scripts/verify-kit.ps1` is not in it —
+amending the territory to reach a script mid-phase is the move constitution I's amendment clause
+exists to make expensive, and this defect is not urgent enough to spend that. So `VK-011` pins the
+rule with a name the check does refuse on both platforms (`back_end`, for its underscore), its
+recipe description carries the whole story, and the fix is proposed as a GAP. The coverage number
+is unaffected either way: the site is covered; what was wrong was the fixture's belief about which
+inputs reach it.
+
+**And the near miss is the lesson.** Had I written `Backend` into the expectation *after* running
+the case — the generated-expectation habit this harness refuses on principle (plan D1, FR-006) —
+the suite would now contain a green fixture asserting that a tier called `Backend` is valid, and
+the defect would have been locked in by the very test written to catch it. Two other cases in this
+phase were saved by the same discipline (`SCOPE-020`, `CLAIM-007`); this is the first where the
+script was wrong rather than the fixture.
+
+### T034: `territory-check.ps1` is not a gate, and its diagnostics are not its own
+
+The idiom entry had been asking a question since phase 1: *"Reports CLEAN/OVERLAP and may emit no
+FAIL rule at all — which of the two is true is itself the question T034 must answer."*
+
+**It emits no FAIL rule at all.** `ritual-checks.ps1` runs six members, seven in an adopted
+project, and this is not one of them. Its exit 2 asks two owners to agree a merge order; it does
+not refuse a commit. That is team-workflow rule 5 working as designed — *overlap is sequenced,
+not forbidden* — and a check that simply refused would push two owners into working around it.
+
+Two findings came out of inventorying it, and neither is fixed here, because phase 4's territory
+is `tests/**` and a grading script is not in it.
+
+**It is the only script in scope with no `-Root`.** It finds the repository with `git rev-parse
+--show-toplevel` from the *current directory*, so the harness could not aim it at a fixture at
+all: passing `-Root` fails to bind (the launcher answers 97), and not passing it would have
+pointed the script at the kit checkout the suite runs from — every case green, about the wrong
+tree. The harness now carries a `noRoot` flag that runs such a case with its working directory in
+the fixture. The accommodation is in `tests/**` where it belongs; the inconsistency is a finding:
+eight grading scripts can be aimed at another tree with `-Root ../my-project` and the ninth
+cannot, which also means `ritual-checks.ps1` could never have included it.
+
+**Five of its twelve sites cannot be pinned by any expectation, and they are counted anyway.**
+Four are `Write-Error` and one is `Write-Warning`. Under `$ErrorActionPreference = 'Stop'`,
+`Write-Error` throws before the `exit 1` written beneath it, and what reaches the reader is a
+PowerShell **error record** — measured, not assumed:
+
+```text
+Write-Error: D:\solutions\agentic-sdlc-kit\scripts\territory-check.ps1:46
+Line |
+  46 |      Write-Error "Branch '$Branch' is not a numbered feature branch (N …
+     |      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Branch 'main' is not a numbered feature branch (NNN-name) — the territory check applies…
+```
+
+That text is the host's, not the kit's: it carries an absolute path from the machine that ran it,
+a line number that moves whenever the file is edited, a caret rule, and ANSI colour. No
+hand-written expectation can pin it, it differs between hosts and versions, and it is the one
+place in the kit where **SC-008 cannot be met** — a reader cannot name the rule from the report,
+because the report is not the rule's. Every other grading script writes its own message with
+`Write-Host` and chooses its own exit code.
+
+### T035: the aggregator, tested as an aggregator
+
+`ritual-checks.ps1` resolves its members under `-Root` — `$scriptsDir = Join-Path $Root 'scripts'`
+— not under its own directory. That is what lets a kit clone run an adopted project's checks, and
+it is what makes the wrapper testable: a fixture supplies **stub members**, and the cases assert
+the aggregation rather than re-running six checks that have hundreds of cases of their own.
+
+Five sites, ten cases: the member announcement, the per-member verdict, the doctor's n/a line, and
+the two run verdicts. The case the task actually asks for is `RIT-004/fail` — **two inert members
+and one failing one** — which pins three claims at once: each n/a carries its own reason, lifted
+out of the member's own output; an n/a is neither a pass nor a failure; and the count reads
+`1 of 6`, not `1 of 4`. An inert member does not mask a failing one, and it does not dilute the
+denominator either.
+
+The stubs print ASCII deliberately. The wrapper spawns each member as a *grandchild* process whose
+console encoding the harness does not control — `RunChild.ps1` sets UTF-8 one level up, in the
+child — so a non-ASCII character in a member's output would be at the mercy of the platform's code
+page and the case would pass on one runner and fail on the other. The wrapper's own lines keep
+their em dashes and are asserted with them. That is a fixture-design choice, not a defect, and it
+is written down because the reasoning is invisible from the fixture.
+
+### T036: the coverage record — 177 of 185, and every one of the eight
+
+**No script is `IDIOM UNDECLARED` any more.** All nine declare how they emit, and every
+declaration carries its reasoning.
+
+| script | covered | notes |
+|---|---|---|
+| `enforcement-pack.ps1` | 44 of 45 | |
+| `scope-check.ps1` | 27 of 27 | was reported 13 of 13 against a denominator of 13 |
+| `scope-check-repos.ps1` | 31 of 32 | was `IDIOM UNDECLARED` |
+| `doc-lint.ps1` | 7 of 7 | denominator narrowed from 8 |
+| `verify-kit.ps1` | 29 of 30 | denominator widened from 16 |
+| `build-digests.ps1` | 19 of 19 | denominator widened from 10 |
+| `roadmap-claim-check.ps1` | 8 of 8 | denominator widened from 2 |
+| `territory-check.ps1` | 7 of 12 | was `IDIOM UNDECLARED` |
+| `ritual-checks.ps1` | 5 of 5 | was `IDIOM UNDECLARED` |
+
+The eight uncovered sites, each with the reason it is uncovered — because **T044 turns this
+report into a blocking assertion, and three of the four reasons below cannot be fixed by writing
+a fixture**:
+
+1. `enforcement-pack.ps1:1066` — AmendmentAuthority cannot parse commit metadata for part of a
+   range. **Reachable in principle, unreached.** It needs a commit whose `%H`/`%an` metadata is
+   unreadable while the range around it is readable; no recipe state produces that today, and
+   inventing one is phase 6's call, not phase 4's.
+2. `scope-check-repos.ps1:199` — the committer date cannot be read for a sha that
+   `rev-parse --verify …^{commit}` has already peeled. **Unreachable by construction**: peeling
+   reads the object.
+3. `verify-kit.ps1:311` — the catch-all. **Reachable and unpinnable**: its text is
+   `$_.Exception.Message`, composed by .NET, which differs between runtimes. Pinning it would make
+   the suite's verdict depend on the PowerShell version, which SC-006 forbids.
+4. `territory-check.ps1:36, :46, :57, :64` and `:81` — **reachable and unpinnable**, for the
+   reason set out under T034: the text belongs to the host, not the kit.
+
+So **T044 needs a declared category for a site no fixture can cover, with its reason recorded in
+`rules.json` and checked** — otherwise the blocking assertion leaves the branch permanently red
+for being correct, which is GAP-022's disease in a new place. The alternative for cases 3 and 4 is
+to change the scripts so they write their own messages and choose their own exit codes, which is a
+behaviour change and belongs in a feature of its own. Recorded here so phase 6 chooses
+deliberately rather than discovering it.
+
+**The ten unclassified candidates are now all accounted for**, which is the number the two-pass
+design says to watch rather than the percentage. Every one is a printer the declaration excludes
+on purpose:
+
+- `build-digests.ps1:241, :242, :251, :252` — the two issue loops and their two RESULT lines.
+- `doc-lint.ps1:233, :247` — the manifest-completeness and unresolved-path headers, which print
+  `$manifestErrors` and `$broken`.
+- `enforcement-pack.ps1:1231` — the failure header printing `$failures`.
+- `roadmap-claim-check.ps1:124` — the FAIL count printing `$failures`.
+- `verify-kit.ps1:320, :326` — the report loop's FAIL arm and the run summary.
+
+None is a missed rule. The recall sweep is doing exactly what it was built to do: it looks for
+anything FAIL-shaped, it finds the printers, and the declaration has to say in writing why each
+one is not a condition. That is the difference between a number nobody questions and a number
+somebody has answered for.

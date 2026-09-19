@@ -1,0 +1,19 @@
+{
+  "description": "A line that begins like a marker and breaks the grammar — here, no colon. Fail-closed on purpose (feature 010 review F6/F7): vanishing silently would leave the check enforcing the ABSENCE of a rule whose author believed it was marked.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest The whole ritual on one page. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n"
+      }
+    }
+  ]
+}

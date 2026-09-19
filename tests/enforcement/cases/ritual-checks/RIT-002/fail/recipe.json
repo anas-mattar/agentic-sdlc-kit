@@ -1,0 +1,19 @@
+{
+  "description": "One member exits non-zero. Its verdict line reads FAIL while the other five still report, because the wrapper never short-circuits: one run must report every problem, not the first one.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the tree and its checks",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/doc-lint.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'doc-lint: OK - stub'\nexit 0\n",
+        "scripts/enforcement-pack.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'enforcement-pack: OK - stub'\nexit 0\n",
+        "scripts/scope-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-check: FAIL phase 1 commit abcdefg: out of territory'\nexit 1\n",
+        "scripts/scope-check-repos.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-repos: OK - stub'\nexit 0\n",
+        "scripts/build-digests.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'digests: OK - stub'\nexit 0\n",
+        "scripts/roadmap-claim-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'roadmap-claims: OK - stub'\nexit 0\n"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+scope-check: not applicable (commit <SHA> carries no 'phase N' token — not a phase commit)

@@ -1,0 +1,2 @@
+scope-repos: code-repo: PASS phase 1 commit <SHA> (1 file(s))
+scope-repos: other-repo: n/a (declared but not present here — a governance-only checkout; the code repository's own CI runs this check for itself)

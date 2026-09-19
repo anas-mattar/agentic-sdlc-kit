@@ -1,0 +1,66 @@
+{
+  "description": "The same mini-spec carrying the block its template requires. Differs only in the condition under test (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 5,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"code-repo\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "hoursAgo": 4,
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Micro Spec: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "",
+          "## Intent",
+          "",
+          "Do the thing.",
+          "",
+          "**Territory**:",
+          "",
+          "- `code-repo/src/**`"
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing",
+  "nestedRepos": {
+    "code-repo": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "hoursAgo": 3,
+          "write": {
+            "README.md": "code\n"
+          }
+        },
+        {
+          "branch": "001-thing",
+          "message": "phase 1: the thing",
+          "hoursAgo": 2,
+          "write": {
+            "src/a.txt": "a\n"
+          }
+        }
+      ]
+    }
+  }
+}

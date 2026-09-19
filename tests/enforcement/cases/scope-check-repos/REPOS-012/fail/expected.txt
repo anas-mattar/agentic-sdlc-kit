@@ -1,0 +1,2 @@
+scope-repos: code-repo: n/a (present but not a git repository)
+scope-repos: n/a (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)

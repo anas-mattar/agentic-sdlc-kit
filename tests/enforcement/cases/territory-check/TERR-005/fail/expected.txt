@@ -1,0 +1,4 @@
+OVERLAP with 012-other [stale — reclaimable]:
+  src/shared.txt
+
+Only stale claims overlap — consider adopting them per team-workflow rule 3.

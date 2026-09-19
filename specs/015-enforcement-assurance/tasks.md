@@ -169,21 +169,21 @@ widen it, which needs both files.
 
 - `tests/**`
 
-- [ ] T028 Inventory and cover `scripts/scope-check.ps1`, including the anti-retroactivity rule —
+- [x] T028 Inventory and cover `scripts/scope-check.ps1`, including the anti-retroactivity rule —
       a declaration that post-dates the commit it would legalise.
-- [ ] T029 Inventory and cover `scripts/scope-check-repos.ps1`, including a code repository on the
+- [x] T029 Inventory and cover `scripts/scope-check-repos.ps1`, including a code repository on the
       wrong branch, a missing repository, and a trunk that is not `main`.
-- [ ] T030 [P] Inventory and cover `scripts/doc-lint.ps1`, including manifest completeness and an
+- [x] T030 [P] Inventory and cover `scripts/doc-lint.ps1`, including manifest completeness and an
       unresolvable referenced path.
-- [ ] T031 [P] Inventory and cover `scripts/verify-kit.ps1` across its five dimensions.
-- [ ] T032 [P] Inventory and cover `scripts/build-digests.ps1` beyond phase 2 — drift, bounds, and
+- [x] T031 [P] Inventory and cover `scripts/verify-kit.ps1` across its five dimensions.
+- [x] T032 [P] Inventory and cover `scripts/build-digests.ps1` beyond phase 2 — drift, bounds, and
       a near-miss marker line that must fail rather than vanish.
-- [ ] T033 [P] Inventory and cover `scripts/roadmap-claim-check.ps1`, including all three inert
+- [x] T033 [P] Inventory and cover `scripts/roadmap-claim-check.ps1`, including all three inert
       states, which must report `N/A` and never a silent pass.
-- [ ] T034 [P] Inventory and cover `scripts/territory-check.ps1`.
-- [ ] T035 Cover `scripts/ritual-checks.ps1` as an aggregator: one failing member fails the run,
+- [x] T034 [P] Inventory and cover `scripts/territory-check.ps1`.
+- [x] T035 Cover `scripts/ritual-checks.ps1` as an aggregator: one failing member fails the run,
       member names are stable, and an inert member does not mask a failing one.
-- [ ] T036 Run the coverage reporter and record the full uncovered list in `notes.md`.
+- [x] T036 Run the coverage reporter and record the full uncovered list in `notes.md`.
 
 ---
 

@@ -5,7 +5,16 @@
     "a grading script. 'emitAnchor' is a literal substring of the message as it appears in the",
     "script source — it is how Coverage.Tests.ps1 ties an inventory entry to the line that",
     "emits it, so a rule that is deleted or reworded is caught rather than silently orphaned.",
-    "Phase 1 inventories Invoke-StructureCheck only; phase 2 adds the two GAP rules it closes; phases 3 and 4 complete it."
+    "Phase 1 inventories Invoke-StructureCheck only; phase 2 adds the two GAP rules it closes; phases 3 and 4 complete it.",
+    "",
+    "DIRECTIONS. Every rule has a 'fail' case and a 'pass' case, and from T029 on those names",
+    "mean 'the condition the rule names HOLDS' and 'the nearest state in which it does not'.",
+    "For the adverse rules — the great majority — that is the same thing as failing and",
+    "passing. It is not for the inert and affirmative verdicts scope-check-repos.ps1 emits: a",
+    "'fail' case for 'n/a (declared but not present here)' exits 0, because the rule under test",
+    "IS the n/a. Naming those directions after the exit code would have meant leaving the inert",
+    "verdicts out of the inventory, and the inert verdicts are precisely what SC-004 and GAP-027",
+    "are about — a state in which nothing was graded must not read as a graded pass."
   ],
   "rules": [
     {
@@ -16,6 +25,168 @@
       "law": "CLAUDE.md Task-Scoped Reading (a digest is never a source-of-truth rung, so it may never drift from the law it digests)",
       "emitAnchor": "stale or hand-edited digest: docs/digests/",
       "notes": "The pass direction over this recipe is the GAP-025 demonstration: a '<!--' inside an inline code span opened a phantom comment that swallowed every later marker, so a CORRECT digest was reported stale and a regenerated one silently lost rules."
+    },
+    {
+      "id": "DIGEST-002",
+      "script": "build-digests.ps1",
+      "function": "(marker extraction)",
+      "summary": "the manifest names a document that is not on disk",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md",
+      "emitAnchor": "missing document: $RelPath is named by",
+      "notes": "Skipping it would shrink the pack’s digest to whatever survived and still report it fresh — the shape of every defect this script guards against."
+    },
+    {
+      "id": "DIGEST-003",
+      "script": "build-digests.ps1",
+      "function": "(marker extraction)",
+      "summary": "a digest marker carries no text",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md",
+      "emitAnchor": "empty digest marker:",
+      "notes": "An empty bullet says a rule exists here and declines to say what it is."
+    },
+    {
+      "id": "DIGEST-004",
+      "script": "build-digests.ps1",
+      "function": "(marker extraction)",
+      "summary": "a marker exceeds MaxDigestLineLength (120 chars)",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 owner-ratified bounds",
+      "emitAnchor": "digest line too long:",
+      "notes": "The bound is what keeps a digest a digest: an orientation aid stops being one when its lines are as long as the law they point at."
+    },
+    {
+      "id": "DIGEST-005",
+      "script": "build-digests.ps1",
+      "function": "(marker extraction)",
+      "summary": "a line begins like a marker and breaks the exact grammar",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 review F6/F7",
+      "emitAnchor": "malformed digest marker:",
+      "notes": "Fail-closed. Vanishing silently would leave the check enforcing the ABSENCE of a rule whose author believed it was marked — the same choice scope-check.ps1 makes for a Territory marker with no colon."
+    },
+    {
+      "id": "DIGEST-006",
+      "script": "build-digests.ps1",
+      "function": "(manifest validation)",
+      "summary": "a pack name is not a safe filename fragment",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 review F4",
+      "emitAnchor": "invalid pack name:",
+      "notes": "The name is interpolated into a write path, so fail-closed validation is what stops a manifest routing a write outside docs/digests/."
+    },
+    {
+      "id": "DIGEST-007",
+      "script": "build-digests.ps1",
+      "function": "(manifest validation)",
+      "summary": "two packs declare the same name",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 review F4",
+      "emitAnchor": "duplicate pack name:",
+      "notes": "Both write the same file, so the second pack’s law is swallowed whole by the first with nothing in the output to say so."
+    },
+    {
+      "id": "DIGEST-008",
+      "script": "build-digests.ps1",
+      "function": "(manifest validation)",
+      "summary": "a pack exceeds MaxDigestContentLines (40 bullets)",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 owner-ratified bounds",
+      "emitAnchor": "digest too long: pack",
+      "notes": "Past the bound a digest is a second copy of the law. Its digest is deliberately NOT treated as an orphan (review F1): the fix is trimming markers, not deleting the file."
+    },
+    {
+      "id": "DIGEST-009",
+      "script": "build-digests.ps1",
+      "function": "(check mode)",
+      "summary": "a pack carries markers and its digest was never generated",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; CLAUDE.md Task-Scoped Reading (a digest is never a source-of-truth rung)",
+      "emitAnchor": "missing digest: docs/digests/$name",
+      "notes": "The digest is linked from CLAUDE.md, so a reader following the pointer would find nothing and conclude the pack has no law."
+    },
+    {
+      "id": "DIGEST-010",
+      "script": "build-digests.ps1",
+      "function": "(check mode)",
+      "summary": "a *-digest.md exists that no manifest pack produces",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; CLAUDE.md Task-Scoped Reading (a digest is never a source-of-truth rung)",
+      "emitAnchor": "orphan digest: docs/digests/$o",
+      "notes": "Law-shaped text nothing regenerates drifts from the moment it is written. Contrast DIGEST-018: generate mode reports the same file as a NOTE, because an author mid-edit is not a tree under CI."
+    },
+    {
+      "id": "DIGEST-011",
+      "script": "build-digests.ps1",
+      "function": "(check mode)",
+      "summary": "no digest manifest exists and no digests do either",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 SC-004",
+      "emitAnchor": "'digests: n/a (no digest manifest)'",
+      "notes": "The machinery ships INERT and arms itself the moment a project marks its own law. An OK here would be a check reporting success over a feature nobody turned on — SC-004 exactly."
+    },
+    {
+      "id": "DIGEST-012",
+      "script": "build-digests.ps1",
+      "function": "(check mode)",
+      "summary": "the manifest is gone but digest files remain",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md",
+      "emitAnchor": "not found but $($existingDigests.Count) *-digest.md file(s) exist",
+      "notes": "Not an inert project — a project whose manifest was deleted, leaving digests that can never again be regenerated or verified. One file on disk separates this from DIGEST-011 and the verdicts are opposite."
+    },
+    {
+      "id": "DIGEST-013",
+      "script": "build-digests.ps1",
+      "function": "(generate mode)",
+      "summary": "the manifest is absent when generation is asked for",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md",
+      "emitAnchor": "build-digests: FAIL — $manifestRel not found — restore",
+      "notes": "The author asked for digests and nothing says which to build, so the script refuses rather than writing a guess."
+    },
+    {
+      "id": "DIGEST-014",
+      "script": "build-digests.ps1",
+      "function": "(check mode)",
+      "summary": "a manifest exists and no document carries a marker",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 SC-004",
+      "emitAnchor": "'digests: n/a (no digest markers)'",
+      "notes": "The second inert state, kept distinct from DIGEST-011 so the reason in the output is the true one."
+    },
+    {
+      "id": "DIGEST-015",
+      "script": "build-digests.ps1",
+      "function": "(check mode)",
+      "summary": "every digest matches what its sources produce",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; CLAUDE.md Task-Scoped Reading (a digest is never a source-of-truth rung)",
+      "emitAnchor": "digests: OK ($($expected.Count) digest(s) fresh",
+      "notes": "The affirmative verdict, and its counts are its substance: OK over nought digests and nought markers would be the inert state wearing a success message."
+    },
+    {
+      "id": "DIGEST-016",
+      "script": "build-digests.ps1",
+      "function": "(generate mode)",
+      "summary": "generation finds no markers and writes nothing",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md; feature 010 SC-004",
+      "emitAnchor": "no digest markers found — nothing to generate",
+      "notes": "Writing an empty digest instead would create a file -Check then has to defend."
+    },
+    {
+      "id": "DIGEST-017",
+      "script": "build-digests.ps1",
+      "function": "(generate mode)",
+      "summary": "a digest file is written",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md",
+      "emitAnchor": "build-digests: wrote docs/digests/$name",
+      "notes": "One line per file, because an author needs to know WHICH files changed under them — a single summary leaves a surprising diff unexplained."
+    },
+    {
+      "id": "DIGEST-018",
+      "script": "build-digests.ps1",
+      "function": "(generate mode)",
+      "summary": "an orphan digest is present while generating",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md",
+      "emitAnchor": "build-digests: NOTE — orphan docs/digests/$o",
+      "notes": "A NOTE, and the run still succeeds — the same file DIGEST-010 fails in check mode. Generate mode never deletes a file it did not write, so it warns about what will fail later instead."
+    },
+    {
+      "id": "DIGEST-019",
+      "script": "build-digests.ps1",
+      "function": "(generate mode)",
+      "summary": "generation completes over a healthy tree",
+      "law": "feature 010 contract specs/010-law-digests/contracts/digest-checks.md",
+      "emitAnchor": "build-digests: OK ($($expected.Count) digest(s), $totalMarkers marker(s))",
+      "notes": "Paired with a run stopped by a source issue, whose own line states NOTHING WRITTEN: a generator that half-wrote and then failed would leave some digests fresh and some not, with no record of which."
     },
     {
       "id": "SCOPE-001",
@@ -45,6 +216,213 @@
       "emitDescription": "the near-miss FAIL added by T019a",
       "emitAnchor": "but has no ':' on that line",
       "notes": "Phase 2 review F3. specs/014-amendment-authority/tasks.md:322 is still this shape. Fixed by making the near-miss loud rather than by joining continuation lines - the pattern build-digests.ps1 uses for a malformed digest marker."
+    },
+    {
+      "id": "SCOPE-004",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a commit on a feature branch deletes its own declaration file",
+      "law": "Definition of Done gate 4; 006 review F2",
+      "emitAnchor": "a feature's declaration files must never be deleted on its branch",
+      "notes": "Runs BEFORE phase attribution on purpose, so a commit carrying no 'phase N' token cannot smuggle the deletion past the grader. Pairs with SCOPE-005, the same move wearing a rename."
+    },
+    {
+      "id": "SCOPE-005",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a commit renames its own declaration file away",
+      "law": "Definition of Done gate 4; 006 review F2, phase 2 review F3",
+      "emitAnchor": "away — a feature's declaration files must never be deleted or renamed",
+      "notes": "'A rename away is a delete wearing a costume.' Needed the harness to learn 'git mv' (the recipe's new 'rename'): an add-plus-delete fixture would have exercised SCOPE-004's arm and left this one untested while looking like coverage."
+    },
+    {
+      "id": "SCOPE-006",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a Micro mini-spec carries more than one Territory block",
+      "law": "constitution X, Micro lane",
+      "emitAnchor": "(a Micro feature declares exactly one feature-global block)",
+      "notes": "Two declarations are not a wider declaration, they are an ambiguous one - and the lane's five-file cap cannot be applied to a pair."
+    },
+    {
+      "id": "SCOPE-007",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a Micro territory entry is not repo-relative",
+      "law": "constitution X, Micro lane",
+      "emitAnchor": "invalid territory entry '$bad' (entries must be repo-relative, no '..'); $microPromote",
+      "notes": "The sibling of enforcement-pack's MICRO-009, and the reason that one mattered: both graders read the same block through the same parser, so this pins that scope-check refuses the entry rather than either grader dropping it."
+    },
+    {
+      "id": "SCOPE-008",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a Micro feature declares no usable Territory block at all",
+      "law": "constitution X, Micro lane",
+      "emitAnchor": "declares no usable **Territory** block in",
+      "notes": "The one place the two lanes deliberately disagree: an absent declaration is a non-blocking WARN on Standard (pre-006 compatibility) and a hard FAIL on Micro, because no pre-Micro feature exists to grandfather."
+    },
+    {
+      "id": "SCOPE-009",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "the territory declaration is missing at the parent while the feature directory exists",
+      "law": "Definition of Done gate 4; research D3, 006 review F2 (anti-retroactivity)",
+      "emitAnchor": "is missing at the parent while specs/",
+      "notes": "T028's named rule, and the load-bearing one: the declaration is read from the commit's PARENT so an amendment only governs commits made after it lands. Falling back to the commit's own blob is legal ONLY for a true claim commit, where the parent lacks the whole feature directory. The fail case restores tasks.md IN the phase commit - a declaration post-dating the commit it would legalise; the pass case restores it in its own commit first, which is the remediation the message names."
+    },
+    {
+      "id": "SCOPE-010",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a phase declares more than one Territory marker in tasks.md",
+      "law": "Definition of Done gate 4; 006 review F8",
+      "emitAnchor": "more than one **Territory** marker for phase",
+      "notes": "The Standard-lane sibling of SCOPE-006, and the reason exactly-one-per-phase is graded rather than assumed."
+    },
+    {
+      "id": "SCOPE-011",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a Standard territory entry is not repo-relative",
+      "law": "Definition of Done gate 4",
+      "emitAnchor": "(entries must be repo-relative, no '..')\"",
+      "notes": "Territory is graded by -like matching against repo-relative commit paths, so a non-repo-relative entry can never match anything: a declaration that silently declares nothing. THE ANCHOR CARRIES ITS CLOSING QUOTE, and that is not fussiness - the Micro arm (SCOPE-007) prints the identical sentence and then continues into the promotion remediation, so the natural anchor matched both sites. Caught by the anchor-ambiguity assertion written in phase 3's T023 for exactly this, on its first real encounter: without it SCOPE-011 would have silently marked the Micro site covered by a Standard fixture that never reaches it."
+    },
+    {
+      "id": "SCOPE-012",
+      "script": "scope-check.ps1",
+      "function": "Test-CommitScope",
+      "summary": "a Territory marker is declared with an empty entry list",
+      "law": "Definition of Done gate 4",
+      "emitAnchor": "but the entry list is empty (declare the paths, or remove the marker)",
+      "notes": "NOT the pre-006 compatibility case: an ABSENT declaration WARNs and passes, a declared-and-empty one FAILs, because the author said 'here is my territory' and then named nothing. The pair with SCOPE-002 is what makes that distinction testable rather than merely documented."
+    },
+    {
+      "id": "SCOPE-013",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "the commit named for grading does not resolve to a commit",
+      "law": "Definition of Done gate 4 (scope); constitution IV",
+      "emitAnchor": "ERROR '$Sha' does not resolve to a commit",
+      "notes": "'rev-parse --short' echoes an unknown sha back rather than failing, so the exit code is the only thing separating a real commit from a typo."
+    },
+    {
+      "id": "SCOPE-014",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "the commit is a merge commit, which authored nothing",
+      "law": "Definition of Done gate 4 (scope); constitution IV; feature 012 D7",
+      "emitAnchor": "is a merge commit)",
+      "notes": "Grading a merge would charge one phase for every file both sides touched."
+    },
+    {
+      "id": "SCOPE-015",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "the commit carries no 'phase N' token, so no declaration governs it",
+      "law": "Definition of Done gate 4 (scope); constitution IV",
+      "emitAnchor": "carries no 'phase N' token",
+      "notes": "Territory is declared per phase. The declaration-deletion guard runs ABOVE this, so a token-less commit cannot smuggle a deletion past it."
+    },
+    {
+      "id": "SCOPE-016",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "a Micro commit is wholly inside the territory its mini-spec declares",
+      "law": "constitution X (Micro lane); Definition of Done gate 4 (scope); constitution IV",
+      "emitAnchor": "file(s), Micro territory from spec.md)",
+      "notes": "The affirmative verdict for the Micro lane. The provenance suffix is the only thing in the output that says the declaration came from spec.md rather than a tasks.md the feature does not have."
+    },
+    {
+      "id": "SCOPE-017",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "tasks.md exists neither at the commit nor at its parent",
+      "law": "Definition of Done gate 4 (scope); constitution IV; feature 006 pre-006 compatibility",
+      "emitAnchor": "not found at the commit or its parent",
+      "notes": "A history predating the convention entirely. Non-blocking, and the WARN is the whole verdict: nothing was graded, and the line names the file that would have to exist."
+    },
+    {
+      "id": "SCOPE-018",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "tasks.md declares no Territory anywhere, at any phase",
+      "law": "Definition of Done gate 4 (scope); constitution IV; feature 006 FR-015",
+      "emitAnchor": "no territory declared for phase $phaseN in $tasksRel (declare territory",
+      "notes": "The one state in which an undeclared path still exits 0. SCOPE-002 sits beside it: the moment any other phase declares, the mercy stops applying."
+    },
+    {
+      "id": "SCOPE-019",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "every path in the commit is inside the declared territory",
+      "law": "Definition of Done gate 4 (scope); constitution IV",
+      "emitAnchor": "file(s))",
+      "notes": "The affirmative verdict the check exists to be able to give. The file count is part of it — a PASS over nought files is a pass nobody should trust, which is phase 5’s ungraded state."
+    },
+    {
+      "id": "SCOPE-020",
+      "script": "scope-check.ps1",
+      "function": "(dispatch)",
+      "summary": "the current branch cannot be read from the repository",
+      "law": "Definition of Done gate 4 (scope); constitution IV; docs/sdlc/branch-strategy.md",
+      "emitAnchor": "ERROR cannot determine the current branch",
+      "notes": "Reachable with an unborn HEAD. Exits 1 rather than guessing: the lane selects every rule below it."
+    },
+    {
+      "id": "SCOPE-021",
+      "script": "scope-check.ps1",
+      "function": "(dispatch)",
+      "summary": "HEAD is detached, so the branch name is the literal word HEAD",
+      "law": "Definition of Done gate 4 (scope); constitution IV; docs/sdlc/branch-strategy.md",
+      "emitAnchor": "WARN detached HEAD",
+      "notes": "The CI shape. Non-blocking, and it names the flag that fixes it, because a wrapper omitting -Branch classifies every run wrongly."
+    },
+    {
+      "id": "SCOPE-022",
+      "script": "scope-check.ps1",
+      "function": "(dispatch)",
+      "summary": "the branch is a fix/, chore/ or docs/ lane, which has no phases",
+      "law": "constitution X (the Lite lane); Definition of Done gate 4 (scope); constitution IV",
+      "emitAnchor": "lane — enforcement-pack's Lite-lane checks apply instead",
+      "notes": "Inapplicable rather than skipped, and the line names the check that grades the lane instead."
+    },
+    {
+      "id": "SCOPE-023",
+      "script": "scope-check.ps1",
+      "function": "(dispatch)",
+      "summary": "the branch is the trunk, where no feature declares Territory",
+      "law": "Definition of Done gate 4 (scope); constitution IV; docs/sdlc/branch-strategy.md",
+      "emitAnchor": "is the trunk)",
+      "notes": "CI runs on main too. This line is what keeps a main build from reporting a scope pass it never made."
+    },
+    {
+      "id": "SCOPE-024",
+      "script": "scope-check.ps1",
+      "function": "(dispatch)",
+      "summary": "the branch is not NNN-shaped, so it maps to no spec directory",
+      "law": "CLAUDE.md Feature Structure; Definition of Done gate 4 (scope); constitution IV",
+      "emitAnchor": "is not a numbered feature branch",
+      "notes": "The branch name is quoted back, because the name itself is the thing to fix."
+    },
+    {
+      "id": "SCOPE-025",
+      "script": "scope-check.ps1",
+      "function": "(dispatch)",
+      "summary": "under -All, no merge base with main can be resolved",
+      "law": "Definition of Done gate 4 (scope); constitution IV; GAP-027",
+      "emitAnchor": "WARN could not resolve a merge base with main",
+      "notes": "A clone whose trunk is called something else. NOTHING is checked and the line says so — the exact shape GAP-027 is about; phase 5 reconsiders its exit code."
+    },
+    {
+      "id": "SCOPE-026",
+      "script": "scope-check.ps1",
+      "function": "(dispatch)",
+      "summary": "under -All, the range since the merge base is empty",
+      "law": "Definition of Done gate 4 (scope); constitution IV; GAP-027",
+      "emitAnchor": "PASS (no commits since merge base)",
+      "notes": "The one line in this script that says 'pass' about a run that examined no commit."
     },
     {
       "id": "LITE-001",
@@ -441,6 +819,765 @@
       "law": "constitution X (legal values: Lite, Micro, Standard, Critical)",
       "emitAnchor": "**Delivery Level** header is unfilled or invalid",
       "notes": "This is the only validation the level gets today — spelling, not judgement. GAP-023 is the missing half."
+    },
+    {
+      "id": "REPOS-001",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "no code repositories are declared, so there is nothing to grade",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 D2",
+      "emitAnchor": "n/a (no codeRepos declared in kit-adoption.json",
+      "notes": "The kit itself and every single-repo adoption land here. An inert verdict, counted as a rule on purpose: printing a bare OK for a run that reached no code is SC-004's exact failure."
+    },
+    {
+      "id": "REPOS-002",
+      "script": "scope-check-repos.ps1",
+      "function": "Get-DeclaredRepos",
+      "summary": "kit-adoption.json is not valid JSON",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; adoption/updating.md (the record’s shape)",
+      "emitAnchor": "WARN kit-adoption.json is not valid JSON",
+      "notes": "The record is the only statement of which repositories exist. Unreadable means unknown, and unknown is reported twice — here, and again as the run-level n/a."
+    },
+    {
+      "id": "REPOS-003",
+      "script": "scope-check-repos.ps1",
+      "function": "Get-DeclaredRepos",
+      "summary": "codeRepos is present but is not an array",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; adoption/updating.md",
+      "emitAnchor": "WARN kit-adoption.json codeRepos is not an array",
+      "notes": "A bare string is what an author writes when there is one repository. Enumerating it would look for repositories named after its characters."
+    },
+    {
+      "id": "REPOS-004",
+      "script": "scope-check-repos.ps1",
+      "function": "Get-DeclaredRepos",
+      "summary": "a codeRepos entry is a path, a traversal or a drive prefix rather than a plain directory name",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F7",
+      "emitAnchor": "WARN ignoring codeRepos entry",
+      "notes": "The doctor FAILs these; the grader refuses them independently, because a code repository’s own CI may never run the doctor. One bad entry does not stop the run."
+    },
+    {
+      "id": "REPOS-005",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "-Repo names a repository the record does not declare",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "is not declared in kit-adoption.json (declared:",
+      "notes": "Narrowing a run to nothing is an ERROR with exit 1, never a quiet success — the caller asked for a verdict and would otherwise get silence."
+    },
+    {
+      "id": "REPOS-006",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "the current branch cannot be read from the repository",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; docs/sdlc/branch-strategy.md (the lane decides the rules)",
+      "emitAnchor": "ERROR cannot determine the current branch",
+      "notes": "Reachable with an unborn HEAD. The lane selects every rule below it, so a check that cannot name the branch stops instead of guessing."
+    },
+    {
+      "id": "REPOS-007",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "HEAD is detached, so the branch name is the literal word HEAD",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; docs/sdlc/branch-strategy.md",
+      "emitAnchor": "WARN detached HEAD",
+      "notes": "The CI shape: a job that checked out a sha. Non-blocking, but it names the flag that fixes it, because a wrapper that omits -Branch here classifies every run wrongly."
+    },
+    {
+      "id": "REPOS-008",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "the branch is a fix/, chore/ or docs/ lane, which has no phases",
+      "law": "constitution X (Controlled Delivery — the Lite lane); Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "lane — enforcement-pack's Lite-lane checks apply instead",
+      "notes": "Inapplicable rather than skipped, and the line says which check grades the lane instead so the reader is not left counting a missing verdict."
+    },
+    {
+      "id": "REPOS-009",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "the branch is the trunk, where no feature declares Territory",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; docs/sdlc/branch-strategy.md",
+      "emitAnchor": "is the trunk)",
+      "notes": "CI runs on main too. This is the line that keeps a main build from reporting a scope pass it never made."
+    },
+    {
+      "id": "REPOS-010",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "the branch is not NNN-shaped, so it maps to no spec directory",
+      "law": "CLAUDE.md Feature Structure; Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "is not a numbered feature branch",
+      "notes": "The branch name is quoted back, because the name itself is the thing to fix."
+    },
+    {
+      "id": "REPOS-011",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "a declared repository is not present in this checkout",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; docs/sdlc/repository-strategy.md (nested layout)",
+      "emitAnchor": "n/a (declared but not present here",
+      "notes": "The governance repository’s own CI looks exactly like this. Inert, and paired with the run-level line so the absence cannot read as a pass."
+    },
+    {
+      "id": "REPOS-012",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "the declared directory is present but is not a git repository",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "n/a (present but not a git repository)",
+      "notes": "Reachable only through a '.git' file pointing at a gitdir that does not exist — an interrupted clone. A plain directory inside the governance tree takes the next rule instead, because git walks up."
+    },
+    {
+      "id": "REPOS-013",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "the declared directory is part of the governance repository rather than a repository of its own",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; docs/sdlc/repository-strategy.md",
+      "emitAnchor": "n/a (present but not a repository of its own",
+      "notes": "The dangerous one: git answers every question about it, just about the wrong history. Without the toplevel comparison the check would grade governance commits and report a confident verdict about code nobody wrote."
+    },
+    {
+      "id": "REPOS-014",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "a declared repository has no branch of this feature’s name",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "not applicable (no '$Branch' branch here",
+      "notes": "The ordinary case of a feature that touches one of several repositories. Not a failure and not a pass — nothing here was graded, and the run says so."
+    },
+    {
+      "id": "REPOS-015",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "under -All, no merge base with a trunk can be resolved",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F5",
+      "emitAnchor": "WARN could not resolve a merge base with a trunk",
+      "notes": "Code repositories are pre-existing and independent, so their trunk is often master or develop. NOTHING WAS GRADED is shouted because a silent skip here exempts a whole repository."
+    },
+    {
+      "id": "REPOS-016",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "under -All, the range since the merge base is empty",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "PASS (no commits since merge base)",
+      "notes": "An affirmative verdict that graded nothing. It is printed together with the run-level n/a on purpose: the PASS line alone is precisely the reading GAP-027 is about."
+    },
+    {
+      "id": "REPOS-017",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "the commit named for grading does not resolve to a commit",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "ERROR '$Sha' does not resolve to a commit",
+      "notes": "Plain 'rev-parse --short' echoes an unknown sha back unvalidated, so the check asks for ^{commit}. A mistyped ref must not produce a verdict about nothing."
+    },
+    {
+      "id": "REPOS-018",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "the commit is a merge commit, which authored nothing",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 D7",
+      "emitAnchor": "is a merge commit)",
+      "notes": "Grading a merge would charge one phase for every file both sides touched. Skipping it means this run graded nothing, which the run-level line then states."
+    },
+    {
+      "id": "REPOS-019",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "the commit carries no 'phase N' token, so no declaration governs it",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; docs/sdlc/branch-strategy.md (phase commits)",
+      "emitAnchor": "carries no 'phase N' token",
+      "notes": "Territory is declared per phase. Without the token there is no declaration to compare against, and inventing one would be worse than saying so."
+    },
+    {
+      "id": "REPOS-021",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "every path in the commit is inside the declared territory",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "PASS phase $phaseN commit $sha7 (",
+      "notes": "The affirmative verdict, covered from the Micro side: ', Micro territory from spec.md' is the only thing in the output that says the declaration came from a mini-spec rather than from tasks.md. Mirrors REPOS-022 deliberately — one lane each."
+    },
+    {
+      "id": "REPOS-022",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "a path in the commit is outside the declared territory",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "not in territory",
+      "notes": "Gate 4 reaching the code. The remediation line beside it spells out the ordering that makes an amendment legitimate: a governance commit BEFORE the code phase commit."
+    },
+    {
+      "id": "REPOS-023",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "a Micro feature declares no usable Territory block in its mini-spec",
+      "law": "constitution X (Micro lane); Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "this Micro feature declares no usable **Territory** block",
+      "notes": "A hard FAIL where the Standard lane WARNs, and deliberately so: the mini-spec template requires the block, so no pre-Micro history exists to grandfather."
+    },
+    {
+      "id": "REPOS-024",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "more than one Territory marker governs the phase",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 006 review F8",
+      "emitAnchor": "more than one **Territory** marker for phase $phaseN in $source",
+      "notes": "Two declarations are an ambiguous one, not a wider one. A grader that took the first would be choosing which rule to apply."
+    },
+    {
+      "id": "REPOS-025",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "a territory entry is absolute or escapes the repository",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "invalid territory entry '$bad' (entries must be repo-relative",
+      "notes": "Matching is against repo-prefixed, repo-relative paths, so such an entry can never match anything — a declaration that silently declares nothing."
+    },
+    {
+      "id": "REPOS-026",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "a Territory marker is declared with an empty entry list",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
+      "emitAnchor": "but the entry list is empty (declare the paths, or remove the marker)",
+      "notes": "Distinct from declaring none at all, which is the compatibility WARN. Here the author said \"this is my territory\" and named nothing."
+    },
+    {
+      "id": "REPOS-027",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "the Territory declaration post-dates the code commit it would legalise",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 FR-004, owner adjudication 2026-09-09",
+      "emitAnchor": "POST-DATES this commit",
+      "notes": "The cross-repository anti-retroactivity rule. Without it, 'commit the code, declare the territory afterwards' is a permanently green gate. Its message quotes the commit’s own instant, which is why the harness normalises <DATE>."
+    },
+    {
+      "id": "REPOS-028",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "a '**Territory**' line carries no colon, so it declares nothing and says nothing",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 015 T019a; GAP-026",
+      "emitAnchor": "begins '**Territory**' but has no ':' on that line",
+      "notes": "What an author writes when the annotation wraps. Reported with its line number rather than falling through to the compatibility WARN, so the two graders agree about a malformed marker as well as a well-formed one."
+    },
+    {
+      "id": "REPOS-029",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "this phase declares no Territory while another phase in the same file does",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 FR-015",
+      "emitAnchor": "but another phase in that file declares one",
+      "notes": "Not a document predating the convention — an omission in one phase of a document that knows it. Treating the two alike is how an undeclared phase commit reached exit 0 graded against nothing."
+    },
+    {
+      "id": "REPOS-030",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "no Territory is declared anywhere in the document, at this date or since",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 FR-015",
+      "emitAnchor": "at this commit's date or since (non-blocking",
+      "notes": "The compatibility WARN, for a history predating the convention. The price of that mercy is a run that graded nothing, which the run-level line states outright."
+    },
+    {
+      "id": "REPOS-031",
+      "script": "scope-check-repos.ps1",
+      "function": "Write-PrefixWarnings",
+      "summary": "a territory entry names a first segment that is neither a declared repository nor a governance path",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 C10",
+      "emitAnchor": "WARN territory entry '$e' in $Source names",
+      "notes": "A probable typo. It would match no path and narrow the declaration in silence, so it is reported even when the run passes on the entry beside it."
+    },
+    {
+      "id": "REPOS-032",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "the run graded nothing in any declared code repository",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F6; GAP-027",
+      "emitAnchor": "n/a (nothing was graded in the declared code repositories",
+      "notes": "The run-level verdict. Every inert line above it is a reason, and this is what stops a run made entirely of reasons from exiting 0 with no verdict in it. Suppressed as soon as one repository is actually graded."
+    },
+    {
+      "id": "DOC-001",
+      "script": "doc-lint.ps1",
+      "function": "(kit integrity)",
+      "summary": "a required kit path is missing from the tree",
+      "law": "CLAUDE.md Feature Structure; adoption/greenfield.md step 0; feature 007 research D2",
+      "emitAnchor": "ERROR: kit incomplete",
+      "notes": "The only one of doc-lint’s conditions computed inline rather than accumulated. A copy that skipped dot-directories leaves the agent without the /speckit.* commands, and an agent without them improvises a structure of its own."
+    },
+    {
+      "id": "DOC-002",
+      "script": "doc-lint.ps1",
+      "function": "(manifest completeness)",
+      "summary": "a shipped file matches no manifest entry",
+      "law": "feature 004 FR-002; research D7; adoption/updating.md",
+      "emitAnchor": "$manifestErrors += \"unclassified: $file\"",
+      "notes": "update-kit.ps1 decides what to overwrite from this record, so an unclassified file is a file whose fate during an update nobody has decided."
+    },
+    {
+      "id": "DOC-003",
+      "script": "doc-lint.ps1",
+      "function": "(manifest completeness)",
+      "summary": "two manifest entries of equal specificity claim one file with different classes",
+      "law": "feature 004 FR-002; research D7",
+      "emitAnchor": "$manifestErrors += \"conflict (",
+      "notes": "Neither entry is more specific, so there is no rule for choosing — and a silent choice means update-kit.ps1 overwriting a file the manifest also calls hand-merged."
+    },
+    {
+      "id": "DOC-004",
+      "script": "doc-lint.ps1",
+      "function": "(manifest completeness)",
+      "summary": "the winning manifest entry names a class that is not one of the four",
+      "law": "feature 004 FR-002; adoption/updating.md (verbatim | surgical | generated | kit-only)",
+      "emitAnchor": "$manifestErrors += \"unrecognised class '",
+      "notes": "Found in feature 015 phase 1: a misspelt class counted as classified, so a typo bought silence instead of a verdict and no flow-down rule applied to the file."
+    },
+    {
+      "id": "DOC-005",
+      "script": "doc-lint.ps1",
+      "function": "(manifest completeness)",
+      "summary": "kit-manifest.json is absent, so the completeness sweep cannot run",
+      "law": "feature 004 FR-002",
+      "emitAnchor": "'kit-manifest.json not found at kit root'",
+      "notes": "Fires alongside DOC-001, and both are true: the manifest is a required kit path AND the record this sweep reads."
+    },
+    {
+      "id": "DOC-006",
+      "script": "doc-lint.ps1",
+      "function": "(reference scan)",
+      "summary": "a path referenced by a governance document does not resolve",
+      "law": "README (“Conventions this kit fixes at birth”); GAP-007 (the bold-reference convention)",
+      "emitAnchor": "$broken += [pscustomobject]@{",
+      "notes": "doc-lint’s headline rule and the reason the script exists: a rule pointing at a file nobody can open has already drifted from reality. The report names file, line and reference — SC-008 in miniature."
+    },
+    {
+      "id": "DOC-007",
+      "script": "doc-lint.ps1",
+      "function": "(slot scan)",
+      "summary": "unfilled {{SLOT}} / TODO(...) markers remain, and -FailOnSlots makes that fatal",
+      "law": "adoption/greenfield.md steps 1-3; feature 007 (the doctor FAILs unfilled slots after ratification)",
+      "emitAnchor": "Write-Host \"${level}: $slotCount unfilled",
+      "notes": "One emission site, two verdicts, chosen by the caller: INFO while the kit template still ships its slots, ERROR once a project has ratified. Invisible to BOTH coverage passes before T030 — the precise pass looked for \"ERROR and the recall sweep for a literal FAIL|ERROR, and this line spells its verdict with a variable."
+    },
+    {
+      "id": "VK-001",
+      "script": "verify-kit.ps1",
+      "function": "dimension 1 structure",
+      "summary": "a required kit path is missing from the adoption",
+      "law": "adoption/greenfield.md step 0; feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "'structure'",
+      "siteCount": 2,
+      "notes": "Two sites, one rule: the FAIL and the ok are the two arms of one condition, and the directions cover one each. Same seventeen paths as doc-lint.ps1 with a different fix pointer — doc-lint speaks for the kit, the doctor for the adoption."
+    },
+    {
+      "id": "VK-002",
+      "script": "verify-kit.ps1",
+      "function": "dimension 2 slots",
+      "summary": "a project-owned (surgical) file still carries unfilled {{SLOT}} / TODO( markers",
+      "law": "adoption/greenfield.md steps 1-3; feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "unfilled ",
+      "siteCount": 2,
+      "notes": "Two sites, one rule. Only manifest class surgical is scanned, and kit-shipped templates, the tier menu and modules/** are exempt — instructional markers there are the product, not an unfinished adoption (feature 007 review F1)."
+    },
+    {
+      "id": "VK-003",
+      "script": "verify-kit.ps1",
+      "function": "dimension 2 slots",
+      "summary": "kit-manifest.json is absent, so project-owned files cannot be resolved",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "cannot resolve project-owned files",
+      "notes": "Reported by dimension 2 as well as dimension 1, and both are true: it is a required kit path AND the record that says which files the project owns."
+    },
+    {
+      "id": "VK-004",
+      "script": "verify-kit.ps1",
+      "function": "dimension 3 constitution",
+      "summary": "the constitution still carries template markers",
+      "law": "constitution I; adoption/greenfield.md step 1/2; feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "'constitution'",
+      "siteCount": 2,
+      "notes": "Two sites, one rule. Matches the generic TODO( because speckit.constitution writes deferred fields as TODO(<FIELD>) (feature 007 review F5). A missing constitution is dimension 1’s finding, not this one’s."
+    },
+    {
+      "id": "VK-005",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "kit-adoption.json is absent",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; feature 007 research D8 (grandfather posture)",
+      "emitAnchor": "'kit-adoption.json not found (adoption predates the doctor?)'",
+      "notes": "WARN, not FAIL. Every adoption predating feature 007 has no record, and failing a project for being older than the check is not an audit, it is a trap."
+    },
+    {
+      "id": "VK-006",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "kit-adoption.json does not parse as JSON",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "does not parse as JSON",
+      "notes": "Unlike its absence this is a FAIL: a record that cannot be read is not history, it is breakage."
+    },
+    {
+      "id": "VK-007",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the record declares a schemaVersion this doctor does not understand",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "is not 1 (newer record than this doctor?)",
+      "notes": "Reading unknown fields with old rules is how a doctor reports green about a shape it never saw."
+    },
+    {
+      "id": "VK-008",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the record has no projectName",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "has no projectName",
+      "notes": "The field that makes a record about a project rather than a file that happens to parse."
+    },
+    {
+      "id": "VK-009",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the record topology is neither single nor multi",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "is not single|multi",
+      "notes": "Topology decides whether missing codeRepos matters, so an unrecognised value leaves the doctor unable to judge the next finding."
+    },
+    {
+      "id": "VK-010",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the record declares no tiers",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; feature 007 review F6",
+      "emitAnchor": "declares no tiers",
+      "notes": "Tiers bind a project to its rulebooks. A project with none has no craft layer the doctor can check."
+    },
+    {
+      "id": "VK-011",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a declared tier name cannot address a rulebook file",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "is not a valid tier name",
+      "notes": "Custom tiers are first-class (docs/rulebooks/README.md; feature 007 phase 4 review F3), so the doctor polices the NAME, never the meaning."
+    },
+    {
+      "id": "VK-012",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a declared tier has no instantiated rulebook",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; docs/rulebooks/README.md",
+      "emitAnchor": "has no instantiated rulebook at",
+      "notes": "A project claiming a craft layer it does not have. The fix pointer differs for a known tier and a custom one; the fixture pins the known arm."
+    },
+    {
+      "id": "VK-013",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "codeRepos is present but is not an array",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; feature 012 (GAP-016)",
+      "emitAnchor": "codeRepos is not an array",
+      "notes": "The same field, the same rule, in two scripts — here and in scope-check-repos.ps1 — because a code repository’s own CI may run one and never the other."
+    },
+    {
+      "id": "VK-014",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a codeRepos entry is not a plain directory name",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; docs/sdlc/repository-strategy.md",
+      "emitAnchor": "is not a plain directory name",
+      "notes": "A path, a traversal or a drive prefix addresses a tree outside the governance root."
+    },
+    {
+      "id": "VK-015",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a declared code repository is not present in this checkout",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; docs/sdlc/repository-strategy.md",
+      "emitAnchor": "is not present here",
+      "notes": "WARN: a governance-only checkout is a legitimate reason to see this, and it is the same state scope-check-repos.ps1 reports as n/a rather than as a failure."
+    },
+    {
+      "id": "VK-016",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a multi-repo adoption declares no code repositories",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; GAP-016",
+      "emitAnchor": "multi-repo adoption declares no codeRepos",
+      "notes": "Nothing is broken and nothing is checked either: gate 4 never reaches the code and the phase commits are reviewer-verified only. This WARN is what breaks that silence."
+    },
+    {
+      "id": "VK-017",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the developers declaration is present and unusable",
+      "law": "feature 013; docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "Add-Finding FAIL 'record' $problem.Message $problem.Fix",
+      "notes": "The check falls back to solo silently by design; the doctor is the half that tells the project its declaration is being ignored. Both read scripts/adoption-lib.ps1 — the two copies drifted once already, and a comment asserting they matched is what let it through."
+    },
+    {
+      "id": "VK-018",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the developers declaration is usable, and the doctor states which evidence arm is in force",
+      "law": "feature 013; docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "developer(s) declared",
+      "notes": "Absence is NOT a finding — an adoption predating feature 013 declares nothing and is treated as solo, the stricter arm — so the fail direction is the field’s absence and the line simply does not appear."
+    },
+    {
+      "id": "VK-019",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "no gate proof with exit code 0 is recorded",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; adoption/greenfield.md step 3",
+      "emitAnchor": "no gate proof with exit code 0",
+      "notes": "A gate that has never been green is not a gate. The record must carry evidence the ritual ran, not a promise that it would."
+    },
+    {
+      "id": "VK-020",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the adoption record is valid in every respect dimension 4 checks",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "adoption record valid",
+      "notes": "Composed from everything the dimension checked — tiers joined, code repositories named, gate proven — and withdrawn entirely if any one condition fails, because a half-valid record is not a valid record."
+    },
+    {
+      "id": "VK-021",
+      "script": "verify-kit.ps1",
+      "function": "dimension 5 kit-version",
+      "summary": ".kit-version holds update-kit’s JSON record",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "(kit commit ",
+      "notes": "The healthy shape, and the one the pin is actually written in."
+    },
+    {
+      "id": "VK-022",
+      "script": "verify-kit.ps1",
+      "function": "dimension 5 kit-version",
+      "summary": ".kit-version holds a bare commit token",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; adoption/updating.md",
+      "emitAnchor": "(bare commit token ",
+      "notes": "adoption/updating.md tells a human to create one this way, so it is accepted — and distinguished in the message rather than collapsed into the JSON case, because only one of the two carries a version."
+    },
+    {
+      "id": "VK-023",
+      "script": "verify-kit.ps1",
+      "function": "dimension 5 kit-version",
+      "summary": ".kit-version is neither shape — hand-edited or empty",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; feature 007 review F4",
+      "emitAnchor": ".kit-version is neither update-kit",
+      "notes": "The first version of this rule was validated against a bare-sha fixture update-kit never writes, so it was right about a file that did not exist. The three fixtures here pin both real shapes and the refusal."
+    },
+    {
+      "id": "VK-024",
+      "script": "verify-kit.ps1",
+      "function": "dimension 5 kit-version",
+      "summary": ".kit-version is absent",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; adoption/updating.md",
+      "emitAnchor": ".kit-version not found",
+      "notes": "WARN: a project adopted by copy and never updated is behind, not broken."
+    },
+    {
+      "id": "VK-025",
+      "script": "verify-kit.ps1",
+      "function": "(guard)",
+      "summary": "-Root names a directory that does not exist",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "ERROR root not found",
+      "notes": "Fail-fast before five dimensions of confident findings about a tree nobody has. The only rule in the suite whose case needs the harness to point -Root somewhere other than the fixture (command.json rootSuffix)."
+    },
+    {
+      "id": "VK-026",
+      "script": "verify-kit.ps1",
+      "function": "(guard)",
+      "summary": "the tree is the kit template itself, not an adoption",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; feature 007 research D5.1 / D5.3, review F2",
+      "emitAnchor": "not applicable (this is the kit template",
+      "notes": "A kit full of unfilled slots is the product. An adoption record VETOES the decline, and the pass direction is that veto: without it a project could exempt itself from its own doctor by copying one heading."
+    },
+    {
+      "id": "CLAIM-001",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(claim ledger)",
+      "summary": "there is no origin remote, so there is no claim ledger",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "'roadmap-claims: n/a (no origin remote — no claim ledger to check against)'",
+      "notes": "Declining OUT LOUD is the requirement: a silent exit 0 here is indistinguishable from a roadmap that is actually honest."
+    },
+    {
+      "id": "CLAIM-002",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(claim ledger)",
+      "summary": "origin is configured and cannot be reached",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "'roadmap-claims: n/a (origin unreachable — cannot read the claim ledger)'",
+      "notes": "Kept distinct from having no remote at all: one is a state of the project, the other a state of the machine, and the reader needs different things from each."
+    },
+    {
+      "id": "CLAIM-003",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(claim ledger)",
+      "summary": "the ledger holds no numbered claims",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "'roadmap-claims: OK (no NNN-* claims on origin)'",
+      "notes": "An OK rather than an n/a: the ledger WAS read and it is empty, which is a verdict rather than a declined one."
+    },
+    {
+      "id": "CLAIM-004",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(roadmap shape)",
+      "summary": "the tree has no docs/roadmap.md",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "'roadmap-claims: n/a (no docs/roadmap.md in this tree)'",
+      "notes": "An adopter roadmap is adopter-authored and may not exist. The check declines rather than manufacturing a failure out of a file the project never promised — the verify-kit precedent."
+    },
+    {
+      "id": "CLAIM-005",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(roadmap shape)",
+      "summary": "no roadmap table carries a Status column",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "'roadmap-claims: n/a (docs/roadmap.md has no table with a Status column)'",
+      "notes": "The kit knows the shape of its own roadmap and will not read a status out of a table that has none. Naming the missing column is what lets an adopter choose to adopt the shape."
+    },
+    {
+      "id": "CLAIM-006",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(visibility)",
+      "summary": "a claim on origin is mentioned by no roadmap row",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "no roadmap row mentions it",
+      "notes": "GAP-017 itself: in the first post-010 field use a feature sat thirteen days with an approved spec and a gated phase while main said nothing about it. The remedy in the message is the ritual — flip the row in a MAIN-SIDE commit at claim time, never only on the branch."
+    },
+    {
+      "id": "CLAIM-007",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(visibility)",
+      "summary": "a claim is on the roadmap and its row still reads idea",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "still reads 'idea'",
+      "notes": "The subtler half, and the likelier to be trusted: the feature IS on the roadmap, so a human skimming it believes the status. Worse than an absence, which at least looks like a gap."
+    },
+    {
+      "id": "CLAIM-008",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(visibility)",
+      "summary": "every claim but the branch’s own is visible with a non-idea row",
+      "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
+      "emitAnchor": "claim(s) visible with non-idea rows",
+      "notes": "The affirmative verdict, and it names the exempted number. A branch is exempt for its OWN claim so a fresh claim’s first CI run cannot deadlock on a row the same change is about to flip — stating the exemption is what stops it being mistaken for coverage."
+    },
+    {
+      "id": "TERR-001",
+      "script": "territory-check.ps1",
+      "function": "(ledger)",
+      "summary": "there is no origin remote to compare claims against",
+      "law": "docs/sdlc/team-workflow.md rule 5 (overlap is sequenced, not forbidden); feature 003 contract specs/003-flow-efficiency-pack/contracts/territory-check-cli.md",
+      "emitAnchor": "'no remote — nothing to check against'",
+      "notes": "Declines rather than printing CLEAN, which would be a claim that nothing overlaps made by a run that looked at nothing."
+    },
+    {
+      "id": "TERR-002",
+      "script": "territory-check.ps1",
+      "function": "(report)",
+      "summary": "the branch shares no file with any open feature branch",
+      "law": "docs/sdlc/team-workflow.md rule 5 (overlap is sequenced, not forbidden); feature 003 contract specs/003-flow-efficiency-pack/contracts/territory-check-cli.md",
+      "emitAnchor": "CLEAN — '$Branch' shares no files",
+      "notes": "The affirmative verdict names the branch it is about. On a team a bare CLEAN would not say whose territory was checked, which is the only part that matters."
+    },
+    {
+      "id": "TERR-003",
+      "script": "territory-check.ps1",
+      "function": "(report)",
+      "summary": "the branch shares files with another open feature branch",
+      "law": "docs/sdlc/team-workflow.md rule 5 (overlap is sequenced, not forbidden); feature 003 contract specs/003-flow-efficiency-pack/contracts/territory-check-cli.md",
+      "emitAnchor": "OVERLAP with $($o.branch)",
+      "notes": "Names the other branch, its staleness and every shared path: an overlap whose files you cannot see is an overlap nobody can sequence."
+    },
+    {
+      "id": "TERR-004",
+      "script": "territory-check.ps1",
+      "function": "(report)",
+      "summary": "at least one overlapping claim is live",
+      "law": "docs/sdlc/team-workflow.md rule 5 (overlap is sequenced, not forbidden); feature 003 contract specs/003-flow-efficiency-pack/contracts/territory-check-cli.md",
+      "emitAnchor": "Overlap is sequenced, not forbidden",
+      "notes": "The kit’s whole stance on shared territory, and the reason exit 2 is advisory. A check that simply refused would push two owners into working around it."
+    },
+    {
+      "id": "TERR-005",
+      "script": "territory-check.ps1",
+      "function": "(report)",
+      "summary": "every overlapping claim is stale and therefore reclaimable",
+      "law": "docs/sdlc/team-workflow.md rule 5 (overlap is sequenced, not forbidden); feature 003 contract specs/003-flow-efficiency-pack/contracts/territory-check-cli.md; team-workflow rule 3",
+      "emitAnchor": "Only stale claims overlap",
+      "notes": "Exit 0, not 2: a claim nobody is working can be adopted, and blocking on it would make an abandoned branch a permanent obstacle. The pair differs only in the age of one commit."
+    },
+    {
+      "id": "TERR-006",
+      "script": "territory-check.ps1",
+      "function": "(json)",
+      "summary": "the JSON contract answers when there is no remote",
+      "law": "docs/sdlc/team-workflow.md rule 5 (overlap is sequenced, not forbidden); feature 003 contract specs/003-flow-efficiency-pack/contracts/territory-check-cli.md",
+      "emitAnchor": "BRANCH = $Branch; CLEAN = $true; OVERLAPS = @()",
+      "notes": "The one place this script’s machine output says less than its prose: a JSON caller cannot tell “nothing overlaps” from “nothing was checked”. Pinned as it stands and recorded as a finding — the contract belongs to feature 003, not to this phase."
+    },
+    {
+      "id": "TERR-007",
+      "script": "territory-check.ps1",
+      "function": "(json)",
+      "summary": "the JSON report carries the branch, the verdict and every overlap",
+      "law": "docs/sdlc/team-workflow.md rule 5 (overlap is sequenced, not forbidden); feature 003 contract specs/003-flow-efficiency-pack/contracts/territory-check-cli.md",
+      "emitAnchor": "ConvertTo-Json -Compress -Depth 4",
+      "notes": "Built by a different code path from the prose report and carrying the same facts, which is the property worth pinning. The anchor names the ConvertTo-Json line rather than the object literal above it: the emission spans two source lines and the scanner reads one line at a time, which the anchor-ambiguity assertion reported as 0 sites rather than letting the entry measure nothing."
+    },
+    {
+      "id": "RIT-001",
+      "script": "ritual-checks.ps1",
+      "function": "(member loop)",
+      "summary": "each member announces itself by name before it runs",
+      "law": "feature 006 contract specs/006-verification-pack/contracts/ritual-checks-ci.md; docs/sdlc/definition-of-done.md; feature 015 SC-005",
+      "emitAnchor": "=== ritual-checks: $name ===",
+      "notes": "The member names are this wrapper’s entire interface: branch protection names one required check, adopted-project docs quote these names, and SC-005 is the promise that they do not move. The pair differs by whether the tree is adopted, because that is the only thing that changes which members exist."
+    },
+    {
+      "id": "RIT-002",
+      "script": "ritual-checks.ps1",
+      "function": "(verdict block)",
+      "summary": "each member gets exactly one verdict line",
+      "law": "feature 006 contract specs/006-verification-pack/contracts/ritual-checks-ci.md; docs/sdlc/definition-of-done.md; feature 015 SC-005",
+      "emitAnchor": "-f $name, $verdict",
+      "notes": "Never short-circuits: a failing member does not stop the others, because one run must report every problem rather than the first. Three verdicts share this one site — OK, FAIL, and the member’s own n/a reason lifted out of its output."
+    },
+    {
+      "id": "RIT-003",
+      "script": "ritual-checks.ps1",
+      "function": "(verdict block)",
+      "summary": "the adoption doctor did not run, and the run says so rather than omitting it",
+      "law": "feature 006 contract specs/006-verification-pack/contracts/ritual-checks-ci.md; docs/sdlc/definition-of-done.md; feature 015 SC-005",
+      "emitAnchor": "'verify-kit', 'n/a (no adoption markers",
+      "notes": "The gate mirrors the doctor’s own discriminator (.kit-version OR kit-adoption.json). A silent omission would leave a reader counting six verdicts where the documentation promises seven, unable to tell a skipped check from a forgotten one — SC-004 at the wrapper level."
+    },
+    {
+      "id": "RIT-004",
+      "script": "ritual-checks.ps1",
+      "function": "(run verdict)",
+      "summary": "at least one member failed, and the run fails with it",
+      "law": "feature 006 contract specs/006-verification-pack/contracts/ritual-checks-ci.md; docs/sdlc/definition-of-done.md; feature 015 SC-005",
+      "emitAnchor": "ritual-checks: RESULT FAIL",
+      "notes": "The count is failing members out of members that RAN, which is what separates “one thing broke” from “the tree did”. The fail fixture puts two inert members beside the failing one: an n/a must neither mask a failure nor be counted as a pass, and the line reads 1 of 6 rather than 1 of 4."
+    },
+    {
+      "id": "RIT-005",
+      "script": "ritual-checks.ps1",
+      "function": "(run verdict)",
+      "summary": "every member that ran exited 0",
+      "law": "feature 006 contract specs/006-verification-pack/contracts/ritual-checks-ci.md; docs/sdlc/definition-of-done.md; feature 015 SC-005",
+      "emitAnchor": "'ritual-checks: RESULT OK'",
+      "notes": "The one line a CI badge reads. Printed once, last, and after every member’s own verdict — never instead of them. Its pass fixture is a run whose members include two inert ones, because “nothing failed” and “everything was checked” are different claims and only the first is being made."
     }
   ]
 }

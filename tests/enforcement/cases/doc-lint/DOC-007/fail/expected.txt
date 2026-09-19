@@ -1,0 +1,3 @@
+doc-lint: scanned 11 governance docs under <ROOT>
+doc-lint: manifest — 18 shipped file(s) classified
+ERROR: 1 unfilled {{SLOT}} / TODO(...) markers remain (expected in the kit template; must be 0 after ratification)

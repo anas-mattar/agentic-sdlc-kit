@@ -1,0 +1,6 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: FAIL record: no gate proof with exit code 0 recorded in kit-adoption.json — fix: prove the gate green and record command/exitCode/date/recordedBy (adoption step 3 — "a gate that has never been green is not a gate")
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

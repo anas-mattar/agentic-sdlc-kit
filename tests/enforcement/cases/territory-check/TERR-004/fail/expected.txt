@@ -1,0 +1,5 @@
+OVERLAP with 012-other [live]:
+  src/shared.txt
+
+Overlap is sequenced, not forbidden (docs/sdlc/team-workflow.md, rule 5):
+agree merge order with the other owner NOW and record it in BOTH features' plan.md.

@@ -1,0 +1,2 @@
+digests: FAIL — digest too long: pack 'fixture' has 41 content lines (bound: MaxDigestContentLines = 40) — tighten or drop markers until the digest is one page
+digests: RESULT FAIL (1 issue(s))

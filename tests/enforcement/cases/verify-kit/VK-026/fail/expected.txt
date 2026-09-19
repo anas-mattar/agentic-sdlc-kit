@@ -1,0 +1,1 @@
+verify-kit: not applicable (this is the kit template, not an adoption)

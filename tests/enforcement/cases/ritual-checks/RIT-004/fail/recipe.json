@@ -1,0 +1,19 @@
+{
+  "description": "TWO INERT MEMBERS AND ONE FAILING ONE. This is the case the task asks for: the wrapper reports each n/a with its own reason lifted from the member's output, and still ends on RESULT FAIL. An inert member is not a passing member and must not dilute the count — 'n/a' and 'OK' print differently for exactly that reason, and the count says 1 of 6, not 1 of 4.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the tree and its checks",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/doc-lint.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'doc-lint: OK - stub'\nexit 0\n",
+        "scripts/enforcement-pack.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'enforcement-pack: OK - stub'\nexit 0\n",
+        "scripts/scope-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-check: FAIL phase 1 commit abcdefg: out of territory'\nexit 1\n",
+        "scripts/scope-check-repos.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-repos: OK - stub'\nexit 0\n",
+        "scripts/build-digests.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'digests: n/a (no digest markers)'\nexit 0\n",
+        "scripts/roadmap-claim-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'roadmap-claims: n/a (no origin remote - no claim ledger to check against)'\nexit 0\n"
+      }
+    }
+  ]
+}

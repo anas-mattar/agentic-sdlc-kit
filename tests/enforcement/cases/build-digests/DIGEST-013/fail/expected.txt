@@ -1,0 +1,1 @@
+build-digests: FAIL — docs/digests/digest-packs.json not found — restore the pack manifest (it ships verbatim with the kit)

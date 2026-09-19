@@ -1,0 +1,1 @@
+scope-check: WARN commit <SHA>: no territory declared for phase 1 in specs/001-thing/tasks.md (declare territory in tasks.md — non-blocking, pre-006 compatibility)

@@ -1,0 +1,1 @@
+scope-check: not applicable (chore/ lane — enforcement-pack's Lite-lane checks apply instead)

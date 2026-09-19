@@ -1,0 +1,2 @@
+scope-repos: WARN kit-adoption.json is not valid JSON — no code repositories read (fix the record; scripts/verify-kit.ps1 explains the shape)
+scope-repos: n/a (no codeRepos declared in kit-adoption.json — single-repo project, the kit repository, or a record predating feature 012)

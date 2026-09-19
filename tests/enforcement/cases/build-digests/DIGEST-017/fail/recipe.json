@@ -1,0 +1,24 @@
+{
+  "description": "The same two packs with every marker removed, so nothing is written and no 'wrote' line appears. Differs only in whether the documents carry markers (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "No markers here."
+        ],
+        "docs/sdlc/second-law.md": [
+          "# Second law",
+          "",
+          "None here either."
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] },\n    { \"name\": \"second\", \"docs\": [\"docs/sdlc/second-law.md\"] }\n  ]\n}\n"
+      }
+    }
+  ]
+}

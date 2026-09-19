@@ -1,0 +1,2 @@
+digests: FAIL — missing digest: docs/digests/second-digest.md — its pack's documents carry markers; regenerate: pwsh -File scripts/build-digests.ps1
+digests: RESULT FAIL (1 issue(s))

@@ -1,0 +1,26 @@
+=== ritual-checks: doc-lint ===
+doc-lint: OK - stub
+
+=== ritual-checks: enforcement-pack ===
+enforcement-pack: OK - stub
+
+=== ritual-checks: scope-check ===
+scope-check: FAIL phase 1 commit abcdefg: out of territory
+
+=== ritual-checks: scope-repos ===
+scope-repos: OK - stub
+
+=== ritual-checks: digests ===
+digests: OK - stub
+
+=== ritual-checks: roadmap-claims ===
+roadmap-claims: OK - stub
+
+ritual-checks: doc-lint         OK
+ritual-checks: enforcement-pack OK
+ritual-checks: scope-check      FAIL
+ritual-checks: scope-repos      OK
+ritual-checks: digests          OK
+ritual-checks: roadmap-claims   OK
+ritual-checks: verify-kit       n/a (no adoption markers — kit repository or unadopted tree)
+ritual-checks: RESULT FAIL (1 of 6 member(s) failed)

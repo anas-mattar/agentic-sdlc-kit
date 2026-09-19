@@ -1,0 +1,31 @@
+{
+  "description": "A roadmap whose tables carry no Status column. Same reasoning as CLAIM-004 one step in: the kit knows the shape of its OWN roadmap and will not read a status out of a table that has none. The n/a names the missing column so an adopter can choose to adopt the shape.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Owner |",
+          "|---|---|",
+          "| Roadmap claim check | anas.m |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

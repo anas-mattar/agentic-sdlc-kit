@@ -1,0 +1,18 @@
+{
+  "description": "A project with no digest manifest at all — which is every project that has not marked its own law. The machinery ships INERT and arms itself the moment a marker appears (feature 010 SC-004), so the verdict must be n/a and must say why: an OK here would be a check reporting success over a feature nobody has turned on.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "No markers here."
+        ]
+      }
+    }
+  ]
+}
