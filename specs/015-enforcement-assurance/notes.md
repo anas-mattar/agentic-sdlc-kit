@@ -994,3 +994,25 @@ honestly earned on the evidence available to it; the evidence available to it wa
 worth asking of phase 4 and 5 whether any new fixture state is platform-shaped before CI is the
 thing that finds out, and worth noting that `shallow` remains a sample of one: a second case using
 it would have halved the odds of shipping it untested.
+
+### Merge timing, decided at phase 3 so it is not re-litigated at phases 4 and 5
+
+PR #46 is open and ready for review; it does **not** merge at phase 3, and the reason is law
+rather than judgement. `docs/sdlc/branch-strategy.md` sets the merge trigger at *feature
+complete* — "Once a feature is complete (gate green + human review approved), push the feature
+branch ... Then merge to `main` with `--no-ff`" — and pairs it with "one branch per feature".
+Phases are commits on the branch; the branch merges once, at the end. A phase-3 merge is not a
+lawful option that the value of the fixtures could outweigh.
+
+The engineering argument points the same way, and is worth writing down because it is the one a
+future reader will reach for. Merging now would put into `main` a CI leg named
+`enforcement-tests` whose green does not yet mean what the feature intends it to mean: coverage
+is reporting-only until T044, so 49 of 94 blocks nothing, and a check that returns without
+grading is still silent until `UNGRADED` exists in phase 5. Shipping a green signal that is
+weaker than it looks, in the repository whose entire subject is checks that report green having
+graded nothing, would be this feature refuting itself in its own delivery.
+
+What is outstanding is therefore owner work, not implementation work: phase 2's re-certification
+on `8a0291b` (the recorded certification still names `505f9f1`), phase 3's ci-held certification
+on `45b0dfd`, and the human review's half that no machine reaches — whether each amendment's
+named approver actually agreed (`06b1b30`, `d7a1939`, `9aa79c0`).
