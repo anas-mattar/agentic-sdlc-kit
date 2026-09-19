@@ -168,6 +168,28 @@ widen it, which needs both files.
 **Territory**:
 
 - `tests/**`
+- `scripts/ritual-checks.ps1`
+- `scripts/territory-check.ps1`
+
+CI proved what a Windows-only run could not: `Write-Host ''` emits a blank line on
+`windows-latest` and nothing on `ubuntu-latest`, on identical `pwsh 7.6.5` and identical harness
+code. Every one of the sixteen cases whose expectation contains an interior blank line failed on
+ubuntu, and no other case did — the two sets are the same set. The divergence is in the two
+scripts that print a blank line, not in the fixtures, so nothing confined to `tests/**` can fix
+it honestly: normalising the blank away would blind the harness to precisely the class of
+difference SC-006 exists to catch.
+
+**Amendment approved by**: anas.m, 2026-09-19.
+
+- [ ] T036a Make the blank separator portable in `scripts/ritual-checks.ps1` (one site) and
+      `scripts/territory-check.ps1` (two sites), so both platforms emit the same bytes after
+      normalisation. Add a harness self-test that pins a blank line surviving a child process,
+      so the property is asserted on both CI legs rather than assumed.
+- [ ] T036b Close the phase 4 review's F1: `doc-lint.ps1:236` — the manifest sweep declining in
+      an adopted project — is a condition the script detects on its own `.kit-version` branch,
+      not a printer of any accumulator. It is outside the declared idiom and outside the recall
+      sweep, so `doc-lint` reports `7 of 7` against a denominator built from the covered part.
+      Widen the declaration to 8 and cover the inert verdict. (`tests/**`; no amendment needed.)
 
 - [x] T028 Inventory and cover `scripts/scope-check.ps1`, including the anti-retroactivity rule —
       a declaration that post-dates the commit it would legalise.
