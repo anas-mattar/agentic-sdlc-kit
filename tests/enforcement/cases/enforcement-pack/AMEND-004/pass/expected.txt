@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+AmendmentAuthority: graded 1 of 2 commit(s) in <SHA>..HEAD (1 not graded: 1 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: commit <SHA> amends specs/001-thing/plan.md after approval with no conforming approver record. Add '**Amendment approved by**: <name>, <YYYY-MM-DD>' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt — in either direction — but rewriting a task's text while ticking it is not: record what was done in notes.md, and leave the task saying what was agreed (plan D3c)

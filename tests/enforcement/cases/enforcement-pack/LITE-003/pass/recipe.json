@@ -1,0 +1,21 @@
+{
+  "description": "An ordinary SQL file in the same place. 'db/seed.sql' matches neither '*migrations*' nor '*migration*.sql'. Differs only in the condition under test (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "db/seed.sql": "-- fixture\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 6 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - CriticalEvidence: specs/001-thing/human-pr-review.md has no visible '## Review Provenance' section — team mode (2 developers declared in kit-adoption.json) needs the reviewer and owner named in the review itself (specs/_templates/human-pr-review-template.md). Content inside an HTML comment does not count, and an UNTERMINATED '<!--' anywhere earlier in the file hides everything after it — check for a comment missing its '-->'

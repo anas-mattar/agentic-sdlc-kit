@@ -1,0 +1,20 @@
+{
+  "description": "A Standard feature whose spec directory holds spec.md alone. STRUCT-001 fires twice - once for plan.md, once for tasks.md.",
+  "defaultBranch": "main",
+  "commits": [
+    { "branch": "main", "message": "init", "write": { "README.md": "fixture kit\n" } },
+    { "branch": "001-thing", "message": "spec: 001 thing",
+      "write": { "specs/001-thing/spec.md": [
+        "# Feature Specification: Thing",
+        "",
+        "**Feature Branch**: `001-thing`",
+        "**Status**: Approved 2026-01-01 (owner: fixture)",
+        "**Delivery Level**: Standard",
+        "",
+        "## Requirements",
+        "",
+        "- **FR-001**: System MUST do the thing."
+      ] } }
+  ],
+  "checkout": "001-thing"
+}

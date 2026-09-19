@@ -1,0 +1,2 @@
+enforcement-pack: branch 'fix/thing', diff base '<SHA>', 25 changed file(s)
+enforcement-pack: OK

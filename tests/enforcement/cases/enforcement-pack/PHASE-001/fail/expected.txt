@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+WARNING: PhaseSizeWarning: commit <SHA> changes 401 line(s) across 1 file(s) — exceeds the phase-size guideline (400 lines / 15 files, constitution X). Non-blocking; consider whether this is one coherent slice.
+enforcement-pack: OK

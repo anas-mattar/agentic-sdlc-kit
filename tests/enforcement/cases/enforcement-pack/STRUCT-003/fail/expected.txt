@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 3 changed file(s)
+AmendmentAuthority: graded 0 of 1 commit(s) in <SHA>..HEAD (1 not graded: 1 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - Structure: specs/001-thing/spec.md's **Delivery Level** header is unfilled or invalid: '[Lite | Micro | Standard | Critical]' (legal values: Lite, Micro, Standard, Critical — constitution X)

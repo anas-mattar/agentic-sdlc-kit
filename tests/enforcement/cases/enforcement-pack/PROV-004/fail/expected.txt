@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - ReviewProvenance: specs/001-thing/ai-code-review-phase-1.md attests '[fresh-context agent — model id | second model — model id]' as reviewer — the implementing agent must not review its own diff, and template placeholders must be filled (DoD gate 5)

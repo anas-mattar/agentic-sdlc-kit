@@ -1,0 +1,3 @@
+enforcement-pack: branch 'fix/thing', diff base '<SHA>', 26 changed file(s)
+enforcement-pack: FAIL (1 issue(s)):
+  - LiteAndAbuse: fix/thing changes 26 files, exceeding the Lite-lane abuse guard (25) — promote to a numbered feature

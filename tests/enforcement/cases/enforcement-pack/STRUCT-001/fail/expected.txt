@@ -1,0 +1,5 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 1 changed file(s)
+AmendmentAuthority: graded 0 of 1 commit(s) in <SHA>..HEAD (1 not graded: 1 made before the check existed (plan D2b))
+enforcement-pack: FAIL (2 issue(s)):
+  - Structure: specs/001-thing/plan.md is missing (every NNN-* branch requires spec.md, plan.md, and tasks.md — or spec.md alone when declared Micro; CLAUDE.md Feature Structure)
+  - Structure: specs/001-thing/tasks.md is missing (every NNN-* branch requires spec.md, plan.md, and tasks.md — or spec.md alone when declared Micro; CLAUDE.md Feature Structure)

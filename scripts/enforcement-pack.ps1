@@ -101,6 +101,12 @@ $ErrorActionPreference = 'Stop'
 try { [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new() } catch {}
 $Root = (Resolve-Path $Root).Path
 . (Join-Path $PSScriptRoot 'adoption-lib.ps1')
+# Territory parsing comes from the same file scope-check.ps1 uses (feature 015, T020a).
+# It used to be a copy here, and phase 2 widened one and not the other: a decorated marker
+# left the Micro file cap, the duplicate check and the glob check all passing vacuously
+# while scope-check enforced the very same block. Nothing in this file may parse that
+# marker again.
+. (Join-Path $PSScriptRoot 'scope-lib.ps1')
 Push-Location $Root
 try {
 
@@ -505,22 +511,36 @@ function Invoke-MicroLaneCheck {
         $script:failures += "MicroLane: $dir/spec.md declares '**Gate Batching**' — a Micro feature is exactly one phase; there is nothing to batch (constitution X, Micro lane); delete the line, or $promote"
     }
 
-    # Territory cap (M5). Same block grammar scope-check parses; entries must be literal
-    # file paths — one glob or subtree entry would defeat the file cap outright.
-    $tEntries = @()
-    $tMarkers = 0
-    $collecting = $false; $started = $false
-    foreach ($line in (Get-VisiblePlanLines -PlanPath $specPath)) {
-        if ($line -match '^\*\*Territory\*\*:') { $tMarkers++; $collecting = $true; $started = $false; continue }
-        if (-not $collecting) { continue }
-        if ($line -match '^\s*$') { if ($started) { $collecting = $false }; continue }
-        if ($line -match '^\s*[-*]\s+`([^`]+)`\s*$') { $started = $true; $tEntries += $matches[1].Trim(); continue }
-        $collecting = $false
+    # Territory cap (M5). The block is parsed by scope-lib's Get-Territory — the SAME function
+    # scope-check.ps1 uses — because this was a copy of that grammar until T020a, and a copy of a
+    # parser is a parser that drifts: phase 2 widened the original to accept a decorated marker
+    # and left this one strict, so a Micro spec could break the file cap while reporting OK.
+    # Entries must still be literal file paths; one glob or subtree entry defeats the cap outright.
+    $territory = Get-Territory -TasksLines (Get-VisiblePlanLines -PlanPath $specPath) -Global
+    $tEntries = @($territory.Entries)
+    $tMarkers = $territory.MarkerCount
+    if ($territory.NearMiss.Count -gt 0) {
+        # A line that starts like a declaration and breaks the grammar FAILs rather than vanishing
+        # (feature 015, T019a in scope-check and T020a here — the two graders say the same thing
+        # about the same malformed line).
+        foreach ($nm in $territory.NearMiss) {
+            $script:failures += "MicroLane: $dir/spec.md line $nm begins '**Territory**' but has no ':' on that line — an annotation that wraps declares nothing the parser can see; keep the marker and its colon on one line"
+        }
     }
     if ($tMarkers -gt 1) {
         # scope-check FAILs duplicates too — kept aligned so the two scripts never diverge
-        # on the same spec (phase 2 review, F7).
+        # on the same spec (phase 2 review, F7). They now share the parser, so they cannot.
         $script:failures += "MicroLane: $dir/spec.md carries $tMarkers **Territory** markers — a Micro feature declares exactly one feature-global block; merge them, or $promote"
+    }
+    foreach ($bad in @($territory.Invalid)) {
+        # Get-Territory routes an absolute or '..' entry to Invalid, NOT to Entries. Sharing the
+        # parser in T020a therefore did something the task did not intend: an escaping entry
+        # stopped counting toward the file cap and was reported by nobody, while scope-check.ps1
+        # — the same function, the same block — FAILs it. That is the divergence T020a exists to
+        # remove, reappearing one field over, so the caller reads the field rather than the task
+        # being called done. Reporting is enough: no spec carrying one can reach the cap check
+        # green, so the under-count cannot be spent.
+        $script:failures += "MicroLane: territory entry '$bad' in $dir/spec.md is not repo-relative — Micro territory entries must be repo-relative paths with no '..'; scope-check.ps1 FAILs the same entry in the same block; fix the entry, or $promote"
     }
     if ($tEntries.Count -gt $Config.MicroTerritoryMaxFiles) {
         $script:failures += "MicroLane: $dir/spec.md declares $($tEntries.Count) territory entries — a Micro feature's Territory covers at most $($Config.MicroTerritoryMaxFiles) files (constitution X, Micro lane); shrink the territory, or $promote"
@@ -796,79 +816,11 @@ function Get-BlobLines {
     return $lines
 }
 
-# Disarm comment markers in one string. Both substitutions preserve length, which is what
-# lets Convert-CodeSpanMarkers patch a line in place by offset.
-function Disable-CommentMarkers {
-    param([string]$Text)
-    return ($Text -replace '<!--', '<!@@') -replace '-->', '@@>'
-}
-
-# Disarm comment markers inside the inline code spans of ONE line. CommonMark pairs a run of
-# N backticks with the next run of EXACTLY N, and a backslash-escaped backtick is literal and
-# delimits nothing (K1's second trigger). A run with no partner on the line opens no span:
-# an unrecognised span leaves its markers armed, which HIDES text rather than revealing it —
-# the safe direction for a check whose job is to refuse an invisible record.
-function Convert-CodeSpanMarkers {
-    param([string]$Line)
-    # Nothing to disarm, or nothing to disarm it with: the overwhelming majority of lines, and
-    # the reason this is a string scan rather than a character walk (a per-character loop over
-    # every line of every graded blob cost ~9x the whole check's runtime — SC-006).
-    if ($Line -notmatch '`') { return $Line }
-    if ($Line -notmatch '<!--' -and $Line -notmatch '-->') { return $Line }
-    # Backtick runs, skipping any run a backslash escapes — '\`' is a literal backtick to
-    # CommonMark and delimits nothing (K1's second trigger).
-    $runs = @([regex]::Matches($Line, '(?<!\\)`+') | ForEach-Object { @{ Start = $_.Index; Len = $_.Length } })
-    if ($runs.Count -lt 2) { return $Line }
-    $result = $Line
-    $r = 0
-    while ($r -lt $runs.Count - 1) {
-        $open = $runs[$r]
-        $closeIdx = -1
-        for ($k = $r + 1; $k -lt $runs.Count; $k++) {
-            if ($runs[$k].Len -eq $open.Len) { $closeIdx = $k; break }
-        }
-        if ($closeIdx -lt 0) { $r++; continue }
-        $from = $open.Start + $open.Len
-        $len  = $runs[$closeIdx].Start - $from
-        if ($len -gt 0) {
-            $result = $result.Substring(0, $from) +
-                      (Disable-CommentMarkers -Text $result.Substring($from, $len)) +
-                      $result.Substring($from + $len)
-        }
-        $r = $closeIdx + 1
-    }
-    return $result
-}
-
-# True for each line that Markdown renders as CODE rather than as content: the lines of a
-# fenced block, fences included. A fence OPENS on a line whose first non-space run (at most
-# three spaces of indent) is three or more backticks or tildes, and CLOSES on a later line
-# whose run is the same character and at least as long — CommonMark's rule, line by line.
-# An unclosed fence runs to the end of the document, exactly as a renderer treats it.
-function Get-FencedLineMap {
-    param([string[]]$Lines)
-    $map = New-Object 'bool[]' $Lines.Count
-    # A document with no fence run at all has no fenced lines, and most do not.
-    if (($Lines -join "`n") -notmatch '(?m)^ {0,3}(`{3,}|~{3,})') { return $map }
-    $fenceChar = ''
-    $fenceLen = 0
-    for ($i = 0; $i -lt $Lines.Count; $i++) {
-        $m = [regex]::Match($Lines[$i], '^ {0,3}(`{3,}|~{3,})')
-        if ($fenceLen -gt 0) {
-            $map[$i] = $true
-            if ($m.Success -and $m.Groups[1].Value[0] -eq $fenceChar -and $m.Groups[1].Value.Length -ge $fenceLen) {
-                $fenceChar = ''; $fenceLen = 0
-            }
-            continue
-        }
-        if ($m.Success) {
-            $fenceChar = $m.Groups[1].Value[0]
-            $fenceLen = $m.Groups[1].Value.Length
-            $map[$i] = $true
-        }
-    }
-    return $map
-}
+# The Markdown-visibility helpers moved to scripts/markdown-lib.ps1 (feature 015, phase 2):
+# build-digests.ps1 needed the same rule for GAP-025, and a copy would have to relearn
+# every fix this one took. Disable-CommentMarkers, Convert-CodeSpanMarkers and
+# Get-FencedLineMap arrive from there, unchanged.
+. (Join-Path $PSScriptRoot 'markdown-lib.ps1')
 
 # Visible lines of a text blob — HTML comments stripped, same rule as Get-VisiblePlanLines
 # (008 phase-2 F1). Commented-out text is not law and is not a record (H1).

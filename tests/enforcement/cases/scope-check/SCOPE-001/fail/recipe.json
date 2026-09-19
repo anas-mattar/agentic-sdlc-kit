@@ -1,0 +1,60 @@
+{
+  "description": "The phase 1 Territory marker carries an annotation between the marker and its colon - the exact shape feature 014 wrote twice while amending its own territory. THIS IS THE GAP-026 DEMONSTRATION: Get-Territory anchors on '**Territory**:' and reads the decorated marker as no declaration at all, so scope-check emits its pre-006 compatibility WARN and exits 0 having graded nothing. Here the commit also touches a file NOWHERE in the territory. Differs from the pass case only in the condition under test (plan D10). This is the loud direction: the check must FAIL, and today it exits 0.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory** (widened by amendment 2026-01-02, approved by fixture):",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n",
+        "src/other.ps1": "Write-Host 'other'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

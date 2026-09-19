@@ -1,0 +1,21 @@
+{
+  "description": "The same branch with main present, so there is something to compare against. Differs only in whether a base exists (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

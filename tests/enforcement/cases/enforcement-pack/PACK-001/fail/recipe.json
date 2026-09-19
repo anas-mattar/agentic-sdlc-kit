@@ -1,0 +1,21 @@
+{
+  "description": "A Lite-lane branch on a clone with no integration branch. Every member either graded an empty file list or returned without grading, and the exit code is 0 - which is GAP-027 exactly. The run says so in the log body today; phase 5 gives it a verdict state, and this case is what will show the difference.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "fix/thing",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 6 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - CriticalEvidence: specs/001-thing/human-pr-review.md names 'ada' as both reviewer and owner — the human reviewer of a Critical feature MUST NOT be its owner (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md rule 4)

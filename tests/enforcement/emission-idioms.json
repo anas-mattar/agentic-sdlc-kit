@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "_comment": [
+    "How each grading script emits a failure. The first version of the scanner hard-coded six",
+    "regexes modelled on enforcement-pack.ps1's idiom and applied them to all nine scripts, which",
+    "silently undercounted three of them — doc-lint.ps1 (missing its own headline rule, which",
+    "accumulates an object rather than a string), verify-kit.ps1 (7 of 16 Add-Finding FAIL sites",
+    "are single-quoted) and build-digests.ps1 (all 10 real rules use an $issues accumulator no",
+    "pattern named). Found by the phase 1 fresh-context review, F1.",
+    "",
+    "Partial blindness is worse than total blindness: a script the scanner cannot see at all is",
+    "reported as NO EMISSION SITE FOUND, while one it half-sees reports a plausible number that",
+    "nobody questions. So the scanner now does two passes. 'accumulators' is the precise pass —",
+    "what this script actually uses. 'candidateSweep' in Coverage.Tests.ps1 is the recall pass — a",
+    "deliberately broad net whose hits, minus the precise ones, are printed as UNCLASSIFIED. That",
+    "difference is the measure of what the declaration might still be missing.",
+    "",
+    "A script with an empty 'accumulators' list is DECLARED undeclared: its idiom has not been",
+    "worked out yet, it is reported as such, and the task that inventories it must resolve it.",
+    "Quote style is not part of these patterns — they stop before the message, so a single-quoted,",
+    "double-quoted, or non-literal message is a site either way."
+  ],
+  "scripts": [
+    {
+      "script": "enforcement-pack.ps1",
+      "accumulators": ["\\$script:failures\\s*\\+=", "\\$script:warnings\\s*\\+="],
+      "note": "Every member appends to one of two collections; the runner prints and exits 1 on failures. Warnings ARE counted as emission sites from phase 3 on: PhaseSizeWarning is a rule with a fixture pair (PHASE-001), and leaving it out of the denominator flattered the coverage number by hiding a rule rather than by covering it. Where WARN sits in the verdict vocabulary is still phase 5's question (D4); whether it is a rule is not."
+    },
+    {
+      "script": "scope-check.ps1",
+      "accumulators": ["Write-Host\\s+\"scope-check: FAIL"],
+      "note": "Prints and returns a per-commit verdict rather than accumulating."
+    },
+    {
+      "script": "scope-check-repos.ps1",
+      "accumulators": [],
+      "note": "UNDECLARED. Emits through a Write-Line wrapper that also carries informational and WARN lines, so naming the wrapper alone would inflate the denominator with non-rules. Resolve while inventorying it (tasks.md T029)."
+    },
+    {
+      "script": "doc-lint.ps1",
+      "accumulators": [
+        "\\$manifestErrors\\s*\\+=",
+        "\\$broken\\s*\\+=",
+        "Write-Host\\s+\"ERROR"
+      ],
+      "note": "Three idioms, not one. $broken accumulates a PSCustomObject — the unresolved-path rule, which is doc-lint's headline check and was invisible to the first scanner."
+    },
+    {
+      "script": "verify-kit.ps1",
+      "accumulators": ["Add-Finding\\s+FAIL"],
+      "note": "A helper call, not an accumulator. Quote style varies across its 16 sites and one passes a variable."
+    },
+    {
+      "script": "build-digests.ps1",
+      "accumulators": ["\\$(script:)?issues\\s*\\+="],
+      "note": "The 10 distinct rules all land here. The Write-Host lines the first scanner found were the wrapper printing this collection — counting them measured the printer, not the rules. This is the script GAP-025 fixes in phase 2, so its baseline had to be right before that phase starts."
+    },
+    {
+      "script": "roadmap-claim-check.ps1",
+      "accumulators": ["\\$failures\\s*\\+="],
+      "note": ""
+    },
+    {
+      "script": "territory-check.ps1",
+      "accumulators": [],
+      "note": "UNDECLARED. Reports CLEAN/OVERLAP and may emit no FAIL rule at all — which of the two is true is itself the question T034 must answer."
+    },
+    {
+      "script": "ritual-checks.ps1",
+      "accumulators": [],
+      "note": "UNDECLARED. An aggregator: its only failure is 'a member failed'. Whether that is one rule or none is T035's question."
+    }
+  ]
+}

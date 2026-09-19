@@ -1,0 +1,2 @@
+scope-check: FAIL phase 1 commit <SHA>: src/other.ps1 not in territory
+scope-check: remediation — revert the undeclared change, or amend the phase's **Territory** in specs/001-thing/tasks.md (owner approval) in a commit made BEFORE the phase commit, then re-commit the phase

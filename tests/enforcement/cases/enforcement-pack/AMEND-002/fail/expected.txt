@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+AmendmentAuthority: graded 1 of 2 commit(s) in <SHA>..HEAD (1 not graded: 1 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: commit <SHA> records 'ada' as the approver of its change to specs/001-thing/plan.md, but its commit message does not name them — the message is fixed at commit time and is the half a later edit cannot fake (constitution I; plan D5)

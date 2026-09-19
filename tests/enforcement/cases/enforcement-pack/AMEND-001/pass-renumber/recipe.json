@@ -1,0 +1,102 @@
+{
+  "description": "A branch renumbered by a lost claim race: the whole feature directory moves and every document arrives at a new path, spec.md carrying the header edit claim-feature.ps1 mandates. Graded on the blobs rather than on git's similarity percentage, because that edit makes the move R080 and a percentage rule left a renumbered branch with no legal path to green (J3).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "002-thing",
+      "message": "spec: 001-thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ]
+      }
+    },
+    {
+      "branch": "002-thing",
+      "message": "chore: renumber 001 to 002 after a lost claim race",
+      "delete": [
+        "specs/001-thing/spec.md",
+        "specs/001-thing/plan.md",
+        "specs/001-thing/tasks.md"
+      ],
+      "write": {
+        "specs/002-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `002-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/002-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/002-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      }
+    }
+  ],
+  "checkout": "002-thing"
+}

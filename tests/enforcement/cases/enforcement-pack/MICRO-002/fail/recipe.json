@@ -1,0 +1,43 @@
+{
+  "description": "A mini-spec declaring a gate batch. A Micro feature is exactly one phase, so there is nothing to batch.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Micro Spec: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "**Gate Batching**: phases 1-2",
+          "",
+          "## Intent",
+          "",
+          "Do the thing.",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

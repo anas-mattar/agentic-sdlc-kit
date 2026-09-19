@@ -1,0 +1,47 @@
+{
+  "description": "Six territory entries - one past the lane's five-file cap - under a DECORATED marker, the form an author writes when annotating why the block changed. Before T020a this reported nothing at all: Invoke-MicroLaneCheck carried its own strict copy of the marker grammar, so it counted zero markers and zero entries and the cap passed vacuously while scope-check, sharing the widened parser, enforced the same block.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Micro Spec: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "",
+          "## Intent",
+          "",
+          "Do the thing.",
+          "",
+          "**Territory** (widened by amendment 2026-01-02, approved by fixture):",
+          "",
+          "- `src/a1.ps1`",
+          "- `src/a2.ps1`",
+          "- `src/a3.ps1`",
+          "- `src/a4.ps1`",
+          "- `src/a5.ps1`",
+          "- `src/a6.ps1`"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

@@ -1,0 +1,44 @@
+{
+  "description": "A Micro territory entry that escapes the repository. Get-Territory routes an absolute or '..' entry to Invalid rather than Entries, so after T020a shared the parser this entry stopped counting toward the five-file cap AND was reported by nobody - while scope-check.ps1, parsing the same block with the same function, FAILs it. The divergence T020a removed, reappearing one field over.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Micro Spec: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "",
+          "## Intent",
+          "",
+          "Do the thing.",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/a1.ps1`",
+          "- `src/a2.ps1`",
+          "- `../outside/a3.ps1`"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

@@ -1,0 +1,3 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 3 changed file(s)
+AmendmentAuthority: graded 0 of 1 commit(s) in <SHA>..HEAD (1 not graded: 1 made before the check existed (plan D2b))
+enforcement-pack: OK

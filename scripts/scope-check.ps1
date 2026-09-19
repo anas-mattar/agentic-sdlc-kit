@@ -222,7 +222,22 @@ function Invoke-ScopeCheck {
         Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: **Territory** declared for phase $phaseN in $tasksRel but the entry list is empty (declare the paths, or remove the marker)"
         return $false
     }
+    if (-not $territory.Found -and $territory.NearMiss.Count -gt 0) {
+        # T019a: a line that starts like a declaration and breaks the grammar FAILs rather than
+        # vanishing — the same choice build-digests.ps1 makes for a malformed digest marker.
+        foreach ($nm in $territory.NearMiss) {
+            Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: $tasksRel line $nm begins '**Territory**' but has no ':' on that line — an annotation that wraps declares nothing the parser can see; keep the marker and its colon on one line"
+        }
+        return $false
+    }
     if (-not $territory.Found) {
+        # FR-015: the compatibility WARN covers a tasks.md that predates the convention, not a
+        # phase that skipped it. If a sibling phase declares, this one is an omission — and a
+        # WARN here means the commit is graded against nothing at all.
+        if (Test-AnyTerritoryDeclared -TasksLines @($tasksBlob)) {
+            Write-Host "scope-check: FAIL phase $phaseN commit ${sha7}: no territory declared for phase $phaseN in $tasksRel, but another phase in that file declares one — declare this phase's **Territory** (the pre-006 compatibility WARN covers only a tasks.md that declares none at all)"
+            return $false
+        }
         Write-Host "scope-check: WARN commit ${sha7}: no territory declared for phase $phaseN in $tasksRel (declare territory in tasks.md — non-blocking, pre-006 compatibility)"
         return $true
     }
