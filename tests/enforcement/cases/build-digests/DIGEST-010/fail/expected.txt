@@ -1,0 +1,2 @@
+digests: FAIL — orphan digest: docs/digests/ghost-digest.md — no manifest pack with markers produces it; delete it or add markers to its pack's documents
+digests: RESULT FAIL (1 issue(s))

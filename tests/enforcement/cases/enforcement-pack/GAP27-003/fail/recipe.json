@@ -1,0 +1,49 @@
+{
+  "description": "A Micro feature whose parent commit object is truncated - still referenced, still resolving by name, unreadable - so the walk to the base cannot complete. The phase walk that enforces 'exactly one phase' and the Micro line bound compares nothing.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The amendment boundary (plan D2b) asks a commit's",
+          "# parent tree whether its copy of this path defines the check, and this is the whole of",
+          "# the answer.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 2: the other thing",
+      "write": {
+        "src/other.ps1": "# second phase, which a Micro feature may not have\n"
+      }
+    }
+  ],
+  "checkout": "001-thing",
+  "truncateCommit": "HEAD~1"
+}

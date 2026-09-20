@@ -1,0 +1,19 @@
+{
+  "description": "The same two inert members with nothing failing beside them. Differs only in the condition under test (plan D10) — and the run is OK, which is the other half of the claim: an inert member does not fail a run either.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the tree and its checks",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/doc-lint.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'doc-lint: OK - stub'\nexit 0\n",
+        "scripts/enforcement-pack.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'enforcement-pack: OK - stub'\nexit 0\n",
+        "scripts/scope-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-check: OK - stub'\nexit 0\n",
+        "scripts/scope-check-repos.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-repos: OK - stub'\nexit 0\n",
+        "scripts/build-digests.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'digests: n/a (no digest markers)'\nexit 0\n",
+        "scripts/roadmap-claim-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'roadmap-claims: n/a (no origin remote - no claim ledger to check against)'\nexit 0\n"
+      }
+    }
+  ]
+}

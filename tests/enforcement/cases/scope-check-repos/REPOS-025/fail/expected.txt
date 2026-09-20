@@ -1,0 +1,1 @@
+scope-repos: code-repo: FAIL phase 1 commit <SHA>: invalid territory entry '../outside/thing.ps1' (entries must be repo-relative, no '..')

@@ -1,0 +1,1 @@
+scope-check: n/a ('main' is the trunk)

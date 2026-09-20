@@ -1,0 +1,91 @@
+{
+  "description": "A branch that is neither trunk, nor a Lite lane, nor NNN-shaped. It maps to no specs/ directory, so there is no declaration to read; naming the branch in the line is what tells the author the name is the problem.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 5,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"code-repo\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "hoursAgo": 4,
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `code-repo/src/**`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      }
+    },
+    {
+      "branch": "spike-thing",
+      "message": "spike: try it",
+      "hoursAgo": 3,
+      "write": {
+        "spike.txt": "try\n"
+      }
+    }
+  ],
+  "checkout": "spike-thing",
+  "nestedRepos": {
+    "code-repo": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "hoursAgo": 3,
+          "write": {
+            "README.md": "code\n"
+          }
+        },
+        {
+          "branch": "001-thing",
+          "message": "phase 1: the thing",
+          "hoursAgo": 2,
+          "write": {
+            "src/a.txt": "a\n"
+          }
+        }
+      ]
+    }
+  }
+}

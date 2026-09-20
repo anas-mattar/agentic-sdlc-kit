@@ -168,22 +168,57 @@ widen it, which needs both files.
 **Territory**:
 
 - `tests/**`
+- `scripts/ritual-checks.ps1`
+- `scripts/territory-check.ps1`
 
-- [ ] T028 Inventory and cover `scripts/scope-check.ps1`, including the anti-retroactivity rule —
+CI proved what a Windows-only run could not: `Write-Host ''` emits a blank line on
+`windows-latest` and nothing on `ubuntu-latest`, on identical `pwsh 7.6.5` and identical harness
+code. Every one of the sixteen cases whose expectation contains an interior blank line failed on
+ubuntu, and no other case did — the two sets are the same set. The divergence is in the two
+scripts that print a blank line, not in the fixtures, so nothing confined to `tests/**` can fix
+it honestly: normalising the blank away would blind the harness to precisely the class of
+difference SC-006 exists to catch.
+
+**Amendment approved by**: anas.m, 2026-09-19.
+
+T036a's text is rewritten below. The diagnosis that justified the widening above was wrong, and
+the task now says what was actually done. The rationale paragraph is deliberately left standing
+as approved: what was believed, and on what evidence, is part of the record — the correction is
+written in `notes.md` rather than over the top of it.
+
+**Amendment approved by**: anas.m, 2026-09-20.
+
+- [x] T036a Stop the harness losing blank lines on Linux. `Start-Process
+      -RedirectStandardOutput` drops empty lines there, so `Invoke-FixtureCase` compared its
+      expectation against a stream the script never printed; `System.Diagnostics.Process` with
+      `ReadToEndAsync` replaces it. Add a self-test that drives `Invoke-FixtureCase` itself.
+      **The two scripts are NOT touched**: the first diagnosis blamed `Write-Host ''`, and
+      measuring on ubuntu 24.04 + pwsh 7.6.5 showed all four emission forms work there. The
+      Territory widened by `74f690e` turned out not to be needed. The replacement carried its
+      own defect — unset, `StandardOutputEncoding` decodes the child with the console codepage,
+      so every em dash arrived mangled, intermittently. Both streams are pinned to UTF-8, and
+      the guard test forces a non-UTF-8 console rather than inheriting one.
+- [x] T036b Close the phase 4 review's F1: `doc-lint.ps1:236` — the manifest sweep declining in
+      an adopted project — is a condition the script detects on its own `.kit-version` branch,
+      not a printer of any accumulator. It is outside the declared idiom and outside the recall
+      sweep, so `doc-lint` reports `7 of 7` against a denominator built from the covered part.
+      Widen the declaration to 8 and cover the inert verdict. (`tests/**`; no amendment needed.)
+
+- [x] T028 Inventory and cover `scripts/scope-check.ps1`, including the anti-retroactivity rule —
       a declaration that post-dates the commit it would legalise.
-- [ ] T029 Inventory and cover `scripts/scope-check-repos.ps1`, including a code repository on the
+- [x] T029 Inventory and cover `scripts/scope-check-repos.ps1`, including a code repository on the
       wrong branch, a missing repository, and a trunk that is not `main`.
-- [ ] T030 [P] Inventory and cover `scripts/doc-lint.ps1`, including manifest completeness and an
+- [x] T030 [P] Inventory and cover `scripts/doc-lint.ps1`, including manifest completeness and an
       unresolvable referenced path.
-- [ ] T031 [P] Inventory and cover `scripts/verify-kit.ps1` across its five dimensions.
-- [ ] T032 [P] Inventory and cover `scripts/build-digests.ps1` beyond phase 2 — drift, bounds, and
+- [x] T031 [P] Inventory and cover `scripts/verify-kit.ps1` across its five dimensions.
+- [x] T032 [P] Inventory and cover `scripts/build-digests.ps1` beyond phase 2 — drift, bounds, and
       a near-miss marker line that must fail rather than vanish.
-- [ ] T033 [P] Inventory and cover `scripts/roadmap-claim-check.ps1`, including all three inert
+- [x] T033 [P] Inventory and cover `scripts/roadmap-claim-check.ps1`, including all three inert
       states, which must report `N/A` and never a silent pass.
-- [ ] T034 [P] Inventory and cover `scripts/territory-check.ps1`.
-- [ ] T035 Cover `scripts/ritual-checks.ps1` as an aggregator: one failing member fails the run,
+- [x] T034 [P] Inventory and cover `scripts/territory-check.ps1`.
+- [x] T035 Cover `scripts/ritual-checks.ps1` as an aggregator: one failing member fails the run,
       member names are stable, and an inert member does not mask a failing one.
-- [ ] T036 Run the coverage reporter and record the full uncovered list in `notes.md`.
+- [x] T036 Run the coverage reporter and record the full uncovered list in `notes.md`.
 
 ---
 
@@ -205,21 +240,21 @@ phase whose behaviour change reaches adopted projects.
 - `scripts/roadmap-claim-check.ps1`
 - `scripts/territory-check.ps1`
 
-- [ ] T037 Write the GAP-027 cases first: a depth-1 clone with an absent base, an unresolvable
+- [x] T037 Write the GAP-027 cases first: a depth-1 clone with an absent base, an unresolvable
       diff base, and an unreadable parent. Demonstrate each producing `OK` today, and record those
       runs in `notes.md` before any fix (D11).
-- [ ] T038 Define the vocabulary in one place — `OK`, `FAIL`, `WARN`, `PENDING`, `N/A`,
+- [x] T038 Define the vocabulary in one place — `OK`, `FAIL`, `WARN`, `PENDING`, `N/A`,
       `UNGRADED` — with `PENDING` documented as reserved and emitted by nothing (D4, D7, FR-009).
-- [ ] T039 Emit `UNGRADED` from every member that can return without grading, starting with
+- [x] T039 Emit `UNGRADED` from every member that can return without grading, starting with
       `Invoke-ReviewProvenanceCheck` (FR-010).
-- [ ] T040 Carry the state into `scripts/ritual-checks.ps1`'s verdict block so it is visible where
+- [x] T040 Carry the state into `scripts/ritual-checks.ps1`'s verdict block so it is visible where
       a reader and a status badge look, distinct from both `OK` and `N/A` (FR-010).
-- [ ] T041 Hold the exit code unchanged on the Lite lane and prove it with a case that asserts the
+- [x] T041 Hold the exit code unchanged on the Lite lane and prove it with a case that asserts the
       code as well as the verdict (D6, FR-011).
-- [ ] T042 Confirm member names and verdicts are otherwise unchanged by running `ritual-checks` on
+- [x] T042 Confirm member names and verdicts are otherwise unchanged by running `ritual-checks` on
       the kit and on all three adopted projects, recording each result in `notes.md` (FR-012,
       SC-005).
-- [ ] T043 Add the `UNGRADED` cases to the inventory and confirm coverage counts them.
+- [x] T043 Add the `UNGRADED` cases to the inventory and confirm coverage counts them.
 
 ---
 

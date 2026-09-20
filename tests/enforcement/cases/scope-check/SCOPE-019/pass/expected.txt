@@ -1,0 +1,1 @@
+scope-check: PASS phase 1 commit <SHA> (1 file(s))

@@ -1,0 +1,63 @@
+{
+  "description": "The directory is there and is not a repository: a '.git' FILE pointing at a gitdir that does not exist, which is what an interrupted clone or a submodule without its module leaves behind. Reachable only in this shape — a plain directory inside the governance tree makes git walk UP and answer for the outer repository, which is the next rule along.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 5,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"code-repo\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "hoursAgo": 4,
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `code-repo/src/**`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing",
+  "uncommitted": {
+    "code-repo/.git": "gitdir: /nonexistent\n"
+  }
+}

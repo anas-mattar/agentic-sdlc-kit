@@ -1,0 +1,42 @@
+{
+  "description": "A Micro feature whose phase commit is wholly inside the territory its mini-spec declares. The PASS line names the source: 'Micro territory from spec.md' is the only thing in the output that says the declaration was not read from tasks.md, which a Micro feature does not have.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Micro Spec: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "",
+          "## Intent",
+          "",
+          "Do the thing.",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

@@ -1,0 +1,2 @@
+scope-repos: code-repo: FAIL phase 1 commit <SHA>: code-repo/docs/stray.md not in territory
+scope-repos: code-repo: remediation — revert the undeclared change, or amend the phase's **Territory** in specs/001-thing/spec.md (owner approval) in a governance commit made BEFORE the code phase commit, then re-commit the phase

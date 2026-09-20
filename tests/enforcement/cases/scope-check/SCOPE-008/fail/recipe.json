@@ -1,0 +1,42 @@
+{
+  "description": "A Micro mini-spec with no Territory block. The lane has no pre-Micro features to grandfather, so unlike the Standard lane's compatibility WARN this is a hard FAIL - the one place the two lanes deliberately disagree.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Micro Spec: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Micro",
+          "",
+          "## Intent",
+          "",
+          "Do the thing.",
+          "",
+          "## Notes",
+          "",
+          "No territory block at all."
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

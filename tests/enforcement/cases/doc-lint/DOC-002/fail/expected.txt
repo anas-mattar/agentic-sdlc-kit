@@ -1,0 +1,4 @@
+doc-lint: scanned 11 governance docs under <ROOT>
+ERROR: manifest completeness — 1 issue(s):
+  unclassified: adoption/updating.md
+doc-lint: FAIL (1 issue(s) — see the ERROR block(s) above)

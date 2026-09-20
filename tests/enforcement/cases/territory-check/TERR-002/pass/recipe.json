@@ -1,0 +1,40 @@
+{
+  "description": "Two open feature branches touching different files. The affirmative verdict names the branch it is about, because a bare CLEAN would not say WHOSE territory was checked — and on a team that is the only part that matters.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "phase 1: the other thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/other.txt": "other\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self"
+}

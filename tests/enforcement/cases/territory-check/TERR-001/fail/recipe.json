@@ -1,0 +1,39 @@
+{
+  "description": "No origin remote, so there are no other claims to compare against. The check declines and says so rather than printing CLEAN — which would be a claim that nothing overlaps, made by a run that looked at nothing.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "phase 1: the other thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "other\n"
+      }
+    }
+  ],
+  "checkout": "011-thing"
+}

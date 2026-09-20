@@ -1,0 +1,18 @@
+{
+  "description": "No manifest, in GENERATE mode. The author asked for digests and there is nothing that says which ones to build, so the script refuses rather than writing a guess.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: The whole ritual on one page. -->"
+        ]
+      }
+    }
+  ]
+}

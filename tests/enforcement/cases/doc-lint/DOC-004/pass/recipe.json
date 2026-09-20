@@ -1,0 +1,96 @@
+{
+  "description": "The same manifest with the class spelt correctly. Differs only in the condition under test (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the kit",
+      "write": {
+        "CLAUDE.md": [
+          "# CLAUDE.md",
+          "",
+          "The law is `.specify/memory/constitution.md`, and every phase passes",
+          "`docs/sdlc/definition-of-done.md` before it is done."
+        ],
+        "AGENTS.md": [
+          "# AGENTS.md",
+          "",
+          "Same rules as `CLAUDE.md` — one file, two readers."
+        ],
+        "README.md": [
+          "# Fixture Kit",
+          "",
+          "The whole ritual on one page: `docs/sdlc/flow.md`."
+        ],
+        "kit-manifest.json": [
+          "{",
+          "  \"entries\": [",
+          "    { \"path\": \"**\", \"class\": \"verbatim\" },",
+          "    { \"path\": \".claude/**\", \"class\": \"verbatim\" }",
+          "  ]",
+          "}"
+        ],
+        ".specify/memory/constitution.md": [
+          "# Constitution",
+          "",
+          "**Version**: 1.0.0 | **Ratified**: 2026-01-01",
+          "",
+          "## I. Specification First",
+          "",
+          "A review is written to `specs/_templates/ai-code-review.md`."
+        ],
+        ".specify/templates/spec-template.md": [
+          "# Feature Specification: [FEATURE]"
+        ],
+        ".specify/scripts/bootstrap.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        ".claude/commands/speckit.specify.md": [
+          "# /speckit.specify",
+          "",
+          "Write the spec."
+        ],
+        "docs/sdlc/definition-of-done.md": [
+          "# Definition of Done",
+          "",
+          "Six gates. Gate 4 is scope."
+        ],
+        "docs/sdlc/flow.md": [
+          "# Flow",
+          "",
+          "The ritual on one page.",
+          "",
+          "Certification is held by the user: `docs/sdlc/gate-command.md`."
+        ],
+        "docs/sdlc/gate-command.md": [
+          "# Gate Command",
+          "",
+          "The user runs the gate and confirms the exit code."
+        ],
+        "docs/sdlc/review-process.md": [
+          "# Review Process",
+          "",
+          "Fresh context, or a second model. Never self-graded."
+        ],
+        "docs/rulebooks/README.md": [
+          "# Rulebooks",
+          "",
+          "One rulebook per tier."
+        ],
+        "specs/_templates/ai-code-review.md": [
+          "# AI Code Review",
+          "",
+          "## Reviewer Provenance",
+          "",
+          "This reviewer did not produce the diff under review."
+        ],
+        "scripts/claim-feature.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        "scripts/territory-check.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        "scripts/update-kit.ps1": "param([string]$Root)\nWrite-Host 'fixture script'\n",
+        "adoption/updating.md": [
+          "# Updating an adopted project",
+          "",
+          "Run the doctor after every update."
+        ]
+      }
+    }
+  ]
+}

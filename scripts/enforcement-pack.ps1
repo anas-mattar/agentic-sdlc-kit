@@ -130,6 +130,10 @@ $Config = @{
 
 $failures = @()
 $warnings = @()
+# The third accumulator, and the one this feature exists to add. A member appends here when it
+# RAN AND FORMED NO OPINION - not a pass, not a warning, and not 'does not apply'. See the
+# verdict vocabulary in scripts/ritual-checks.ps1. It never changes the exit code (plan D6).
+$ungraded = @()
 
 function Get-CurrentBranch {
     param([string]$Override)
@@ -558,7 +562,10 @@ function Invoke-MicroLaneCheck {
     # is the phase's TOTAL across every commit carrying its token, so splitting a change
     # over remediation commits cannot defeat it (phase 2 review, F1 — owner-resolved
     # 2026-09-09; constitution X wording matches).
-    if (-not $Base) { return }
+    if (-not $Base) {
+        $script:ungraded += "MicroLane: no diff base, so the phase walk enforcing 'exactly one phase' and the line bound compared nothing on '$Branch'"
+        return
+    }
     $phaseNums = @{}
     $phaseTotal = 0
     $phaseCommitCount = 0
@@ -592,7 +599,15 @@ function Invoke-MicroLaneCheck {
 # are grandfathered automatically (006 research D4). Templates are exempt.
 function Invoke-ReviewProvenanceCheck {
     param([string]$Branch, [string]$Base)
-    if (-not $Base) { return }
+    # GAP-027, and the reason this feature has a phase 5. This used to be a bare `return`: the
+    # machine half of gate 5 stopped before listing a single candidate, and the run still printed
+    # OK. An AI review with no provenance section rode through on a depth-1 clone, the ordinary
+    # actions/checkout shape. It still does not FAIL - FR-011 forbids a new hard failure on the
+    # Lite lane - but the verdict can no longer be read as a graded pass.
+    if (-not $Base) {
+        $script:ungraded += "ReviewProvenance: no diff base, so no review file on '$Branch' was inspected - the machine half of DoD gate 5 formed no opinion. Fetch the full history ('fetch-depth: 0' on actions/checkout)"
+        return
+    }
     # Runs on every recognized lane (self-scoping via the diff filter) so a review file
     # cannot be smuggled in through fix/chore/docs branches (phase 2 review, F7).
     # AR filter: rename TARGETS are inspected like additions — moving a grandfathered
@@ -640,7 +655,10 @@ function Invoke-ReviewProvenanceCheck {
 function Invoke-PhaseSizeWarningCheck {
     param([string]$Branch, [string]$Base)
     if ($Branch -notmatch '^\d{3}-') { return }
-    if (-not $Base) { return }
+    if (-not $Base) {
+        $script:ungraded += "PhaseSizeWarning: no diff base, so no commit on '$Branch' was measured against the phase-size guideline"
+        return
+    }
     $commits = (git rev-list "$Base..HEAD" 2>$null) | Where-Object { $_ }
     foreach ($commit in $commits) {
         $numstat = git show --numstat --format='' $commit 2>$null
@@ -1217,6 +1235,13 @@ if ($Branch -in @('main', 'master')) {
     Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary -ReplayBase $ReplayBase -ReplayTip $ReplayTip
     Invoke-PhaseSizeWarningCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^(fix|chore)/') {
+    # The one member here that does not DECLINE on a null base - it grades, and grades an empty
+    # list, which passes for the same reason an empty accusation is never proved. The comment
+    # above says it plainly: a baseless 'fix/' branch touching anything at all went green. A
+    # vacuous grade reaches the same wrong verdict as a skipped one, so it is named the same way.
+    if (-not $diffBase) {
+        $ungraded += "LiteAndAbuse: no diff base, so the prohibited-category and file-count guards graded an EMPTY file list on '$Branch' - every prohibited change this lane forbids would have passed"
+    }
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
 } elseif ($Branch -match '^docs/') {
@@ -1227,10 +1252,22 @@ if ($Branch -in @('main', 'master')) {
 }
 
 foreach ($w in $warnings) { Write-Host "WARNING: $w" }
+# Listed before the verdict and independently of it, the way warnings are: a run can both fail
+# and have graded nothing, and the reader needs to know that the FAIL count is not the whole
+# story. What the verdict word does is stop 'OK' being printed over the top of it.
+foreach ($u in $ungraded) { Write-Host "UNGRADED: $u" }
 if ($failures.Count -gt 0) {
     Write-Host "enforcement-pack: FAIL ($($failures.Count) issue(s)):"
     foreach ($f in $failures) { Write-Host "  - $f" }
     exit 1
+}
+if ($ungraded.Count -gt 0) {
+    # Exit 0, deliberately and on the record (plan D6, FR-011). Feature 014's FR-009 forbids a
+    # new hard failure on the Lite lane, and that constraint stands. What changes is that no one
+    # can read this run as clean. Whether UNGRADED should ever block is a later feature's
+    # question with its own evidence; it is not answered here by the back door.
+    Write-Host "enforcement-pack: UNGRADED ($($ungraded.Count) check(s) formed no opinion)"
+    exit 0
 }
 Write-Host 'enforcement-pack: OK'
 exit 0

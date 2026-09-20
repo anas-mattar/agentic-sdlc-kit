@@ -1,0 +1,3 @@
+build-digests: wrote docs/digests/fixture-digest.md
+build-digests: wrote docs/digests/second-digest.md
+build-digests: OK (2 digest(s), 3 marker(s))

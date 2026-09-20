@@ -1,0 +1,39 @@
+{
+  "description": "-Json with no remote. The JSON contract still has to answer, and it answers CLEAN with an empty overlap list — which is the one place this script's machine output is less informative than its prose: a caller reading JSON cannot tell 'nothing overlaps' from 'nothing was checked'. Recorded, not fixed: the contract is feature 003's.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "phase 1: the other thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "other\n"
+      }
+    }
+  ],
+  "checkout": "011-thing"
+}

@@ -1,0 +1,1 @@
+scope-repos: code-repo: FAIL phase 1 commit <SHA>: the phase 1 **Territory** in specs/001-thing/tasks.md POST-DATES this commit (<DATE>) — a declaration only governs code committed after it lands; re-commit the phase on top of the declaration (or declare the territory first, then re-commit)

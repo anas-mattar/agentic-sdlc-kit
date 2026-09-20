@@ -1,0 +1,21 @@
+{
+  "description": "A phase commit on a branch with no specs/ directory at all — a history that predates the convention entirely. Non-blocking by design, and the WARN is the whole of the verdict: nothing was graded, and the line says which file would have to exist for anything to be.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

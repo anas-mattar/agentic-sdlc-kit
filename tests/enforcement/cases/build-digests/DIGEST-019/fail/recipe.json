@@ -1,0 +1,19 @@
+{
+  "description": "Generate mode stopped by an issue in the sources. NOTHING WRITTEN is stated outright: a generator that half-wrote and then failed would leave a tree in which some digests are fresh and some are not, with no record of which.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest:  -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n"
+      }
+    }
+  ]
+}

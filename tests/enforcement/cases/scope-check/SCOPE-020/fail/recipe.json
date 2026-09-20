@@ -1,0 +1,5 @@
+{
+  "description": "A repository with no commits at all, so HEAD is unborn and no branch name can be read. The lane selects every rule below it, so this exits 1 rather than guessing — guessing is how a feature branch gets graded as the trunk. Note what the FIRST attempt at this fixture produced: a recipe carrying one commit and no checkout answered \"not applicable ('main' is the trunk)\" and exited 0 — a different rule passing quietly in this one's place, which is what a hand-written expectation catches and a generated one would have enshrined.",
+  "defaultBranch": "main",
+  "commits": []
+}

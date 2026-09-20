@@ -1,0 +1,6 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: FAIL record: declared codeRepos entry '../api' is not a plain directory name (no paths, no '..', no drive letters) — fix: each entry names a code repository directly under this repository (docs/sdlc/repository-strategy.md, Nested Layout)
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

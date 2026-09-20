@@ -1,0 +1,2 @@
+scope-repos: WARN territory entry 'code_repo/src/**' in specs/001-thing/tasks.md names 'code_repo', which is neither a declared code repository nor a path in the governance repository (typo? kit-adoption.json declares: code-repo)
+scope-repos: code-repo: PASS phase 1 commit <SHA> (1 file(s))

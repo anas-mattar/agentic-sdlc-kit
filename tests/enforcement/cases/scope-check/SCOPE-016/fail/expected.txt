@@ -1,0 +1,2 @@
+scope-check: FAIL phase 1 commit <SHA>: docs/stray.md not in territory
+scope-check: remediation — revert the undeclared change; or amend the **Territory** in specs/001-thing/spec.md (owner approval, kept within the Micro territory cap that enforcement-pack.ps1 checks — constitution X, Micro lane) in a commit made BEFORE the phase commit; or promote to Standard: expand spec.md to the full template, add plan.md + tasks.md (Territory moves there), in a commit before the next phase commit

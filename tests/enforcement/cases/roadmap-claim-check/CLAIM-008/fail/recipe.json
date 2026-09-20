@@ -1,0 +1,40 @@
+{
+  "description": "The same two claims where the other one's row still reads 'idea'. The exemption covers the branch's own number and nothing else — standing on a feature branch does not excuse the rest of the roadmap. Differs only in one cell (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Roadmap claim check | idea | — | `specs/012-other/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "spec: 012-other",
+      "write": {
+        "specs/012-other/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self"
+}

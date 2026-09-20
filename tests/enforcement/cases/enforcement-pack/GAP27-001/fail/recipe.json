@@ -1,0 +1,31 @@
+{
+  "description": "A depth-1 checkout of a docs/ branch that ADDS an AI review with no Reviewer Provenance section. With a full history this is PROV-002 and the run fails. With no base, Invoke-ReviewProvenanceCheck returns at its first line without listing a single candidate, and the machine half of gate 5 grades nothing while the verdict says OK. The review file is the point: the violation is present, detectable, and invisible.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "docs/thing",
+      "message": "docs: add a review with no provenance",
+      "write": {
+        "specs/001-thing/ai-code-review.md": [
+          "# AI Code Review - Thing",
+          "",
+          "**Reviewer**: the implementer, same context",
+          "",
+          "## Verdict",
+          "",
+          "APPROVE. No provenance section, no attestation - this file is exactly what",
+          "PROV-002 and PROV-005 exist to reject."
+        ]
+      }
+    }
+  ],
+  "checkout": "docs/thing",
+  "shallow": 1
+}

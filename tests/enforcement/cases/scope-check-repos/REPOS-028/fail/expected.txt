@@ -1,0 +1,1 @@
+scope-repos: code-repo: FAIL phase 1 commit <SHA>: specs/001-thing/tasks.md line 5 begins '**Territory**' but has no ':' on that line — an annotation that wraps declares nothing the parser can see; keep the marker and its colon on one line

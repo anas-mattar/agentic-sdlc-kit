@@ -1,0 +1,1 @@
+{"script": "scope-check.ps1", "args": ["-Branch", "001-thing", "-Commit", "no-such-ref"], "exitCode": 1}

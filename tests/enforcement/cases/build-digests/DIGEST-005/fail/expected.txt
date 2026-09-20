@@ -1,0 +1,2 @@
+digests: FAIL — malformed digest marker: docs/sdlc/fixture-law.md:3 — exact grammar is '<!-- digest: <text> -->' (lowercase, one line, closed, no '-->' inside the text)
+digests: RESULT FAIL (1 issue(s))

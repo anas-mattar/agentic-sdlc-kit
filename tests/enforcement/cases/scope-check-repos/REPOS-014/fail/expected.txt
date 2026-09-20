@@ -1,0 +1,2 @@
+scope-repos: code-repo: not applicable (no '001-thing' branch here — this repository is not part of the feature)
+scope-repos: UNGRADED (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)

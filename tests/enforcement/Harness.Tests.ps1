@@ -128,3 +128,191 @@ Describe 'fixture file:// URI construction' {
         }
     }
 }
+
+Describe 'nested fixture repositories' {
+    # scope-check-repos.ps1 grades independent repositories that live INSIDE the governance
+    # repository, and three of its rules exist only to refuse a directory that looks nested but
+    # is not one - present-but-not-a-repository, present-but-part-of-the-outer-repository, no
+    # such branch here. A recipe state that quietly produced an ordinary subdirectory would make
+    # every one of those fixtures pass for the wrong reason, so the shape is asserted here
+    # rather than inferred from a green case.
+
+    BeforeAll {
+        $script:NestedRecipe = [pscustomobject]@{
+            defaultBranch = 'main'
+            commits       = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'kit-adoption.json' = "{}`n" } })
+            nestedRepos   = [pscustomobject]@{
+                'code-repo' = [pscustomobject]@{
+                    defaultBranch = 'main'
+                    commits       = @([pscustomobject]@{ branch = 'main'; message = 'code init'; write = [pscustomobject]@{ 'src/a.txt' = "a`n" } })
+                }
+            }
+        }
+    }
+
+    It 'builds the nested directory as a repository of its own' {
+        $root = New-FixtureRepo -Recipe $script:NestedRecipe
+        try {
+            $nested = Join-Path $root 'code-repo'
+            $top = (& git -C $nested rev-parse --show-toplevel) -join ''
+            $LASTEXITCODE | Should -Be 0
+            (Resolve-Path "$top".Trim()).Path | Should -Be (Resolve-Path $nested).Path
+            (Resolve-Path "$top".Trim()).Path | Should -Not -Be (Resolve-Path $root).Path
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'leaves the nested repository out of every commit of the outer one' {
+        # The real layout has the code repositories untracked in the governance tree. A fixture
+        # that committed them would be grading a directory the outer repository owns, which is
+        # the one thing the script refuses.
+        $root = New-FixtureRepo -Recipe $script:NestedRecipe
+        try {
+            $tracked = @(& git -C $root log --all --name-only --pretty=format: -- 'code-repo' | Where-Object { $_ })
+            $tracked.Count | Should -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses a nested recipe that asks to be shallow instead of ignoring it' {
+        # A shallow clone lands at a fresh temporary path, so honouring it here would return a
+        # repository that is not nested at all - and the case would still go green. T046's rule:
+        # a recipe state that cannot do what it says must say so, never skip quietly.
+        $recipe = [pscustomobject]@{
+            commits     = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            nestedRepos = [pscustomobject]@{
+                'code-repo' = [pscustomobject]@{
+                    commits = @([pscustomobject]@{ branch = 'main'; message = 'c'; write = [pscustomobject]@{ 'b.txt' = "b`n" } })
+                    shallow = 1
+                }
+            }
+        }
+        $root = $null
+        { $root = New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*would not be nested*"
+        if ($root) { Remove-FixtureRepo -Path $root }
+    }
+}
+
+Describe 'output normalisation' {
+    # A third substitution joined <ROOT> and <SHA> in T029. scope-check-repos.ps1's
+    # anti-retroactivity message quotes the code commit's own committer date back to the reader,
+    # so the rule's output is different in every run and no hand-written expectation could ever
+    # match it. The boundary is the point: a run-varying instant is noise, a calendar date a
+    # human wrote in a document is content, and normalising the second would quietly stop the
+    # Critical-lane approval fixtures from pinning anything.
+
+    BeforeAll { Import-Module (Join-Path $PSScriptRoot 'lib/Harness.psm1') -Force }
+
+    It 'replaces an ISO-8601 instant, in either offset spelling' {
+        foreach ($stamp in '2026-09-19T14:03:11+02:00', '2026-09-19T14:03:11Z', '2026-09-19T14:03:11+0200') {
+            $out = ConvertTo-NormalisedOutput -Text "committed at $stamp today" -RepoPath 'no-such-path'
+            $out.Trim() | Should -Be 'committed at <DATE> today'
+        }
+    }
+
+    It 'leaves a calendar date with no time on it exactly as written' {
+        $out = ConvertTo-NormalisedOutput -Text 'approved 2026-09-10 by the owner' -RepoPath 'no-such-path'
+        $out.Trim() | Should -Be 'approved 2026-09-10 by the owner'
+    }
+
+    It 'still replaces the sha inside a line that also carries an instant' {
+        $out = ConvertTo-NormalisedOutput -Text 'commit 8a0291b at 2026-09-19T14:03:11+02:00' -RepoPath 'no-such-path'
+        $out.Trim() | Should -Be 'commit <SHA> at <DATE>'
+    }
+}
+
+Describe 'what the harness captures is what the script printed' {
+    # Phase 4 shipped green on Windows and failed 16 of 740 cases on ubuntu, every one of them
+    # a case whose expectation contains a blank line. The scripts were blamed first, and they
+    # were innocent: `Write-Host ''` behaves identically on both platforms. The harness was the
+    # defect. `Start-Process -RedirectStandardOutput` DROPS EMPTY LINES on Linux, so the thing
+    # being compared against the expectation was not what the script printed.
+    #
+    # Measured on ubuntu 24.04 with the same pwsh 7.6.5 CI runs (run 35437579942):
+    #
+    #   Start-Process -RedirectStandardOutput   first<LF>second          the blank is gone
+    #   Process + ReadToEndAsync                first<LF><LF>second      the blank survives
+    #
+    # This drives Invoke-FixtureCase itself — a synthetic kit root and a one-line emitter —
+    # rather than re-implementing the launch here. A self-test that built its own process the
+    # way the harness used to would have passed while the harness stayed broken, which is the
+    # mistake that produced the first attempt at this fix.
+
+    BeforeAll { Import-Module (Join-Path $PSScriptRoot 'lib/Harness.psm1') -Force }
+
+    It 'compares what the script actually printed, blank lines included' {
+        $tmp = Join-Path ([IO.Path]::GetTempPath()) ('kit-blank-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+        $kitRoot = Join-Path $tmp 'kit'
+        $caseDir = Join-Path $tmp 'case'
+        New-Item -ItemType Directory -Path (Join-Path $kitRoot 'scripts') -Force | Out-Null
+        New-Item -ItemType Directory -Path $caseDir -Force | Out-Null
+        try {
+            $utf8 = New-Object System.Text.UTF8Encoding($false)
+            [IO.File]::WriteAllText(
+                (Join-Path $kitRoot 'scripts/blank-emitter.ps1'),
+                "param([string]`$Root)`nWrite-Host 'first'`nWrite-Host ''`nWrite-Host 'second'`nexit 0`n",
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'recipe.json'),
+                '{"description":"a repository the emitter ignores","defaultBranch":"main","commits":[{"branch":"main","message":"init","write":{"README.md":"x\n"}}]}',
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'command.json'),
+                '{"script":"blank-emitter.ps1","args":[],"exitCode":0}',
+                $utf8)
+            [IO.File]::WriteAllText((Join-Path $caseDir 'expected.txt'), "first`n`nsecond`n", $utf8)
+
+            $result = Invoke-FixtureCase -CaseDir $caseDir -KitRoot $kitRoot
+            $result.ExitMatch | Should -BeTrue
+            $result.Actual | Should -Be "first`n`nsecond`n"
+            $result.OutputMatch | Should -BeTrue
+        } finally {
+            Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'carries a non-ASCII character through, on the real capture path' {
+        # There IS a test called 'carries a non-ASCII character through unchanged' above, and it
+        # passed while this was broken: it drives Invoke-Launcher, a helper defined in this file,
+        # not the launch Invoke-FixtureCase actually performs. When that launch moved to
+        # System.Diagnostics.Process it lost its encoding and decoded the child with the console
+        # codepage, turning every em dash into three CP437 characters — in a kit where every
+        # message contains one.
+        #
+        # It did not fail every time, and that is why this test FORCES the condition instead of
+        # hoping for it. The decode only goes wrong when the PARENT's console encoding is not
+        # UTF-8, so the bug appeared under Run-Tests.ps1 and vanished under a bare Invoke-Pester,
+        # which normalises encoding for its own run. A version of this test that merely emitted
+        # an em dash passed with the fix reverted — it proved nothing. Latin-1 rather than CP437:
+        # both mangle the bytes, and only Latin-1 is built into .NET on Linux as well.
+        $previousEncoding = [Console]::OutputEncoding
+        [Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('iso-8859-1')
+        $tmp = Join-Path ([IO.Path]::GetTempPath()) ('kit-dash-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+        $kitRoot = Join-Path $tmp 'kit'
+        $caseDir = Join-Path $tmp 'case'
+        New-Item -ItemType Directory -Path (Join-Path $kitRoot 'scripts') -Force | Out-Null
+        New-Item -ItemType Directory -Path $caseDir -Force | Out-Null
+        try {
+            $utf8 = New-Object System.Text.UTF8Encoding($false)
+            [IO.File]::WriteAllText(
+                (Join-Path $kitRoot 'scripts/dash-emitter.ps1'),
+                "param([string]`$Root)`nWrite-Host 'doc-lint: OK $([char]0x2014) done'`nexit 0`n",
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'recipe.json'),
+                '{"description":"a repository the emitter ignores","defaultBranch":"main","commits":[{"branch":"main","message":"init","write":{"README.md":"x
+"}}]}',
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'command.json'),
+                '{"script":"dash-emitter.ps1","args":[],"exitCode":0}',
+                $utf8)
+            [IO.File]::WriteAllText((Join-Path $caseDir 'expected.txt'), "doc-lint: OK $([char]0x2014) done`n", $utf8)
+
+            $result = Invoke-FixtureCase -CaseDir $caseDir -KitRoot $kitRoot
+            $result.Actual | Should -Be "doc-lint: OK $([char]0x2014) done`n"
+            $result.OutputMatch | Should -BeTrue
+        } finally {
+            [Console]::OutputEncoding = $previousEncoding
+            Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "description": "Two members failing. The count in RESULT FAIL is the number of failing members out of the number that ran, which is what tells a reader whether one thing broke or the tree did. Differs only in the condition under test (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the tree and its checks",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/doc-lint.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'doc-lint: ERROR: 2 referenced path(s) do not resolve:'\nexit 1\n",
+        "scripts/enforcement-pack.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'enforcement-pack: OK - stub'\nexit 0\n",
+        "scripts/scope-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-check: OK - stub'\nexit 0\n",
+        "scripts/scope-check-repos.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-repos: OK - stub'\nexit 0\n",
+        "scripts/build-digests.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'digests: RESULT FAIL (1 issue(s))'\nexit 1\n",
+        "scripts/roadmap-claim-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'roadmap-claims: OK - stub'\nexit 0\n"
+      }
+    }
+  ]
+}

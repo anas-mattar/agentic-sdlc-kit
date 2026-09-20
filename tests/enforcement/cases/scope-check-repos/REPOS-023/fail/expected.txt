@@ -1,0 +1,1 @@
+scope-repos: code-repo: FAIL phase 1 commit <SHA>: this Micro feature declares no usable **Territory** block in specs/001-thing/spec.md — fix the declaration in a governance commit made BEFORE the code phase commit, or promote to Standard: expand spec.md to the full template, add plan.md + tasks.md (Territory moves there), before the next phase commit (constitution X, Micro lane)

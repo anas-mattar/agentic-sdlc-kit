@@ -1,0 +1,1 @@
+digests: FAIL — docs/digests/digest-packs.json not found but 1 *-digest.md file(s) exist — restore the pack manifest (it ships verbatim with the kit) or delete the digest files

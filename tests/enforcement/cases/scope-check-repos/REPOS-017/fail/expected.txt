@@ -1,0 +1,1 @@
+scope-repos: code-repo: ERROR 'no-such-ref' does not resolve to a commit

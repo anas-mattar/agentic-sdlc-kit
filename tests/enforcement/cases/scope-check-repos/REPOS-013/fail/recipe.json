@@ -1,0 +1,61 @@
+{
+  "description": "A plain directory the GOVERNANCE repository tracks, sitting where a code repository should be. This is the dangerous one: git answers every question about it, just about the wrong history, so without the toplevel comparison the check would grade governance commits and report a confident verdict about code nobody wrote.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 5,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"code-repo\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "hoursAgo": 4,
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `code-repo/src/**`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "code-repo/src/a.txt": "a\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

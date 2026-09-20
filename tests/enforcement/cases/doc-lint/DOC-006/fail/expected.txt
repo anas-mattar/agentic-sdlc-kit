@@ -1,0 +1,5 @@
+doc-lint: scanned 11 governance docs under <ROOT>
+doc-lint: manifest — 18 shipped file(s) classified
+ERROR: 1 referenced path(s) do not resolve:
+  docs/sdlc/flow.md:5  docs/sdlc/certification.md
+doc-lint: FAIL (1 issue(s) — see the ERROR block(s) above)

@@ -1,0 +1,31 @@
+{
+  "description": "A claim on origin that no roadmap row mentions. THIS IS GAP-017: in the first post-010 field use a feature sat thirteen days with an approved spec and a gated phase while main's roadmap said nothing about it, and an agent orienting from main would have re-specced work already in flight. The remedy in the message is the ritual the check exists to enforce — flip the row in a MAIN-SIDE commit at claim time, never only on the feature branch.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Something else entirely | in progress | anas.m | — |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

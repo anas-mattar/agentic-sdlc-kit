@@ -1,0 +1,22 @@
+{
+  "description": "An origin with no numbered claims on it at all — a project before its first feature. Note this is an OK and not an n/a: the ledger WAS read and it is empty, which is a real verdict rather than a declined one.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Roadmap claim check | in progress | anas.m | `specs/011-thing/` |"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

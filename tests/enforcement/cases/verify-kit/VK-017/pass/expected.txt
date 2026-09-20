@@ -1,0 +1,7 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: ok record — 2 developer(s) declared — Critical features use the team evidence rule (docs/sdlc/critical-delivery.md item 5)
+verify-kit: ok record — adoption record valid — tiers: backend; gate proven
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: OK — adoption integrity verified

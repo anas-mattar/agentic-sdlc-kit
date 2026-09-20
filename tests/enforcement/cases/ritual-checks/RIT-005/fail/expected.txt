@@ -1,0 +1,26 @@
+=== ritual-checks: doc-lint ===
+doc-lint: ERROR: 2 referenced path(s) do not resolve:
+
+=== ritual-checks: enforcement-pack ===
+enforcement-pack: OK - stub
+
+=== ritual-checks: scope-check ===
+scope-check: OK - stub
+
+=== ritual-checks: scope-repos ===
+scope-repos: OK - stub
+
+=== ritual-checks: digests ===
+digests: RESULT FAIL (1 issue(s))
+
+=== ritual-checks: roadmap-claims ===
+roadmap-claims: OK - stub
+
+ritual-checks: doc-lint         FAIL
+ritual-checks: enforcement-pack OK
+ritual-checks: scope-check      OK
+ritual-checks: scope-repos      OK
+ritual-checks: digests          FAIL
+ritual-checks: roadmap-claims   OK
+ritual-checks: verify-kit       n/a (no adoption markers — kit repository or unadopted tree)
+ritual-checks: RESULT FAIL (2 of 6 member(s) failed)

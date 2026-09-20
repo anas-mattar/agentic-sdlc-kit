@@ -1,0 +1,6 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: FAIL constitution: constitution still carries 2 template marker(s), first: TODO( — fix: ratify the constitution: fill every slot, set the version and ratification date (adoption step 1/2)
+verify-kit: ok record — adoption record valid — tiers: backend; gate proven
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

@@ -1,0 +1,6 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: FAIL record: declared tier 'frontend' has no instantiated rulebook at docs/rulebooks/frontend-rules.md — fix: instantiate it from the tier template (docs/rulebooks/README.md), or remove the tier from kit-adoption.json
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

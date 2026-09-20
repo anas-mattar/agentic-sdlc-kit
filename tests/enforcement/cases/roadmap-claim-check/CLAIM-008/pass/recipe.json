@@ -1,0 +1,40 @@
+{
+  "description": "Two claims on origin, checked out on one of them, and the roadmap mentions only the OTHER. The check passes because a branch is exempt for its own number: a fresh claim's first CI run would otherwise deadlock on a row the very same change is about to flip. The verdict says which number was exempted, so the exemption cannot be mistaken for coverage.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Roadmap claim check | in progress | anas.m | `specs/012-other/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "spec: 012-other",
+      "write": {
+        "specs/012-other/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self"
+}

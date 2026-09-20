@@ -1,0 +1,3 @@
+scope-check: not applicable (commit <SHA> carries no 'phase N' token — not a phase commit)
+scope-check: not applicable (commit <SHA> carries no 'phase N' token — not a phase commit)
+scope-check: UNGRADED no commit on '001-thing' was graded — the reason is on the line(s) above

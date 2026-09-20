@@ -1,0 +1,1 @@
+scope-repos: code-repo: FAIL phase 1 commit <SHA>: more than one **Territory** marker for phase 1 in specs/001-thing/tasks.md (exactly one per phase)

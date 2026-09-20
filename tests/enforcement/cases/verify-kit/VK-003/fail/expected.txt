@@ -1,0 +1,6 @@
+verify-kit: FAIL structure: required kit path missing: kit-manifest.json — fix: re-copy the kit including dot-directories (adoption step 0 — adoption/greenfield.md / adoption/existing-system.md)
+verify-kit: FAIL slots: kit-manifest.json missing — cannot resolve project-owned files — fix: re-copy the kit (adoption step 0)
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: ok record — adoption record valid — tiers: backend; gate proven
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (2 failure(s), 0 warning(s))

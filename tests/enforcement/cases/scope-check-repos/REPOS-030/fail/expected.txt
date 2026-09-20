@@ -1,0 +1,2 @@
+scope-repos: code-repo: WARN phase 1 commit <SHA>: no territory declared for phase 1 in specs/001-thing/tasks.md, at this commit's date or since (non-blocking — a history predating the declaration)
+scope-repos: UNGRADED (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)
