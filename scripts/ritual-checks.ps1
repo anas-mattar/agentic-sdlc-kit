@@ -32,20 +32,17 @@
     and the wrapper ends with a verdict block, one line per member, then
     'ritual-checks: RESULT OK|UNGRADED|FAIL'. Exit 0 iff every member exits 0. Read-only.
 
-    THE VERDICT VOCABULARY (feature 015, FR-009; plan D4, D5, D7). Every grading script in
-    this kit ends its run on a VERDICT LINE - `<member>: <WORD> [reason]` - and the word is
-    one of these six. They are defined here, once, because this script is the single entry
-    point an adopted project runs (FR-012). Detail lines above a verdict line are prose and
-    are not bound by it: `ERROR: 3 referenced path(s) do not resolve` followed by a list is
-    a finding, not a verdict, and doc-lint.ps1 prints several of both. Read 'the check' below
-    as 'the run of that member', since a member may grade many commits or many repositories:
+    THE VERDICT VOCABULARY (feature 015, FR-009; plan D4, D5, D7). Six words, defined here
+    once because this script is the single entry point an adopted project runs (FR-012).
+    Read 'the check' as 'the run of that member', since a member may grade many commits or
+    many repositories:
 
       OK        The check ran, compared what it claims to compare, and found nothing. The
                 word is 'OK' and not 'PASS' because nine scripts, three adopted projects
                 and every gate record written to date already say OK (plan D4).
-      FAIL      The check ran and found a violation. It is the only VERDICT that exits 1;
-                exit 1 also carries an invocation error that produced no verdict at all
-                (an unreadable -Root, a malformed argument), which every member spells
+      FAIL      The check ran and found a violation. It is the only word in this block that
+                exits 1; exit 1 also carries an invocation error that produced no verdict at
+                all (an unreadable -Root, a malformed argument), which every member spells
                 `ERROR` and no member counts as a grade.
       WARN      The check ran, formed an opinion, and that opinion is advisory. It observed
                 something real and is not blocking on it (e.g. PhaseSizeWarning).
@@ -57,24 +54,51 @@
                 nothing). Before feature 015 this state had no word, so it printed OK and a
                 run that graded nothing was indistinguishable from a clean one - GAP-027.
                 UNGRADED changes the VERDICT, never the exit code (plan D6, FR-011).
-      PENDING   RESERVED, and emitted by nothing today (grep confirms it). It belongs to GAP-022 - a Critical
-                branch red from its first commit to its last - which is out of scope here.
-                Defined now so GAP-022's eventual fix is not also a vocabulary change (plan
-                D7). A state nothing emits is documented as reserved rather than left
-                implicit; if you are adding an emission of PENDING, the rule you are
-                implementing needs its own feature first.
+      PENDING   RESERVED, and emitted by nothing today (grep confirms it). It belongs to
+                GAP-022 - a Critical branch red from its first commit to its last - which is
+                out of scope here. Defined now so GAP-022's eventual fix is not also a
+                vocabulary change (plan D7). A state nothing emits is documented as reserved
+                rather than left implicit; if you are adding an emission of PENDING, the
+                rule you are implementing needs its own feature first.
 
-    KNOWN DIVERGENCES, stated rather than implied (phase 5 review, F2). The claim above is
-    about verdict lines, and it is true of every member's verdict line as of this commit -
-    the phase-5 remediation converted the last two, scope-check.ps1 and scope-check-repos.ps1,
-    which reported ungraded runs as WARN, as n/a, and as PASS. What it is NOT is a claim that
-    the whole kit speaks only these six words:
+    HOW THIS SCRIPT CHOOSES THE WORD, which is the whole of the mechanism - nothing else in
+    a member's output affects its verdict line:
 
-      - `scripts/update-kit.ps1` is an installer, not a grader, is not a member of this
-        wrapper, and is outside feature 015's Territory. Its `ERROR` lines stay as they are.
-      - Detail lines in doc-lint.ps1 (`ERROR:`, `INFO:`) and the per-commit and per-repository
-        lines in the two scope checks carry their own prose, by design, per the paragraph
-        above. Only the last line of a member's output is its verdict.
+      1. Member exit code non-zero                            -> FAIL. Output is not read.
+      2. Exit 0, member listed in $captureMembers, and its output contains a line matching
+         ^<member>: UNGRADED                                  -> UNGRADED, reason echoed.
+      3. Exit 0, same capture condition, ^<member>: n/a        -> n/a, reason echoed.
+      4. Exit 0, anything else                                -> OK.
+
+    So the verdict block prints FOUR of the six words. WARN is never lifted: a member that
+    warns exits 0 and reads as OK here, with the warning itself in its own output above.
+    PENDING is emitted by nothing. Two further consequences, both load-bearing, and each got
+    wrong once (phase 5 review, rounds 1 and 2):
+
+      - A member NOT in $captureMembers has its output ignored entirely, so adding an
+        UNGRADED line to one changes nothing here. That is exactly how scope-check shipped
+        a fail-open through the phase that existed to close GAP-027.
+      - The anchored patterns are scanned over the WHOLE of a member's output, first match
+        wins. The verdict is NOT 'the last line': scope-check.ps1 ends an ordinary graded
+        run on `scope-check: PASS phase 3 commit abc1234 (7 file(s))`, which this wrapper
+        neither reads nor is misled by, because PASS is not looked for.
+
+    WHAT THIS BLOCK DOES NOT CLAIM (phase 5 review, F2 - the first two attempts at this
+    paragraph each asserted a kit-wide conformance that a grep disproves, so the claim is
+    now confined to the mechanism above):
+
+      - Members print words outside this vocabulary, by design, and they are findings and
+        prose rather than verdicts: `PASS` and `not applicable` on the two scope checks'
+        per-commit and per-repository lines, `ERROR:` and `INFO:` in doc-lint.ps1, indented
+        issue bullets in enforcement-pack.ps1.
+      - `scripts/territory-check.ps1` (`CLEAN`/`OVERLAP`, exit 2) and `scripts/update-kit.ps1`
+        (an installer) are graders-adjacent but are not members of this wrapper, do not
+        speak this vocabulary, and are outside feature 015's Territory.
+      - `scripts/verify-kit.ps1` spells one state `not applicable` in full. That line is
+        unreachable through this wrapper - it fires only against the kit template, a tree
+        with neither adoption marker, which does not run the doctor at all and gets the n/a
+        line printed further down - and verify-kit is not in $captureMembers, so the
+        spelling makes no difference here either way.
 
     Reconciling anything further is not this feature's work and no task claims it is.
 

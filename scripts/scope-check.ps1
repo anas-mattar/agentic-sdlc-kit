@@ -11,7 +11,7 @@
     repositories' grader — feature 012). One implementation, so the two cannot drift.
 
     Lane classification:
-      - fix/*, chore/*, docs/* branches: not applicable (exit 0) — the Lite lane's defense
+      - fix/*, chore/*, docs/* branches: n/a (exit 0) — the Lite lane's defense
         is enforcement-pack's prohibited-category and abuse-guard checks.
       - NNN-* branches: every phase commit is checked against the **Territory** list under
         its phase heading in specs/NNN-name/tasks.md.
@@ -42,9 +42,17 @@
     (specs/NNN-name/**) is always implicitly in territory. Renames touch both paths;
     deletes touch the deleted path. Territory entries must be backtick-wrapped list items.
 
-    Verdicts and exit codes (data-model.md):
-      PASS / not-applicable / WARN  -> exit 0
-      FAIL (any undeclared path)    -> exit 1
+    Verdicts and exit codes (data-model.md). The vocabulary itself is defined once, in
+    scripts/ritual-checks.ps1, which is also what reads this script's RUN-LEVEL line:
+      PASS (a commit graded clean) / n/a / UNGRADED / WARN  -> exit 0
+      FAIL (any undeclared path)                            -> exit 1
+
+    The run-level line says 'n/a (...)' when the branch or lane puts this check out of
+    scope, and 'UNGRADED ...' when it applies but no commit was graded - detached HEAD, no
+    merge base, an empty range, or every commit on the branch skipped (feature 015, FR-010;
+    GAP-027). The per-commit lines above it - 'PASS phase N commit ...' and
+    'not applicable (commit ... is a merge commit)' - are detail, and the wrapper reads
+    none of them.
 
 .EXAMPLE
     pwsh -File scripts/scope-check.ps1                    # check HEAD

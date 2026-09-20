@@ -26,9 +26,17 @@
         declaration widened afterwards is invisible to an earlier commit's verdict, which
         is the cross-repository analogue of the in-repo parent-read rule.
 
-    Verdicts and exit codes:
-      PASS / not applicable / n/a / WARN -> 0
+    Verdicts and exit codes. The vocabulary itself is defined once, in
+    scripts/ritual-checks.ps1, which is also what reads this script's RUN-LEVEL line:
+      PASS (a commit graded clean) / n/a / UNGRADED / WARN   -> 0
       FAIL (any undeclared path, or a malformed declaration) -> 1
+
+    The run-level line says 'n/a (...)' when the branch, the lane, or an absent codeRepos
+    array puts this check out of scope, and 'UNGRADED ...' when it applies but nothing was
+    graded in the declared repositories - detached HEAD, no merge base, an empty range
+    (feature 015, FR-010; GAP-027). Until that feature this script called an ungraded run
+    n/a, which blurred the two claims US3 acceptance scenario 3 keeps apart. The per-repo
+    and per-commit detail lines above the run-level line are not read by the wrapper.
     Overall exit is 1 iff at least one repository FAILs. Read-only: never writes, fetches
     or checks out.
 

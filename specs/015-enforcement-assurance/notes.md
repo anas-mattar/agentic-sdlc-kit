@@ -2054,3 +2054,102 @@ verdict word — they read the exit code (the reviewer verified the `RESULT OK` 
 independently; these two lines are downstream of the same finding). The change is visible and
 strictly more informative: a trunk run never graded a feature's territory, and now says so
 instead of borrowing the word a graded pass uses.
+
+
+## Phase 5 review round 2 — F2 again, and why it took three attempts
+
+`ai-code-review-phase-5-round-2.md`, fresh context, **REQUEST CHANGES**: 1 BLOCKING,
+3 CONFIRM, 2 MINOR, 4 ACCEPTED. **F1 is closed** — the reviewer rebuilt round 1's failing
+state (two-commit repository, `--depth 1` clone, `scripts/` copied in) and got
+`ritual-checks: scope-check UNGRADED could not resolve a merge base with main` where round 1
+recorded `scope-check OK`. **F2 is not.**
+
+### The same paragraph, wrong for the third time
+
+Round 1's header said *"Every grading script in this kit reports in these six words and no
+others"*. The remediation replaced it with *"Every grading script in this kit ends its run on
+a VERDICT LINE — `<member>: <WORD> [reason]` — and the word is one of these six"* plus
+*"Only the last line of a member's output is its verdict."* Four counterexamples, all
+confirmed by grep before anything was changed:
+
+| Counterexample | What it prints |
+|---|---|
+| `scripts/territory-check.ps1` | `CLEAN — ...` / `OVERLAP with ...`, and **exit 2** |
+| `scripts/verify-kit.ps1:114` | `verify-kit: not applicable (...)`, spelled out |
+| `scripts/scope-check.ps1` on a graded run | last line is `scope-check: PASS phase N commit <sha> (N file(s))` |
+| `scripts/enforcement-pack.ps1` on a FAIL | last line is an indented issue bullet, `  - <issue>` |
+
+The third is the one that should have stopped the first draft. `scope-check: PASS phase 5
+commit 24e7100 (52 file(s))` was printed by this very phase's own gate run, in the member the
+commit was about, and `PASS` is the word plan D4 explicitly rejected in favour of `OK`. The
+fourth breaks the same sentence in the member `RIT-006` is built on.
+
+And that second sentence was load-bearing, not decorative: it is what licensed the KNOWN
+DIVERGENCES block to leave forty detail lines alone. The excuse rested on a rule the code
+disproves.
+
+### The diagnosis, which is not "be more careful"
+
+All three drafts asserted a property of **the kit** — that its scripts conform to a
+vocabulary. No such property exists, and none is worth manufacturing: `territory-check.ps1`
+answers a different question and exits 2 to say so.
+
+The property that does exist is a property of **this wrapper's derivation**, and it is four
+lines of code long. So the header now states that and stops:
+
+1. member exit code non-zero -> `FAIL`, output not read;
+2. exit 0, member in `$captureMembers`, output contains `^<member>: UNGRADED` -> `UNGRADED`;
+3. exit 0, same condition, `^<member>: n/a` -> `n/a`;
+4. exit 0, anything else -> `OK`.
+
+Two facts fall straight out of writing it down, and neither was visible while the paragraph
+was making claims about scripts:
+
+- **The verdict block can print four of the six words.** `WARN` is never lifted — a member
+  that warns exits 0 and reads as `OK` here, with the warning in its own output above.
+  `PENDING` is emitted by nothing. The six-word list is a set of meanings; the block renders a
+  subset, and saying so costs nothing.
+- **The match is scanned over the whole of a member's output, first hit wins.** It was never
+  "the last line". Once that is on the page, `scope-check`'s trailing `PASS` line is not a
+  divergence to be excused — it is a line the wrapper does not look at.
+
+`WHAT THIS BLOCK DOES NOT CLAIM` now names all four counterexamples by path, including the two
+the reviewer had to find.
+
+### Two stale verdict tables, inside the Territory, that the deferral missed
+
+Round 2's F3 is that round 1's deferral list was short, and that two of the misses are *wrong*
+rather than incomplete: `scripts/scope-check.ps1` and `scripts/scope-check-repos.ps1` each
+carry their own `.DESCRIPTION` verdict table, and both still listed the pre-remediation words.
+
+```text
+scope-check.ps1        PASS / not-applicable / WARN  -> exit 0
+scope-check-repos.ps1  PASS / not applicable / n/a / WARN -> 0
+```
+
+Neither mentions `UNGRADED`; the first still calls the `fix|chore|docs` lane `not applicable`
+after the emission was respelled `n/a`. Both are inside phase 5's **Territory**, in the two
+files this remediation exists to change, and both flow down verbatim. There was no Territory
+argument for deferring them and no amendment needed to reach them, so they are fixed here
+rather than recorded: each table now lists the five words its script can reach, and each says
+which of its lines the wrapper actually reads.
+
+That is the same fix as F2, in the two other places the same false claim was written.
+
+### Still deferred, still needing an owner decision
+
+- The three prose lines in the section above (`definition-of-done.md:103`,
+  `review-process.md:59`, `code-repo-scope-check.yml.template:37`). Outside Territory,
+  none machine-read.
+- `scripts/roadmap-claim-check.ps1:57` calls an unreadable ledger `n/a`. It is the identical
+  argument that converted `scope-repos`, in a Territory script — but converting it changes
+  a member's emitted word, which is a behaviour change with no task, no fixture pair and no
+  before/after record (D11). It belongs in a phase or a follow-up, not in a review remediation
+  that would be shipping it unproven.
+- Round 1's F3-F7 and F9, unchanged.
+
+### What proves this one
+
+Nothing. This commit changes comments only: the header block in `scripts/ritual-checks.ps1`
+and the two `.DESCRIPTION` tables. No emission moved, no expectation moved, no rule moved.
+The suite and the gate are evidence that it changed nothing, which is exactly the claim.
