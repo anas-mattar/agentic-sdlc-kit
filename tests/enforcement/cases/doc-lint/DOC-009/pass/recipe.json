@@ -25,7 +25,16 @@
         "kit-manifest.json": [
           "{",
           "  \"entries\": [",
-          "    { \"path\": \"**\", \"class\": \"verbatim\" }",
+          "    { \"path\": \"CLAUDE.md\", \"class\": \"verbatim\" },",
+          "    { \"path\": \"AGENTS.md\", \"class\": \"verbatim\" },",
+          "    { \"path\": \"README.md\", \"class\": \"verbatim\" },",
+          "    { \"path\": \"kit-manifest.json\", \"class\": \"verbatim\" },",
+          "    { \"path\": \".specify/**\", \"class\": \"verbatim\" },",
+          "    { \"path\": \".claude/**\", \"class\": \"verbatim\" },",
+          "    { \"path\": \"docs/**\", \"class\": \"verbatim\" },",
+          "    { \"path\": \"specs/**\", \"class\": \"verbatim\" },",
+          "    { \"path\": \"scripts/**\", \"class\": \"kit-only\" },",
+          "    { \"path\": \"adoption/**\", \"class\": \"verbatim\" }",
           "  ]",
           "}"
         ],

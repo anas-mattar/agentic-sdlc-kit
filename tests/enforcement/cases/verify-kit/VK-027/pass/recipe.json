@@ -40,7 +40,7 @@
           "",
           "## I. Specification First",
           "",
-          "Every feature begins with a spec."
+          "Every feature begins with a specification."
         ],
         ".specify/templates/spec-template.md": [
           "# Feature Specification"

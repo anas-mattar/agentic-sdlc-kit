@@ -1674,3 +1674,52 @@ lane, the first blank-line self-test was this, and this one was this while sitti
 above a comment explaining the danger. `Coverage.Tests.ps1` counts whether a rule has a case; it
 cannot count whether the case is pointed at the real path. That is a T044 question and it is now
 on the record as one.
+
+### Phase 4 review round 2: the fixtures broke the rule the phase was written to defend
+
+Verdict **REQUEST CHANGES**, one BLOCKING (F3), three CONFIRM, one DOC DRIFT, five MINOR.
+`ai-code-review-phase-4-round-2.md`.
+
+The reviewer re-derived the phase's headline numbers instead of reading them: its own sweep of all
+nine scripts found **no tenth unowned condition** (nine is right), `181 of 194` reproduced exactly,
+and `git diff origin/main..HEAD -- scripts/` is empty branch-wide — which proves the revised
+blank-line diagnosis more directly than the container measurement did, because it shows the two
+scripts are byte-identical to `main` while the ubuntu leg is green.
+
+**F3, and it is the embarrassing one.** Plan D10: a rule whose pass and fail fixtures do not share
+a recipe must state why. `VK-027/pass` said *"Differs only in the condition under test (plan
+D10)"* and differed in two places — the `TODO(VERSION)` markers that are the condition, and
+`"begins with a spec."` against `"begins with a specification."`, which is nothing. `DOC-009`
+carried an unstated `kit-manifest.json` reshuffle beside its unresolvable reference. Both extra
+halves were inert, which is worse rather than better: an inert difference is one a future reader
+must prove inert before trusting the pair.
+
+Round 1 raised this class twice — its F2 (D10's escape clause is used but never written down) and
+its F8 (descriptions in the diff are inaccurate). Neither original was corrected, and this phase
+added two more instances **in the same commit whose notes argue at length that a record nobody
+checks drifts**. The fixtures for the feature that grades the graders were themselves ungraded on
+the one property the plan asks of them.
+
+Fixed by alignment rather than by rewording the claim: each pair now differs in exactly one line.
+`DOC-008` was checked at the same time and was already clean. No expectation changed — both
+`DOC-009` directions were already reporting `18 shipped file(s) classified`, so the manifest was
+provably not load-bearing, and the manifest copied into the pass case is the one the fail case
+already runs on the ubuntu leg.
+
+**Left open for the owner and for phase 6:**
+
+- **F2 — the T036b sweep was one-directional.** It asked what the declaration misses and never
+  what it wrongly counts. `ritual-checks.ps1` still counts a per-member banner and a
+  `RESULT FAIL (N of M)` summary as sites — the two categories this phase's own reasoning excludes
+  everywhere else — so it reports a flattering `5 of 5`. The asymmetry is consistent across the
+  three scripts this phase touched and contradicted by a fourth it did not.
+- **F1 — the handover to T044 understates the problem.** It says five of thirteen uncovered sites
+  are unreachable and eight are ordinary work; this same file, 180 lines earlier, classifies seven
+  of those eight as unreachable or unpinnable. The five new `enforcement-pack` sites also have no
+  task assigned.
+- **F7 — the T036a amendment is well-formed and against the grain.** Constitution I permits it and
+  the record satisfies the check, but D3c (`specs/014-amendment-authority/plan.md:194`) and
+  `adoption/updating.md:329` — text this kit ships to adopters, quoted by
+  `enforcement-pack.ps1:1162` as the remedy — both say to leave the task as agreed and record what
+  was done here. This phase applied that convention to the Territory rationale and the opposite one
+  to the task text ten lines below, with no rule stated to distinguish them.
