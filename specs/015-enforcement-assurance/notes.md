@@ -2153,3 +2153,95 @@ That is the same fix as F2, in the two other places the same false claim was wri
 Nothing. This commit changes comments only: the header block in `scripts/ritual-checks.ps1`
 and the two `.DESCRIPTION` tables. No emission moved, no expectation moved, no rule moved.
 The suite and the gate are evidence that it changed nothing, which is exactly the claim.
+
+
+## Phase 5 review round 3 — the third false universal, and the excuse that was not one
+
+`ai-code-review-phase-5-round-3.md`, fresh context, **REQUEST CHANGES**: 2 BLOCKING,
+3 CONFIRM, 1 MINOR (five sub-items), 3 ACCEPTED. Round 2's F2 remediation was verified sound
+in every mechanical respect — the derivation table driven through a stub-member harness,
+all five predictions confirmed, the three scripts' bodies below `#>` byte-identical to their
+parents, suite 782/0 and coverage 187 of 200 unchanged. Both blocking findings are about
+sentences, and both sentences are ones the previous two rounds read past.
+
+### F1 — the claim I did not test was the one directly above the two I rewrote
+
+Round 2's rewrite removed the two kit-wide assertions the reviewer named. It left a third,
+inside the `FAIL` definition, unchanged since round 1: an invocation error *"which every
+member spells `ERROR`"*. One command settles it:
+
+```text
+$ for s in <the seven members>; do pwsh -File scripts/$s.ps1 -Root /nonexistent/zzz; done
+doc-lint.ps1            NO ERROR line   Resolve-Path: ...doc-lint.ps1:43
+enforcement-pack.ps1    NO ERROR line   ...enforcement-pack.ps1:102
+scope-check.ps1         NO ERROR line   ...scope-check.ps1:72
+scope-check-repos.ps1   NO ERROR line   ...scope-check-repos.ps1:60
+build-digests.ps1       NO ERROR line   ...build-digests.ps1:55
+roadmap-claim-check.ps1 NO ERROR line   ...roadmap-claim-check.ps1:39
+verify-kit.ps1          prints ERROR    verify-kit: ERROR root not found: ...
+```
+
+Six of seven surface PowerShell's own unhandled-error output from the `Resolve-Path` on
+`-Root`. One conforms. All seven exit 1, which is the only part the derivation actually uses.
+
+The universal is deleted rather than reworded. What replaces it says what the derivation does
+— exit code read, output not read, so an aborted run and a real violation are one word here
+— and hands the divergence to WHAT THIS BLOCK DOES NOT CLAIM, where it is now stated with
+the split measured (one member, then six).
+
+The lesson is narrower than "be careful" and worth writing down: **three rounds each fixed the
+sentences that had been pointed at and left their neighbours unread.** A reviewer's finding
+names an instance; it does not bound the defect. Round 1's F1 had already taught this
+(the fourth fail-open shape nobody asked about), and the lesson was applied to code and not to
+prose.
+
+### F2 — the excuse clause was false, and it was load-bearing
+
+The block said `scripts/territory-check.ps1` is *"outside feature 015's Territory"*.
+`tasks.md:241` declares it INSIDE phase 5's Territory; `tasks.md:172` declares it inside phase
+4's; `spec.md:274-277` counts it among "the nine that decide a verdict" and puts only
+`init-kit.ps1`, `update-kit.ps1`, `claim-feature.ps1` and `create-new-feature.ps1` outside.
+The `update-kit.ps1` half of the same sentence is correct; pairing the two is what carried the
+error, and the paired form is exactly what made it read as settled.
+
+It mattered because it was the stated reason FR-009 goes unmet for that script. An
+out-of-scope file needs no justification; an in-Territory one needs a decision. The sentence
+manufactured the first to avoid the second.
+
+Now split in two. `update-kit.ps1` keeps its (true) exclusion. `territory-check.ps1` gets the
+correction in the file that got it wrong: it prints `CLEAN`/`OVERLAP`, exits 0, 1 or 2 (not
+0 or 2 — `:36`, `:47`, `:57`, `:64` all exit 1), is not a member of this wrapper, and is
+**unfinished business against FR-009 awaiting an owner decision**, not a boundary.
+
+The closing sentence went with it. *"Reconciling anything further is not this feature's work
+and no task claims it is"* was false twice over: T039 is ticked and says "emit `UNGRADED` from
+every member that can return without grading", and F3 is a live question. It now records the
+question instead of closing it.
+
+### What this commit does not do
+
+F3, F4 and F5 are owner decisions and are untouched. F4 deserves naming here because the
+round-1 deferral list missed it and so did round 2:
+
+- `specs/006-verification-pack/data-model.md:27` still calls the Lite lane `not-applicable`,
+  and `:52` describes this wrapper's verdict block as `OK/FAIL/WARN` — wrong in both
+  directions now. **It is the document the corrected `.DESCRIPTION` table in
+  `scope-check.ps1` cites as its authority.**
+- `specs/006-verification-pack/contracts/scope-check-cli.md:16,22` and
+  `specs/012-cross-repo-scope-check/contracts/scope-check-repos-cli.md:36,100,102`. C16 in
+  the latter specifies a run-level `n/a` for an all-skips run, which is precisely what phase 5
+  changed to `UNGRADED`.
+
+These are approved contracts of features 006 and 012, outside phase 5's Territory, now
+contradicted by shipped code. Constitution II's conflict rule says report, never silently
+choose — so they are reported.
+
+F5 is accepted as written: the `roadmap-claim-check.ps1:57` deferral is right for the D11
+reason and the "no task" clause was wrong, since T039 covers it.
+
+### What proves this one
+
+Nothing again. Comments only, every changed line inside the `<# ... #>` block that closes at
+`:130`, last changed line `:121`. The four facts asserted in the new text were each run or
+grepped before being written: the seven exit codes, the `ERROR` split, `territory-check.ps1`'s
+three exit paths, and `spec.md:277`.

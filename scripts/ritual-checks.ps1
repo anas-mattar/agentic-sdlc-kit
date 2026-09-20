@@ -41,9 +41,11 @@
                 word is 'OK' and not 'PASS' because nine scripts, three adopted projects
                 and every gate record written to date already say OK (plan D4).
       FAIL      The check ran and found a violation. It is the only word in this block that
-                exits 1; exit 1 also carries an invocation error that produced no verdict at
-                all (an unreadable -Root, a malformed argument), which every member spells
-                `ERROR` and no member counts as a grade.
+                exits 1 - and it is equally what a member's non-zero exit renders when the run
+                never reached a verdict at all (an unreadable -Root, a malformed argument).
+                The derivation below reads the exit code and does not read the output, so an
+                aborted run and a real violation are one word here. HOW a member announces
+                such an abort is not uniform; see WHAT THIS BLOCK DOES NOT CLAIM.
       WARN      The check ran, formed an opinion, and that opinion is advisory. It observed
                 something real and is not blocking on it (e.g. PhaseSizeWarning).
       N/A       The check DOES NOT APPLY here - a doctor in an unadopted tree, a roadmap
@@ -83,24 +85,40 @@
         run on `scope-check: PASS phase 3 commit abc1234 (7 file(s))`, which this wrapper
         neither reads nor is misled by, because PASS is not looked for.
 
-    WHAT THIS BLOCK DOES NOT CLAIM (phase 5 review, F2 - the first two attempts at this
-    paragraph each asserted a kit-wide conformance that a grep disproves, so the claim is
-    now confined to the mechanism above):
+    WHAT THIS BLOCK DOES NOT CLAIM (phase 5 review, F2 across three rounds - each earlier
+    revision of this paragraph asserted some kit-wide conformance that a grep or a single run
+    disproves, the last of them inside the FAIL definition above, so the claim is now confined
+    to the mechanism and every known exception is named here by path):
 
       - Members print words outside this vocabulary, by design, and they are findings and
         prose rather than verdicts: `PASS` and `not applicable` on the two scope checks'
         per-commit and per-repository lines, `ERROR:` and `INFO:` in doc-lint.ps1, indented
         issue bullets in enforcement-pack.ps1.
-      - `scripts/territory-check.ps1` (`CLEAN`/`OVERLAP`, exit 2) and `scripts/update-kit.ps1`
-        (an installer) are graders-adjacent but are not members of this wrapper, do not
-        speak this vocabulary, and are outside feature 015's Territory.
+      - `scripts/update-kit.ps1` is an installer - spec.md:277 puts it among the scripts that
+        perform actions rather than grade - is not a member of this wrapper, and is outside
+        feature 015's Territory.
+      - `scripts/territory-check.ps1` does not speak this vocabulary either: it prints
+        `CLEAN`/`OVERLAP` and exits 0, 1 or 2, and it is not a member of this wrapper, so the
+        derivation above never sees it. It is NOT out of scope, and an earlier revision of
+        this block wrongly said it was: tasks.md:241 declares it inside phase 5's Territory
+        and spec.md:274-277 counts it among the nine that decide a verdict. Reconciling it
+        against FR-009 is unfinished business awaiting an owner decision (round 3 review, F2
+        and F3) - not a boundary this block may invoke.
+      - An invocation error is announced differently by different members, and defining a
+        vocabulary does not make it uniform. `scripts/verify-kit.ps1` prints
+        `verify-kit: ERROR root not found: ...`; the other six surface PowerShell's own
+        unhandled-error output from the `Resolve-Path` on their `-Root` and print no `ERROR`
+        line of their own. All seven exit 1, which is the only part the derivation uses.
       - `scripts/verify-kit.ps1` spells one state `not applicable` in full. That line is
         unreachable through this wrapper - it fires only against the kit template, a tree
         with neither adoption marker, which does not run the doctor at all and gets the n/a
         line printed further down - and verify-kit is not in $captureMembers, so the
         spelling makes no difference here either way.
 
-    Reconciling anything further is not this feature's work and no task claims it is.
+    What remains unreconciled is listed above rather than dismissed. T039 ('emit UNGRADED from
+    every member that can return without grading') is ticked, so a claim that no task reaches
+    these would be false; whether they are reconciled here, deferred, or answered by amending
+    FR-009 is an owner decision on the round 3 review, not a call this block makes.
 
     CI note: pass -Branch explicitly — a pull_request checkout is a detached-HEAD merge
     commit where branch detection returns the literal 'HEAD'
