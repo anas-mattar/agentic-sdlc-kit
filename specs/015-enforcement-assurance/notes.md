@@ -1882,3 +1882,175 @@ A fourth thing did not happen and is worth saying: no case outside `enforcement-
 other eight scripts emit no `UNGRADED` and their expectations are untouched, which is the
 narrowest form of the FR-012 claim — the harness is additive, and here it is additive in one
 script only.
+
+**Correction, written after the phase-5 review.** The paragraph above is wrong in the way it
+frames itself. "No case outside `enforcement-pack` moved" was true and was not restraint: two
+of those eight scripts carried the identical GAP-027 fail-open, and not moving them left the
+feature's own requirement unmet in the member a reader is most likely to run. The review caught
+it as F1. What the paragraph should have said is recorded in the section below.
+
+---
+
+## Phase 5 review round 1 — F1 and F2
+
+`ai-code-review-phase-5.md`, fresh context, **REQUEST CHANGES**: 2 BLOCKING, 1 CONFIRM,
+4 MINOR, 1 ACCEPTED, 1 DOC DRIFT. Both blocking findings were reproduced before anything was
+changed, and both were about the same thing from opposite ends — the phase closed GAP-027 in
+one script and then wrote a definition claiming the whole kit conformed.
+
+### F1 — the fail-open survived in two members inside this phase's own Territory
+
+The reviewer built a two-commit repository, took a `--depth 1` clone of it, copied `scripts/`
+in, and ran the wrapper:
+
+```text
+=== ritual-checks: scope-check ===
+scope-check: WARN could not resolve a merge base with main — nothing checked
+…
+ritual-checks: scope-check      OK
+```
+
+That is FR-010 verbatim — *a member that cannot grade MUST NOT report the state that a fully
+graded pass reports, in the verdict block* — unmet, on the same depth-1 clone `GAP27-001` and
+`GAP27-004` build two directories away. `scope-check.ps1` and `scope-check-repos.ps1` are both
+in phase 5's declared Territory, so this was not out of reach; it was out of mind.
+
+Three shapes were involved, and the sweep found more than the three sites the review named:
+
+| Site | Was | Is |
+|---|---|---|
+| `scope-check` detached HEAD | `WARN detached HEAD` | `UNGRADED detached HEAD` |
+| `scope-check` no merge base | `WARN … nothing checked` | `UNGRADED … nothing checked` |
+| `scope-check` empty range | `PASS (no commits since merge base)` | `UNGRADED (… no commit was examined)` |
+| `scope-check` every commit skipped | *(nothing — exit 0)* | `UNGRADED no commit on '<branch>' was graded` |
+| `scope-check` trunk / lane / not-numbered | `not applicable (…)` | `n/a (…)` |
+| `scope-repos` detached HEAD | `WARN detached HEAD` | `UNGRADED detached HEAD` |
+| `scope-repos` no merge base | `WARN … NOTHING WAS GRADED` | `UNGRADED … NOTHING WAS GRADED` |
+| `scope-repos` empty range | `PASS (no commits since merge base)` | `UNGRADED (… no commit was examined)` |
+| `scope-repos` graded nothing | `n/a (nothing was graded …)` | `UNGRADED (nothing was graded …)` |
+| `scope-repos` trunk / lane / not-numbered | `not applicable (…)` | `n/a (…)` |
+
+Four of these deserve a sentence each.
+
+**The fourth row is the one the review did not ask for.** `Invoke-ScopeCheck` returns a skip for
+a merge commit, for a commit carrying no `phase N` token, and for a pre-006 tree with no
+`tasks.md`. A branch made only of those exits 0 having graded nothing and printed no run-level
+line at all, so the wrapper said `OK` with nothing to lift. Fixing only the three named sites
+would have left the general case open and reproduced, in miniature, exactly the defect F1 is
+about. It is counted the way `scope-check-repos.ps1` has counted since feature 012 (`$graded`):
+the pattern was already in the kit, in the sibling script, and was not copied across when it
+should have been.
+
+**`scope-repos` was reporting an ungraded run as `n/a`.** That shaping was deliberate in feature
+012 — phase 1 review F6 asked for it, so the wrapper would lift *some* reason rather than print
+a bare `OK`, and with five words available `n/a` was the closest. It is still the wrong one.
+A declared code repository *does* apply — declaring it is what that means — so the claim
+"nothing was graded" is `UNGRADED`, and US3 acceptance scenario 3 says in terms that the two
+must not be blurred. The right instinct reached for the only word there was; phase 5 is what
+gave it the right one.
+
+**The `not applicable` → `n/a` respelling is not cosmetic.** The wrapper lifts `^<member>: n/a`.
+Spelled out, those three states — trunk, `fix/` lane, unnumbered branch — were correct claims
+that no reader of the verdict block ever saw, because the wrapper rendered every one of them
+as `OK`. This is the second half of F2's second bullet.
+
+**The per-commit and per-repository lines were left alone.** `not applicable (commit <sha> is a
+merge commit)` still says that. The rule adopted here and written into the header is that a
+member's *verdict line* — its last — carries the vocabulary, and the lines above it are prose
+that explains. Without that line the alternative was to respell forty detail messages, which
+buys nothing a reader needs.
+
+### F2 — the definition asserted conformance that did not exist
+
+The header said *"Every grading script in this kit reports in these six words and no others"*
+and *"FAIL … is the only state that exits 1"*. Both checkable, both false: `doc-lint.ps1` prints
+`ERROR:` and `INFO:` and exits 1 at `:251` without printing any verdict word at all, and four
+other scripts emit `ERROR` too. Phase 6 was going to carry that sentence to three adopted
+projects.
+
+Two changes, in opposite directions:
+
+- **Narrow the claim to what it is about.** The vocabulary governs the verdict line,
+  `<member>: <WORD> [reason]`. Detail lines are prose. This is stated in the header rather than
+  left to be inferred, because inferring it is what produced the overclaim.
+- **Make the claim true where it was cheap to.** `doc-lint.ps1` now prints
+  `doc-lint: FAIL (N issue(s) — see the ERROR block(s) above)` before `exit 1`. It was the only
+  member that exited 1 having printed no verdict at all: a reader looking for the answer found
+  that the last line was a detail too. Eight expectations gained that line; not one exit code
+  moved.
+
+What is left is named in the header under KNOWN DIVERGENCES rather than implied — `update-kit.ps1`
+is an installer, not a member of this wrapper, and is outside this feature's Territory; the
+detail lines are prose by the rule above. **No task claims further reconciliation and none is
+owed by this feature.** That sentence is in the header too, because an unstated intention is how
+F1 happened.
+
+### What proves it
+
+- `SCOPE-027` — the general all-skips case (new rule). The pair differs in one commit's
+  **subject line**, `work: the thing` against `phase 1: the thing`, and in nothing else (D10).
+- `RIT-007` — the aggregator lifts the word for `scope-check`, not only for the first member
+  that could reach the state (new rule). `$ungradedCapableMembers` is an allow-list, so the
+  mechanism `RIT-006` proves is silently inert for any member left out of it — which is
+  precisely how this defect shipped. **Mutation-proved**: with `'scope-check'` removed from that
+  list the case fails; with it present, green.
+- Twenty existing expectations changed word and nothing else, and seven inventory anchors moved
+  with them (`SCOPE-021`, `SCOPE-025`, `SCOPE-026`, `REPOS-007`, `REPOS-015`, `REPOS-016`,
+  `REPOS-032`). Their previous revisions are the before-state, which is this conversion's D11
+  record: the harness said `WARN`/`PASS`/`n/a` in git and says `UNGRADED` now.
+
+The expectations were **not** regenerated from what the scripts printed. Each substitution was
+written a second time, by hand, and the suite is what proves the two agree. Regenerating would
+have made expectation and code agree by construction — the instrument grading its own output,
+which is the defect this feature has already hit twice (T036a, and the guard test for it).
+
+### Doc drift this remediation creates, and does not fix
+
+Three prose lines enumerate the lawful non-blocking verdicts and now omit the one they are
+most likely to meet:
+
+- `docs/sdlc/definition-of-done.md:103` — "`n/a`, `not applicable` and `WARN` are lawful
+  non-blocking verdicts of the cross-repo check"
+- `docs/sdlc/review-process.md:59` — the same list, same sentence shape
+- `.github/workflows/code-repo-scope-check.yml.template:37` — "The job PASSES WITHOUT
+  GRADING — WARN, n/a or 'not applicable' on every line"
+
+None of the three is machine-read: no workflow greps a verdict word, and the template line is
+a comment addressed to a human wiring up a code repository. They are incomplete, not wrong.
+
+They are also outside phase 5's **Territory**, which is `tests/**` and the nine grading
+scripts. Editing them in this commit would fail `scope-check.ps1` — the check this very
+commit is amending — and widening the Territory to reach them is an amendment the implementing
+agent may not approve for itself (constitution I). So this is recorded rather than done. It
+needs an owner decision: an approved Territory amendment, or a phase-6 task, or a follow-up.
+Naming it here is the point; F1 is what happens when the same situation is met with silence.
+
+### What flow-down will actually look like, measured
+
+T042 ran `ritual-checks.ps1 -Root <project>` against the three adopted projects and recorded
+that nothing moved. That is true and it is weaker evidence than it reads as: `-Root` makes the
+wrapper resolve its members from **the project's own `scripts/`**, so a run like that exercises
+the kit's aggregator against the projects' *older* member scripts. It says the aggregator is
+compatible. It says nothing about the members.
+
+Re-run after this remediation, all three are still `RESULT OK`, exit 0, member names and
+verdicts unchanged — and `scope-check` still prints `not applicable`, which is the tell: those
+are their copies, not these.
+
+So the real question was answered the way the reviewer answered F1 — by building the state.
+A scratch copy of `flowboard` with this branch's `scripts/*.ps1` copied in:
+
+```text
+scope-check: n/a ('main' is the trunk)
+ritual-checks: scope-check      n/a ('main' is the trunk)
+ritual-checks: scope-repos      n/a ('main' is the trunk)
+ritual-checks: RESULT OK
+exit=0
+```
+
+Two member lines change on a trunk run, from `OK` to `n/a ('main' is the trunk)`. `RESULT OK`
+and exit 0 are unchanged, and no workflow, badge or branch-protection rule reads a member's
+verdict word — they read the exit code (the reviewer verified the `RESULT OK` consumers
+independently; these two lines are downstream of the same finding). The change is visible and
+strictly more informative: a trunk run never graded a feature's territory, and now says so
+instead of borrowing the word a graded pass uses.

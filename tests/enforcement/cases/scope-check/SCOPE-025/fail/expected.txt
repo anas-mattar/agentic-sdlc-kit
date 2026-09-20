@@ -1,1 +1,1 @@
-scope-check: WARN could not resolve a merge base with main — nothing checked
+scope-check: UNGRADED could not resolve a merge base with main — nothing checked

@@ -1,1 +1,1 @@
-scope-check: PASS (no commits since merge base)
+scope-check: UNGRADED (no commits since merge base — no commit was examined)

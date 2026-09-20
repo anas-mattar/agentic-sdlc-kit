@@ -1,1 +1,1 @@
-scope-repos: not applicable (chore/ lane — enforcement-pack's Lite-lane checks apply instead)
+scope-repos: n/a (chore/ lane — enforcement-pack's Lite-lane checks apply instead)

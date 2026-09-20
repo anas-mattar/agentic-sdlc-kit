@@ -1,1 +1,1 @@
-scope-repos: not applicable ('main' is the trunk)
+scope-repos: n/a ('main' is the trunk)

@@ -376,8 +376,8 @@
       "function": "(dispatch)",
       "summary": "HEAD is detached, so the branch name is the literal word HEAD",
       "law": "Definition of Done gate 4 (scope); constitution IV; docs/sdlc/branch-strategy.md",
-      "emitAnchor": "WARN detached HEAD",
-      "notes": "The CI shape. Non-blocking, and it names the flag that fixes it, because a wrapper omitting -Branch classifies every run wrongly."
+      "emitAnchor": "UNGRADED detached HEAD",
+      "notes": "The CI shape. Non-blocking, and it names the flag that fixes it, because a wrapper omitting -Branch classifies every run wrongly. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
     },
     {
       "id": "SCOPE-022",
@@ -412,8 +412,8 @@
       "function": "(dispatch)",
       "summary": "under -All, no merge base with main can be resolved",
       "law": "Definition of Done gate 4 (scope); constitution IV; GAP-027",
-      "emitAnchor": "WARN could not resolve a merge base with main",
-      "notes": "A clone whose trunk is called something else. NOTHING is checked and the line says so — the exact shape GAP-027 is about; phase 5 reconsiders its exit code."
+      "emitAnchor": "UNGRADED could not resolve a merge base with main",
+      "notes": "A clone whose trunk is called something else. NOTHING is checked and the line says so — the exact shape GAP-027 is about; phase 5 reconsiders its exit code. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
     },
     {
       "id": "SCOPE-026",
@@ -421,8 +421,8 @@
       "function": "(dispatch)",
       "summary": "under -All, the range since the merge base is empty",
       "law": "Definition of Done gate 4 (scope); constitution IV; GAP-027",
-      "emitAnchor": "PASS (no commits since merge base)",
-      "notes": "The one line in this script that says 'pass' about a run that examined no commit."
+      "emitAnchor": "UNGRADED (no commits since merge base",
+      "notes": "The one line in this script that says 'pass' about a run that examined no commit. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
     },
     {
       "id": "LITE-001",
@@ -880,8 +880,8 @@
       "function": "(dispatch)",
       "summary": "HEAD is detached, so the branch name is the literal word HEAD",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; docs/sdlc/branch-strategy.md",
-      "emitAnchor": "WARN detached HEAD",
-      "notes": "The CI shape: a job that checked out a sha. Non-blocking, but it names the flag that fixes it, because a wrapper that omits -Branch here classifies every run wrongly."
+      "emitAnchor": "UNGRADED detached HEAD",
+      "notes": "The CI shape: a job that checked out a sha. Non-blocking, but it names the flag that fixes it, because a wrapper that omits -Branch here classifies every run wrongly. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
     },
     {
       "id": "REPOS-008",
@@ -952,8 +952,8 @@
       "function": "(dispatch)",
       "summary": "under -All, no merge base with a trunk can be resolved",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F5",
-      "emitAnchor": "WARN could not resolve a merge base with a trunk",
-      "notes": "Code repositories are pre-existing and independent, so their trunk is often master or develop. NOTHING WAS GRADED is shouted because a silent skip here exempts a whole repository."
+      "emitAnchor": "UNGRADED could not resolve a merge base with a trunk",
+      "notes": "Code repositories are pre-existing and independent, so their trunk is often master or develop. NOTHING WAS GRADED is shouted because a silent skip here exempts a whole repository. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
     },
     {
       "id": "REPOS-016",
@@ -961,8 +961,8 @@
       "function": "(dispatch)",
       "summary": "under -All, the range since the merge base is empty",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md",
-      "emitAnchor": "PASS (no commits since merge base)",
-      "notes": "An affirmative verdict that graded nothing. It is printed together with the run-level n/a on purpose: the PASS line alone is precisely the reading GAP-027 is about."
+      "emitAnchor": "UNGRADED (no commits since merge base",
+      "notes": "An affirmative verdict that graded nothing. It is printed together with the run-level n/a on purpose: the PASS line alone is precisely the reading GAP-027 is about. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
     },
     {
       "id": "REPOS-017",
@@ -1096,8 +1096,8 @@
       "function": "(dispatch)",
       "summary": "the run graded nothing in any declared code repository",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F6; GAP-027",
-      "emitAnchor": "n/a (nothing was graded in the declared code repositories",
-      "notes": "The run-level verdict. Every inert line above it is a reason, and this is what stops a run made entirely of reasons from exiting 0 with no verdict in it. Suppressed as soon as one repository is actually graded."
+      "emitAnchor": "UNGRADED (nothing was graded in the declared code repositories",
+      "notes": "The run-level verdict. Every inert line above it is a reason, and this is what stops a run made entirely of reasons from exiting 0 with no verdict in it. Suppressed as soon as one repository is actually graded. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
     },
     {
       "id": "DOC-001",
@@ -1651,6 +1651,24 @@
       "law": "feature 015 FR-009/FR-010; roadmap GAP-027",
       "emitAnchor": "ritual-checks: RESULT UNGRADED",
       "notes": "The aggregator half of GAP-027. enforcement-pack can now report UNGRADED; this is the rule that the single entry point an adopted project runs does not print RESULT OK over the top of it. Exit 0 in BOTH directions, asserted by both cases: the verdict changes and the exit code does not, which is the whole of plan D6. Built on stub members, like every other RIT case, so it tests the aggregation and not the member."
+    },
+    {
+      "id": "SCOPE-027",
+      "script": "scope-check.ps1",
+      "function": "(run verdict)",
+      "summary": "every commit on the branch was skipped, so the run graded nothing and says so",
+      "law": "feature 015 FR-010; roadmap GAP-027",
+      "emitAnchor": "UNGRADED no commit on",
+      "notes": "The general case the per-site conversions do not reach. Invoke-ScopeCheck returns a skip for a merge commit, for a commit with no 'phase N' token, and for a pre-006 tree with no tasks.md; a branch made only of those exits 0 having graded nothing, and before this the wrapper printed OK. Counted the way scripts/scope-check-repos.ps1 has counted since feature 012 ($graded), so the two members answer the same question the same way. The pair differs in one commit's SUBJECT LINE - 'work: the thing' against 'phase 1: the thing' - which is the whole of the condition (plan D10)."
+    },
+    {
+      "id": "RIT-007",
+      "script": "ritual-checks.ps1",
+      "function": "(run verdict)",
+      "summary": "the ungraded state is lifted for every member that can reach it, not only the first",
+      "law": "feature 015 FR-010; roadmap GAP-027",
+      "emitAnchor": "ritual-checks: RESULT UNGRADED",
+      "notes": "Added in the phase-5 remediation (review F1). $ungradedCapableMembers is an allow-list, so the mechanism RIT-006 proves is silently inert for any member left out of it - which is how scope-check shipped its own GAP-027 fail-open through a phase that existed to close GAP-027. This case stubs scope-check instead of enforcement-pack and asserts the same three things: the word on the member's line, the word on the RESULT line, exit 0. It fails if a future edit drops a name from that list, which RIT-006 would not notice. The anchor is the same emission site RIT-006 names, and that is deliberate rather than sloppy: the allow-list is not itself an emission site, and the site it governs is this one. RIT-006 asks whether the line can be printed at all; RIT-007 asks whether it is printed for the second member to reach the state. One site, two rules, said out loud - the inventory allows it and the ambiguity check counts hits per rule, not rules per hit."
     }
   ]
 }

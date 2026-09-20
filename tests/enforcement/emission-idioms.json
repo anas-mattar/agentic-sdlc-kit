@@ -44,16 +44,16 @@
     {
       "script": "scope-check.ps1",
       "accumulators": [
-        "Write-Host\\s+['\"]scope-check: (FAIL|ERROR|WARN|PASS|n/a|not applicable)"
+        "Write-Host\\s+['\"]scope-check: (FAIL|ERROR|WARN|PASS|UNGRADED|n/a|not applicable)"
       ],
-      "note": "Widened in T029, and the widening is the point. T028 declared this as 'Write-Host \"scope-check: FAIL' and the reporter answered 13 of 13 — a perfect score against a denominator that counted one of six verdict words. Resolving scope-check-repos.ps1's idiom by VERDICT WORD made the other fourteen sites visible, two of which the recall sweep had been printing as UNCLASSIFIED the whole time. The two 'remediation —' lines stay out: each is a continuation of the FAIL above it, not a verdict of its own."
+      "note": "Widened in T029, and the widening is the point. T028 declared this as 'Write-Host \"scope-check: FAIL' and the reporter answered 13 of 13 — a perfect score against a denominator that counted one of six verdict words. Resolving scope-check-repos.ps1's idiom by VERDICT WORD made the other fourteen sites visible, two of which the recall sweep had been printing as UNCLASSIFIED the whole time. The two 'remediation —' lines stay out: each is a continuation of the FAIL above it, not a verdict of its own. WIDENED in the phase-5 remediation (review F1) by UNGRADED, which this script now emits for a run that graded nothing. 'not applicable' stays in the alternation because the per-commit and per-repository detail lines still spell it that way; only the run's own verdict line was respelled 'n/a', which is what scripts/ritual-checks.ps1 lifts."
     },
     {
       "script": "scope-check-repos.ps1",
       "accumulators": [
-        "Write-Line\\s+['\"](\\$\\{[Rr]epoName\\}: )?(FAIL|ERROR|WARN|PASS|n/a|not applicable)"
+        "Write-Line\\s+['\"](\\$\\{[Rr]epoName\\}: )?(FAIL|ERROR|WARN|PASS|UNGRADED|n/a|not applicable)"
       ],
-      "note": "Resolved in T029. Everything goes through one Write-Line wrapper, so the idiom is not the wrapper but the VERDICT WORD the message opens with. Three registers are counted — adverse (FAIL, ERROR, WARN), inert (n/a, not applicable) and affirmative (PASS) — and the inert register is counted on purpose: this script's whole risk surface is deciding not to grade, which is SC-004 and GAP-027, and a denominator that excluded the inert lines would have hidden exactly the thing the feature exists to measure. Two Write-Line calls are deliberately outside it: the wrapper's own definition, and the 'remediation —' line, which is a continuation of the FAIL above it rather than a verdict of its own."
+      "note": "Resolved in T029. Everything goes through one Write-Line wrapper, so the idiom is not the wrapper but the VERDICT WORD the message opens with. Three registers are counted — adverse (FAIL, ERROR, WARN), inert (n/a, not applicable) and affirmative (PASS) — and the inert register is counted on purpose: this script's whole risk surface is deciding not to grade, which is SC-004 and GAP-027, and a denominator that excluded the inert lines would have hidden exactly the thing the feature exists to measure. Two Write-Line calls are deliberately outside it: the wrapper's own definition, and the 'remediation —' line, which is a continuation of the FAIL above it rather than a verdict of its own. WIDENED in the phase-5 remediation (review F1) by UNGRADED, which this script now emits for a run that graded nothing. 'not applicable' stays in the alternation because the per-commit and per-repository detail lines still spell it that way; only the run's own verdict line was respelled 'n/a', which is what scripts/ritual-checks.ps1 lifts."
     },
     {
       "script": "doc-lint.ps1",

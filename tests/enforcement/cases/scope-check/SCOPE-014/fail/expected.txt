@@ -1,1 +1,2 @@
 scope-check: not applicable (commit <SHA> is a merge commit)
+scope-check: UNGRADED no commit on '001-thing' was graded — the reason is on the line(s) above

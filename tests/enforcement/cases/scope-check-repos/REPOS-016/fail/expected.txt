@@ -1,2 +1,2 @@
-scope-repos: code-repo: PASS (no commits since merge base)
-scope-repos: n/a (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)
+scope-repos: code-repo: UNGRADED (no commits since merge base — no commit was examined)
+scope-repos: UNGRADED (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)

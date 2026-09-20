@@ -33,13 +33,20 @@
     'ritual-checks: RESULT OK|UNGRADED|FAIL'. Exit 0 iff every member exits 0. Read-only.
 
     THE VERDICT VOCABULARY (feature 015, FR-009; plan D4, D5, D7). Every grading script in
-    this kit reports in these six words and no others. They are defined here, once, because
-    this script is the single entry point an adopted project runs (FR-012):
+    this kit ends its run on a VERDICT LINE - `<member>: <WORD> [reason]` - and the word is
+    one of these six. They are defined here, once, because this script is the single entry
+    point an adopted project runs (FR-012). Detail lines above a verdict line are prose and
+    are not bound by it: `ERROR: 3 referenced path(s) do not resolve` followed by a list is
+    a finding, not a verdict, and doc-lint.ps1 prints several of both. Read 'the check' below
+    as 'the run of that member', since a member may grade many commits or many repositories:
 
       OK        The check ran, compared what it claims to compare, and found nothing. The
                 word is 'OK' and not 'PASS' because nine scripts, three adopted projects
                 and every gate record written to date already say OK (plan D4).
-      FAIL      The check ran and found a violation. This is the only state that exits 1.
+      FAIL      The check ran and found a violation. It is the only VERDICT that exits 1;
+                exit 1 also carries an invocation error that produced no verdict at all
+                (an unreadable -Root, a malformed argument), which every member spells
+                `ERROR` and no member counts as a grade.
       WARN      The check ran, formed an opinion, and that opinion is advisory. It observed
                 something real and is not blocking on it (e.g. PhaseSizeWarning).
       N/A       The check DOES NOT APPLY here - a doctor in an unadopted tree, a roadmap
@@ -50,12 +57,26 @@
                 nothing). Before feature 015 this state had no word, so it printed OK and a
                 run that graded nothing was indistinguishable from a clean one - GAP-027.
                 UNGRADED changes the VERDICT, never the exit code (plan D6, FR-011).
-      PENDING   RESERVED, and emitted by nothing today. It belongs to GAP-022 - a Critical
+      PENDING   RESERVED, and emitted by nothing today (grep confirms it). It belongs to GAP-022 - a Critical
                 branch red from its first commit to its last - which is out of scope here.
                 Defined now so GAP-022's eventual fix is not also a vocabulary change (plan
                 D7). A state nothing emits is documented as reserved rather than left
                 implicit; if you are adding an emission of PENDING, the rule you are
                 implementing needs its own feature first.
+
+    KNOWN DIVERGENCES, stated rather than implied (phase 5 review, F2). The claim above is
+    about verdict lines, and it is true of every member's verdict line as of this commit -
+    the phase-5 remediation converted the last two, scope-check.ps1 and scope-check-repos.ps1,
+    which reported ungraded runs as WARN, as n/a, and as PASS. What it is NOT is a claim that
+    the whole kit speaks only these six words:
+
+      - `scripts/update-kit.ps1` is an installer, not a grader, is not a member of this
+        wrapper, and is outside feature 015's Territory. Its `ERROR` lines stay as they are.
+      - Detail lines in doc-lint.ps1 (`ERROR:`, `INFO:`) and the per-commit and per-repository
+        lines in the two scope checks carry their own prose, by design, per the paragraph
+        above. Only the last line of a member's output is its verdict.
+
+    Reconciling anything further is not this feature's work and no task claims it is.
 
     CI note: pass -Branch explicitly — a pull_request checkout is a detached-HEAD merge
     commit where branch detection returns the literal 'HEAD'
@@ -113,7 +134,12 @@ $naCapableMembers = @('digests', 'roadmap-claims', 'scope-repos')
 # member's own words keeps every member exit code byte-identical to today, which is what
 # plan D6 requires. A dedicated exit code would itself have been an exit-code change, and
 # FR-011 says any such change is stated explicitly and separately - so there is not one.
-$ungradedCapableMembers = @('enforcement-pack')
+#
+# scope-check and scope-repos joined in the phase-5 remediation (review F1). They carried
+# the identical GAP-027 fail-open: on the same depth-1 clone GAP27-001 and GAP27-004 build,
+# scope-check printed 'WARN ... nothing checked' and this block summarised it OK. Being
+# left out of this list was half of that defect - the other half was the member's own word.
+$ungradedCapableMembers = @('enforcement-pack', 'scope-check', 'scope-repos')
 $captureMembers = @($naCapableMembers + $ungradedCapableMembers | Select-Object -Unique)
 foreach ($name in $members.Keys) {
     Write-Host "=== ritual-checks: $name ==="

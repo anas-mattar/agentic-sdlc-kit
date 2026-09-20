@@ -1,1 +1,1 @@
-scope-repos: not applicable ('spike-thing' is not a numbered feature branch)
+scope-repos: n/a ('spike-thing' is not a numbered feature branch)

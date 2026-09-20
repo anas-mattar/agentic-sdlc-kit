@@ -1,1 +1,1 @@
-scope-check: not applicable ('spike-thing' is not a numbered feature branch)
+scope-check: n/a ('spike-thing' is not a numbered feature branch)

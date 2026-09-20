@@ -1,1 +1,1 @@
-scope-check: not applicable ('main' is the trunk)
+scope-check: n/a ('main' is the trunk)

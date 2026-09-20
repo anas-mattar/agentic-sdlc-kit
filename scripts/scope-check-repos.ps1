@@ -317,19 +317,19 @@ if (-not $Branch) {
     exit 1
 }
 if ($Branch -eq 'HEAD') {
-    Write-Line 'WARN detached HEAD — pass -Branch <NNN-name> to classify the lane (CI wrappers must do this explicitly)'
+    Write-Line 'UNGRADED detached HEAD — pass -Branch <NNN-name> to classify the lane (CI wrappers must do this explicitly)'
     exit 0
 }
 if ($Branch -match '^(fix|chore|docs)/') {
-    Write-Line "not applicable ($($matches[1])/ lane — enforcement-pack's Lite-lane checks apply instead)"
+    Write-Line "n/a ($($matches[1])/ lane — enforcement-pack's Lite-lane checks apply instead)"
     exit 0
 }
 if ($Branch -in @('main', 'master')) {
-    Write-Line "not applicable ('$Branch' is the trunk)"
+    Write-Line "n/a ('$Branch' is the trunk)"
     exit 0
 }
 if ($Branch -notmatch '^\d{3}-') {
-    Write-Line "not applicable ('$Branch' is not a numbered feature branch)"
+    Write-Line "n/a ('$Branch' is not a numbered feature branch)"
     exit 0
 }
 
@@ -376,12 +376,12 @@ foreach ($repoName in $toGrade) {
             }
         }
         if (-not $base) {
-            Write-Line "${repoName}: WARN could not resolve a merge base with a trunk ($($candidates -join ', ')) — NOTHING WAS GRADED in this repository; pass -BaseRef <ref> naming its trunk"
+            Write-Line "${repoName}: UNGRADED could not resolve a merge base with a trunk ($($candidates -join ', ')) — NOTHING WAS GRADED in this repository; pass -BaseRef <ref> naming its trunk"
             continue
         }
         $commits = @((git -C $repoPath rev-list --reverse --no-merges "$base..$Branch" 2>$null) | Where-Object { $_ })
         if ($commits.Count -eq 0) {
-            Write-Line "${repoName}: PASS (no commits since merge base)"
+            Write-Line "${repoName}: UNGRADED (no commits since merge base — no commit was examined)"
             continue
         }
     } else {
@@ -399,8 +399,11 @@ foreach ($repoName in $toGrade) {
     }
 }
 
-# An n/a-shaped line so scripts/ritual-checks.ps1 lifts the reason into its summary instead
-# of printing a bare OK for a run that graded nothing (phase 1 review, F6).
-if ($graded -eq 0) { Write-Line "n/a (nothing was graded in the declared code repositories for '$Branch' — the reason is on the line(s) above)" }
+# The run-level verdict for a run that graded nothing (phase 1 review, F6; feature 015
+# FR-010). Shaped as n/a until phase 5, which is the closest of the five words then
+# available and still the wrong one: a declared code repository DOES apply - that is what
+# declaring it means - so this is UNGRADED, and US3 acceptance scenario 3 says the two
+# claims must not be blurred.
+if ($graded -eq 0) { Write-Line "UNGRADED (nothing was graded in the declared code repositories for '$Branch' — the reason is on the line(s) above)" }
 if ($failed) { exit 1 }
 exit 0

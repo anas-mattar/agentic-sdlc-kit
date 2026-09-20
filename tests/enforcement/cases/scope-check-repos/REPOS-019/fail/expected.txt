@@ -1,2 +1,2 @@
 scope-repos: code-repo: not applicable (commit <SHA> carries no 'phase N' token — not a phase commit)
-scope-repos: n/a (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)
+scope-repos: UNGRADED (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)
