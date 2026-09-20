@@ -240,21 +240,21 @@ phase whose behaviour change reaches adopted projects.
 - `scripts/roadmap-claim-check.ps1`
 - `scripts/territory-check.ps1`
 
-- [ ] T037 Write the GAP-027 cases first: a depth-1 clone with an absent base, an unresolvable
+- [x] T037 Write the GAP-027 cases first: a depth-1 clone with an absent base, an unresolvable
       diff base, and an unreadable parent. Demonstrate each producing `OK` today, and record those
       runs in `notes.md` before any fix (D11).
-- [ ] T038 Define the vocabulary in one place — `OK`, `FAIL`, `WARN`, `PENDING`, `N/A`,
+- [x] T038 Define the vocabulary in one place — `OK`, `FAIL`, `WARN`, `PENDING`, `N/A`,
       `UNGRADED` — with `PENDING` documented as reserved and emitted by nothing (D4, D7, FR-009).
-- [ ] T039 Emit `UNGRADED` from every member that can return without grading, starting with
+- [x] T039 Emit `UNGRADED` from every member that can return without grading, starting with
       `Invoke-ReviewProvenanceCheck` (FR-010).
-- [ ] T040 Carry the state into `scripts/ritual-checks.ps1`'s verdict block so it is visible where
+- [x] T040 Carry the state into `scripts/ritual-checks.ps1`'s verdict block so it is visible where
       a reader and a status badge look, distinct from both `OK` and `N/A` (FR-010).
-- [ ] T041 Hold the exit code unchanged on the Lite lane and prove it with a case that asserts the
+- [x] T041 Hold the exit code unchanged on the Lite lane and prove it with a case that asserts the
       code as well as the verdict (D6, FR-011).
-- [ ] T042 Confirm member names and verdicts are otherwise unchanged by running `ritual-checks` on
+- [x] T042 Confirm member names and verdicts are otherwise unchanged by running `ritual-checks` on
       the kit and on all three adopted projects, recording each result in `notes.md` (FR-012,
       SC-005).
-- [ ] T043 Add the `UNGRADED` cases to the inventory and confirm coverage counts them.
+- [x] T043 Add the `UNGRADED` cases to the inventory and confirm coverage counts them.
 
 ---
 

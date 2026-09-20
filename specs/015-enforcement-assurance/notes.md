@@ -1723,3 +1723,162 @@ already runs on the ubuntu leg.
   `enforcement-pack.ps1:1162` as the remedy — both say to leave the task as agreed and record what
   was done here. This phase applied that convention to the Territory rationale and the opposite one
   to the task text ten lines below, with no rule stated to distinguish them.
+
+## Phase 5 — a run that graded nothing says so
+
+### T037: the fail-open, demonstrated three ways before anything was fixed (D11)
+
+GAP-027 in one line: **`Invoke-ReviewProvenanceCheck` opens with `if (-not $Base) { return }`**
+(`enforcement-pack.ps1:595`). The machine half of gate 5 returns before listing a single
+candidate, and the run prints `OK`.
+
+Each fixture therefore carries a review file that *would* fail — no `## Reviewer Provenance`
+section, no attestation, and `**Reviewer**: the implementer, same context`. That is PROV-002,
+PROV-004 and PROV-005 at once. The violation is present, detectable, and never looked at. A
+fixture that merely lacked a base would prove the branch was quiet; this one proves it was wrong.
+
+The lane matters. On an `NNN-*` branch `AmendmentAuthority` now fails loudly for want of a base
+(feature 014 phase 5, and case AMEND-003), so the run is already red. The fail-open survives on
+the lanes where that check does not apply — `docs/` and `fix/` — which is where it is least
+likely to be noticed.
+
+| case | state | cause of the empty base |
+|---|---|---|
+| `GAP27-001` | depth-1 clone | history is not present |
+| `GAP27-002` | trunk named `trunk` | neither `origin/main` nor `main` resolves |
+| `GAP27-003` | parent commit truncated | the walk to the base cannot be completed |
+
+All three print exactly this today:
+
+```text
+enforcement-pack: branch 'docs/thing', diff base '', 0 changed file(s)
+enforcement-pack: 'docs/thing' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+WARNING: enforcement-pack: no integration branch to diff against, so nothing on 'docs/thing' was compared — …
+enforcement-pack: OK
+```
+
+**`enforcement-pack: OK`, exit 0.** The warning above it is not nothing — feature 014 phase 5 put
+it there deliberately, and it says in plain words that nothing was compared. That is the whole
+distinction this phase turns on: the condition is already **audible in the body** and still
+**clean in the verdict** (D5). A reader skimming for the verdict, a `grep` for the last line, and
+a status badge all see a pass. The fix is not to say more; it is to stop the last line lying.
+
+`GAP27-003` needed a new fixture state. `truncateBlob` corrupts the object store copy of a
+*file*, which is what a check that reads history out of a path meets (AMEND-005). A check that
+walks the commit graph never touches a blob, so `truncateCommit` truncates a *commit* object
+named by a rev — still referenced, still resolving by name, unreadable. Plan D12 anticipated
+exactly this ("deliberately corrupt objects as first-class fixture states"). It refuses rather
+than silently skipping when the named object is packed, for the same reason the nested `shallow`
+recipe refuses: a corruption that quietly does not happen gives a case that passes for the wrong
+reason.
+
+### T038-T043: the word, the emitters, and the aggregator
+
+**T038 — the vocabulary lives in `scripts/ritual-checks.ps1`'s header.** Not in `docs/`: phase 5's
+Territory is `tests/**` plus the nine scripts, and the documents that carry this outward to
+adopters and reviewers are phase 6's T049/T050/T051. The entry point an adopted project actually
+runs is the honest place for the definition in the meantime, and FR-012 names it. Six words —
+`OK`, `FAIL`, `WARN`, `N/A`, `UNGRADED`, `PENDING` — with `PENDING` written down as reserved,
+emitted by nothing, and belonging to GAP-022 (D7), including a line telling the next
+implementer that emitting it means the rule needs its own feature first.
+
+**T039 — four emitters, not one.** The task names `Invoke-ReviewProvenanceCheck` as the start and
+it is the canonical one, but three others reach the same state on a null base:
+
+| member | what stopped |
+|---|---|
+| `ReviewProvenance` | no review file inspected — the machine half of gate 5 |
+| `MicroLane` | the phase walk enforcing "exactly one phase" and the line bound |
+| `PhaseSizeWarning` | no commit measured against the guideline |
+| `LiteAndAbuse` | **graded an EMPTY file list** |
+
+The last one is the odd entry and belongs in. It does not decline — it grades, and grades
+nothing, which passes the way an empty accusation is never proved. The pack's own comment said so
+before this phase did: *"On a baseless clone a 'fix/' branch touching anything at all therefore
+went green."* A vacuous grade reaches the same wrong verdict as a skipped one.
+
+`AmendmentAuthority` is deliberately not on the list. It already **fails** for want of a base —
+feature 014 paid for that in review rounds — and downgrading it to `UNGRADED` would be a
+regression dressed as consistency.
+
+**T040 — the aggregator reuses the `n/a` idiom rather than inventing an exit code.** Members
+already signal `n/a` by printing a line the wrapper reads back; `UNGRADED` is read the same way,
+anchored on `^<member>: UNGRADED` so a sentence merely containing the word cannot be mistaken for
+a verdict. The alternative — a dedicated exit code — would itself have been the exit-code change
+FR-011 says must be stated explicitly and separately. There is not one. Precedence in the verdict
+block is `UNGRADED` > `n/a` > `OK`: a member that formed no opinion must not be summarised by
+whichever other word also fits.
+
+**T041 — the exit code is held, and both directions of every case assert it.** `GAP27-001` and
+`RIT-006` exit **0** while reporting `UNGRADED`; `RIT-006`'s pass direction exits 0 reporting
+`OK`. The two states are distinguished by the verdict alone, which is the whole of D6. On
+`GAP27-003` and `GAP27-004` the run both **fails and is ungraded** — `AmendmentAuthority` fails
+for want of a base while three other members form no opinion — which is why the runner prints
+`UNGRADED:` lines independently of the verdict word rather than as an alternative to it.
+
+**T042 — nothing else moved.** The new `ritual-checks` run against the kit and all three adopted
+projects:
+
+```text
+kit               doc-lint OK  enforcement-pack OK  scope-check OK  scope-repos n/a
+                  digests OK  roadmap-claims OK  verify-kit n/a        RESULT OK
+fitforge          every member OK, verify-kit OK                       RESULT OK
+flowboard         every member OK, verify-kit OK                       RESULT OK
+expense-tracker   roadmap-claims n/a (no origin remote), rest OK       RESULT OK
+```
+
+Member names unchanged, verdicts unchanged, exit codes unchanged (FR-012, SC-005).
+expense-tracker's pre-existing `n/a` is worth its own line: it proves the older idiom still
+resolves correctly now that a second word competes for the same slot.
+
+**T043 — coverage.** Four new rules for the four emitters plus `RIT-006` for the aggregator
+verdict. `enforcement-pack` 50 → 54 declared, 48 covered; `ritual-checks` 5 → 6 declared and
+6 covered. Kit total **181 of 194 → 186 of 199**.
+
+The two lines that PRINT the new accumulator — the `UNGRADED: <reason>` loop and the
+`UNGRADED (N check(s) formed no opinion)` verdict — stay out of the denominator, by the rule this
+file has applied throughout: they print a count the accumulator already holds, exactly as the
+`FAIL` pair does. Worth stating the consequence plainly, because it reads oddly: the run verdict
+`OK` is a site and the run verdict `UNGRADED` is not. `OK` asserts that conditions did not occur;
+`UNGRADED` counts ones that did.
+
+Each `GAP27-*` pair differs in exactly one thing — `shallow`, the trunk's name, or
+`truncateCommit` — with the same bad review file on both sides, so the pass direction reports the
+violation the fail direction let through. After round 2's F3 that was not a property to leave to
+chance, and `GAP27-002`'s two-line trunk rename is stated in its own description rather than
+waved past.
+
+### Three existing cases changed, and one of them was written to
+
+The full suite came back **771 passed, 3 failed** — `AMEND-003/fail`, `AMEND-004/fail` and
+`PACK-001/fail`, all pinning output this phase deliberately changes.
+
+`AMEND-003` and `AMEND-004` keep the same `FAIL` and the same exit code; they now carry the two
+`UNGRADED:` lines naming what *else* did not grade beside the failure. That is the combined state
+the runner prints ungraded lines independently of the verdict to support, and it is worth seeing
+it arrive in cases written before the state existed.
+
+`PACK-001` is the one that matters. Its recipe description, written in **phase 3**, reads:
+
+> A Lite-lane branch on a clone with no integration branch. Every member either graded an empty
+> file list or returned without grading, and the exit code is 0 — which is GAP-027 exactly. The
+> run says so in the log body today; **phase 5 gives it a verdict state, and this case is what
+> will show the difference.**
+
+It now does, and the diff is the whole feature in three lines:
+
+```text
+-  enforcement-pack: OK
++  UNGRADED: LiteAndAbuse: … graded an EMPTY file list on 'fix/thing' …
++  UNGRADED: ReviewProvenance: … no review file on 'fix/thing' was inspected …
++  enforcement-pack: UNGRADED (2 check(s) formed no opinion)
+```
+
+Exit code 0 before and after, asserted by the case in both states. The description is left
+exactly as phase 3 wrote it rather than updated to the past tense: a prediction that landed is
+worth more on the record than a tidy sentence.
+
+A fourth thing did not happen and is worth saying: no case outside `enforcement-pack` moved. The
+other eight scripts emit no `UNGRADED` and their expectations are untouched, which is the
+narrowest form of the FR-012 claim — the harness is additive, and here it is additive in one
+script only.

@@ -1,0 +1,26 @@
+=== ritual-checks: doc-lint ===
+doc-lint: OK - stub
+
+=== ritual-checks: enforcement-pack ===
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)
+
+=== ritual-checks: scope-check ===
+scope-check: OK - stub
+
+=== ritual-checks: scope-repos ===
+scope-repos: OK - stub
+
+=== ritual-checks: digests ===
+digests: OK - stub
+
+=== ritual-checks: roadmap-claims ===
+roadmap-claims: OK - stub
+
+ritual-checks: doc-lint         OK
+ritual-checks: enforcement-pack UNGRADED (1 check(s) formed no opinion)
+ritual-checks: scope-check      OK
+ritual-checks: scope-repos      OK
+ritual-checks: digests          OK
+ritual-checks: roadmap-claims   OK
+ritual-checks: verify-kit       n/a (no adoption markers — kit repository or unadopted tree)
+ritual-checks: RESULT UNGRADED (1 of 6 member(s) formed no opinion; nothing failed)

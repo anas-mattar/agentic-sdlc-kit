@@ -1,0 +1,5 @@
+enforcement-pack: branch 'docs/thing', diff base '', 0 changed file(s)
+enforcement-pack: 'docs/thing' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+WARNING: enforcement-pack: no integration branch to diff against, so nothing on 'docs/thing' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout).
+UNGRADED: ReviewProvenance: no diff base, so no review file on 'docs/thing' was inspected - the machine half of DoD gate 5 formed no opinion. Fetch the full history ('fetch-depth: 0' on actions/checkout)
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

@@ -30,7 +30,32 @@
 
     Each member runs as a child pwsh process (the member scripts terminate with `exit`),
     and the wrapper ends with a verdict block, one line per member, then
-    'ritual-checks: RESULT OK|FAIL'. Exit 0 iff every member exits 0. Read-only.
+    'ritual-checks: RESULT OK|UNGRADED|FAIL'. Exit 0 iff every member exits 0. Read-only.
+
+    THE VERDICT VOCABULARY (feature 015, FR-009; plan D4, D5, D7). Every grading script in
+    this kit reports in these six words and no others. They are defined here, once, because
+    this script is the single entry point an adopted project runs (FR-012):
+
+      OK        The check ran, compared what it claims to compare, and found nothing. The
+                word is 'OK' and not 'PASS' because nine scripts, three adopted projects
+                and every gate record written to date already say OK (plan D4).
+      FAIL      The check ran and found a violation. This is the only state that exits 1.
+      WARN      The check ran, formed an opinion, and that opinion is advisory. It observed
+                something real and is not blocking on it (e.g. PhaseSizeWarning).
+      N/A       The check DOES NOT APPLY here - a doctor in an unadopted tree, a roadmap
+                check with no roadmap table. A positive, honest claim about scope.
+      UNGRADED  The check applies and RAN AND FORMED NO OPINION: no computable diff base,
+                unreadable history, a depth-1 clone whose base is absent. It is not OK (it
+                compared nothing), not N/A (it does apply), and not WARN (it observed
+                nothing). Before feature 015 this state had no word, so it printed OK and a
+                run that graded nothing was indistinguishable from a clean one - GAP-027.
+                UNGRADED changes the VERDICT, never the exit code (plan D6, FR-011).
+      PENDING   RESERVED, and emitted by nothing today. It belongs to GAP-022 - a Critical
+                branch red from its first commit to its last - which is out of scope here.
+                Defined now so GAP-022's eventual fix is not also a vocabulary change (plan
+                D7). A state nothing emits is documented as reserved rather than left
+                implicit; if you are adding an emission of PENDING, the rule you are
+                implementing needs its own feature first.
 
     CI note: pass -Branch explicitly — a pull_request checkout is a detached-HEAD merge
     commit where branch detection returns the literal 'HEAD'
@@ -78,13 +103,21 @@ if ((Test-Path (Join-Path $Root '.kit-version')) -or (Test-Path (Join-Path $Root
 
 $results = [ordered]@{}
 $naReasons = @{}
+$ungradedReasons = @{}
 # Members whose n/a states (010 SC-004; 011 no-ledger/no-table) are distinct verdicts,
 # not OK: capture their output (re-echoed verbatim) to read the n/a line while keeping
 # the exit-code contract identical to the other members.
 $naCapableMembers = @('digests', 'roadmap-claims', 'scope-repos')
+# Members that can report UNGRADED - they RAN and formed no opinion (feature 015, FR-010).
+# Captured for the same reason and by the same mechanism as an n/a line: reading the
+# member's own words keeps every member exit code byte-identical to today, which is what
+# plan D6 requires. A dedicated exit code would itself have been an exit-code change, and
+# FR-011 says any such change is stated explicitly and separately - so there is not one.
+$ungradedCapableMembers = @('enforcement-pack')
+$captureMembers = @($naCapableMembers + $ungradedCapableMembers | Select-Object -Unique)
 foreach ($name in $members.Keys) {
     Write-Host "=== ritual-checks: $name ==="
-    if ($name -in $naCapableMembers) {
+    if ($name -in $captureMembers) {
         $out = & pwsh -NoProfile -File @($members[$name]) 2>&1
         $results[$name] = $LASTEXITCODE
         $out | ForEach-Object { Write-Host $_ }
@@ -92,6 +125,11 @@ foreach ($name in $members.Keys) {
             # Echo the member's own n/a reason into the summary (phase 1 review F5).
             $naLine = @($out | ForEach-Object { "$_" } | Where-Object { $_ -match "^${name}: n/a" }) | Select-Object -First 1
             if ($naLine) { $naReasons[$name] = $naLine.Substring("${name}: ".Length) }
+            # The same idiom for the state this feature adds. Anchored on the member's own
+            # name so a line that merely quotes the word inside a longer sentence - a
+            # failure message explaining UNGRADED, say - cannot be read as the verdict.
+            $ungradedLine = @($out | ForEach-Object { "$_" } | Where-Object { $_ -match "^${name}: UNGRADED" }) | Select-Object -First 1
+            if ($ungradedLine) { $ungradedReasons[$name] = $ungradedLine.Substring("${name}: ".Length) }
         }
     } else {
         & pwsh -NoProfile -File @($members[$name])
@@ -101,9 +139,14 @@ foreach ($name in $members.Keys) {
 }
 
 $failedCount = 0
+$ungradedCount = 0
 foreach ($name in $results.Keys) {
     $verdict = if ($results[$name] -eq 0) {
-        if ($naReasons.ContainsKey($name)) { $naReasons[$name] } else { 'OK' }
+        # Order matters: UNGRADED outranks n/a outranks OK. A member that formed no opinion
+        # must not be summarised by whichever other word also happens to fit.
+        if ($ungradedReasons.ContainsKey($name)) { $ungradedCount++; $ungradedReasons[$name] }
+        elseif ($naReasons.ContainsKey($name)) { $naReasons[$name] }
+        else { 'OK' }
     } else { $failedCount++; 'FAIL' }
     Write-Host ('ritual-checks: {0,-16} {1}' -f $name, $verdict)
 }
@@ -113,6 +156,13 @@ if ($doctorNA) {
 if ($failedCount -gt 0) {
     Write-Host "ritual-checks: RESULT FAIL ($failedCount of $($results.Count) member(s) failed)"
     exit 1
+}
+if ($ungradedCount -gt 0) {
+    # Exit 0: the run did not fail, and FR-011 forbids making it fail. What it must not do
+    # is print RESULT OK over the top of a member that compared nothing - that last line is
+    # what a reader, a grep, and a status badge all take as the answer.
+    Write-Host "ritual-checks: RESULT UNGRADED ($ungradedCount of $($results.Count) member(s) formed no opinion; nothing failed)"
+    exit 0
 }
 Write-Host 'ritual-checks: RESULT OK'
 exit 0

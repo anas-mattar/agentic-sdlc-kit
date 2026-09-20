@@ -1606,6 +1606,51 @@
       "law": "feature 006 contract specs/006-verification-pack/contracts/ritual-checks-ci.md; docs/sdlc/definition-of-done.md; feature 015 SC-005",
       "emitAnchor": "'ritual-checks: RESULT OK'",
       "notes": "The one line a CI badge reads. Printed once, last, and after every member’s own verdict — never instead of them. Its pass fixture is a run whose members include two inert ones, because “nothing failed” and “everything was checked” are different claims and only the first is being made."
+    },
+    {
+      "id": "GAP27-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewProvenanceCheck",
+      "summary": "the machine half of gate 5 has no diff base, so it inspects no review file and says so",
+      "law": "DoD gate 5; constitution I; roadmap GAP-027",
+      "emitAnchor": "ReviewProvenance: no diff base",
+      "notes": "GAP-027's canonical site. This was a bare `return`: the check stopped before listing a single candidate and the run printed OK. Both directions carry the SAME review file - no provenance section, no attestation, the implementer named as reviewer - and differ only in whether the base resolves. The pass direction therefore shows the exact violation the fail direction let through, which is a stronger statement than an absence. UNGRADED, never FAIL: FR-011 forbids a new hard failure on this lane (plan D6)."
+    },
+    {
+      "id": "GAP27-002",
+      "script": "enforcement-pack.ps1",
+      "function": "(Lite lane dispatch)",
+      "summary": "the Lite lane's guards grade an EMPTY file list because no base resolves",
+      "law": "constitution X (Lite lane); roadmap GAP-027",
+      "emitAnchor": "LiteAndAbuse: no diff base",
+      "notes": "The one member that does not DECLINE on a null base - it grades, and grades nothing, which passes the way an empty accusation is never proved. The pack's own comment said it before this phase did: a baseless 'fix/' branch touching anything at all went green. The fixture touches a dependency manifest, a prohibited category, and the pass direction reports it. A vacuous grade reaches the same wrong verdict as a skipped one and is named the same way."
+    },
+    {
+      "id": "GAP27-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-MicroLaneCheck",
+      "summary": "the Micro phase walk has no diff base, so 'exactly one phase' and the line bound compare nothing",
+      "law": "constitution X (Micro lane); roadmap GAP-027",
+      "emitAnchor": "MicroLane: no diff base",
+      "notes": "Reached through the unreadable-parent state ('truncateCommit'), which is why that fixture capability exists: a corrupt BLOB is met by a check that reads a file out of history, and a check that walks the commit graph never touches one. The fail direction also shows the combined verdict - AmendmentAuthority FAILS for want of a base while three other members report UNGRADED - which is the shape the runner prints ungraded lines independently of the verdict word to support."
+    },
+    {
+      "id": "GAP27-004",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-PhaseSizeWarningCheck",
+      "summary": "no commit is measured against the phase-size guideline because no base resolves",
+      "law": "FR-006 (feature 006); constitution X; roadmap GAP-027",
+      "emitAnchor": "PhaseSizeWarning: no diff base",
+      "notes": "The advisory member, included deliberately. A check whose only output is a WARN still has an opinion to fail to form, and leaving it out would have said that an advisory check is not worth knowing the status of - the same reasoning that pulled PhaseSizeWarning itself into the denominator in phase 3. Depth-1 clone, the ordinary actions/checkout shape."
+    },
+    {
+      "id": "RIT-006",
+      "script": "ritual-checks.ps1",
+      "function": "(run verdict)",
+      "summary": "a member ran and formed no opinion, and the run says so instead of OK",
+      "law": "feature 015 FR-009/FR-010; roadmap GAP-027",
+      "emitAnchor": "ritual-checks: RESULT UNGRADED",
+      "notes": "The aggregator half of GAP-027. enforcement-pack can now report UNGRADED; this is the rule that the single entry point an adopted project runs does not print RESULT OK over the top of it. Exit 0 in BOTH directions, asserted by both cases: the verdict changes and the exit code does not, which is the whole of plan D6. Built on stub members, like every other RIT case, so it tests the aggregation and not the member."
     }
   ]
 }

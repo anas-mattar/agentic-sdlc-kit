@@ -1,0 +1,30 @@
+{
+  "description": "The same branch, the same review file, with the full history present. The ONLY difference from the fail direction is the absence of 'shallow' (plan D10). The base resolves, review-provenance inspects the file it could not see before, and the violation that rode through is reported. This is what the ungraded state was hiding.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "docs/thing",
+      "message": "docs: add a review with no provenance",
+      "write": {
+        "specs/001-thing/ai-code-review.md": [
+          "# AI Code Review - Thing",
+          "",
+          "**Reviewer**: the implementer, same context",
+          "",
+          "## Verdict",
+          "",
+          "APPROVE. No provenance section, no attestation - this file is exactly what",
+          "PROV-002 and PROV-005 exist to reject."
+        ]
+      }
+    }
+  ],
+  "checkout": "docs/thing"
+}

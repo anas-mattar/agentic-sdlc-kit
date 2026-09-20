@@ -42,6 +42,9 @@
       how a depth-1 CI checkout with no reachable base is reproduced (GAP-027).
     - "truncateBlob" corrupts the object store copy of a committed file, which is the state that
       separates `cat-file -e` from `cat-file blob` (feature 014 phase 5).
+    - "truncateCommit" does the same to a COMMIT object named by a rev ("HEAD~1"), which is the
+      unreadable-parent state: the commit is still referenced and still resolves by name, and
+      reading it fails. A check that walks parents meets this one, not a corrupt blob (GAP-027).
     - "uncommitted" writes files after the last commit and leaves them unstaged, which is the
       state the "exists only in a working tree" rules refuse.
     - "rename" maps old path -> new path and stages it with 'git mv', so git records R and not
@@ -267,6 +270,24 @@ function New-FixtureRepo {
             $bytes = [IO.File]::ReadAllBytes($objectPath)
             [IO.File]::WriteAllBytes($objectPath, $bytes[0..([Math]::Max(0, [int]($bytes.Length / 2)))])
         }
+    }
+
+    # The parent-shaped sibling of truncateBlob. A blob corruption is met by a check that reads a
+    # FILE out of history; a check that walks the commit graph never touches one. GAP-027's third
+    # state is an unreadable PARENT, so the object truncated here is a commit.
+    if ($Recipe.PSObject.Properties.Name -contains 'truncateCommit' -and $Recipe.truncateCommit) {
+        $sha = ((Invoke-FixtureGit -RepoPath $root -Arguments @('rev-parse', "$($Recipe.truncateCommit)")) -join '').Trim()
+        $objectPath = Join-Path $root (".git/objects/{0}/{1}" -f $sha.Substring(0, 2), $sha.Substring(2))
+        if (-not (Test-Path $objectPath)) {
+            # Refused rather than ignored, the same way a nested 'shallow' recipe is refused: a
+            # silently absent corruption gives a case that passes for the wrong reason, which is
+            # the defect class this whole feature exists to find.
+            throw "fixture 'truncateCommit' names '$($Recipe.truncateCommit)' ($sha), whose loose object is not at $objectPath - it may be packed. Refused rather than silently ignored."
+        }
+        $item = Get-Item -LiteralPath $objectPath -Force
+        $item.Attributes = $item.Attributes -band -bnot [IO.FileAttributes]::ReadOnly
+        $bytes = [IO.File]::ReadAllBytes($objectPath)
+        [IO.File]::WriteAllBytes($objectPath, $bytes[0..([Math]::Max(0, [int]($bytes.Length / 2)))])
     }
 
     if ($Recipe.PSObject.Properties.Name -contains 'shallow' -and $Recipe.shallow) {

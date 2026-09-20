@@ -1,0 +1,21 @@
+{
+  "description": "A fix/ branch that changes a PROHIBITED file, in a repository whose trunk is called 'main'. The trunk is called 'main', so the base resolves and the prohibited change the fail direction hid is reported. The ONLY difference is the trunk's name, written in two places because the commit that creates it names it too (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: bump a dependency",
+      "write": {
+        "package.json": "{ \"dependencies\": { \"left-pad\": \"1.3.0\" } }\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}
