@@ -181,11 +181,24 @@ difference SC-006 exists to catch.
 
 **Amendment approved by**: anas.m, 2026-09-19.
 
-- [ ] T036a Make the blank separator portable in `scripts/ritual-checks.ps1` (one site) and
-      `scripts/territory-check.ps1` (two sites), so both platforms emit the same bytes after
-      normalisation. Add a harness self-test that pins a blank line surviving a child process,
-      so the property is asserted on both CI legs rather than assumed.
-- [ ] T036b Close the phase 4 review's F1: `doc-lint.ps1:236` — the manifest sweep declining in
+T036a's text is rewritten below. The diagnosis that justified the widening above was wrong, and
+the task now says what was actually done. The rationale paragraph is deliberately left standing
+as approved: what was believed, and on what evidence, is part of the record — the correction is
+written in `notes.md` rather than over the top of it.
+
+**Amendment approved by**: anas.m, 2026-09-20.
+
+- [x] T036a Stop the harness losing blank lines on Linux. `Start-Process
+      -RedirectStandardOutput` drops empty lines there, so `Invoke-FixtureCase` compared its
+      expectation against a stream the script never printed; `System.Diagnostics.Process` with
+      `ReadToEndAsync` replaces it. Add a self-test that drives `Invoke-FixtureCase` itself.
+      **The two scripts are NOT touched**: the first diagnosis blamed `Write-Host ''`, and
+      measuring on ubuntu 24.04 + pwsh 7.6.5 showed all four emission forms work there. The
+      Territory widened by `74f690e` turned out not to be needed. The replacement carried its
+      own defect — unset, `StandardOutputEncoding` decodes the child with the console codepage,
+      so every em dash arrived mangled, intermittently. Both streams are pinned to UTF-8, and
+      the guard test forces a non-UTF-8 console rather than inheriting one.
+- [x] T036b Close the phase 4 review's F1: `doc-lint.ps1:236` — the manifest sweep declining in
       an adopted project — is a condition the script detects on its own `.kit-version` branch,
       not a printer of any accumulator. It is outside the declared idiom and outside the recall
       sweep, so `doc-lint` reports `7 of 7` against a denominator built from the covered part.

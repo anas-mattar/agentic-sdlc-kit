@@ -48,17 +48,6 @@ $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path $PSScriptRoot 'FixtureRepo.psm1') -Force
 
-# Start-Process joins an -ArgumentList ARRAY with spaces and quotes nothing, so an element
-# containing a space arrives at the child as two arguments: '-Root C:\Users\A B\Temp\fix'
-# became '-Root C:\Users\A' and the case ran against a path that does not exist. Found by the
-# launcher's own self-tests (Harness.Tests.ps1) while closing the phase 2 review's F1, not by a
-# fixture — every fixture so far has run from a temporary path with no space in it.
-function ConvertTo-ProcessArgument {
-    param([string[]]$Arguments)
-    return @($Arguments | ForEach-Object {
-        if ($_ -match '[\s"]') { '"' + ($_ -replace '"', '\"') + '"' } else { $_ }
-    })
-}
 
 function ConvertTo-NormalisedOutput {
     param([Parameter(Mandatory)][AllowEmptyString()][string]$Text, [Parameter(Mandatory)][string]$RepoPath)
@@ -146,28 +135,55 @@ function Invoke-FixtureCase {
             $arguments += @($command.args)
         }
 
-        $stdoutFile = [IO.Path]::GetTempFileName()
-        $stderrFile = [IO.Path]::GetTempFileName()
+        # NOT Start-Process. `Start-Process -RedirectStandardOutput` DROPS EMPTY LINES on
+        # Linux: the harness was comparing a stream the script never printed, so any rule
+        # whose output contains a blank line failed on ubuntu and passed on Windows. Sixteen
+        # cases in ritual-checks and territory-check did exactly that, and the fixtures were
+        # blamed before the harness was (run 35437579942). Measured on ubuntu 24.04 with the
+        # same pwsh 7.6.5 CI runs, against all four ways a script can emit a blank line:
+        #
+        #   Start-Process -RedirectStandardOutput   a<LF>b        the blank is gone
+        #   Process + ReadToEndAsync                a<LF><LF>b    the blank survives
+        #
+        # ArgumentList also replaces the hand-rolled quoting this function used to need:
+        # Start-Process joins an array with spaces and quotes nothing, so '-Root /a b/c'
+        # arrived as two arguments and the case ran against a path that does not exist
+        # (phase 2 review F1). ProcessStartInfo.ArgumentList passes each element as one
+        # argument, so the escaping is the runtime's problem rather than ours.
+        $psi = [System.Diagnostics.ProcessStartInfo]::new()
+        $psi.FileName = (Get-Process -Id $PID).Path
+        foreach ($argument in $arguments) { $psi.ArgumentList.Add($argument) }
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        $psi.UseShellExecute = $false
+        # Pin both streams to UTF-8. Unset, .NET decodes the child with the console's
+        # codepage, so an em dash (E2 80 94) arrives as three CP437 characters and the case
+        # fails on a line the script printed correctly. It did NOT fail every time: the same
+        # case decoded cleanly under Pester and mojibaked when run directly, which is the
+        # worse half of the bug — an instrument that grades correctly only sometimes.
+        # PowerShell 7 writes redirected output as UTF-8, so this pins the reader to what
+        # the writer already emits rather than imposing a choice.
+        $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+        $psi.StandardOutputEncoding = $utf8NoBom
+        $psi.StandardErrorEncoding = $utf8NoBom
+        # Only for a 'noRoot' case: every other case names its tree explicitly, and moving
+        # them all into the fixture would change the ground under two hundred green cases
+        # for no rule's sake.
+        if ($workingDir) { $psi.WorkingDirectory = $workingDir }
+
+        $process = [System.Diagnostics.Process]::Start($psi)
         try {
-            $startArgs = @{
-                FilePath               = (Get-Process -Id $PID).Path
-                ArgumentList           = (ConvertTo-ProcessArgument -Arguments $arguments)
-                NoNewWindow            = $true
-                Wait                   = $true
-                PassThru               = $true
-                RedirectStandardOutput = $stdoutFile
-                RedirectStandardError  = $stderrFile
-            }
-            # Only for a 'noRoot' case: every other case names its tree explicitly, and moving
-            # them all into the fixture would change the ground under two hundred green cases
-            # for no rule's sake.
-            if ($workingDir) { $startArgs['WorkingDirectory'] = $workingDir }
-            $process = Start-Process @startArgs
-            $rawOut = [IO.File]::ReadAllText($stdoutFile)
-            $rawErr = [IO.File]::ReadAllText($stderrFile)
+            # Both streams are read asynchronously BEFORE waiting. A child that fills one
+            # pipe while the parent blocks on the other deadlocks, and a fixture that hangs
+            # is worse than one that fails.
+            $outTask = $process.StandardOutput.ReadToEndAsync()
+            $errTask = $process.StandardError.ReadToEndAsync()
+            $process.WaitForExit()
+            $rawOut = $outTask.GetAwaiter().GetResult()
+            $rawErr = $errTask.GetAwaiter().GetResult()
             $exitCode = $process.ExitCode
         } finally {
-            Remove-Item $stdoutFile, $stderrFile -Force -ErrorAction SilentlyContinue
+            $process.Dispose()
         }
 
         $actual = ConvertTo-NormalisedOutput -Text ($rawOut + $rawErr) -RepoPath $repo

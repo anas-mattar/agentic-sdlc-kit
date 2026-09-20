@@ -1425,3 +1425,252 @@ None is a missed rule. The recall sweep is doing exactly what it was built to do
 anything FAIL-shaped, it finds the printers, and the declaration has to say in writing why each
 one is not a condition. That is the difference between a number nobody questions and a number
 somebody has answered for.
+
+### Phase 4 remediation: the harness was reading a stream the script never printed
+
+Phase 4 was committed at `8778c06` after 740 local cases passed, and CI failed it: **724 passed,
+16 failed on `ubuntu-latest`, 740 passed on `windows-latest`** (run 35437579942). Both legs ran
+Pester 5.9.0 and pwsh 7.6.5 — same versions, same harness, same fixtures.
+
+Every failure was one shape: a blank line the expectation contains and the observed output does
+not. Sixteen cases in the suite have an interior blank line in `expected.txt`; sixteen failed;
+they are the same sixteen. Their only source of a blank line is `Write-Host ''`, at
+`ritual-checks.ps1:100` and `territory-check.ps1:112` and `:116`.
+
+**That reasoning was sound and its conclusion was wrong.** The correlation was real — it just
+identified the symptom class, not the layer. I concluded that `Write-Host ''` behaves differently
+on Linux, obtained an owner-approved Territory amendment to reach the two scripts (`74f690e`),
+changed all three sites to `Write-Host ([Environment]::NewLine) -NoNewline`, confirmed the bytes
+were unchanged on Windows, and confirmed the sixteen cases still passed there.
+
+**Every one of those confirmations was run on the platform where there was no bug.** The fix was a
+no-op on Windows by construction — that is *why* the expectations still matched — so a green
+Windows run said nothing whatsoever about whether it worked. It would have gone to CI and failed
+again, and the second failure would have looked exactly like the first.
+
+#### What settled it
+
+A Linux `pwsh` — `ubuntu:24.04` plus the 7.6.5 tarball, the runtime CI actually uses. Four ways of
+emitting a blank line, run as a script whose stdout is redirected by the shell:
+
+```text
+Write-Host ''                                    A-before<LF><LF>A-after
+Write-Host ([Environment]::NewLine) -NoNewline   B-before<LF><LF>B-after
+Write-Host "`n" -NoNewline                       C-before<LF><LF>C-after
+Write-Output ''                                  D-before<LF><LF>D-after
+```
+
+**All four work on Linux. `Write-Host ''` was never the defect, and the kit scripts were innocent
+the whole time.** Running the real failing case through `Invoke-FixtureCase` in that container
+reproduced the failure with the *fixed* script in place — which is how the wrong fix was caught
+before it was pushed rather than after.
+
+Isolating each stage of the harness's own path found it:
+
+```text
+ConvertTo-NormalisedOutput on "a\n\nb\n"          a<LF><LF>b        blank preserved
+Start-Process -RedirectStandardOutput             a<LF>b            BLANK GONE
+Process + ReadToEndAsync                          a<LF><LF>b        blank preserved
+```
+
+**`Start-Process -RedirectStandardOutput` drops empty lines on Linux.** The harness was comparing
+its hand-written expectation against a stream the script under test never printed. The expectation
+side was read straight off disk and kept its blank lines; the observed side was mangled in
+transit. The defect was in `tests/enforcement/lib/Harness.psm1` — inside phase 4's *original*
+Territory — and the amendment reaching into `scripts/` was never needed.
+
+`Invoke-FixtureCase` now starts the child through `System.Diagnostics.Process` and reads both
+streams with `ReadToEndAsync` before waiting. Verified against ubuntu 24.04 + pwsh 7.6.5 with the
+kit scripts reverted to their original `Write-Host ''`:
+
+```text
+territory-check/TERR-005/pass   OutputMatch True   ExitMatch True (2)
+territory-check/TERR-004/fail   OutputMatch True   ExitMatch True (2)
+ritual-checks/RIT-001/pass      OutputMatch True   ExitMatch True (0)
+ritual-checks/RIT-004/fail      OutputMatch True   ExitMatch True (1)
+```
+
+`ConvertTo-ProcessArgument` went with it. It existed because `Start-Process` joins an argument
+array with spaces and quotes nothing — the phase 2 review's F1 — and
+`ProcessStartInfo.ArgumentList` passes each element as one argument, so the escaping stops being
+ours to get wrong. Its two self-tests still guard the behaviour end to end.
+
+#### Why this one is worse than the bug it was mistaken for
+
+A script that prints different text on two platforms is a defect in that script. **A harness that
+silently rewrites the output it is grading is a defect in the instrument**, and it had been there
+since phase 1, on every Linux run, for every case. Here it produced false REDs, which is the
+survivable direction — the expectation kept its blank lines and the observed lost them, so the
+comparison failed loudly. But the instrument was not measuring what it claimed to measure, which
+is the precise failure mode this feature exists to find in the kit's own checks. It was found in
+the feature that grades the graders, by CI, on the fourth of six phases.
+
+The self-test added for this drives `Invoke-FixtureCase` against a synthetic kit root rather than
+building its own process. The first attempt re-implemented the launch inside the test, which would
+have passed while the harness stayed broken — a check that sees part of what it claims to see, the
+shape the phase 1 review named F1 and the shape T020a fixed in the Micro lane. It is easy to write
+by accident, and this file now has three instances of it on record.
+
+#### The amendment was unnecessary, and stays on the record
+
+`74f690e` widened phase 4's Territory to `scripts/ritual-checks.ps1` and
+`scripts/territory-check.ps1` on the strength of a diagnosis that turned out to be wrong. Both
+scripts are reverted and neither is touched by this phase. The amendment is not being rewritten:
+what was approved, when, and on what evidence is exactly the kind of thing this kit refuses to
+tidy away after the fact — the same reasoning that kept both phase 2 gate records rather than
+editing the superseded one. Narrowing it back is an owner's decision, not an implementer's.
+
+### T036b: F1 was right, and it was bigger than its example
+
+The phase 4 fresh-context review's one BLOCKING finding: `doc-lint.ps1:236` — the manifest sweep
+declining in an adopted project — is a condition the script detects on its own `.kit-version`
+branch at `:100`, not a printer of any accumulator. Verified independently before acting: none of
+`doc-lint`'s four accumulators matches it, and none of the seven `DOC-*` anchors owns it.
+
+It is also **invisible to both passes at once**. The recall sweep's patterns require a literal
+`FAIL|ERROR` inside the string, so an inert verdict can never surface even as `UNCLASSIFIED`. The
+precise pass did not declare it and the recall pass structurally could not see it. `doc-lint`
+therefore reported **7 of 7** — a perfect score against a denominator built from the part already
+covered, which is the exact sentence this feature's own phase 4 commit message wrote about T028's
+old `13 of 13`. I applied the tri-register principle to four scripts and then missed the inert
+register in the fifth: the one script where the denominator was narrowed.
+
+So the fix began by asking whether the hole was bigger than its example. It was. Sweeping every
+`Write-Host` line in all nine scripts against that script's own declaration turned up **nine
+unowned conditions in three scripts**:
+
+| script | line | register | what it is |
+|---|---|---|---|
+| `doc-lint.ps1` | `:236` | inert | the manifest sweep declines (F1 itself) |
+| `doc-lint.ps1` | `:238` | affirmative | the sweep reports what it classified |
+| `doc-lint.ps1` | `:252` | affirmative | the OK run verdict |
+| `verify-kit.ps1` | `:330` | affirmative | the doctor's OK run verdict |
+| `enforcement-pack.ps1` | `:1058` | inert | `AmendmentAuthority: no commits in range — nothing to grade` |
+| `enforcement-pack.ps1` | `:1183` | affirmative | `AmendmentAuthority: graded N of M` |
+| `enforcement-pack.ps1` | `:1209` | inert | the trunk is not graded |
+| `enforcement-pack.ps1` | `:1224` | inert | the lightweight `docs/` lane is not graded |
+| `enforcement-pack.ps1` | `:1235` | affirmative | `enforcement-pack: OK` |
+
+`:1058` deserves its own sentence. **The check that grades amendments can decline to grade, print
+`nothing to grade`, and nothing counted that as a condition** — GAP-027's own shape, sitting
+inside the enforcement pack, in the register this feature widened four other declarations to
+catch.
+
+The principle that settles which of these count is the one already written in
+`emission-idioms.json`: an `OK` line prints no accumulator — it asserts that the conditions above
+it did not occur, and on a green run it is the entire output a reader sees. A `FAIL (N issue(s))`
+line prints a count the accumulator already holds. So the affirmative run verdicts come in and
+their FAIL counterparts stay out. The asymmetry looks odd written down; it is the same call
+`roadmap-claim-check.ps1` already made in T033, and the alternative — counting both — would be
+counting the printer a second time.
+
+**The declaration was widened by all nine. Only four were covered.**
+
+```text
+doc-lint.ps1             7 of 7    ->  10 of 10     (denominator 7 -> 10)
+verify-kit.ps1          29 of 30   ->  30 of 31
+enforcement-pack.ps1    44 of 45   ->  44 of 50     (five declared, none covered)
+--------------------------------------------------------------------------
+kit total              177 of 185  -> 181 of 194      95.7%  ->  93.3%
+```
+
+The headline number went **down**, and that is the point. `enforcement-pack.ps1` is phase 3's
+script and phase 3 is merged; writing ten fixture cases for it inside a phase 4 remediation would
+be re-opening a closed phase, and the five conditions are real whether or not this branch covers
+them. Declaring them lowers the percentage honestly and leaves a debt with a name on it — an
+uncovered site is visible to T044 and to every future reader; an undeclared one is not a debt at
+all. That is the same ruler as the T028 widening and the `doc-lint` narrowing, pointed in whatever
+direction it sends the number.
+
+Three rules and six cases close the four that belong to phase 4's own scripts. `DOC-008` owns the
+two manifest arms through `siteCount: 2`, the idiom established in T031 so that a pair covers a
+condition rather than duplicating it. `DOC-009` and `VK-027` own the two run verdicts, and both
+are the first rules in the suite whose **exit code inverts against the direction name** — `fail`
+exits 0 and `pass` exits 1 — because for an affirmative rule the state in which the condition
+holds is the healthy one. The direction convention warned that it coincides with the exit code
+only for adverse rules; these two are where that stops being a footnote.
+
+Left open, deliberately, for phase 6 to decide rather than discover:
+
+- The five declared-uncovered `enforcement-pack.ps1` sites. They join the eight already listed
+  under T036, so **T044 now faces thirteen uncovered sites, of which five are unreachable by any
+  fixture** and the remaining eight are ordinary work.
+- The recall sweep's structural blindness. Its patterns want `FAIL|ERROR` inside the string, so
+  the entire inert and affirmative registers are invisible to it — the net that exists to audit a
+  short declaration cannot see the register this phase spent most of its effort on. Every hole
+  found here was found by reading, not by the sweep. Widening it is `Coverage.Tests.ps1` work and
+  belongs with T044/T045, where exemptions are declared anyway.
+
+### The T036a fix carried its own defect, and the first guard for it was worthless
+
+Running the full suite before committing the remediation: **752 passed, 1 failed** —
+`doc-lint/DOC-008/fail`, on the em dash.
+
+```text
+expected  doc-lint: manifest — completeness sweep skipped ...   U+2014
+observed  doc-lint: manifest ΓÇö completeness sweep skipped ...   915,199,246
+```
+
+`915,199,246` is the UTF-8 encoding of an em dash, `E2 80 94`, decoded one byte at a time as
+CP437. **The T036a fix introduced this.** `Start-Process -RedirectStandardOutput <file>` wrote
+bytes to disk and `[IO.File]::ReadAllText` decoded them as UTF-8; `System.Diagnostics.Process`
+with `StandardOutputEncoding` left unset decodes the child with `[Console]::OutputEncoding`
+instead — the OEM codepage on Windows. Every message this kit prints contains an em dash.
+
+Both streams are now pinned to UTF-8 on the `ProcessStartInfo`, which is not a choice imposed on
+the child but the encoding PowerShell 7 already writes when redirected.
+
+#### It did not fail every time, which is the part that matters
+
+`DOC-008/pass` **passed under Pester and failed when driven directly**, minutes apart, with no
+edit in between. `DOC-009/pass` and `VK-027/pass` carry the same em dash and never failed at all.
+
+The trigger is the *parent's* console encoding, not the case. `Run-Tests.ps1` leaves it at
+`ibm437`; a bare `Invoke-Pester` normalises it for the duration of its own run. So the defect was
+present on every case, all the time, and surfaced only through whichever door the suite was
+entered by. `752 passed, 1 failed` was never a stable number, and a green CI leg would not have
+meant the bug was gone — it would have meant that runner happened to start in UTF-8.
+
+That is the same lesson as the blank line it was introduced while fixing, one layer down. The
+blank-line bug was platform-dependent and at least *consistently* platform-dependent. This one
+depended on the ambient state of the process that launched the grader.
+
+#### The first version of the guard test proved nothing
+
+A self-test was added that emits an em dash through `Invoke-FixtureCase` and asserts it survives.
+Reverting the fix underneath it:
+
+```text
+pin in place      passed=19  failed=0
+pin removed       passed=19  failed=0     <- the mutation proof does not fail
+```
+
+It inherited the ambient encoding from Pester, which is the one condition under which there is no
+bug. **It asserted a property in the only environment where the property could not break**, and
+it was written in the same sitting as the notes entry above about two prior instances of exactly
+this shape. Writing the lesson down does not confer immunity from it.
+
+The test now sets `[Console]::OutputEncoding` to `iso-8859-1` itself and restores it in a
+`finally`. Latin-1 rather than CP437 because both mangle the bytes and only Latin-1 is built into
+.NET on Linux, so the guard is real on both CI legs:
+
+```text
+pin in place      passed=19  failed=0
+pin removed       passed=18  failed=1     <- fails for the reason it exists
+```
+
+#### There was already a test for this, and it was looking at the wrong object
+
+`Harness.Tests.ps1` has carried an `It` called **'carries a non-ASCII character through
+unchanged'** since phase 2, whose comment reads *"The reason this launcher exists"*. It was green
+throughout. It drives `Invoke-Launcher` — a helper defined inside the test file — and not the
+launch `Invoke-FixtureCase` actually performs, so when that launch changed the test had no
+opinion about it.
+
+This is the fourth instance on this record of a check that sees part of what it claims to see,
+and the second in this phase. The pattern is now specific enough to name: **a self-test that
+builds its own copy of the thing under test measures the copy.** T020a was this in the Micro
+lane, the first blank-line self-test was this, and this one was this while sitting eight lines
+above a comment explaining the danger. `Coverage.Tests.ps1` counts whether a rule has a case; it
+cannot count whether the case is pointed at the real path. That is a T044 question and it is now
+on the record as one.

@@ -1163,6 +1163,25 @@
       "notes": "One emission site, two verdicts, chosen by the caller: INFO while the kit template still ships its slots, ERROR once a project has ratified. Invisible to BOTH coverage passes before T030 — the precise pass looked for \"ERROR and the recall sweep for a literal FAIL|ERROR, and this line spells its verdict with a variable."
     },
     {
+      "id": "DOC-008",
+      "script": "doc-lint.ps1",
+      "function": "(manifest completeness)",
+      "summary": "the manifest completeness sweep declines in an adopted project, and says so",
+      "law": "adoption/updating.md §4; constitution X (the kit grades itself, an adopter grades its own work)",
+      "emitAnchor": "doc-lint: manifest",
+      "siteCount": 2,
+      "notes": "Two sites, one rule: the sweep declining and the sweep reporting are the two arms of one condition, and the directions cover one each. The declining arm is the phase 4 review's F1 — an INERT verdict that sat outside the declaration and outside the recall sweep at once, so it could never surface even as UNCLASSIFIED, and doc-lint reported a perfect 7 of 7 against a denominator built from the part already covered. That is the sentence this feature's own commit message wrote about T028; it was true one script over."
+    },
+    {
+      "id": "DOC-009",
+      "script": "doc-lint.ps1",
+      "function": "(run verdict)",
+      "summary": "the affirmative run verdict — nothing missing, every referenced path resolves",
+      "law": "README (“Conventions this kit fixes at birth”)",
+      "emitAnchor": "doc-lint: OK",
+      "notes": "An OK line is not a printer. It prints no accumulator; it asserts that the conditions above it did not occur, and on a green run it is the whole of what a reader sees. Its FAIL counterparts stay out of the denominator because those DO print a count the accumulator already holds — the asymmetry is deliberate and matches roadmap-claim-check.ps1."
+    },
+    {
       "id": "VK-001",
       "script": "verify-kit.ps1",
       "function": "dimension 1 structure",
@@ -1398,6 +1417,15 @@
       "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md; feature 007 research D5.1 / D5.3, review F2",
       "emitAnchor": "not applicable (this is the kit template",
       "notes": "A kit full of unfilled slots is the product. An adoption record VETOES the decline, and the pass direction is that veto: without it a project could exempt itself from its own doctor by copying one heading."
+    },
+    {
+      "id": "VK-027",
+      "script": "verify-kit.ps1",
+      "function": "(run verdict)",
+      "summary": "the affirmative run verdict — adoption integrity verified across all five dimensions",
+      "law": "feature 007 contract specs/007-adoption-doctor/contracts/verify-kit-cli.md",
+      "emitAnchor": "verify-kit: OK",
+      "notes": "The line an adopted project's CI prints on every green run, and the one most readers of the doctor ever see. Same reasoning as DOC-009, and the same asymmetry: the FAIL summary beside it prints $failCount and $warnCount and stays a printer."
     },
     {
       "id": "CLAIM-001",

@@ -1,0 +1,3 @@
+doc-lint: scanned 11 governance docs under <ROOT>
+doc-lint: manifest — completeness sweep skipped (adopted project; kit-CI-only check)
+doc-lint: OK — kit complete, every referenced path resolves

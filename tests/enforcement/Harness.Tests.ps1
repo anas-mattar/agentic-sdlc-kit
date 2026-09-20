@@ -218,3 +218,101 @@ Describe 'output normalisation' {
         $out.Trim() | Should -Be 'commit <SHA> at <DATE>'
     }
 }
+
+Describe 'what the harness captures is what the script printed' {
+    # Phase 4 shipped green on Windows and failed 16 of 740 cases on ubuntu, every one of them
+    # a case whose expectation contains a blank line. The scripts were blamed first, and they
+    # were innocent: `Write-Host ''` behaves identically on both platforms. The harness was the
+    # defect. `Start-Process -RedirectStandardOutput` DROPS EMPTY LINES on Linux, so the thing
+    # being compared against the expectation was not what the script printed.
+    #
+    # Measured on ubuntu 24.04 with the same pwsh 7.6.5 CI runs (run 35437579942):
+    #
+    #   Start-Process -RedirectStandardOutput   first<LF>second          the blank is gone
+    #   Process + ReadToEndAsync                first<LF><LF>second      the blank survives
+    #
+    # This drives Invoke-FixtureCase itself — a synthetic kit root and a one-line emitter —
+    # rather than re-implementing the launch here. A self-test that built its own process the
+    # way the harness used to would have passed while the harness stayed broken, which is the
+    # mistake that produced the first attempt at this fix.
+
+    BeforeAll { Import-Module (Join-Path $PSScriptRoot 'lib/Harness.psm1') -Force }
+
+    It 'compares what the script actually printed, blank lines included' {
+        $tmp = Join-Path ([IO.Path]::GetTempPath()) ('kit-blank-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+        $kitRoot = Join-Path $tmp 'kit'
+        $caseDir = Join-Path $tmp 'case'
+        New-Item -ItemType Directory -Path (Join-Path $kitRoot 'scripts') -Force | Out-Null
+        New-Item -ItemType Directory -Path $caseDir -Force | Out-Null
+        try {
+            $utf8 = New-Object System.Text.UTF8Encoding($false)
+            [IO.File]::WriteAllText(
+                (Join-Path $kitRoot 'scripts/blank-emitter.ps1'),
+                "param([string]`$Root)`nWrite-Host 'first'`nWrite-Host ''`nWrite-Host 'second'`nexit 0`n",
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'recipe.json'),
+                '{"description":"a repository the emitter ignores","defaultBranch":"main","commits":[{"branch":"main","message":"init","write":{"README.md":"x\n"}}]}',
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'command.json'),
+                '{"script":"blank-emitter.ps1","args":[],"exitCode":0}',
+                $utf8)
+            [IO.File]::WriteAllText((Join-Path $caseDir 'expected.txt'), "first`n`nsecond`n", $utf8)
+
+            $result = Invoke-FixtureCase -CaseDir $caseDir -KitRoot $kitRoot
+            $result.ExitMatch | Should -BeTrue
+            $result.Actual | Should -Be "first`n`nsecond`n"
+            $result.OutputMatch | Should -BeTrue
+        } finally {
+            Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'carries a non-ASCII character through, on the real capture path' {
+        # There IS a test called 'carries a non-ASCII character through unchanged' above, and it
+        # passed while this was broken: it drives Invoke-Launcher, a helper defined in this file,
+        # not the launch Invoke-FixtureCase actually performs. When that launch moved to
+        # System.Diagnostics.Process it lost its encoding and decoded the child with the console
+        # codepage, turning every em dash into three CP437 characters — in a kit where every
+        # message contains one.
+        #
+        # It did not fail every time, and that is why this test FORCES the condition instead of
+        # hoping for it. The decode only goes wrong when the PARENT's console encoding is not
+        # UTF-8, so the bug appeared under Run-Tests.ps1 and vanished under a bare Invoke-Pester,
+        # which normalises encoding for its own run. A version of this test that merely emitted
+        # an em dash passed with the fix reverted — it proved nothing. Latin-1 rather than CP437:
+        # both mangle the bytes, and only Latin-1 is built into .NET on Linux as well.
+        $previousEncoding = [Console]::OutputEncoding
+        [Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('iso-8859-1')
+        $tmp = Join-Path ([IO.Path]::GetTempPath()) ('kit-dash-' + [guid]::NewGuid().ToString('N').Substring(0, 12))
+        $kitRoot = Join-Path $tmp 'kit'
+        $caseDir = Join-Path $tmp 'case'
+        New-Item -ItemType Directory -Path (Join-Path $kitRoot 'scripts') -Force | Out-Null
+        New-Item -ItemType Directory -Path $caseDir -Force | Out-Null
+        try {
+            $utf8 = New-Object System.Text.UTF8Encoding($false)
+            [IO.File]::WriteAllText(
+                (Join-Path $kitRoot 'scripts/dash-emitter.ps1'),
+                "param([string]`$Root)`nWrite-Host 'doc-lint: OK $([char]0x2014) done'`nexit 0`n",
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'recipe.json'),
+                '{"description":"a repository the emitter ignores","defaultBranch":"main","commits":[{"branch":"main","message":"init","write":{"README.md":"x
+"}}]}',
+                $utf8)
+            [IO.File]::WriteAllText(
+                (Join-Path $caseDir 'command.json'),
+                '{"script":"dash-emitter.ps1","args":[],"exitCode":0}',
+                $utf8)
+            [IO.File]::WriteAllText((Join-Path $caseDir 'expected.txt'), "doc-lint: OK $([char]0x2014) done`n", $utf8)
+
+            $result = Invoke-FixtureCase -CaseDir $caseDir -KitRoot $kitRoot
+            $result.Actual | Should -Be "doc-lint: OK $([char]0x2014) done`n"
+            $result.OutputMatch | Should -BeTrue
+        } finally {
+            [Console]::OutputEncoding = $previousEncoding
+            Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
