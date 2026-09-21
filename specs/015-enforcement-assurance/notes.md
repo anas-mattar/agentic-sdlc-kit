@@ -2245,3 +2245,218 @@ Nothing again. Comments only, every changed line inside the `<# ... #>` block th
 `:130`, last changed line `:121`. The four facts asserted in the new text were each run or
 grepped before being written: the seven exit codes, the `ERROR` split, `territory-check.ps1`'s
 three exit paths, and `spec.md:277`.
+
+
+## Phase 6 — coverage blocks, and adopters are told (US4, US5)
+
+The last phase, and the one that turns the number into a verdict. Until now
+`Coverage.Tests.ps1` printed a percentage: plan D9 held it to reporting while fixtures arrived
+over five phases, because asserting completeness earlier would have left the branch red from
+its first commit to its last — GAP-022's disease, which this feature has complained about
+twice. T044 closes that window.
+
+### What "blocking" had to mean before it could be honest
+
+The reporting number on the phase-5 tip was **187 of 200**, with **11 unclassified candidate
+lines** printed beneath it. Thirteen sites owned by nothing, eleven more that the broad recall
+sweep found and the precise pass did not. Making that a hard failure needed all twenty-four
+resolved, and there were only three honest ways to resolve one:
+
+| | |
+|---|---|
+| a rule with both fixture directions | the ordinary case |
+| a rule with a written `exemption` (FR-004) | a faithful fixture cannot be built, and the reason says what would be needed instead |
+| a `notRules` entry in `emission-idioms.json` | the line is not a distinct failure condition |
+
+**The third category is the one worth defending, because it looks like a loophole.** Without
+it there were two ways to make the number reach the total: invent a rule for every verdict
+roll-up line, or tighten the accumulator regex until the remainder vanished. The second is
+faster, invisible in the diff, and produces a green run — and it is the instrument being
+adjusted until it agrees with itself, which is the defect this feature has hit three times
+(T036a, the guard test written for it, and the phase-5 vocabulary block). A declared
+`notRules` entry costs a written reason and is printed on every run. That is the difference.
+
+Fifteen lines are declared not-rules: `enforcement-pack: OK` (the success verdict, asserted by
+49 expectations), `enforcement-pack: FAIL (N issue(s)):` (the roll-up over the per-issue lines,
+56), `AmendmentAuthority: graded N of M` (89), the per-issue renderers and `RESULT FAIL`
+roll-ups in `build-digests.ps1`, `doc-lint.ps1`, `verify-kit.ps1` and
+`roadmap-claim-check.ps1`. None of them decides anything; each one counts or renders what the
+rules above it decided.
+
+### Two rules the sweep found that reading had not
+
+Both had existed for features and neither had a fixture.
+
+- **`AMEND-006`** — `AmendmentAuthority: no commits in <range> — nothing to grade`. A
+  return that grades nothing, inside the check that grades amendments: **GAP-027's own shape,
+  in enforcement-pack, surviving the feature that was written to close GAP-027**. Phase 4's
+  T036b found nine unowned conditions by sweeping `Write-Host` against the declaration; this is
+  what the same sweep finds when the declaration is made to block. The pair reaches it through
+  `-ReplayBase`/`-ReplayTip` (014 plan D2c): `HEAD..HEAD` is the empty range and `HEAD~1..HEAD`
+  the nearest non-empty one, which is the whole of the difference (D10).
+- **`PACK-003`** — the trunk dispatch line. Forty-nine expectations end on
+  `enforcement-pack: OK` and **not one of them was a trunk run**, so a dispatch that stopped
+  saying why it declined would have changed nothing visible.
+
+### Eight exemptions, and what an exemption is allowed to be
+
+FR-004 lets a rule opt out of the fixture pair with a written reason. The danger is obvious: an
+exemption is a way to make a failing coverage check green by typing. Three guards, all
+asserted:
+
+1. The reason must exist and be more than a gesture (a length floor — not to grade prose,
+   but because an empty string satisfies a presence test, which is exactly the shape of
+   exemption the rule exists to refuse).
+2. An exempted rule **must not also have cases**. Writing an exemption over a covered rule
+   would quietly stop its fixtures being required, and the pair could then be deleted with
+   nothing going red. That is the likelier future mistake and it now fails.
+3. Every exemption is **printed on every run**, grouped by reason. A reason nobody reads again
+   is the same as no reason.
+
+Three of the eight are one-offs where the fixture model can only reach a *different* failure
+and call it this one: `AMEND-007` (rev-list and the metadata batch would have to disagree about
+the same object store), `REPOS-033` (an unreadable committer date on a commit every earlier
+guard accepted), `VK-028` (a defensive catch whose message is whatever exception reached it).
+
+**The other five are one finding wearing five hats, and it is a real defect in the kit.**
+
+### `territory-check.ps1` cannot report a verdict at all
+
+Its four error paths are written `Write-Error '...'; exit 1`, under the script's own
+`$ErrorActionPreference = 'Stop'`. Under `Stop`, `Write-Error` is TERMINATING: the script dies
+at that line and **the `exit 1` after it is unreachable**. Measured through the harness:
+
+```text
+territory-check.ps1 -Branch notanumber
+  RunChild: the script under test threw before returning a verdict:
+    Branch 'notanumber' is not a numbered feature branch (NNN-name) ...
+  exit 97
+```
+
+97 is the launcher's own code for *did not run to a verdict*, documented as one no kit script
+emits. A fixture could pin that, but it would be asserting `RunChild.ps1`'s behaviour rather
+than the rule's. Under `pwsh -File` a human still sees exit 1, because PowerShell exits 1 on an
+uncaught terminating error, so nothing is broken in production — but the script's error
+paths are unassertable, its exit codes are PowerShell's rather than its own, and it speaks none
+of the verdict vocabulary (`CLEAN`/`OVERLAP`, exits 0, 1 or 2).
+
+This is the same finding round 3 of the phase-5 review reached from the other end (F2, F3), and
+it is now measured rather than argued. **`scripts/territory-check.ps1` is outside phase 6's
+Territory and this phase may not touch it**, so it is recorded here and the five sites are
+exempted with this as their written reason. It needs a roadmap GAP row, which
+`docs/roadmap.md` is outside this Territory to write — an owner action, named rather than
+quietly carried.
+
+### The coverage report now
+
+```text
+coverage: 189 of 200 declared emission site(s) owned by a fixtured rule, 8 exempt,
+          3 declared not a rule, across 9 grading script(s)
+coverage: build-digests.ps1        19 of 19 site(s) fixtured
+coverage: doc-lint.ps1             10 of 10 site(s) fixtured
+coverage: enforcement-pack.ps1     50 of 54 site(s) fixtured (1 exempt, 3 not a rule)
+coverage: ritual-checks.ps1         6 of 6  site(s) fixtured
+coverage: roadmap-claim-check.ps1   8 of 8  site(s) fixtured
+coverage: scope-check-repos.ps1    31 of 32 site(s) fixtured (1 exempt)
+coverage: scope-check.ps1          28 of 28 site(s) fixtured
+coverage: territory-check.ps1       7 of 12 site(s) fixtured (5 exempt)
+coverage: verify-kit.ps1           30 of 31 site(s) fixtured (1 exempt)
+```
+
+189 + 8 + 3 = 200, and the eleven unclassified candidates are zero — every one of them was a
+roll-up or a renderer, now declared. **There is no remainder.** A new emission site added to
+any of the nine scripts fails the suite until someone says, in writing, what it is.
+
+### T048 — SC-002 by sampling, one rule per grading script
+
+SC-002 says deliberately breaking a covered rule must make a named fixture fail, *verified by
+sampling, not asserted*. Nine samples, one per script: locate the rule's `emitAnchor`, walk up
+to the nearest enclosing `if (`, invert that condition, run the rule's `fail` case, revert with
+`git checkout --`.
+
+| script | rule | guard | result |
+|---|---|---|---|
+| `build-digests.ps1` | DIGEST-001 | `:231` | FAILS (output differs) |
+| `doc-lint.ps1` | DOC-001 | `:227` | FAILS (output differs) |
+| `enforcement-pack.ps1` | LITE-001 | `:242` | FAILS (output differs) |
+| `ritual-checks.ps1` | RIT-003 | `:221` | FAILS (output differs) |
+| `roadmap-claim-check.ps1` | CLAIM-001 | `:51` | FAILS (output differs) |
+| `scope-check-repos.ps1` | REPOS-001 | `:303` | FAILS (output differs) |
+| `scope-check.ps1` | SCOPE-002 | `:246` | FAILS (exit 1->0, output differs) |
+| `territory-check.ps1` | TERR-001 | `:51` | FAILS (exit 0->128, output differs) |
+| `verify-kit.ps1` | VK-001 | `:122` | FAILS (exit 1->0, output differs) |
+
+Nine of nine caught; `git status scripts/` clean afterwards, checked by the sampler itself
+before and after.
+
+**The first run of this sample reported eight false negatives** — `MUTATION NOT UNIQUE,
+0 match(es)` — because the guards had been hand-copied out of a context listing that indents
+by four spaces. The sampler was wrong about the thing it was measuring, which is this feature's
+own recurring defect appearing in the tool written to verify the feature. The fix is why the
+guard is now found by LINE (anchor, then walk upwards) instead of by matching a string a human
+retyped.
+
+### T047 — FR-020, asserted rather than assumed
+
+Two halves, failing differently. A harness that WRITES to the repository under it corrupts what
+it measures and stays green while doing so. A harness that READS that repository's branch,
+working tree or identity passes here and fails on someone else's machine. Both were true by
+construction and by nobody's promise. Now: the working tree, HEAD and branch are snapshotted
+around a real case (`--untracked-files=all`, so a stray file in an ignored directory cannot
+fold into an unchanged-looking line); every fixture commit is asserted to carry the fixture
+identity and not this repository's; and no `command.json` may name the branch this repository
+happens to be on — which would be green here and red for everyone else the day it merges.
+
+### T046 — the failure report names the verdict
+
+`Format-CaseFailure` printed the rule, the script, the case, the exit codes and the first
+differing line. A reader was handed the evidence and left to derive the finding. It now names
+both verdicts as words:
+
+```text
+verdict   : expected 'enforcement-pack: FAIL (1 issue(s)):'
+            observed 'enforcement-pack: OK'
+```
+
+`<none>` is itself a finding: a run that printed no verdict-shaped line at all is how
+`doc-lint.ps1` exited 1 for four features without naming a verdict.
+
+### T053 — what it costs, and where it runs (SC-007)
+
+| | runtime |
+|---|---|
+| `ritual-checks` job, CI | **16s** (run 35518845272) |
+| `enforcement-tests (ubuntu-latest)`, CI | **3m 46s** (run 35518845283) |
+| `enforcement-tests (windows-latest)`, CI | **12m 12s** (same run) |
+| `ritual-checks.ps1` local, warm, Windows 11 / pwsh 7 | **122s** |
+| full harness local, warm | **35-61 min**, load-dependent |
+
+The SC-007 baseline was 82.2s / 80.0s for a local `ritual-checks` run. It is now **122s** on
+this machine, and the growth is not the harness: `scope-check -All` grades every phase commit
+since the merge base, and this branch has eight of them. The figure to carry forward is the CI
+one — 16s — because that is what a gate actually waits for.
+
+**The harness runs BESIDE `ritual-checks`, not inside it, and the numbers are the argument.**
+Folding it in would take the gate from 16 seconds to over twelve minutes on Windows: a 45x
+increase on the command a developer runs before every phase commit, to re-answer a question
+that has not changed since the last time the scripts did. So `enforcement-tests.yml` is its own
+workflow, on both OS legs, and `ritual-checks.ps1` keeps its six members and its member names
+unchanged (FR-012).
+
+The Windows leg is **3.2x** the ubuntu leg. Process startup: every case spawns a child `pwsh`
+and builds a real git repository, and Windows charges more for both. It is not a reason to mock
+git (FR-005 forbids it, and the two harness defects this feature found were both in the child-
+process boundary that mocking would have hidden).
+
+### What phase 6 does not do
+
+- **`scripts/territory-check.ps1`** — the finding above. Outside Territory.
+- **`docs/roadmap.md`** — the GAP row that finding needs. Outside Territory.
+- **The phase-5 review's F4 documents** — `specs/006-verification-pack/data-model.md:27,52`
+  and the two contracts still describe verdicts the code no longer prints. Outside Territory.
+  One of the three prose lines phase 5 recorded WAS reachable here and is fixed:
+  `docs/sdlc/review-process.md` now lists `UNGRADED` among the cross-repo check's lawful
+  non-blocking verdicts, and says what a reviewer must do about one.
+- **`docs/sdlc/definition-of-done.md:103`** and
+  **`.github/workflows/code-repo-scope-check.yml.template:37`** — the other two. Outside
+  Territory.

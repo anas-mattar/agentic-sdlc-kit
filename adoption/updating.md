@@ -430,12 +430,57 @@ exactly like a branch that is legitimately pre-boundary: green, and meaningless.
 clone, an integration branch it cannot diff against — absent, or present but sharing no
 commit with your branch — or a parent commit this clone cannot read. A
 Lite branch (`fix/`, `chore/`, `docs/`) is unaffected — the check returns before it consults
-history at all. The kit's `.github/workflows/ritual-checks.yml` ships with `fetch-depth: 0`;
+history at all. **From kit feature 015 that sentence needs one word added**: a Lite branch with
+no diff base is unaffected in its EXIT CODE and no longer in its verdict. The prohibited-category
+and file-count guards graded an empty file list, which passed for the same reason an empty
+accusation is never proved, and the run said `OK`; it now says `UNGRADED`, exits 0 exactly as
+before, and names what was not compared. See the 015 flow-down note below. The kit's `.github/workflows/ritual-checks.yml` ships with `fetch-depth: 0`;
 if you wrote your own workflow, or fetch shallowly on a build agent, set it there too. That is
 still the fix. What it buys you is a red build instead of a green one that graded nothing.
 
 <!-- digest: The amendment check binds forward only — nothing committed before it arrived is graded. -->
 <!-- digest: The amendment check needs full history — fetch-depth 0 in CI, or it fails naming the shallow clone. -->
+
+### Flow-down note: the 2026-09-21 verdict vocabulary and the ungraded state (kit feature 015 — no constitution amendment)
+
+**What a green run meant before.** `ritual-checks.ps1` printed `OK` against a member in two
+quite different situations: the member compared what it claims to compare and found nothing,
+**or** the member ran and compared nothing at all. A depth-1 clone with no reachable base, an
+unreadable parent commit, a trunk not named `main`, a branch every one of whose commits was
+skipped — each of those produced the same word as a clean grading. A run that graded nothing
+was indistinguishable from a run that graded everything and liked it. That was recorded as
+GAP-027 and it is what feature 015 closes.
+
+**What a green run means now.** `OK` means the member formed an opinion and the opinion is
+clean. A member that ran and formed **no** opinion says `UNGRADED`, and the run ends on
+`ritual-checks: RESULT UNGRADED (N of M member(s) formed no opinion; nothing failed)`.
+
+**What you will newly see.** Three things, and none of them is a new failure:
+
+1. **`UNGRADED` where you used to see `OK`.** Only in the states listed above. On a healthy
+   checkout with full history you will not see it at all.
+2. **`n/a` where you used to see `OK`.** The two scope checks already declined on the trunk, on
+   a `fix|chore|docs` branch and on an unnumbered branch, but they spelled it `not applicable`
+   — and the wrapper lifts `n/a`, so those correct declines were rendered as `OK`. Measured on
+   an adopted project, a trunk run moves two member lines from `OK` to
+   `n/a ('main' is the trunk)`. `RESULT OK` and exit 0 are unchanged.
+3. **A verdict line from `doc-lint`.** It used to exit 1 having printed `ERROR:` blocks and no
+   verdict word at all. It now ends on `doc-lint: FAIL (N issue(s) — see the ERROR block(s)
+   above)`.
+
+**What does NOT change.** Exit codes — every one of them, on every member, in both
+directions. `UNGRADED` is a verdict change and never an exit-code change (015 plan D6, FR-011),
+so no branch protection, badge, or `if: failure()` step behaves differently. Member names are
+unchanged, `ritual-checks.ps1` remains the single entry point, and the Lite lane gains no new
+hard failure.
+
+**What to do about it.** Nothing, mechanically. But an `UNGRADED` member is worth chasing, because
+it is telling you that a check you believe is protecting you did not run against anything: the
+usual cause is `fetch-depth: 0` missing from a workflow you wrote yourself. Fixing that turns
+the word back into a real `OK` rather than hiding it.
+
+<!-- digest: A green ritual-checks run now means the members formed an opinion - UNGRADED says one did not. -->
+<!-- digest: UNGRADED changes the verdict and never the exit code; nothing in CI behaves differently. -->
 
 ## 3. Other surgical files
 

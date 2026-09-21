@@ -1,0 +1,3 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+AmendmentAuthority: no commits in HEAD..HEAD — nothing to grade
+enforcement-pack: OK

@@ -1,17 +1,38 @@
 <#
     Coverage: the inventory against the scripts, and the inventory against the cases.
 
-    Two different claims live here, and plan D9 separates them deliberately:
+    EVERYTHING HERE IS ASSERTED. Plan D9 held the coverage number to a printed report while
+    fixtures arrived over phases 1-5, because asserting completeness earlier would have left
+    the branch red from its first commit to its last, which is GAP-022's disease. T044 closes
+    that window: as of phase 6 an emission site that no rule owns and no declaration excuses
+    FAILS THE RUN.
 
-      REPORTED (not asserted, until phase 6) — how much of the kit is covered. With ~120
-      failure-emission sites and fixtures arriving over three phases, asserting completeness
-      now would leave this branch red from phase 1 to phase 5, which is GAP-022's disease.
-      T044 flips it.
+    Three claims, and the third is the new one:
 
-      ASSERTED (today) — whether the inventory is honest about what it does claim. A rule whose
-      anchor no longer appears in its script is stale, and a rule with only one direction is a
-      coverage claim the harness cannot keep. Neither of those is "not yet covered"; both are
-      the inventory lying, and an inventory that can lie is the thing D8 exists to prevent.
+      HONEST     — a rule whose anchor no longer appears in its script is stale, and a rule
+                   with only one fixture direction is a coverage claim the harness cannot keep.
+                   An inventory that can lie is the thing D8 exists to prevent.
+      COMPLETE   — every emission site the declaration finds belongs to an inventoried rule or
+                   to a written 'notRules' entry. No silent remainder.
+      SEEN       — every line the broad recall sweep finds is accounted for too, so a site
+                   written in an idiom the declaration does not know cannot hide in the gap
+                   between the two passes.
+
+    THREE WAYS A SITE MAY BE ACCOUNTED FOR, and each is a stated position rather than an
+    absence:
+
+      a rule with both fixture directions     the ordinary case
+      a rule with an 'exemption' (FR-004)     a faithful fixture cannot be built; the reason
+                                              is written in rules.json and printed every run
+      a 'notRules' entry in the idiom file    the line is not a distinct failure condition -
+                                              a verdict roll-up, a per-issue renderer, a lane
+                                              statement, a success line
+
+    The third category exists so that blocking is achievable HONESTLY. Without it the only ways
+    to make the number reach the total were to invent a rule per roll-up line, or to tighten the
+    accumulator regex until the remainder vanished. Tightening the instrument until the number
+    comes out right is the defect this feature has already hit three times, and it would have
+    been indistinguishable from progress.
 
     HOW SITES ARE FOUND, and why it is two passes. The first version of this file hard-coded six
     regexes modelled on enforcement-pack.ps1 and applied them to all nine scripts. They
@@ -48,6 +69,19 @@ BeforeAll {
         'Write-\w+\s+["''][^"'']*(FAIL|ERROR)',
         'Write-Error\s'
     )
+
+    function Split-Reason {
+        # Wrap a written exemption reason for the report. Pure presentation: no reason is
+        # shortened, only folded, because FR-004 is satisfied by the reader seeing all of it.
+        param([Parameter(Mandatory)][string]$Text, [int]$Width = 96)
+        $out = @(); $line = ''
+        foreach ($word in ($Text -split '\s+' | Where-Object { $_ })) {
+            if ($line.Length -gt 0 -and ($line.Length + 1 + $word.Length) -gt $Width) { $out += $line; $line = $word }
+            else { $line = if ($line.Length -eq 0) { $word } else { "$line $word" } }
+        }
+        if ($line.Length -gt 0) { $out += $line }
+        return $out
+    }
 
     function Test-LineMatches {
         param([string]$Line, [string[]]$Patterns)
@@ -130,18 +164,49 @@ Describe 'rule inventory integrity' {
         $ambiguous.Count | Should -Be 0
     }
 
-    It 'every inventoried rule has a passing and a failing case' {
+    It 'every inventoried rule has a passing and a failing case, or a written exemption' {
+        # FR-002, and FR-004's one way out. An exemption is not a TODO: it is a claim that a
+        # faithful fixture cannot be built, it carries the reason in the inventory, and the
+        # report below prints every one of them on every run. A bare 'exempt: true' would be
+        # the inventory lying with fewer words, so the reason is required and is length-checked
+        # - not to grade prose, but because an empty string would satisfy a presence test and
+        # that is precisely the shape of exemption this rule exists to refuse.
         $incomplete = @()
         foreach ($rule in $script:Inventory.rules) {
+            $exempt = $rule.PSObject.Properties.Name -contains 'exemption' -and $rule.exemption
+            if ($exempt) {
+                if ("$($rule.exemption)".Trim().Length -lt 60) {
+                    $incomplete += "$($rule.id): exemption is present but says almost nothing - FR-004 requires a written reason, and a reader must be able to tell what would be needed instead"
+                }
+                continue
+            }
             foreach ($direction in 'pass', 'fail') {
                 $expected = Join-Path (Join-Path (Join-Path $script:TestsRoot 'cases') ($rule.script -replace '\.ps1$', '')) (Join-Path $rule.id $direction)
                 if (-not (Test-Path (Join-Path $expected 'command.json'))) {
-                    $incomplete += "$($rule.id): no '$direction' case at $expected"
+                    $incomplete += "$($rule.id): no '$direction' case at $expected (and no 'exemption' in rules.json)"
                 }
             }
         }
         if ($incomplete.Count -gt 0) { throw ($incomplete -join "`n") }
         $incomplete.Count | Should -Be 0
+    }
+
+    It 'an exempted rule has no fixtures pretending otherwise' {
+        # The mirror of the rule above, and the one a future edit is likelier to break: an
+        # exemption written over a rule that DOES have cases would quietly stop those cases
+        # being required, so the pair could then be deleted with nothing going red.
+        $contradictory = @()
+        foreach ($rule in $script:Inventory.rules) {
+            if (-not ($rule.PSObject.Properties.Name -contains 'exemption' -and $rule.exemption)) { continue }
+            foreach ($direction in 'pass', 'fail') {
+                $dir = Join-Path (Join-Path (Join-Path $script:TestsRoot 'cases') ($rule.script -replace '\.ps1$', '')) (Join-Path $rule.id $direction)
+                if (Test-Path (Join-Path $dir 'command.json')) {
+                    $contradictory += "$($rule.id): exempted from coverage, yet a '$direction' case exists at $dir - delete the exemption or delete the case, but the inventory must not say both"
+                }
+            }
+        }
+        if ($contradictory.Count -gt 0) { throw ($contradictory -join "`n") }
+        $contradictory.Count | Should -Be 0
     }
 
     It 'every case directory belongs to an inventoried rule' {
@@ -188,40 +253,130 @@ Describe 'emission-idiom declaration' {
     }
 }
 
-Describe 'coverage report' {
+Describe 'coverage' {
 
-    It 'reports how much of the kit is under test, and how much it may not be seeing' {
-        $covered = @()
-        foreach ($site in $script:AllSites) {
-            $match = $script:Inventory.rules | Where-Object {
-                $_.script -eq $site.Script -and $site.Text.Contains($_.emitAnchor)
+    BeforeAll {
+        # One classification, three tests read it. Order matters and is the order a reader
+        # would apply: a rule owns the site, or a written notRules entry excuses it, or
+        # nothing does and the run fails.
+        function Get-SiteOwner {
+            param([Parameter(Mandatory)]$Site)
+            $rule = $script:Inventory.rules | Where-Object {
+                $_.script -eq $Site.Script -and $Site.Text.Contains($_.emitAnchor)
+            } | Select-Object -First 1
+            if ($rule) {
+                $exempt = $rule.PSObject.Properties.Name -contains 'exemption' -and $rule.exemption
+                return [pscustomobject]@{ Kind = ($exempt ? 'exempt' : 'covered'); Id = $rule.id }
             }
-            if ($match) { $covered += $site }
+            $idiom = $script:Idioms.scripts | Where-Object { $_.script -eq $Site.Script } | Select-Object -First 1
+            if ($idiom -and $idiom.PSObject.Properties.Name -contains 'notRules' -and $idiom.notRules) {
+                $declared = @($idiom.notRules | Where-Object { $Site.Text.Contains($_.anchor) }) | Select-Object -First 1
+                if ($declared) { return [pscustomobject]@{ Kind = 'not-a-rule'; Id = $declared.anchor } }
+            }
+            return [pscustomobject]@{ Kind = 'unowned'; Id = $null }
         }
 
-        $unclassifiedTotal = 0
+        $script:Owned = @{}
+        foreach ($site in $script:AllSites) {
+            $script:Owned["$($site.Script):$($site.Line)"] = (Get-SiteOwner -Site $site)
+        }
+        $script:UnclassifiedOwned = @{}
+        foreach ($scan in $script:Scan.Values) {
+            foreach ($site in $scan.Unclassified) {
+                $script:UnclassifiedOwned["$($site.Script):$($site.Line)"] = (Get-SiteOwner -Site $site)
+            }
+        }
+    }
+
+    It 'every declared emission site belongs to a rule or to a written not-a-rule entry' {
+        # T044, FR-003. Until phase 6 this was a printed percentage; a site nobody owned was a
+        # number going down, which reads as information rather than as a defect. It is now the
+        # run's verdict. The failure names the line, because "coverage fell" is not actionable
+        # and "enforcement-pack.ps1:1076 is owned by nothing" is.
+        $unowned = @()
+        foreach ($site in $script:AllSites) {
+            $owner = $script:Owned["$($site.Script):$($site.Line)"]
+            if ($owner.Kind -eq 'unowned') {
+                $text = if ($site.Text.Length -gt 100) { $site.Text.Substring(0, 100) + '...' } else { $site.Text }
+                $unowned += "$($site.Script):$($site.Line) is owned by nothing - add a rule to rules.json with a fixture pair, an 'exemption' with a written reason (FR-004), or a 'notRules' entry in emission-idioms.json saying why it is not a distinct failure condition`n    $text"
+            }
+        }
+        if ($unowned.Count -gt 0) { throw (($unowned -join "`n") + "`n`n$($unowned.Count) unowned emission site(s).") }
+        $unowned.Count | Should -Be 0
+    }
+
+    It 'every line the recall sweep finds is accounted for too' {
+        # The gap between the two passes is where a site written in an unknown idiom hides: the
+        # precise pass does not see it, so the test above cannot fail on it, and before phase 6
+        # it was printed as an UNCLASSIFIED count that nobody had to act on. Same rule, applied
+        # to the broad sweep - it may be a rule, or declared not to be one, but it may not be
+        # merely noticed.
+        $undeclared = @()
+        foreach ($scan in $script:Scan.Values) {
+            foreach ($site in $scan.Unclassified) {
+                $owner = $script:UnclassifiedOwned["$($site.Script):$($site.Line)"]
+                if ($owner.Kind -eq 'unowned') {
+                    $text = if ($site.Text.Length -gt 100) { $site.Text.Substring(0, 100) + '...' } else { $site.Text }
+                    $undeclared += "$($site.Script):$($site.Line) was found by the recall sweep and is declared nowhere - either the emission idiom for this script is missing it (add the pattern), or it is not a rule (add a 'notRules' entry)`n    $text"
+                }
+            }
+        }
+        if ($undeclared.Count -gt 0) { throw (($undeclared -join "`n") + "`n`n$($undeclared.Count) undeclared candidate line(s).") }
+        $undeclared.Count | Should -Be 0
+    }
+
+    It 'reports what is covered, what is exempt, and what is declared not to be a rule' {
+        $byKind = { param($k) @($script:Owned.Values | Where-Object Kind -eq $k).Count }
+        $covered = & $byKind 'covered'
+        $exempt = & $byKind 'exempt'
+        $notRule = & $byKind 'not-a-rule'
+
         Write-Host ''
-        Write-Host ('coverage: {0} of {1} declared failure-emission site(s) inventoried across {2} grading script(s)' -f `
-                $covered.Count, $script:AllSites.Count, @($script:Idioms.scripts).Count)
+        Write-Host ('coverage: {0} of {1} declared emission site(s) owned by a fixtured rule, {2} exempt, {3} declared not a rule, across {4} grading script(s)' -f `
+                $covered, $script:AllSites.Count, $exempt, $notRule, @($script:Idioms.scripts).Count)
 
         foreach ($declared in ($script:Idioms.scripts | Sort-Object script)) {
             $scan = $script:Scan[$declared.script]
             if (-not $scan) { continue }
-            $done = @($covered | Where-Object Script -eq $declared.script).Count
-            $unclassifiedTotal += $scan.Unclassified.Count
+            $keys = @($scan.Precise | ForEach-Object { "$($_.Script):$($_.Line)" })
+            $mine = @($keys | ForEach-Object { $script:Owned[$_] })
+            $c = @($mine | Where-Object Kind -eq 'covered').Count
+            $e = @($mine | Where-Object Kind -eq 'exempt').Count
+            $n = @($mine | Where-Object Kind -eq 'not-a-rule').Count
             if (@($declared.accumulators).Count -eq 0) {
-                Write-Host ('coverage: {0,-24} IDIOM UNDECLARED — {1} unclassified candidate line(s)' -f $declared.script, $scan.Unclassified.Count)
-            } else {
-                $suffix = if ($scan.Unclassified.Count -gt 0) { ", {0} unclassified candidate(s)" -f $scan.Unclassified.Count } else { '' }
-                Write-Host ('coverage: {0,-24} {1} of {2} site(s) inventoried{3}' -f $declared.script, $done, $scan.Precise.Count, $suffix)
+                Write-Host ('coverage: {0,-24} IDIOM UNDECLARED' -f $declared.script)
+                continue
             }
+            $extra = @()
+            if ($e -gt 0) { $extra += "$e exempt" }
+            if ($n -gt 0) { $extra += "$n not a rule" }
+            $suffix = if ($extra.Count -gt 0) { ' (' + ($extra -join ', ') + ')' } else { '' }
+            Write-Host ('coverage: {0,-24} {1} of {2} site(s) fixtured{3}' -f $declared.script, $c, $scan.Precise.Count, $suffix)
         }
 
-        Write-Host ("coverage: {0} unclassified candidate line(s) in total — each is either a rule the declaration misses or a false positive of the recall sweep, and phases 3-4 resolve every one." -f $unclassifiedTotal)
-        Write-Host 'coverage: reporting only until phase 6 (plan D9) — T044 makes an uncovered site a failure.'
+        # FR-004: every exemption appears in the output. Printed in full, not counted - the
+        # point of a written reason is that someone reads it, and a reason nobody ever sees
+        # again is the same as no reason.
+        $exemptions = @($script:Inventory.rules | Where-Object {
+                $_.PSObject.Properties.Name -contains 'exemption' -and $_.exemption } | Sort-Object id)
+        Write-Host ''
+        Write-Host ('coverage: {0} rule(s) exempt from a fixture pair (FR-004), each with its reason:' -f $exemptions.Count)
+        # Grouped by reason, not listed per rule. Five of the eight share one cause, and
+        # printing that paragraph five times trains the reader to skip it - which defeats the
+        # requirement that the reason be seen.
+        foreach ($group in ($exemptions | Group-Object exemption | Sort-Object { $_.Group[0].id })) {
+            foreach ($rule in $group.Group) {
+                Write-Host ('coverage:   {0} [{1}] {2}' -f $rule.id, $rule.script, $rule.summary)
+            }
+            foreach ($line in (Split-Reason -Text "$($group.Name)" -Width 96)) {
+                Write-Host ('coverage:       ' + $line)
+            }
+            Write-Host 'coverage:'
+        }
 
         # Asserted here: the scan ran and found something to measure. A scanner that silently
-        # matched nothing would report 0 of 0 and read as clean — the exact shape of GAP-027.
+        # matched nothing would report 0 of 0 and read as clean - the exact shape of GAP-027,
+        # and the reason this assertion outlived the reporting-only window it was written in.
         $script:AllSites.Count | Should -BeGreaterThan 0
     }
 }

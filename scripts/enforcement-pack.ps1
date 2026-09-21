@@ -72,6 +72,23 @@
                          docs/sdlc/critical-delivery.md item 4). An absent line means
                          'none' — plans from before the clause remain valid.
 
+    THE UNGRADED STATE (feature 015, FR-009/FR-022). A check in this pack can RUN AND FORM NO
+    OPINION: no integration branch to diff against, a shallow clone whose base is absent, a
+    parent commit this clone cannot read. That is not a pass. Such a check adds a line to
+    $ungraded, every one of those lines is printed as 'UNGRADED: <what>', and the run ends on
+    'enforcement-pack: UNGRADED (N check(s) formed no opinion)' instead of 'OK'.
+
+    It is a VERDICT change and not an exit-code change: the run still exits 0, deliberately and
+    on the record (feature 015 plan D6, FR-011), because feature 014's FR-009 forbids a new hard
+    failure on the Lite lane and that constraint stands. What changes is that nobody can read
+    such a run as clean. Whether UNGRADED should ever block is a later feature's question, with
+    its own evidence; it is not answered here by the back door.
+
+    A run can be both FAIL and ungraded. The UNGRADED lines are printed before the verdict and
+    independently of it, the way warnings are, because a reader needs to know that the failure
+    count is not the whole story. The word for the whole vocabulary — OK, FAIL, WARN, N/A,
+    UNGRADED, PENDING — is defined once, in scripts/ritual-checks.ps1.
+
     See specs/002-enforcement-pack/research.md for the rationale behind every default below.
 
 .EXAMPLE

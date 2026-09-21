@@ -316,3 +316,87 @@ Describe 'what the harness captures is what the script printed' {
         }
     }
 }
+Describe 'the harness leaves the repository it runs from alone (T047, FR-020)' {
+
+    # FR-020 has two halves and they fail differently. A harness that WRITES to the repository
+    # under it corrupts the thing it is measuring - and would do so silently, because the
+    # suite's own verdict would still be green. A harness that READS the repository's branch,
+    # working tree or git identity is worse in a quieter way: it passes here and fails on a
+    # colleague's machine, or on CI, for reasons nobody can see from the output. Neither half
+    # was asserted before phase 6; both were true by construction and by nobody's promise.
+
+    BeforeAll {
+        Import-Module (Join-Path $PSScriptRoot 'lib/Harness.psm1') -Force
+        # Harness.psm1 imports FixtureRepo but does not re-export it; the identity test below
+        # builds a repository directly, so it needs the builder in scope here too.
+        Import-Module (Join-Path $PSScriptRoot 'lib/FixtureRepo.psm1') -Force
+        $script:KitRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        function Get-TreeState {
+            param([string]$Root)
+            # --untracked-files=all, not the default: a harness that dropped a stray temporary
+            # file inside an ignored directory would still be writing to this repository, and
+            # the default listing would fold it into one unchanged-looking line.
+            return [pscustomobject]@{
+                Head   = (& git -C $Root rev-parse HEAD 2>$null | Out-String).Trim()
+                Branch = (& git -C $Root rev-parse --abbrev-ref HEAD 2>$null | Out-String).Trim()
+                Status = ((& git -C $Root status --porcelain=v1 --untracked-files=all 2>$null) -join "`n")
+            }
+        }
+        # One real case, chosen because it is among the most invasive the suite has: it builds a
+        # repository, clones it, runs a kit script against the clone and normalises paths.
+        $script:SampleCase = Join-Path $PSScriptRoot 'cases/enforcement-pack/GAP27-001/fail'
+    }
+
+    It 'does not change the working tree, HEAD or branch of the repository under it' {
+        $before = Get-TreeState -Root $script:KitRoot
+        $null = Invoke-FixtureCase -CaseDir $script:SampleCase -KitRoot $script:KitRoot
+        $after = Get-TreeState -Root $script:KitRoot
+
+        $after.Head | Should -Be $before.Head
+        $after.Branch | Should -Be $before.Branch
+        if ($after.Status -ne $before.Status) {
+            $added = @($after.Status -split "`n" | Where-Object { $_ -and $_ -notin ($before.Status -split "`n") })
+            throw ("running one fixture case changed the repository it was run from (FR-020). New or changed entries:`n  " +
+                ($added -join "`n  "))
+        }
+        $after.Status | Should -Be $before.Status
+    }
+
+    It 'gives every fixture commit the fixture identity, not this repository''s' {
+        # The identity half of FR-020, asserted where it can actually be observed. If the
+        # harness inherited the ambient git identity, a fixture built on a machine with no
+        # user.email would fail to commit at all - which is how this dependency announces
+        # itself: never here, always somewhere else.
+        $repo = $null
+        try {
+            $recipe = Get-Content (Join-Path $script:SampleCase 'recipe.json') -Raw | ConvertFrom-Json
+            $repo = New-FixtureRepo -Recipe $recipe -CaseDir $script:SampleCase
+            $authors = @(& git -C $repo log --all --format='%an <%ae>' 2>$null | Sort-Object -Unique)
+            $authors | Should -Not -BeNullOrEmpty
+            foreach ($author in $authors) {
+                $author | Should -Be 'Fixture Author <fixture@example.invalid>'
+            }
+            $kitIdentity = (& git -C $script:KitRoot config user.email 2>$null | Out-String).Trim()
+            if ($kitIdentity) { $authors | Should -Not -Contain $kitIdentity }
+        } finally {
+            if ($repo) { Remove-FixtureRepo -Path $repo }
+        }
+    }
+
+    It 'names no branch of this repository in any case command' {
+        # The branch half. A case that passed -Branch 015-enforcement-assurance would be green
+        # here and red for everyone else the day this branch merges; a case that passed the
+        # CURRENT branch by reading it would be green everywhere and asserting nothing.
+        $current = (& git -C $script:KitRoot rev-parse --abbrev-ref HEAD 2>$null | Out-String).Trim()
+        $offenders = @()
+        foreach ($dir in (Get-CaseDirectories -TestsRoot $PSScriptRoot)) {
+            $text = [IO.File]::ReadAllText((Join-Path $dir 'command.json'))
+            if ($current -and $text.Contains($current)) { $offenders += $dir }
+        }
+        if ($offenders.Count -gt 0) {
+            throw ("these cases name the branch this repository happens to be on ('$current'), so their verdict depends on where they are run (FR-020):`n  " +
+                ($offenders -join "`n  "))
+        }
+        $offenders.Count | Should -Be 0
+    }
+}

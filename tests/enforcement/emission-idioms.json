@@ -27,7 +27,14 @@
     "was NARROWED, because three of its 'ERROR:' lines are the PRINTERS for accumulators already",
     "counted above them - the same mistake this file already records for build-digests.ps1, where",
     "counting the Write-Host lines measured the printer rather than the rules. A denominator is only",
-    "honest if it moves in whichever direction the principle sends it."
+    "honest if it moves in whichever direction the principle sends it.",
+    "",
+    "notRules (phase 6). Per script, the emission sites that are NOT distinct failure conditions:",
+    "verdict roll-ups, per-issue renderers, lane statements, success lines. Each carries a written",
+    "reason and each is printed by the coverage report. Without this list, making an unowned site",
+    "a hard failure would have forced either a fake rule per roll-up line or a quiet tightening of",
+    "the accumulator regex - and tightening the instrument until the number comes out right is the",
+    "defect this feature has hit three times."
   ],
   "scripts": [
     {
@@ -39,7 +46,25 @@
         "Write-Host\\s+['\"]enforcement-pack: ('\\$Branch' is|OK')",
         "\\$(script:)?ungraded\\s*\\+="
       ],
-      "note": "Every member appends to one of two collections; the runner prints and exits 1 on failures. Warnings ARE counted as emission sites from phase 3 on: PhaseSizeWarning is a rule with a fixture pair (PHASE-001), and leaving it out of the denominator flattered the coverage number by hiding a rule rather than by covering it. Where WARN sits in the verdict vocabulary is still phase 5's question (D4); whether it is a rule is not. WIDENED in T036b from 45 to 50, chasing the phase 4 review's F1 out of doc-lint.ps1 and into the two other scripts carrying the same hole. Five conditions were decided and printed on the spot and counted nowhere: AmendmentAuthority's two arms (a range it graded, and a range with no commits in it — 'nothing to grade' being GAP-027's own shape, in the check that grades amendments), the two lanes this pack declines to grade at all (the trunk, and the lightweight docs/ lane), and the OK run verdict. FIVE OF THESE ARE DECLARED AND UNCOVERED ON PURPOSE. enforcement-pack.ps1 is phase 3's script and phase 3 is merged; writing ten fixture cases for it inside a phase 4 remediation would be re-opening a closed phase. Declaring them lowers the reported number, which is the honest direction, and leaves the work visible instead of invisible — an uncovered site is a debt with a name, an undeclared one is not a debt at all. Deliberately OUT and unchanged: the preamble line naming the branch and diff base, and the FAIL line printing $failures.Count. WIDENED AGAIN in phase 5 by the third accumulator, $ungraded: a member that RAN AND FORMED NO OPINION (FR-009, FR-010). Four sites, one per member that can reach that state on a null base - ReviewProvenance, LiteAndAbuse, MicroLane, PhaseSizeWarning - and all four are covered by GAP27-001..004. The two lines that PRINT this accumulator stay out on the rule this file has applied throughout: the 'UNGRADED: <reason>' loop and the 'UNGRADED (N check(s) formed no opinion)' verdict both print a count the accumulator already holds, exactly as the FAIL pair does. Note what that means and does not mean: the run verdict UNGRADED is a printer, while the run verdict OK is a site, because OK asserts that conditions did not occur and UNGRADED counts ones that did."
+      "note": "Every member appends to one of two collections; the runner prints and exits 1 on failures. Warnings ARE counted as emission sites from phase 3 on: PhaseSizeWarning is a rule with a fixture pair (PHASE-001), and leaving it out of the denominator flattered the coverage number by hiding a rule rather than by covering it. Where WARN sits in the verdict vocabulary is still phase 5's question (D4); whether it is a rule is not. WIDENED in T036b from 45 to 50, chasing the phase 4 review's F1 out of doc-lint.ps1 and into the two other scripts carrying the same hole. Five conditions were decided and printed on the spot and counted nowhere: AmendmentAuthority's two arms (a range it graded, and a range with no commits in it — 'nothing to grade' being GAP-027's own shape, in the check that grades amendments), the two lanes this pack declines to grade at all (the trunk, and the lightweight docs/ lane), and the OK run verdict. FIVE OF THESE ARE DECLARED AND UNCOVERED ON PURPOSE. enforcement-pack.ps1 is phase 3's script and phase 3 is merged; writing ten fixture cases for it inside a phase 4 remediation would be re-opening a closed phase. Declaring them lowers the reported number, which is the honest direction, and leaves the work visible instead of invisible — an uncovered site is a debt with a name, an undeclared one is not a debt at all. Deliberately OUT and unchanged: the preamble line naming the branch and diff base, and the FAIL line printing $failures.Count. WIDENED AGAIN in phase 5 by the third accumulator, $ungraded: a member that RAN AND FORMED NO OPINION (FR-009, FR-010). Four sites, one per member that can reach that state on a null base - ReviewProvenance, LiteAndAbuse, MicroLane, PhaseSizeWarning - and all four are covered by GAP27-001..004. The two lines that PRINT this accumulator stay out on the rule this file has applied throughout: the 'UNGRADED: <reason>' loop and the 'UNGRADED (N check(s) formed no opinion)' verdict both print a count the accumulator already holds, exactly as the FAIL pair does. Note what that means and does not mean: the run verdict UNGRADED is a printer, while the run verdict OK is a site, because OK asserts that conditions did not occur and UNGRADED counts ones that did. NOT-RULES (phase 6, T044): sites matched here that are not distinct failure conditions are declared in 'notRules' with a written reason, so that an UNOWNED site can be a hard failure without the declaration having to pretend a roll-up line is a rule.",
+      "notRules": [
+        {
+          "anchor": "AmendmentAuthority: graded ",
+          "reason": "The roll-up the check prints on every graded run. Not a failure condition: it reports the count. Asserted verbatim by 89 expectations, so it cannot change unnoticed."
+        },
+        {
+          "anchor": "is the lightweight docs/ lane",
+          "reason": "A lane statement, not a failure. Reached and asserted by GAP27-001 in both directions."
+        },
+        {
+          "anchor": "enforcement-pack: FAIL ($($failures.Count) issue(s)):",
+          "reason": "The verdict roll-up over the per-issue lines beneath it; each of those lines is its own inventoried rule. Asserted by 56 expectations."
+        },
+        {
+          "anchor": "enforcement-pack: OK",
+          "reason": "The success verdict. Asserted by 49 expectations; it is the line every passing case ends on."
+        }
+      ]
     },
     {
       "script": "scope-check.ps1",
@@ -64,7 +89,21 @@
         "Write-Host\\s+\"ERROR: kit incomplete",
         "Write-Host\\s+\"\\$\\{level\\}:"
       ],
-      "note": "Four idioms, and the shape of the list is the argument. Two accumulators ($manifestErrors, $broken - the latter holding a PSCustomObject, which is doc-lint's headline rule and was invisible to the very first scanner), plus the two conditions computed inline and printed where they are found: the kit-integrity sweep, and the unfilled-slot count whose verdict word is a VARIABLE (INFO or ERROR by -FailOnSlots). That last one was invisible to both passes until T030 - the precise pass matched 'Write-Host \"ERROR' and the recall sweep wanted a literal FAIL|ERROR inside the string. Deliberately OUT: 'ERROR: manifest completeness' and 'ERROR: N referenced path(s) do not resolve', which print the two accumulators rather than detecting anything. The earlier declaration counted them and reported 8 sites for 7 conditions. WIDENED AGAIN in T036b, to 10, by the phase 4 review's F1: narrowing 8 to 7 was right about the two printers and wrong about everything the narrowing walked past. 'doc-lint: manifest — completeness sweep skipped' is not a printer of any accumulator; it is an independent branch on .kit-version, and it is the INERT register — the decision not to grade — which this file argues twice elsewhere it counts on purpose. It was invisible to both passes: outside the declaration, and outside the recall sweep, whose patterns want a literal FAIL|ERROR inside the string, so no UNCLASSIFIED line ever named it. The affirmative arm beside it and the OK run verdict join on the same reasoning: an OK line is not printing an accumulator, it is asserting that a condition did not occur, and on a clean run it is the ONLY thing a reader sees. The FAIL counterparts stay out, because those do print a count the accumulator already holds — the asymmetry is deliberate and matches roadmap-claim-check.ps1."
+      "note": "Four idioms, and the shape of the list is the argument. Two accumulators ($manifestErrors, $broken - the latter holding a PSCustomObject, which is doc-lint's headline rule and was invisible to the very first scanner), plus the two conditions computed inline and printed where they are found: the kit-integrity sweep, and the unfilled-slot count whose verdict word is a VARIABLE (INFO or ERROR by -FailOnSlots). That last one was invisible to both passes until T030 - the precise pass matched 'Write-Host \"ERROR' and the recall sweep wanted a literal FAIL|ERROR inside the string. Deliberately OUT: 'ERROR: manifest completeness' and 'ERROR: N referenced path(s) do not resolve', which print the two accumulators rather than detecting anything. The earlier declaration counted them and reported 8 sites for 7 conditions. WIDENED AGAIN in T036b, to 10, by the phase 4 review's F1: narrowing 8 to 7 was right about the two printers and wrong about everything the narrowing walked past. 'doc-lint: manifest — completeness sweep skipped' is not a printer of any accumulator; it is an independent branch on .kit-version, and it is the INERT register — the decision not to grade — which this file argues twice elsewhere it counts on purpose. It was invisible to both passes: outside the declaration, and outside the recall sweep, whose patterns want a literal FAIL|ERROR inside the string, so no UNCLASSIFIED line ever named it. The affirmative arm beside it and the OK run verdict join on the same reasoning: an OK line is not printing an accumulator, it is asserting that a condition did not occur, and on a clean run it is the ONLY thing a reader sees. The FAIL counterparts stay out, because those do print a count the accumulator already holds — the asymmetry is deliberate and matches roadmap-claim-check.ps1. NOT-RULES (phase 6, T044): sites matched here that are not distinct failure conditions are declared in 'notRules' with a written reason, so that an UNOWNED site can be a hard failure without the declaration having to pretend a roll-up line is a rule.",
+      "notRules": [
+        {
+          "anchor": "ERROR: manifest completeness ",
+          "reason": "The header of the manifest issue block. The issues listed under it are the rules; the header is the count."
+        },
+        {
+          "anchor": "ERROR: $($broken.Count) referenced path(s) do not resolve:",
+          "reason": "The header of the broken-reference block, as above."
+        },
+        {
+          "anchor": "doc-lint: FAIL ($errCount issue(s)",
+          "reason": "The verdict roll-up, added in phase 5 because this member exited 1 having printed no verdict word at all. Not a distinct condition: it counts the ERROR blocks above it."
+        }
+      ]
     },
     {
       "script": "verify-kit.ps1",
@@ -73,7 +112,17 @@
         "Write-Host\\s+['\"]verify-kit: (ERROR|not applicable)",
         "Write-Host\\s+['\"]verify-kit: OK"
       ],
-      "note": "Widened in T031 from 'Add-Finding FAIL' alone, by the same principle that widened scope-check.ps1: a site is a condition detected, and this doctor detects in three registers. Its WARNs carry the grandfather posture (an adoption older than the check is reported, never failed) and its 'ok' findings are the per-dimension affirmative — the only thing a green run prints, and therefore the only thing most readers ever see it say. Where an 'ok' is simply the other arm of a FAIL (structure, slots, constitution) ONE rule owns both sites through siteCount, so the fixture pair covers the condition rather than duplicating it. Two verdicts bypass the findings list entirely and are matched separately: the root-not-found guard and the kit-template decline. Deliberately OUT: the three-line report loop, which formats findings already counted, and the run summary, which prints their counts. Widened once more in T036b, to 31, by the phase 4 review's F1: the OK run verdict is this doctor's affirmative, and on a healthy adoption it is the whole of what it says. Its FAIL counterpart stays out for the reason just given — that one prints the counts."
+      "note": "Widened in T031 from 'Add-Finding FAIL' alone, by the same principle that widened scope-check.ps1: a site is a condition detected, and this doctor detects in three registers. Its WARNs carry the grandfather posture (an adoption older than the check is reported, never failed) and its 'ok' findings are the per-dimension affirmative — the only thing a green run prints, and therefore the only thing most readers ever see it say. Where an 'ok' is simply the other arm of a FAIL (structure, slots, constitution) ONE rule owns both sites through siteCount, so the fixture pair covers the condition rather than duplicating it. Two verdicts bypass the findings list entirely and are matched separately: the root-not-found guard and the kit-template decline. Deliberately OUT: the three-line report loop, which formats findings already counted, and the run summary, which prints their counts. Widened once more in T036b, to 31, by the phase 4 review's F1: the OK run verdict is this doctor's affirmative, and on a healthy adoption it is the whole of what it says. Its FAIL counterpart stays out for the reason just given — that one prints the counts. NOT-RULES (phase 6, T044): sites matched here that are not distinct failure conditions are declared in 'notRules' with a written reason, so that an UNOWNED site can be a hard failure without the declaration having to pretend a roll-up line is a rule.",
+      "notRules": [
+        {
+          "anchor": "'FAIL' { Write-Host \"verify-kit: FAIL $($f.dimension)",
+          "reason": "The per-finding renderer. Every finding it prints belongs to an inventoried VK rule; the renderer itself decides nothing."
+        },
+        {
+          "anchor": "verify-kit: FAIL ($failCount failure(s)",
+          "reason": "The verdict roll-up over those findings."
+        }
+      ]
     },
     {
       "script": "build-digests.ps1",
@@ -81,7 +130,25 @@
         "\\$(script:)?issues\\s*\\+=",
         "Write-Host\\s+['\"](build-)?digests: (n/a|OK|NOTE|FAIL — \\$manifestRel|wrote|no digest markers)"
       ],
-      "note": "Ten conditions land in $issues; nine more are decided and printed where they are found, and T032 added those. The nine matter more than their number suggests: two are the INERT states feature 010 SC-004 exists for (no manifest, no markers — the machinery ships disarmed and arms itself when a project marks its own law), and four are the generate-mode half of conditions whose check-mode half already had a rule, with deliberately different verdicts. An orphan digest FAILs under -Check and is a NOTE while generating; that asymmetry is the script's design and was untested until now. Still deliberately OUT, and this is the older note's point unchanged: the two 'foreach ($i in $issues)' loops and the two RESULT lines, which print the collection rather than detect anything. Counting them measured the printer."
+      "note": "Ten conditions land in $issues; nine more are decided and printed where they are found, and T032 added those. The nine matter more than their number suggests: two are the INERT states feature 010 SC-004 exists for (no manifest, no markers — the machinery ships disarmed and arms itself when a project marks its own law), and four are the generate-mode half of conditions whose check-mode half already had a rule, with deliberately different verdicts. An orphan digest FAILs under -Check and is a NOTE while generating; that asymmetry is the script's design and was untested until now. Still deliberately OUT, and this is the older note's point unchanged: the two 'foreach ($i in $issues)' loops and the two RESULT lines, which print the collection rather than detect anything. Counting them measured the printer. NOT-RULES (phase 6, T044): sites matched here that are not distinct failure conditions are declared in 'notRules' with a written reason, so that an UNOWNED site can be a hard failure without the declaration having to pretend a roll-up line is a rule.",
+      "notRules": [
+        {
+          "anchor": "foreach ($i in $issues) { Write-Host \"digests: FAIL",
+          "reason": "The per-issue renderer in -Check mode. Each issue is an inventoried DIGEST rule."
+        },
+        {
+          "anchor": "Write-Host \"digests: RESULT FAIL (",
+          "reason": "The -Check verdict roll-up."
+        },
+        {
+          "anchor": "foreach ($i in $issues) { Write-Host \"build-digests: FAIL",
+          "reason": "The per-issue renderer in write mode - the same issues, the other entry point."
+        },
+        {
+          "anchor": "Write-Host \"build-digests: RESULT FAIL (",
+          "reason": "The write-mode verdict roll-up."
+        }
+      ]
     },
     {
       "script": "roadmap-claim-check.ps1",
@@ -89,7 +156,13 @@
         "\\$failures\\s*\\+=",
         "Write-Host\\s+['\"]roadmap-claims: (n/a|OK)"
       ],
-      "note": "Two conditions accumulate and six are decided and printed on the spot — four n/a states and two OKs — and for this script the inert half IS the interesting half. It is the only kit check whose input is the claim ledger rather than the tree, so it declines for reasons that are entirely ordinary (no remote, offline, an adopter-authored roadmap in another shape) and must never decline in silence: an unspoken exit 0 here reads exactly like a roadmap that is honest. Deliberately OUT: the failures loop and the FAIL count beside it, which print what the two accumulators already hold."
+      "note": "Two conditions accumulate and six are decided and printed on the spot — four n/a states and two OKs — and for this script the inert half IS the interesting half. It is the only kit check whose input is the claim ledger rather than the tree, so it declines for reasons that are entirely ordinary (no remote, offline, an adopter-authored roadmap in another shape) and must never decline in silence: an unspoken exit 0 here reads exactly like a roadmap that is honest. Deliberately OUT: the failures loop and the FAIL count beside it, which print what the two accumulators already hold. NOT-RULES (phase 6, T044): sites matched here that are not distinct failure conditions are declared in 'notRules' with a written reason, so that an UNOWNED site can be a hard failure without the declaration having to pretend a roll-up line is a rule.",
+      "notRules": [
+        {
+          "anchor": "roadmap-claims: FAIL ($($failures.Count) of $checked claim(s)",
+          "reason": "The verdict roll-up over the per-claim lines above it, each of which is a CLAIM rule."
+        }
+      ]
     },
     {
       "script": "territory-check.ps1",
