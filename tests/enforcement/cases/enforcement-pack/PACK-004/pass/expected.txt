@@ -1,0 +1,2 @@
+enforcement-pack: branch 'chore/thing', diff base '<SHA>', 1 changed file(s)
+enforcement-pack: OK

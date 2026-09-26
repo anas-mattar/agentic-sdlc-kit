@@ -272,25 +272,25 @@ failure reports, and write the flow-down note for the one change adopters will s
 - `docs/sdlc/review-process.md`
 - `docs/digests/*-digest.md`
 
-- [ ] T044 Make `Coverage.Tests.ps1` blocking: an uncovered rule, a rule present in a script but
+- [x] T044 Make `Coverage.Tests.ps1` blocking: an uncovered rule, a rule present in a script but
       absent from the inventory, and a rule with only one direction each fail the run (FR-003, D9).
-- [ ] T045 Implement declared exemptions — a rule may opt out of coverage only with a written
+- [x] T045 Implement declared exemptions — a rule may opt out of coverage only with a written
       reason in the inventory, and every exemption prints in the harness output (FR-004).
-- [ ] T046 Make every harness failure name the script, the rule id, the case, the expected verdict
+- [x] T046 Make every harness failure name the script, the rule id, the case, the expected verdict
       and the observed one, and print how to reproduce the fixture repository (FR-016, FR-019).
-- [ ] T047 Confirm the harness does not modify the repository it runs from and does not depend on
+- [x] T047 Confirm the harness does not modify the repository it runs from and does not depend on
       its branch, working tree or git identity (FR-020).
-- [ ] T048 Sample-verify SC-002 across at least one rule per grading script: invert the condition,
+- [x] T048 Sample-verify SC-002 across at least one rule per grading script: invert the condition,
       confirm a named case fails, restore. Record the sample and its results in `notes.md`.
-- [ ] T049 Write the flow-down note in `adoption/updating.md`: what a green run meant before, what
+- [x] T049 Write the flow-down note in `adoption/updating.md`: what a green run meant before, what
       it means now, and what an adopter will newly see (FR-021).
-- [ ] T050 Name the `UNGRADED` state in `scripts/enforcement-pack.ps1`'s description header and in
+- [x] T050 Name the `UNGRADED` state in `scripts/enforcement-pack.ps1`'s description header and in
       the Lite-lane paragraph of `adoption/updating.md`, neither of which mentions it today
       (FR-022).
-- [ ] T051 Add the reviewer's line to `docs/sdlc/review-process.md`: an `UNGRADED` member is not a
+- [x] T051 Add the reviewer's line to `docs/sdlc/review-process.md`: an `UNGRADED` member is not a
       pass, and a review that accepts one says why.
-- [ ] T052 Regenerate the digests and confirm the freshness check is green.
-- [ ] T053 Record the measured cost in `notes.md` — the harness's runtime on both CI legs against
+- [x] T052 Regenerate the digests and confirm the freshness check is green.
+- [x] T053 Record the measured cost in `notes.md` — the harness's runtime on both CI legs against
       `ritual-checks`'s current 82.2s / 80.0s baseline — and state whether the harness runs inside
       `ritual-checks` or beside it (SC-007).
 

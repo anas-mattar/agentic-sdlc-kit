@@ -30,6 +30,12 @@
 
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 $OutputEncoding = [Console]::OutputEncoding
+# The same principle, for decoration rather than encoding: pwsh wraps a Write-Warning (and an
+# error record) in ANSI colour escapes on the way to the host, redirected or not, and whether it
+# does is the host's business - not the script's output. TERR-012 is the first case to assert
+# a Write-Warning line (phase 6 review, F3); without this its expectation would have had to
+# carry escape bytes. Nothing is stripped after capture: the child is asked to write plain text.
+if ($PSStyle) { $PSStyle.OutputRendering = 'PlainText' }
 
 if ($args.Count -lt 1) { Write-Error 'RunChild.ps1: no script to run'; exit 64 }
 

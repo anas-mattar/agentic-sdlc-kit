@@ -72,6 +72,26 @@
                          docs/sdlc/critical-delivery.md item 4). An absent line means
                          'none' — plans from before the clause remain valid.
 
+    THE UNGRADED STATE (feature 015, FR-009/FR-022). A check in this pack can RUN AND FORM NO
+    OPINION: there is no integration branch to diff against (a shallow clone is the usual
+    cause), or the commit range it was handed holds no commits. That is not a pass. It is not
+    a failure either - but AmendmentAuthority, the one check that must never be silent about an
+    amendment, FAILS rather than going ungraded on a missing base, on a shallow clone, and on
+    commits it cannot read. Such a check adds a line to
+    $ungraded, every one of those lines is printed as 'UNGRADED: <what>', and the run ends on
+    'enforcement-pack: UNGRADED (N check(s) formed no opinion)' instead of 'OK'.
+
+    It is a VERDICT change and not an exit-code change: the run still exits 0, deliberately and
+    on the record (feature 015 plan D6, FR-011), because feature 014's FR-009 forbids a new hard
+    failure on the Lite lane and that constraint stands. What changes is that nobody can read
+    such a run as clean. Whether UNGRADED should ever block is a later feature's question, with
+    its own evidence; it is not answered here by the back door.
+
+    A run can be both FAIL and ungraded. The UNGRADED lines are printed before the verdict and
+    independently of it, the way warnings are, because a reader needs to know that the failure
+    count is not the whole story. The word for the whole vocabulary — OK, FAIL, WARN, N/A,
+    UNGRADED, PENDING — is defined once, in scripts/ritual-checks.ps1.
+
     See specs/002-enforcement-pack/research.md for the rationale behind every default below.
 
 .EXAMPLE
@@ -1073,7 +1093,10 @@ function Invoke-AmendmentAuthorityCheck {
     # (review B1); rev-list reads commit objects and cannot be written to from a message.
     $commits = @(git rev-list --reverse $range 2>$null | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
     if ($commits.Count -eq 0) {
-        Write-Host "AmendmentAuthority: no commits in $range — nothing to grade"
+        # An empty range is a check that ran and graded nothing - GAP-027's shape, and until the
+        # phase 6 review (F6) it ended the run on OK. It is named, not failed: a branch with no
+        # commits of its own yet is lawful, it is only not evidence (FR-010, plan D6).
+        $script:ungraded += "AmendmentAuthority: no commits in $range — nothing to grade, so no amendment on '$Branch' was checked for its approval record"
         return
     }
     # A commit git lists but the batch did not parse is a parse failure, not a commit to skip.

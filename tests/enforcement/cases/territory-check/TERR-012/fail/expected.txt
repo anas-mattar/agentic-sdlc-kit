@@ -1,0 +1,2 @@
+WARNING: Skipping origin/012-other: cannot compare with main.
+CLEAN — '011-thing' shares no files with any open feature branch.

@@ -63,6 +63,11 @@
     - "origin": "self" gives the repository an origin remote pointing at itself, so its own
       branches become the claim ledger 'git ls-remote --heads origin' reads. Any other value is
       a path under the fixture — an absent one produces the unreachable-ledger state.
+    - "originFetch": "<branch>" narrows origin's fetch refspec to that one branch, so the claim
+      ledger (ls-remote) lists branches that 'git fetch origin' never makes a remote-tracking ref
+      for. That is the state territory-check.ps1 skips out loud (TERR-012) - reachable in any
+      clone configured with a single-branch refspec, and unprovable here until the phase 6
+      review (F3) showed the exemption written over it was false.
     - "detach": true leaves HEAD detached at the checked-out commit, the CI shape where the
       current branch cannot be read from the repository at all.
     - "nestedRepos" maps a directory name -> a recipe of its own, built as an INDEPENDENT git
@@ -236,6 +241,10 @@ function New-FixtureRepo {
     if ($Recipe.PSObject.Properties.Name -contains 'origin' -and $Recipe.origin) {
         $originUrl = ("$($Recipe.origin)" -eq 'self') ? $root : (Join-Path $root "$($Recipe.origin)")
         Invoke-FixtureGit -RepoPath $root -Arguments @('remote', 'add', 'origin', $originUrl) | Out-Null
+        if ($Recipe.PSObject.Properties.Name -contains 'originFetch' -and $Recipe.originFetch) {
+            $only = "$($Recipe.originFetch)"
+            Invoke-FixtureGit -RepoPath $root -Arguments @('config', 'remote.origin.fetch', "+refs/heads/${only}:refs/remotes/origin/${only}") | Out-Null
+        }
     }
 
     # Files written AFTER the last commit and deliberately left out of it. Two kit rules exist

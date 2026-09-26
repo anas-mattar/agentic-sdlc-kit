@@ -216,10 +216,36 @@ function Format-CaseFailure {
     #>
     param([Parameter(Mandatory)]$Result, [string]$RuleId)
 
+    # The verdict, named as a word rather than left to be read out of a diff. FR-016 asks for
+    # the expected verdict and the observed one, and a reader handed 'first diff at line 7' has
+    # been given the evidence and not the finding. The verdict is the LAST line matching
+    # '<name>: <WORD>' - the kit's verdict-line shape, whose vocabulary scripts/ritual-checks.ps1
+    # defines. Taking the last one is right here for the reason it is wrong in that wrapper: a
+    # fixture's expectation is the whole of one run's output, not a stream being searched, so
+    # its final verdict-shaped line IS that run's answer.
+    $verdictOf = {
+        param([string]$Text)
+        $found = $null
+        foreach ($line in ($Text -split "`n")) {
+            if ($line -match '^[A-Za-z][A-Za-z0-9_.-]*: (OK|FAIL|WARN|UNGRADED|PENDING|n/a|N/A|PASS|ERROR|RESULT [A-Z]+)\b') {
+                $found = $line.Trim()
+            }
+        }
+        return $found
+    }
+    $expectedVerdict = & $verdictOf $Result.Expected
+    $observedVerdict = & $verdictOf $Result.Actual
+
     $lines = @()
     $lines += "rule      : $RuleId"
     $lines += "script    : $($Result.Script)"
     $lines += "case      : $($Result.CaseDir)"
+    if ($expectedVerdict -or $observedVerdict) {
+        # '<none>' is a finding in itself: a run that printed no verdict-shaped line at all is
+        # how doc-lint.ps1 exited 1 for four features without naming a verdict (phase 5, F2).
+        $lines += "verdict   : expected $(if ($expectedVerdict) { "'$expectedVerdict'" } else { '<none>' })"
+        $lines += "            observed $(if ($observedVerdict) { "'$observedVerdict'" } else { '<none>' })"
+    }
     if (-not $Result.ExitMatch) {
         $lines += "exit code : expected $($Result.ExpectedExit), observed $($Result.ActualExit)"
     }
@@ -241,7 +267,11 @@ function Format-CaseFailure {
     $marker = [IO.Path]::DirectorySeparatorChar + 'cases' + [IO.Path]::DirectorySeparatorChar
     $index = $Result.CaseDir.IndexOf($marker)
     $filter = if ($index -ge 0) { $Result.CaseDir.Substring($index + $marker.Length).Replace('\', '/') } else { Split-Path -Leaf $Result.CaseDir }
+    # FR-019: a failed case must be reproducible from the printed output alone. -KeepRepo
+    # rebuilds the same fixture and leaves it on disk with its path printed, so the reader can
+    # run the script against it by hand instead of reasoning about a diff.
     $lines += "reproduce : pwsh -File tests/enforcement/Run-Tests.ps1 -Case $filter -KeepRepo"
+    $lines += "            (rebuilt from $($Result.CaseDir)/recipe.json; -KeepRepo prints the path it lands at)"
     return ($lines -join "`n")
 }
 

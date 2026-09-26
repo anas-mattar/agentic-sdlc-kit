@@ -1,0 +1,21 @@
+{
+  "description": "enforcement-pack aimed at the trunk. No lane's checks apply there - the trunk is not a feature, fix, chore or docs branch - and the dispatch says so instead of printing a bare OK over a run in which no check was reached. Nothing in the suite asserted this line before phase 6; the coverage sweep is what found it. Differs from the pass direction in the branch named, and in nothing else (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "docs: a second commit",
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    }
+  ],
+  "checkout": "main"
+}

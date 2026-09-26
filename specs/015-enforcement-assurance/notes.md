@@ -2245,3 +2245,413 @@ Nothing again. Comments only, every changed line inside the `<# ... #>` block th
 `:130`, last changed line `:121`. The four facts asserted in the new text were each run or
 grepped before being written: the seven exit codes, the `ERROR` split, `territory-check.ps1`'s
 three exit paths, and `spec.md:277`.
+
+
+## Phase 6 — coverage blocks, and adopters are told (US4, US5)
+
+The last phase, and the one that turns the number into a verdict. Until now
+`Coverage.Tests.ps1` printed a percentage: plan D9 held it to reporting while fixtures arrived
+over five phases, because asserting completeness earlier would have left the branch red from
+its first commit to its last — GAP-022's disease, which this feature has complained about
+twice. T044 closes that window.
+
+### What "blocking" had to mean before it could be honest
+
+The reporting number on the phase-5 tip was **187 of 200**, with **11 unclassified candidate
+lines** printed beneath it. Thirteen sites owned by nothing, eleven more that the broad recall
+sweep found and the precise pass did not. Making that a hard failure needed all twenty-four
+resolved, and there were only three honest ways to resolve one:
+
+| | |
+|---|---|
+| a rule with both fixture directions | the ordinary case |
+| a rule with a written `exemption` (FR-004) | a faithful fixture cannot be built, and the reason says what would be needed instead |
+| a `notRules` entry in `emission-idioms.json` | the line is not a distinct failure condition |
+
+**The third category is the one worth defending, because it looks like a loophole.** Without
+it there were two ways to make the number reach the total: invent a rule for every verdict
+roll-up line, or tighten the accumulator regex until the remainder vanished. The second is
+faster, invisible in the diff, and produces a green run — and it is the instrument being
+adjusted until it agrees with itself, which is the defect this feature has hit three times
+(T036a, the guard test written for it, and the phase-5 vocabulary block). A declared
+`notRules` entry costs a written reason and is printed on every run. That is the difference.
+
+Fourteen lines were declared not-rules (this said fifteen; the phase 6 review, F5, counted
+fourteen, and the list below omitted the docs-lane decline, which is now rule PACK-004 — so
+thirteen): `enforcement-pack: OK` (the success verdict, asserted by
+49 expectations), `enforcement-pack: FAIL (N issue(s)):` (the roll-up over the per-issue lines,
+56), `AmendmentAuthority: graded N of M` (89), the per-issue renderers and `RESULT FAIL`
+roll-ups in `build-digests.ps1`, `doc-lint.ps1`, `verify-kit.ps1` and
+`roadmap-claim-check.ps1`. None of them decides anything; each one counts or renders what the
+rules above it decided.
+
+### Two rules the sweep found that reading had not
+
+Both had existed for features and neither had a fixture.
+
+- **`AMEND-006`** — `AmendmentAuthority: no commits in <range> — nothing to grade`. A
+  return that grades nothing, inside the check that grades amendments: **GAP-027's own shape,
+  in enforcement-pack, surviving the feature that was written to close GAP-027**. Phase 4's
+  T036b found nine unowned conditions by sweeping `Write-Host` against the declaration; this is
+  what the same sweep finds when the declaration is made to block. The pair reaches it through
+  `-ReplayBase`/`-ReplayTip` (014 plan D2c): `HEAD..HEAD` is the empty range and `HEAD~1..HEAD`
+  the nearest non-empty one, which is the whole of the difference (D10).
+- **`PACK-003`** — the trunk dispatch line. Forty-nine expectations end on
+  `enforcement-pack: OK` and **not one of them was a trunk run**, so a dispatch that stopped
+  saying why it declined would have changed nothing visible.
+
+### Eight exemptions, and what an exemption is allowed to be
+
+FR-004 lets a rule opt out of the fixture pair with a written reason. The danger is obvious: an
+exemption is a way to make a failing coverage check green by typing. Three guards, all
+asserted:
+
+1. The reason must exist and be more than a gesture (a length floor — not to grade prose,
+   but because an empty string satisfies a presence test, which is exactly the shape of
+   exemption the rule exists to refuse).
+2. An exempted rule **must not also have cases**. Writing an exemption over a covered rule
+   would quietly stop its fixtures being required, and the pair could then be deleted with
+   nothing going red. That is the likelier future mistake and it now fails.
+3. Every exemption is **printed on every run**, grouped by reason. A reason nobody reads again
+   is the same as no reason.
+
+Three of the eight are one-offs where the fixture model can only reach a *different* failure
+and call it this one: `AMEND-007` (rev-list and the metadata batch would have to disagree about
+the same object store), `REPOS-033` (an unreadable committer date on a commit every earlier
+guard accepted), `VK-028` (a defensive catch whose message is whatever exception reached it).
+
+**The other five are one finding wearing five hats, and it is a real defect in the kit.**
+
+### `territory-check.ps1` cannot report a verdict at all
+
+Its four error paths are written `Write-Error '...'; exit 1`, under the script's own
+`$ErrorActionPreference = 'Stop'`. Under `Stop`, `Write-Error` is TERMINATING: the script dies
+at that line and **the `exit 1` after it is unreachable**. Measured through the harness:
+
+```text
+territory-check.ps1 -Branch notanumber
+  RunChild: the script under test threw before returning a verdict:
+    Branch 'notanumber' is not a numbered feature branch (NNN-name) ...
+  exit 97
+```
+
+97 is the launcher's own code for *did not run to a verdict*, documented as one no kit script
+emits. A fixture could pin that, but it would be asserting `RunChild.ps1`'s behaviour rather
+than the rule's. Under `pwsh -File` a human still sees exit 1, because PowerShell exits 1 on an
+uncaught terminating error, so nothing is broken in production — but the script's error
+paths are unassertable, its exit codes are PowerShell's rather than its own, and it speaks none
+of the verdict vocabulary (`CLEAN`/`OVERLAP`, exits 0, 1 or 2).
+
+This is the same finding round 3 of the phase-5 review reached from the other end (F2, F3), and
+it is now measured rather than argued. **`scripts/territory-check.ps1` is outside phase 6's
+Territory and this phase may not touch it**, so it is recorded here and the five sites were
+exempted with this as their written reason. (Four: the fifth, TERR-012, is a `Write-Warning`,
+which `Stop` does not make terminating, and it is reachable — the phase 6 review, F3. It has a
+fixture pair now.) It needs a roadmap GAP row, which
+`docs/roadmap.md` is outside this Territory to write — an owner action, named rather than
+quietly carried.
+
+### The coverage report now
+
+```text
+coverage: 189 of 200 declared emission site(s) owned by a fixtured rule, 8 exempt,
+          3 declared not a rule, across 9 grading script(s)
+coverage: build-digests.ps1        19 of 19 site(s) fixtured
+coverage: doc-lint.ps1             10 of 10 site(s) fixtured
+coverage: enforcement-pack.ps1     50 of 54 site(s) fixtured (1 exempt, 3 not a rule)
+coverage: ritual-checks.ps1         6 of 6  site(s) fixtured
+coverage: roadmap-claim-check.ps1   8 of 8  site(s) fixtured
+coverage: scope-check-repos.ps1    31 of 32 site(s) fixtured (1 exempt)
+coverage: scope-check.ps1          28 of 28 site(s) fixtured
+coverage: territory-check.ps1       7 of 12 site(s) fixtured (5 exempt)
+coverage: verify-kit.ps1           30 of 31 site(s) fixtured (1 exempt)
+```
+
+189 + 8 + 3 = 200, and the eleven unclassified candidates are zero — every one of them was a
+roll-up or a renderer, now declared. **There is no remainder.** A new emission site added to
+any of the nine scripts fails the suite until someone says, in writing, what it is.
+
+> **Superseded (phase 6 review round 2, F4 and F7).** The figures above are `28a99fa`'s. After
+> the round-1 remediation (`9ae7b53`) the report reads `191 of 200 … 7 exempt, 2 declared not a
+> rule`, with `enforcement-pack.ps1 51 of 54 (1 exempt, 2 not a rule)` and
+> `territory-check.ps1 8 of 12 (4 exempt)` — PACK-004 and TERR-012 became fixtured rules. And
+> the last sentence claims more than the two passes can see: a new **failure-shaped** site
+> fails the suite until it is declared, but a **success-shaped** early exit in a new idiom
+> (`Write-Host '<benign text>'; exit 0`) matches neither pass. Round 2 closed the one instance
+> the precise pass could reach (the enforcement-pack `OK` idiom now ends on `\b`); the general
+> case is a known limit, recorded below.
+
+### T048 — SC-002 by sampling, one rule per grading script
+
+SC-002 says deliberately breaking a covered rule must make a named fixture fail, *verified by
+sampling, not asserted*. Nine samples, one per script: locate the rule's `emitAnchor`, walk up
+to the nearest enclosing `if (`, invert that condition, run the rule's `fail` case, revert with
+`git checkout --`.
+
+| script | rule | guard | result |
+|---|---|---|---|
+| `build-digests.ps1` | DIGEST-001 | `:231` | FAILS (output differs) |
+| `doc-lint.ps1` | DOC-001 | `:227` | FAILS (output differs) |
+| `enforcement-pack.ps1` | LITE-001 | `:242` | FAILS (output differs) |
+| `ritual-checks.ps1` | RIT-003 | `:221` | FAILS (output differs) |
+| `roadmap-claim-check.ps1` | CLAIM-001 | `:51` | FAILS (output differs) |
+| `scope-check-repos.ps1` | REPOS-001 | `:303` | FAILS (output differs) |
+| `scope-check.ps1` | SCOPE-002 | `:246` | FAILS (exit 1->0, output differs) |
+| `territory-check.ps1` | TERR-001 | `:51` | FAILS (exit 0->128, output differs) |
+| `verify-kit.ps1` | VK-001 | `:122` | FAILS (exit 1->0, output differs) |
+
+Nine of nine caught; `git status scripts/` clean afterwards, checked by the sampler itself
+before and after.
+
+**The first run of this sample reported eight false negatives** — `MUTATION NOT UNIQUE,
+0 match(es)` — because the guards had been hand-copied out of a context listing that indents
+by four spaces. The sampler was wrong about the thing it was measuring, which is this feature's
+own recurring defect appearing in the tool written to verify the feature. The fix is why the
+guard is now found by LINE (anchor, then walk upwards) instead of by matching a string a human
+retyped.
+
+### T047 — FR-020, asserted rather than assumed
+
+Two halves, failing differently. A harness that WRITES to the repository under it corrupts what
+it measures and stays green while doing so. A harness that READS that repository's branch,
+working tree or identity passes here and fails on someone else's machine. Both were true by
+construction and by nobody's promise. Now: the working tree, HEAD and branch are snapshotted
+around a real case (`--untracked-files=all`, so a stray file in an ignored directory cannot
+fold into an unchanged-looking line); every fixture commit is asserted to carry the fixture
+identity and not this repository's; and no `command.json` may name the branch this repository
+happens to be on — which would be green here and red for everyone else the day it merges.
+
+> **Superseded (phase 6 review round 1, F1; round 2, F6).** The branch half described here
+> compared each `command.json` with this repository's branch by substring, and was itself
+> host-dependent. It now states the property about the fixture: every ref-naming argument
+> (`-Branch`, `-Commit`, `-ReplayBase`, `-ReplayTip`, `-BaseBranch`) names, as a whole value, a
+> branch the case's recipe creates — or, for the four revision arguments, a `HEAD`-relative
+> revision or a deliberately absent `no-such-*` ref. See the two remediation sections below.
+
+### T046 — the failure report names the verdict
+
+`Format-CaseFailure` printed the rule, the script, the case, the exit codes and the first
+differing line. A reader was handed the evidence and left to derive the finding. It now names
+both verdicts as words:
+
+```text
+verdict   : expected 'enforcement-pack: FAIL (1 issue(s)):'
+            observed 'enforcement-pack: OK'
+```
+
+`<none>` is itself a finding: a run that printed no verdict-shaped line at all is how
+`doc-lint.ps1` exited 1 for four features without naming a verdict.
+
+### T053 — what it costs, and where it runs (SC-007)
+
+| | runtime |
+|---|---|
+| `ritual-checks` job, CI | **16s** (run 35518845272, on the parent `1f05bb3`; **16s** on phase 6's own `28a99fa`, run 35547650371) |
+| `enforcement-tests (ubuntu-latest)`, CI | **3m 46s** (run 35518845283, on `1f05bb3`; **5m 37s** on `28a99fa`, run 35547650549) |
+| `enforcement-tests (windows-latest)`, CI | **12m 12s** (run 35518845283, on `1f05bb3`; **10m 54s** on `28a99fa`, run 35547650549) |
+| `ritual-checks.ps1` local, warm, Windows 11 / pwsh 7 | **122s** |
+| full harness local, warm | **35-61 min**, load-dependent |
+
+The SC-007 baseline was 82.2s / 80.0s for a local `ritual-checks` run. It is now **122s** on
+this machine, and the growth is not the harness: `scope-check -All` grades every phase commit
+since the merge base, and this branch has eight of them. The figure to carry forward is the CI
+one — 16s — because that is what a gate actually waits for.
+
+**The harness runs BESIDE `ritual-checks`, not inside it, and the numbers are the argument.**
+Folding it in would take the gate from 16 seconds to over twelve minutes on Windows: a 45x
+increase on the command a developer runs before every phase commit, to re-answer a question
+that has not changed since the last time the scripts did. So `enforcement-tests.yml` is its own
+workflow, on both OS legs, and `ritual-checks.ps1` keeps its six members and its member names
+unchanged (FR-012).
+
+The Windows leg is **3.2x** the ubuntu leg. Process startup: every case spawns a child `pwsh`
+and builds a real git repository, and Windows charges more for both. It is not a reason to mock
+git (FR-005 forbids it, and the two harness defects this feature found were both in the child-
+process boundary that mocking would have hidden).
+
+### What phase 6 does not do
+
+- **`scripts/territory-check.ps1`** — the finding above. Outside Territory.
+- **`docs/roadmap.md`** — the GAP row that finding needs. Outside Territory.
+- **The phase-5 review's F4 documents** — `specs/006-verification-pack/data-model.md:27,52`
+  and the two contracts still describe verdicts the code no longer prints. Outside Territory.
+  One of the three prose lines phase 5 recorded WAS reachable here and is fixed:
+  `docs/sdlc/review-process.md` now says what a reviewer must do about an `UNGRADED`
+  cross-repo verdict. (It first listed `UNGRADED` among the lawful non-blocking verdicts and
+  then said it was not one; the phase 6 review, F9, and the remediation below took it out of
+  the list.)
+- **`docs/sdlc/definition-of-done.md:103`** and
+  **`.github/workflows/code-repo-scope-check.yml.template:37`** — the other two. Outside
+  Territory.
+
+## Phase 6 review round 1 — remediation (F1–F9)
+
+The fresh-context review (`ai-code-review-phase-6.md`) returned REQUEST CHANGES: four blocking
+findings, two for the owner, three minor. The owner took the implementer's recommendation on
+all three owner calls (2026-09-26): the docs-lane decline becomes a rule, the `OK` note is
+corrected rather than the entry removed, the empty amendment range becomes `UNGRADED` here,
+and the territory-check finding gets its GAP row in a separate docs PR (phase 6's Territory
+does not reach `docs/roadmap.md`).
+
+- **F1 — the branch-independence test was branch-dependent.** It compared every
+  `command.json` against the host checkout's branch by substring, and so was red detached
+  (`HEAD`) and on `main`. It now states the property about the fixture and reads nothing from
+  the host: every `-Branch` value is, as a whole value, a branch the case's own recipe creates.
+  All 156 `-Branch` arguments already met it. Mutation: a case passing
+  `-Branch 015-enforcement-assurance` fails it, naming the case and what its fixture creates.
+- **F2 — `notRules` had none of the exemption guards.** It now has all three: a reason of at
+  least 60 characters, a `siteCount` (default 1) the anchor must match exactly, and every entry
+  printed with its reason. Four reasons were too short to say anything and were rewritten.
+  Mutations: a new `Write-Host "AmendmentAuthority: graded ..."` site under the existing anchor
+  fails (`excuses 2 site(s) ... declared 1`); an emptied reason fails.
+- **F3 — TERR-012's exemption was false.** `Write-Warning` is not terminating under `Stop`.
+  The fixture builder gained `originFetch` (narrow origin's fetch refspec to one branch), and
+  TERR-012 has a pair: with the narrow refspec the run prints
+  `WARNING: Skipping origin/012-other: cannot compare with main.` and still ends on `CLEAN`.
+  That `CLEAN` over a skipped comparison is a further territory-check finding, recorded for the
+  same GAP row. Four exemptions remain on the one cause, and the reason text says four.
+  **A harness fix came with it:** pwsh wraps a `Write-Warning` in ANSI colour escapes on the way
+  to the host even when redirected, so the first capture carried escape bytes. `RunChild.ps1`
+  now sets `$PSStyle.OutputRendering = 'PlainText'` in the child — the child is asked to write
+  plain text, nothing is stripped after capture (the T036a lesson). No existing expectation
+  contained an escape byte, so no other case moved.
+- **F4 — "an unreadable parent commit" is not an UNGRADED cause.** Removed from the
+  `enforcement-pack.ps1` header, `adoption/updating.md` and `docs/sdlc/review-process.md`;
+  the header now says which states are UNGRADED and that AmendmentAuthority fails, not
+  ungrades, on a missing base, a shallow clone and unreadable commits.
+- **F5 — owner decision.** `is the lightweight docs/ lane` leaves `notRules` and becomes
+  PACK-004 (docs/thing against chore/thing, identical tree). `enforcement-pack: OK` stays a
+  not-rule, and the idiom note that called it a site is corrected.
+- **F6 — owner decision.** AmendmentAuthority's empty range now adds to `$ungraded`; the run
+  ends on `UNGRADED` and exits 0 (D6). `AMEND-006/fail` expects that, and inverting the guard
+  still fails both directions.
+- **F7** — the T053 table now carries phase 6's own runs beside the parent's.
+- **F8** — owner action, in the separate docs PR: the territory-check GAP row, now covering
+  the four unassertable error paths and the `CLEAN` printed over a skipped comparison.
+- **F9** — `UNGRADED` is out of the list of lawful non-blocking verdicts in
+  `review-process.md`; the next paragraph carries it.
+
+**Found while proving F2, not in the review.** The first mutation attempted was a line
+`Write-Host 'enforcement-pack: OK (silent decline)'`, and it went green — not because a guard
+failed, but because **neither pass saw the line at all**: the precise pattern requires `OK'`
+immediately, and the recall sweep did not match it either. A decline worded as a variant of the
+success verdict is invisible to the coverage instrument. Recorded here for the second review
+round to weigh; not changed in this remediation.
+
+## Phase 6 review round 2 — remediation (F1, F4, F6, F7)
+
+Round 2 (`ai-code-review-phase-6-round-2.md`, a fresh-context reviewer, REQUEST CHANGES)
+confirmed every round-1 fix by mutation and raised one blocking finding and three smaller ones.
+
+- **F1 (BLOCKING) — the flow-down note's universal.** `adoption/updating.md` said a healthy
+  full-history checkout never shows `UNGRADED` and sent anyone who saw it to `fetch-depth: 0`.
+  An `NNN-*` branch with no commits of its own (fresh, or already merged) produces it with full
+  history — `scope-check` since phase 5, and the amendment check since round 1's F6. The
+  sentence now names that state, and the remedy paragraph splits the causes: missing base or
+  history → `fetch-depth: 0`; an empty commit range → nothing to fix, the word goes with the
+  branch's first commit.
+- **F4 — the OK-variant blind spot.** The enforcement-pack `OK` idiom ended on a closing single
+  quote, so `"enforcement-pack: OK"` or `'enforcement-pack: OK (reason)'` matched neither pass.
+  It now ends on `\b`. Mutation: two such early exits added to the dispatch → the notRules
+  guard fails with "excuses 3 site(s) … declared 1"; reverted. The recall sweep's comment in
+  `Coverage.Tests.ps1` no longer says "impossible to slip past" without qualification: it
+  reaches failure-shaped lines only. **Known limit, not closed:** a success-shaped early exit
+  in an idiom no precise pattern names is invisible to both passes. Whether that becomes a
+  roadmap GAP row is an owner decision (`docs/roadmap.md` is outside this Territory).
+- **F6 — the ref test's width.** The T047 branch test now scans `-Commit`, `-ReplayBase`,
+  `-ReplayTip` and `-BaseBranch` as well as `-Branch`, walking the whole recipe (so a branch a
+  nested code repository creates counts). Mutation: `AMEND-006/pass -ReplayBase
+  015-enforcement-assurance` → fails naming the case and the argument; reverted.
+- **F7 — stale statements.** `emission-idioms.json`'s "FIVE OF THESE ARE DECLARED AND
+  UNCOVERED" now says what became of the five; the two superseded `notes.md` passages above
+  carry a note instead of being rewritten; the coverage report's notRules heading says why its
+  count (13 entries) differs from the summary's (2 sites inside the denominator).
+
+## Phase 6 review round 3 — remediation (F1–F4)
+
+Round 3 (`ai-code-review-phase-6-round-3.md`, fresh-context, REQUEST CHANGES) found the
+round-2 rewrite of the flow-down note had replaced one false universal with a narrower one.
+
+- **F1 (BLOCKING) — the note is now a table written from the code.** Two rounds of correcting
+  one sentence each produced a true sentence neither time, so the section was rebuilt from
+  the thirteen sites that print `UNGRADED`: `scope-check.ps1` (detached HEAD, no merge base,
+  empty range, nothing graded), `scope-check-repos.ps1` (the same four, per repository and
+  run-level) and `enforcement-pack.ps1` (four no-base members and the empty amendment range).
+  Five states, each with the member line, whether full history fixes it, and what to do. The
+  three states round 3 measured — spec-only commits, governance CI / code-free phases, a trunk
+  not named `main` — are rows, and `fetch-depth: 0` is offered only for the shallow-clone cause.
+- **F2 — review-process step 3.** It said a phase touching no code repository "legitimately
+  produces" `n/a`; it produces per-repository `not applicable` and a run-level `UNGRADED`. The
+  sentence now says so and points at the written-reason rule below it instead of contradicting it.
+- **F3 — `-BaseRef`.** Added to the T047 ref scan. The six ref-naming parameters were
+  enumerated this time from the graded scripts' `param` blocks (`-Branch`, `-Commit`,
+  `-ReplayBase`, `-ReplayTip`, `-BaseRef`, `-BaseBranch`) rather than from the cases.
+  Mutation: `REPOS-017/pass` with `-BaseRef 015-enforcement-assurance` fails the test; reverted.
+- **F4 — two backspace bytes in this file**, where a word-boundary escape was meant. They came
+  from the tool layer unescaping a doubled backslash inside a shell heredoc before the script
+  ran. Replaced by character code; a scan of the phase-6 Territory and this directory finds no
+  other 0x08. The same byte in `specs/014-amendment-authority/notes.md` is outside this
+  Territory and is left for the owner.
+
+## Phase 6 review round 4 — remediation (F1, F3; F2 to the owner)
+
+Round 4 (`ai-code-review-phase-6-round-4.md`, fresh-context, REQUEST CHANGES) confirmed round
+3's F3 and F4 and found the new table false in three places — the third round in a row in
+which a claim of completeness about UNGRADED was the defect.
+
+- **F1 (BLOCKING).** The lesson taken: stop claiming completeness. The table no longer says it
+  is "every state"; it says the member's own line is the authority (every `UNGRADED` line
+  names its reason or points at the line that does) and the table is a guide. Two rows added:
+  `scope-check` without `-All` on a HEAD that is not a phase commit, and a multi-repo run
+  where one repository is graded and another is not. "Phase" corrected to **feature** in row
+  5 and in `review-process.md` step 3 — the code-repository check asks whether a branch named
+  after the feature exists there, so a docs-only phase after a code phase shows the earlier
+  phase's real `PASS`, and both documents now say so.
+- **F3 (MINOR).** MicroLane is scoped to Micro-declared features; the trunk-not-`main` cell
+  gives a remedy (name it `main`, or create a `main` ref at it — these members take no trunk
+  parameter); the missing-`tasks.md` WARN and the two not-a-repository reasons are in; the
+  `-BaseRef` remedy says to run `scope-check-repos.ps1` directly, since `ritual-checks` does
+  not pass it through.
+- **F2 (NON-BLOCKING) — owner decision owed, not fixed here.** When one declared code
+  repository is graded and another prints its own `UNGRADED`, `scope-check-repos.ps1` prints
+  no run-level `UNGRADED` (`:415` fires only when nothing was graded) and `ritual-checks`
+  reports `scope-repos OK`. That is GAP-027's shape one level down: a summary word over a run
+  part of which compared nothing. The fix is in `scripts/scope-check-repos.ps1` /
+  `scripts/ritual-checks.ps1`, outside phase 6's Territory. It is disclosed to adopters in the
+  table's last row. Proposed: a roadmap GAP row, alongside GAP-029 in docs PR #49.
+
+## Phase 6 review round 5 — APPROVE, two MINORs fixed
+
+Round 5 (`ai-code-review-phase-6-round-5.md`, fresh-context) **approved** `ab49230`. It
+measured the table's disclaimer and each row against the code, including the `git branch main
+origin/<trunk>` remedy and the partly-graded `scope-repos OK`. The owner chose to fix its two
+MINORs before certification, which is prose only:
+
+- The `-BaseRef` remedy needs `-All -Repo <repo>`.
+- A partly ungraded repository may print no `UNGRADED` line at all.
+- Step 3's "latest phase commit" should be "the branch tip".
+
+**Owner follow-up, outside Territory:**
+- The run-level `scope-repos` verdict hides a partly ungraded run (round 4 F2, widened by round 5 F2).
+- `scope-check-repos.ps1`'s own `-BaseRef` hint omits `-Repo` (round 5 F1).
+
+### Phase 6 gate — CERTIFIED
+
+> Gate 6 certified (ci-held): run
+> <https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/36221606092>, conclusion success,
+> commit `48bf41e` (phase 6, review round 5) — approved, anas.m, 2026-09-26.
+
+The `enforcement-tests` run on the same sha
+(<https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/36221606091>, conclusion success,
+805 passed / 0 failed on ubuntu-latest and windows-latest) is cited alongside it. The approval
+was given in reply to the implementer's report of this triplet, together with the two
+recommendations below, in the owner's words: "go with your recoomanded". The recommendation it
+answered was to approve on this triplet. This record quotes that reply so that a human reviewer
+can judge it.
+
+Owner decisions taken in the same reply:
+- A roadmap GAP row for the partly-graded multi-repo summary (`scope-repos OK` over a run in
+  which one repository was never graded). It also names `scope-check-repos.ps1`'s `-BaseRef`
+  hint, which omits `-Repo`. It goes in docs PR #49, next to GAP-029.
+- The stray 0x08 byte in `specs/014-amendment-authority/notes.md` is fixed on the same docs
+  branch. It is outside this feature's Territory.
