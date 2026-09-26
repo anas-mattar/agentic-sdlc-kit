@@ -41,10 +41,25 @@ found.
 **A correction to the recorded reproduction.** F2 demonstrated the failure on a document whose
 marker line began with `<!--`. In CommonMark a line that begins with `<!--` starts an HTML
 block, which ends the paragraph above it, so the backtick before it pairs with nothing and the
-code span F2 described is not one a renderer would show. The failure is real, but its faithful
-shape is a code span wrapping *within one paragraph*, with the marker after that paragraph ends.
-This feature proves both shapes, and the paragraph boundary is part of the requirement
-(FR-003).
+code span F2 described is not one a renderer would show. Measured with a CommonMark renderer
+(markdown-it-py, 2026-09-27): the `<!--` on F2's line 3 renders as **plain text**, neither code
+nor comment, and all three markers render as real comments. What swallows the middle marker is
+therefore not the code-span rule. It is the kit's comment model, which treats an unclosed `<!--`
+as hiding everything after it, and that model is out of scope here. So two different shapes are
+in play:
+
+- **The code-span shape** (GAP-028 proper): a span wrapping *within one paragraph* holds a
+  `<!--`, and a marker follows after the paragraph ends. A renderer shows the span as code. This
+  feature fixes it: the marker is harvested (US1, scenario 1).
+- **F2's shape** (the comment model): an unpaired `<!--` in prose. This feature does not change
+  how the kit reads it. It stops the loss being **silent**: the generator names the skipped
+  marker and fails (US3, and US1 scenario 3).
+
+The renderer also shows why the paragraph boundary is a requirement (FR-003). A multi-line HTML
+comment ends at the first line containing `-->`, whatever backticks it holds, so a span may never
+pair across those lines either.
+
+**Amendment approved by**: anas.m, 2026-09-27
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -68,8 +83,9 @@ holding `<!--` followed by a digest marker, and confirm that every marker is har
    marker appears in the digest and the run reports OK.
 2. **Given** the same document with the digest on disk missing that rule, **When** the digest
    check runs, **Then** it reports the digest as stale, and does not report OK.
-3. **Given** F2's recorded document (the marker line itself begins with `<!--`, ending the
-   paragraph), **When** digests are generated, **Then** all three markers are harvested.
+3. **Given** F2's recorded document (an unpaired `<!--` in prose, the marker on the next line),
+   **When** digests are generated, **Then** the run fails and names the skipped marker's file and
+   line. It does not report OK with a marker missing, as it does today.
 
 ---
 
@@ -138,6 +154,10 @@ unclosed comment, and confirm that the run fails and names that line.
 - **A `-->` inside a wrapped span** is disarmed too, so it cannot close a real comment early.
 - **Inside a real comment**, backticks mean nothing: a backticked `-->` there really does close
   the comment. build-digests already handles this and it must stay that way.
+- **A multi-line HTML comment block** (a line beginning with `<!--`, running to the first line
+  holding `-->`) is not a paragraph. A backtick on its first line and another after its `-->` do
+  not pair, so the `-->` still closes it. Per-line reading gets this right today by accident, and
+  a paragraph-wide fix must not break it.
 - **Fenced blocks** keep their existing handling. A fence line ends any open paragraph.
 - **Lines with no backtick at all**, the overwhelming majority, must cost no more than they do
   today (014's SC-006 found that a per-character walk over every line cost about 9× the whole
@@ -154,20 +174,26 @@ unclosed comment, and confirm that the run fails and names that line.
   MUST be treated as literal text by both consumers.
 - **FR-003**: A code span MUST NOT extend beyond its paragraph. A paragraph ends at a blank line,
   a fence line, or a line that begins a new block: an ATX heading, a list item, a block quote, a
-  table row, a line beginning with `<!--`, or a thematic break. An opening run with no partner
+  table row, a line beginning with `<!--`, or a thematic break. The lines of an HTML comment
+  block, from a line beginning with `<!--` through the first line holding `-->`, belong to no
+  paragraph, so no span pairs into or out of them. Each of their lines keeps exactly today's
+  single-line treatment, and the block's end is found on the raw text. An opening run with no partner
   before the paragraph ends opens no span.
 - **FR-004**: Everything the single-line rule does today MUST continue to hold: run-length
   pairing, escaped backticks, fenced blocks, and the unterminated-comment rule. Every existing
   harness case MUST pass unchanged.
 - **FR-005**: The harness MUST carry, for each consumer, a case where the wrapped span holds
   a marker and the result is correct (pass), and the nearest case where the condition under test
-  fails. Each new case MUST be written first and shown failing on the current code before the
-  fix lands.
+  fails. Each case the fix is meant to turn green MUST be written first and shown failing on the
+  current code before the fix lands. Each guard case, one that holds today and must keep holding
+  (FR-006, FR-007), MUST be shown passing on the current code.
 - **FR-006**: The harness MUST carry a no-fail-open case for the amendment consumer: a record
   inside a real comment stays hidden when unpaired backtick runs sit in earlier paragraphs
   (US2, scenario 3).
-- **FR-007**: The harness MUST carry F2's recorded document as a case for the digest consumer
-  (US1, scenario 3).
+- **FR-007**: The harness MUST carry F2's recorded document as a case for the digest consumer,
+  expecting the skipped-marker report of FR-009 (US1, scenario 3). It MUST also carry the
+  HTML-comment-block case from Edge Cases for both consumers, expecting the result the current
+  per-line code already gives.
 - **FR-008**: Any rule this feature adds or changes MUST enter the rule inventory with a passing
   and a failing case, and the coverage check MUST grade it as it grades every other rule.
 - **FR-009**: The digest generator MUST report, by file and line, any line shaped like a digest
@@ -188,7 +214,9 @@ unclosed comment, and confirm that the run fails and names that line.
   and inline raw-HTML semantics keep their current handling. Where the paragraph model differs
   from a renderer, the difference is recorded in the plan, not modelled.
 - The kit's comment model itself (what counts as a comment once code is excluded), including
-  the unterminated-comment rule.
+  the unterminated-comment rule. It disagrees with a renderer on F2's shape (an unpaired `<!--`
+  in prose is plain text to a renderer). This feature makes that disagreement loud (FR-009) and
+  records it as a new gap for the owner. It does not resolve it.
 - Other document readers (territory parsing, doc-lint path extraction), which do not use the
   shared function.
 
@@ -204,14 +232,17 @@ unclosed comment, and confirm that the run fails and names that line.
 
 ### Measurable Outcomes
 
-- **SC-001**: F2's recorded document and the faithful wrapped-paragraph document each yield
-  **3 of 3** markers harvested (F2 measured 2 of 3).
+- **SC-001**: The wrapped-paragraph document yields **every** marker harvested (today one is
+  lost). F2's recorded document yields **zero** silent losses: its skipped marker is reported by
+  file and line and the run fails (today: 2 of 3 harvested, and OK).
 - **SC-002**: Across the amendment consumer's new cases, **zero** records inside a real comment
   are counted, and **every** visible record after a wrapped span is counted.
 - **SC-003**: **Every** harness case that existed before this feature passes unchanged, on both
   CI platforms (Windows and Linux).
-- **SC-004**: **Every** new case fails when the fix is reverted. This is shown by a recorded
-  mutation run, because a guard that passes without its fix measures nothing (015's keeper).
+- **SC-004**: **Every** case the fix turns green fails again when the fix is reverted, and
+  **every** guard case fails when the paragraph boundary is removed (the over-reaching fix). Both
+  are shown by recorded mutation runs, because a guard that passes without its fix measures
+  nothing (015's keeper).
 - **SC-005**: Regenerated digests for the kit and the three adopted projects are
   **byte-identical** to the committed ones, except where a marker was previously swallowed. The
   2026-09-27 scan predicts no such case.
