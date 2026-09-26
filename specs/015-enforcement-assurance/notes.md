@@ -2634,3 +2634,24 @@ MINORs before certification, which is prose only:
 **Owner follow-up, outside Territory:**
 - The run-level `scope-repos` verdict hides a partly ungraded run (round 4 F2, widened by round 5 F2).
 - `scope-check-repos.ps1`'s own `-BaseRef` hint omits `-Repo` (round 5 F1).
+
+### Phase 6 gate — CERTIFIED
+
+> Gate 6 certified (ci-held): run
+> <https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/36221606092>, conclusion success,
+> commit `48bf41e` (phase 6, review round 5) — approved, anas.m, 2026-09-26.
+
+The `enforcement-tests` run on the same sha
+(<https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/36221606091>, conclusion success,
+805 passed / 0 failed on ubuntu-latest and windows-latest) is cited alongside it. The approval
+was given in reply to the implementer's report of this triplet, together with the two
+recommendations below, in the owner's words: "go with your recoomanded". The recommendation it
+answered was to approve on this triplet. This record quotes that reply so that a human reviewer
+can judge it.
+
+Owner decisions taken in the same reply:
+- A roadmap GAP row for the partly-graded multi-repo summary (`scope-repos OK` over a run in
+  which one repository was never graded). It also names `scope-check-repos.ps1`'s `-BaseRef`
+  hint, which omits `-Repo`. It goes in docs PR #49, next to GAP-029.
+- The stray 0x08 byte in `specs/014-amendment-authority/notes.md` is fixed on the same docs
+  branch. It is outside this feature's Territory.
