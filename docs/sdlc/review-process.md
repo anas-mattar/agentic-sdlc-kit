@@ -57,8 +57,11 @@ pwsh -File scripts/scope-check-repos.ps1   # multi-repo only; n/a elsewhere
    In a multi-repo project the second command grades this phase's commits in the nested
    code repositories (`docs/sdlc/repository-strategy.md`, "Territory across repositories");
    neither verdict may be FAIL — `n/a`, `not applicable` and `WARN` are the cross-repo
-   check's lawful non-blocking verdicts, and a phase that touches no code repository
-   legitimately produces one.
+   check's lawful non-blocking verdicts. A phase that touches no code repository gets
+   `not applicable` on each repository's line and then a run-level `UNGRADED`, because
+   nothing was graded anywhere — as does every governance-repository CI run, where the code
+   repositories are not checked out. That is expected, and it is an `UNGRADED` like any
+   other: the review records the reason in writing, as the next paragraph requires.
 
    **`UNGRADED` is not a pass.** It exits 0, so it will not stop you, and it means the
    check RAN AND COMPARED NOTHING: no diff base, a commit range with no commits in it, a

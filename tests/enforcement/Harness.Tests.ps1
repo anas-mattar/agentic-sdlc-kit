@@ -397,13 +397,14 @@ Describe 'the harness leaves the repository it runs from alone (T047, FR-020)' {
         # way on every checkout.
         #
         # -Branch was the only argument scanned until the round-2 review (F6) pointed out that
-        # -Commit, -ReplayBase, -ReplayTip and -BaseBranch name refs too. Those four may also
+        # -Commit, -ReplayBase, -ReplayTip and -BaseBranch name refs too; round 3 (F3) added
+        # scope-check-repos.ps1's -BaseRef, the one the first widening missed. Those five may also
         # carry a HEAD-relative revision (HEAD, HEAD~1, HEAD^2), which is fixture-local by
         # construction, or a ref that is absent ON PURPOSE - spelled 'no-such-*' so that a
         # reader, and this test, can tell a deliberate miss from an accidental host name.
         # -Branch gets neither allowance: it is a branch name, and no case needs either form.
         # The recipe is walked whole, so a branch a nested code repository creates counts.
-        $revisionArgs = @('-Commit', '-ReplayBase', '-ReplayTip', '-BaseBranch')
+        $revisionArgs = @('-Commit', '-ReplayBase', '-ReplayTip', '-BaseBranch', '-BaseRef')
         function Get-CreatedNames($node) {
             if ($null -eq $node) { return }
             if ($node -is [System.Collections.IEnumerable] -and $node -isnot [string]) { foreach ($n in $node) { Get-CreatedNames $n }; return }

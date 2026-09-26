@@ -2378,7 +2378,7 @@ any of the nine scripts fails the suite until someone says, in writing, what it 
 > the last sentence claims more than the two passes can see: a new **failure-shaped** site
 > fails the suite until it is declared, but a **success-shaped** early exit in a new idiom
 > (`Write-Host '<benign text>'; exit 0`) matches neither pass. Round 2 closed the one instance
-> the precise pass could reach (the enforcement-pack `OK` idiom now ends on ``); the general
+> the precise pass could reach (the enforcement-pack `OK` idiom now ends on `\b`); the general
 > case is a known limit, recorded below.
 
 ### T048 — SC-002 by sampling, one rule per grading script
@@ -2552,7 +2552,7 @@ confirmed every round-1 fix by mutation and raised one blocking finding and thre
   branch's first commit.
 - **F4 — the OK-variant blind spot.** The enforcement-pack `OK` idiom ended on a closing single
   quote, so `"enforcement-pack: OK"` or `'enforcement-pack: OK (reason)'` matched neither pass.
-  It now ends on ``. Mutation: two such early exits added to the dispatch → the notRules
+  It now ends on `\b`. Mutation: two such early exits added to the dispatch → the notRules
   guard fails with "excuses 3 site(s) … declared 1"; reverted. The recall sweep's comment in
   `Coverage.Tests.ps1` no longer says "impossible to slip past" without qualification: it
   reaches failure-shaped lines only. **Known limit, not closed:** a success-shaped early exit
@@ -2566,3 +2566,29 @@ confirmed every round-1 fix by mutation and raised one blocking finding and thre
   UNCOVERED" now says what became of the five; the two superseded `notes.md` passages above
   carry a note instead of being rewritten; the coverage report's notRules heading says why its
   count (13 entries) differs from the summary's (2 sites inside the denominator).
+
+## Phase 6 review round 3 — remediation (F1–F4)
+
+Round 3 (`ai-code-review-phase-6-round-3.md`, fresh-context, REQUEST CHANGES) found the
+round-2 rewrite of the flow-down note had replaced one false universal with a narrower one.
+
+- **F1 (BLOCKING) — the note is now a table written from the code.** Two rounds of correcting
+  one sentence each produced a true sentence neither time, so the section was rebuilt from
+  the thirteen sites that print `UNGRADED`: `scope-check.ps1` (detached HEAD, no merge base,
+  empty range, nothing graded), `scope-check-repos.ps1` (the same four, per repository and
+  run-level) and `enforcement-pack.ps1` (four no-base members and the empty amendment range).
+  Five states, each with the member line, whether full history fixes it, and what to do. The
+  three states round 3 measured — spec-only commits, governance CI / code-free phases, a trunk
+  not named `main` — are rows, and `fetch-depth: 0` is offered only for the shallow-clone cause.
+- **F2 — review-process step 3.** It said a phase touching no code repository "legitimately
+  produces" `n/a`; it produces per-repository `not applicable` and a run-level `UNGRADED`. The
+  sentence now says so and points at the written-reason rule below it instead of contradicting it.
+- **F3 — `-BaseRef`.** Added to the T047 ref scan. The six ref-naming parameters were
+  enumerated this time from the graded scripts' `param` blocks (`-Branch`, `-Commit`,
+  `-ReplayBase`, `-ReplayTip`, `-BaseRef`, `-BaseBranch`) rather than from the cases.
+  Mutation: `REPOS-017/pass` with `-BaseRef 015-enforcement-assurance` fails the test; reverted.
+- **F4 — two backspace bytes in this file**, where a word-boundary escape was meant. They came
+  from the tool layer unescaping a doubled backslash inside a shell heredoc before the script
+  ran. Replaced by character code; a scan of the phase-6 Territory and this directory finds no
+  other 0x08. The same byte in `specs/014-amendment-authority/notes.md` is outside this
+  Territory and is left for the owner.
