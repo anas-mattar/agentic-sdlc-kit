@@ -457,8 +457,10 @@ clean. A member that ran and formed **no** opinion says `UNGRADED`, and the run 
 
 **What you will newly see.** Three things, and none of them is a new failure:
 
-1. **`UNGRADED` where you used to see `OK`.** Only in the states listed above. On a healthy
-   checkout with full history you will not see it at all.
+1. **`UNGRADED` where you used to see `OK`.** Only in the states listed above. With full
+   history you will see it only where there is genuinely nothing to grade: an `NNN-*` branch
+   with no commits of its own yet (or one already merged), where `scope-check` and the
+   amendment check both say so. Everywhere else a full-history checkout does not produce it.
 2. **`n/a` where you used to see `OK`.** The two scope checks already declined on the trunk, on
    a `fix|chore|docs` branch and on an unnumbered branch, but they spelled it `not applicable`
    — and the wrapper lifts `n/a`, so those correct declines were rendered as `OK`. Measured on
@@ -475,9 +477,11 @@ unchanged, `ritual-checks.ps1` remains the single entry point, and the Lite lane
 hard failure.
 
 **What to do about it.** Nothing, mechanically. But an `UNGRADED` member is worth chasing, because
-it is telling you that a check you believe is protecting you did not run against anything: the
-usual cause is `fetch-depth: 0` missing from a workflow you wrote yourself. Fixing that turns
-the word back into a real `OK` rather than hiding it.
+it is telling you that a check you believe is protecting you did not run against anything. When
+the member names a missing base or missing history, the usual cause is `fetch-depth: 0`
+missing from a workflow you wrote yourself, and fixing that turns the word back into a real
+`OK` rather than hiding it. When it names an empty commit range, no fetch setting changes it:
+the branch has nothing of its own to grade yet, and the word goes away with its first commit.
 
 <!-- digest: A green ritual-checks run now means the members formed an opinion - UNGRADED says one did not. -->
 <!-- digest: UNGRADED changes the verdict and never the exit code; nothing in CI behaves differently. -->

@@ -59,6 +59,11 @@ BeforeAll {
     # The recall pass. Broad on purpose: it is allowed — expected — to hit lines that are not
     # rules. Its job is not to be right, it is to be impossible to slip past, so that a genuine
     # emission site written in a new idiom shows up as UNCLASSIFIED rather than as nothing.
+    # Its reach is FAILURE-shaped lines only: it looks for failure words and failure-named
+    # accumulators. A success-shaped early exit in a new idiom (Write-Host '<benign text>'; exit 0)
+    # matches nothing here, and only a precise idiom that names its words can see it - which is
+    # why the enforcement-pack OK idiom ends on \b (phase 6 review round 2, F4). That limit is
+    # known and recorded in notes.md; it is not closed by this pass.
     $script:CandidateSweep = @(
         '\+=\s*.*(?i:fail|issue|error|problem|broken|missing|stale|invalid)',
         '\$(?i:[a-z:]*)(failures|issues|errors|problems|broken|findings)\s*\+=',
@@ -411,7 +416,11 @@ Describe 'coverage' {
                     foreach ($entry in $declared.notRules) { [pscustomobject]@{ Script = $declared.script; Entry = $entry } }
                 }
             })
-        Write-Host ('coverage: {0} line(s) declared not a rule, each with its reason:' -f $declaredNot.Count)
+        # This count is the notRules ENTRIES, and differs from the summary's "declared not a rule"
+        # on purpose: the summary counts only the precise-pass sites inside the denominator, and
+        # most entries excuse recall-sweep sites that are outside it (phase 6 review round 2, F7).
+        Write-Host ('coverage: {0} line(s) declared not a rule, each with its reason (the summary above counts only the {1} of them in the denominator; the rest are recall-sweep sites):' -f `
+                $declaredNot.Count, $notRule)
         foreach ($item in $declaredNot) {
             Write-Host ('coverage:   [{0}] {1}' -f $item.Script, $item.Entry.anchor)
             foreach ($line in (Split-Reason -Text "$($item.Entry.reason)" -Width 96)) {

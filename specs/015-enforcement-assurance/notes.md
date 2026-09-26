@@ -2371,6 +2371,16 @@ coverage: verify-kit.ps1           30 of 31 site(s) fixtured (1 exempt)
 roll-up or a renderer, now declared. **There is no remainder.** A new emission site added to
 any of the nine scripts fails the suite until someone says, in writing, what it is.
 
+> **Superseded (phase 6 review round 2, F4 and F7).** The figures above are `28a99fa`'s. After
+> the round-1 remediation (`9ae7b53`) the report reads `191 of 200 … 7 exempt, 2 declared not a
+> rule`, with `enforcement-pack.ps1 51 of 54 (1 exempt, 2 not a rule)` and
+> `territory-check.ps1 8 of 12 (4 exempt)` — PACK-004 and TERR-012 became fixtured rules. And
+> the last sentence claims more than the two passes can see: a new **failure-shaped** site
+> fails the suite until it is declared, but a **success-shaped** early exit in a new idiom
+> (`Write-Host '<benign text>'; exit 0`) matches neither pass. Round 2 closed the one instance
+> the precise pass could reach (the enforcement-pack `OK` idiom now ends on ``); the general
+> case is a known limit, recorded below.
+
 ### T048 — SC-002 by sampling, one rule per grading script
 
 SC-002 says deliberately breaking a covered rule must make a named fixture fail, *verified by
@@ -2410,6 +2420,13 @@ around a real case (`--untracked-files=all`, so a stray file in an ignored direc
 fold into an unchanged-looking line); every fixture commit is asserted to carry the fixture
 identity and not this repository's; and no `command.json` may name the branch this repository
 happens to be on — which would be green here and red for everyone else the day it merges.
+
+> **Superseded (phase 6 review round 1, F1; round 2, F6).** The branch half described here
+> compared each `command.json` with this repository's branch by substring, and was itself
+> host-dependent. It now states the property about the fixture: every ref-naming argument
+> (`-Branch`, `-Commit`, `-ReplayBase`, `-ReplayTip`, `-BaseBranch`) names, as a whole value, a
+> branch the case's recipe creates — or, for the four revision arguments, a `HEAD`-relative
+> revision or a deliberately absent `no-such-*` ref. See the two remediation sections below.
 
 ### T046 — the failure report names the verdict
 
@@ -2520,3 +2537,32 @@ failed, but because **neither pass saw the line at all**: the precise pattern re
 immediately, and the recall sweep did not match it either. A decline worded as a variant of the
 success verdict is invisible to the coverage instrument. Recorded here for the second review
 round to weigh; not changed in this remediation.
+
+## Phase 6 review round 2 — remediation (F1, F4, F6, F7)
+
+Round 2 (`ai-code-review-phase-6-round-2.md`, a fresh-context reviewer, REQUEST CHANGES)
+confirmed every round-1 fix by mutation and raised one blocking finding and three smaller ones.
+
+- **F1 (BLOCKING) — the flow-down note's universal.** `adoption/updating.md` said a healthy
+  full-history checkout never shows `UNGRADED` and sent anyone who saw it to `fetch-depth: 0`.
+  An `NNN-*` branch with no commits of its own (fresh, or already merged) produces it with full
+  history — `scope-check` since phase 5, and the amendment check since round 1's F6. The
+  sentence now names that state, and the remedy paragraph splits the causes: missing base or
+  history → `fetch-depth: 0`; an empty commit range → nothing to fix, the word goes with the
+  branch's first commit.
+- **F4 — the OK-variant blind spot.** The enforcement-pack `OK` idiom ended on a closing single
+  quote, so `"enforcement-pack: OK"` or `'enforcement-pack: OK (reason)'` matched neither pass.
+  It now ends on ``. Mutation: two such early exits added to the dispatch → the notRules
+  guard fails with "excuses 3 site(s) … declared 1"; reverted. The recall sweep's comment in
+  `Coverage.Tests.ps1` no longer says "impossible to slip past" without qualification: it
+  reaches failure-shaped lines only. **Known limit, not closed:** a success-shaped early exit
+  in an idiom no precise pattern names is invisible to both passes. Whether that becomes a
+  roadmap GAP row is an owner decision (`docs/roadmap.md` is outside this Territory).
+- **F6 — the ref test's width.** The T047 branch test now scans `-Commit`, `-ReplayBase`,
+  `-ReplayTip` and `-BaseBranch` as well as `-Branch`, walking the whole recipe (so a branch a
+  nested code repository creates counts). Mutation: `AMEND-006/pass -ReplayBase
+  015-enforcement-assurance` → fails naming the case and the argument; reverted.
+- **F7 — stale statements.** `emission-idioms.json`'s "FIVE OF THESE ARE DECLARED AND
+  UNCOVERED" now says what became of the five; the two superseded `notes.md` passages above
+  carry a note instead of being rewritten; the coverage report's notRules heading says why its
+  count (13 entries) differs from the summary's (2 sites inside the denominator).

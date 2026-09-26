@@ -383,7 +383,7 @@ Describe 'the harness leaves the repository it runs from alone (T047, FR-020)' {
         }
     }
 
-    It 'names, in every case command, only branches that case''s own fixture creates' {
+    It 'names, in every case command, only refs that case''s own fixture creates' {
         # The branch half. A case that passed -Branch 015-enforcement-assurance would be green
         # here and red for everyone else the day this branch merges.
         #
@@ -392,26 +392,46 @@ Describe 'the harness leaves the repository it runs from alone (T047, FR-020)' {
         # detached checkout every pull_request run gets ('HEAD' is in -ReplayBase HEAD) and red
         # on main after merge (PACK-003 names its fixture's own trunk). Phase 6 review, F1. A
         # name in a case refers to the fixture repository, never to this one, so the property
-        # is stated about the fixture and reads nothing from the host: every -Branch value is,
+        # is stated about the fixture and reads nothing from the host: every ref-naming value is,
         # as a whole value, a branch the case's recipe creates. That is true or false the same
         # way on every checkout.
+        #
+        # -Branch was the only argument scanned until the round-2 review (F6) pointed out that
+        # -Commit, -ReplayBase, -ReplayTip and -BaseBranch name refs too. Those four may also
+        # carry a HEAD-relative revision (HEAD, HEAD~1, HEAD^2), which is fixture-local by
+        # construction, or a ref that is absent ON PURPOSE - spelled 'no-such-*' so that a
+        # reader, and this test, can tell a deliberate miss from an accidental host name.
+        # -Branch gets neither allowance: it is a branch name, and no case needs either form.
+        # The recipe is walked whole, so a branch a nested code repository creates counts.
+        $revisionArgs = @('-Commit', '-ReplayBase', '-ReplayTip', '-BaseBranch')
+        function Get-CreatedNames($node) {
+            if ($null -eq $node) { return }
+            if ($node -is [System.Collections.IEnumerable] -and $node -isnot [string]) { foreach ($n in $node) { Get-CreatedNames $n }; return }
+            if ($node -isnot [System.Management.Automation.PSCustomObject]) { return }
+            foreach ($prop in $node.PSObject.Properties) {
+                if ($prop.Name -in @('defaultBranch', 'checkout', 'branch') -and $prop.Value -is [string]) { $prop.Value }
+                else { Get-CreatedNames $prop.Value }
+            }
+        }
         $offenders = @()
         foreach ($dir in (Get-CaseDirectories -TestsRoot $PSScriptRoot)) {
             $command = Get-Content (Join-Path $dir 'command.json') -Raw | ConvertFrom-Json
             $argv = @($command.args)
-            $named = @(for ($i = 0; $i -lt $argv.Count - 1; $i++) { if ($argv[$i] -eq '-Branch') { "$($argv[$i + 1])" } })
+            $named = @(for ($i = 0; $i -lt $argv.Count - 1; $i++) {
+                    if ($argv[$i] -eq '-Branch' -or $argv[$i] -in $revisionArgs) { [pscustomobject]@{ Arg = $argv[$i]; Value = "$($argv[$i + 1])" } }
+                })
             if ($named.Count -eq 0) { continue }
             $recipePath = Join-Path $dir 'recipe.json'
-            if (-not (Test-Path $recipePath)) { $offenders += "$dir passes -Branch $($named -join ', ') and has no recipe that could create it"; continue }
-            $recipe = Get-Content $recipePath -Raw | ConvertFrom-Json
-            $created = @(@($recipe.defaultBranch, $recipe.checkout) + @($recipe.commits | ForEach-Object { $_.branch }) |
-                Where-Object { $_ })
-            foreach ($name in $named) {
-                if ($name -notin $created) { $offenders += "$dir passes -Branch '$name', which its fixture never creates (it creates: $(($created | Sort-Object -Unique) -join ', '))" }
+            if (-not (Test-Path $recipePath)) { $offenders += "$dir passes $(($named | ForEach-Object { "$($_.Arg) $($_.Value)" }) -join ', ') and has no recipe that could create it"; continue }
+            $created = @(Get-CreatedNames (Get-Content $recipePath -Raw | ConvertFrom-Json) | Where-Object { $_ } | Sort-Object -Unique)
+            foreach ($n in $named) {
+                if ($n.Value -in $created) { continue }
+                if ($n.Arg -in $revisionArgs -and ($n.Value -match '^HEAD([~^]\d*)*$' -or $n.Value -like 'no-such-*')) { continue }
+                $offenders += "$dir passes $($n.Arg) '$($n.Value)', which its fixture never creates (it creates: $($created -join ', '))"
             }
         }
         if ($offenders.Count -gt 0) {
-            throw ("these cases name a branch from outside their own fixture, so their verdict can depend on where they are run (FR-020):`n  " +
+            throw ("these cases name a ref from outside their own fixture, so their verdict can depend on where they are run (FR-020):`n  " +
                 ($offenders -join "`n  "))
         }
         $offenders.Count | Should -Be 0
