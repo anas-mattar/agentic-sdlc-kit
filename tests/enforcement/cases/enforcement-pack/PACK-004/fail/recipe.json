@@ -1,0 +1,21 @@
+{
+  "description": "enforcement-pack aimed at a docs/ branch. The lightweight lane runs one check - review provenance - and the dispatch says so, rather than letting the run read as if every lane check had passed. Differs from the pass direction in the branch named, and in nothing else (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "docs/thing",
+      "message": "fix: the thing",
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    }
+  ],
+  "checkout": "docs/thing"
+}

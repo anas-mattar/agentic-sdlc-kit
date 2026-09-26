@@ -383,18 +383,35 @@ Describe 'the harness leaves the repository it runs from alone (T047, FR-020)' {
         }
     }
 
-    It 'names no branch of this repository in any case command' {
+    It 'names, in every case command, only branches that case''s own fixture creates' {
         # The branch half. A case that passed -Branch 015-enforcement-assurance would be green
-        # here and red for everyone else the day this branch merges; a case that passed the
-        # CURRENT branch by reading it would be green everywhere and asserting nothing.
-        $current = (& git -C $script:KitRoot rev-parse --abbrev-ref HEAD 2>$null | Out-String).Trim()
+        # here and red for everyone else the day this branch merges.
+        #
+        # The first version of this test compared each command.json against the branch THIS
+        # repository was on, by substring - and so was itself branch-dependent: red on the
+        # detached checkout every pull_request run gets ('HEAD' is in -ReplayBase HEAD) and red
+        # on main after merge (PACK-003 names its fixture's own trunk). Phase 6 review, F1. A
+        # name in a case refers to the fixture repository, never to this one, so the property
+        # is stated about the fixture and reads nothing from the host: every -Branch value is,
+        # as a whole value, a branch the case's recipe creates. That is true or false the same
+        # way on every checkout.
         $offenders = @()
         foreach ($dir in (Get-CaseDirectories -TestsRoot $PSScriptRoot)) {
-            $text = [IO.File]::ReadAllText((Join-Path $dir 'command.json'))
-            if ($current -and $text.Contains($current)) { $offenders += $dir }
+            $command = Get-Content (Join-Path $dir 'command.json') -Raw | ConvertFrom-Json
+            $argv = @($command.args)
+            $named = @(for ($i = 0; $i -lt $argv.Count - 1; $i++) { if ($argv[$i] -eq '-Branch') { "$($argv[$i + 1])" } })
+            if ($named.Count -eq 0) { continue }
+            $recipePath = Join-Path $dir 'recipe.json'
+            if (-not (Test-Path $recipePath)) { $offenders += "$dir passes -Branch $($named -join ', ') and has no recipe that could create it"; continue }
+            $recipe = Get-Content $recipePath -Raw | ConvertFrom-Json
+            $created = @(@($recipe.defaultBranch, $recipe.checkout) + @($recipe.commits | ForEach-Object { $_.branch }) |
+                Where-Object { $_ })
+            foreach ($name in $named) {
+                if ($name -notin $created) { $offenders += "$dir passes -Branch '$name', which its fixture never creates (it creates: $(($created | Sort-Object -Unique) -join ', '))" }
+            }
         }
         if ($offenders.Count -gt 0) {
-            throw ("these cases name the branch this repository happens to be on ('$current'), so their verdict depends on where they are run (FR-020):`n  " +
+            throw ("these cases name a branch from outside their own fixture, so their verdict can depend on where they are run (FR-020):`n  " +
                 ($offenders -join "`n  "))
         }
         $offenders.Count | Should -Be 0

@@ -1,0 +1,21 @@
+{
+  "description": "The same repository on a chore/ branch, so the dispatch reaches the full Lite lane and prints no lane statement. Differs from the fail direction in the branch named (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "chore/thing",
+      "message": "fix: the thing",
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    }
+  ],
+  "checkout": "chore/thing"
+}

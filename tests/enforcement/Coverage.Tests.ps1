@@ -325,6 +325,36 @@ Describe 'coverage' {
         $undeclared.Count | Should -Be 0
     }
 
+    It 'every notRules entry has a written reason and excuses exactly the sites it declares' {
+        # The not-a-rule channel is an exemption channel, and until the phase 6 review (F2) it
+        # had none of the exemption channel's guards: an anchor could excuse any number of sites,
+        # the reason could be empty, and the report printed only a count. A second lane decline
+        # added under an existing anchor stayed green. So the same three guards apply here - a
+        # reason a reader can act on, a declared 'siteCount' (default 1) the anchor must match
+        # exactly, and (in the report below) every entry printed with its reason.
+        $problems = @()
+        foreach ($declared in $script:Idioms.scripts) {
+            if (-not ($declared.PSObject.Properties.Name -contains 'notRules' -and $declared.notRules)) { continue }
+            foreach ($entry in $declared.notRules) {
+                $label = "$($declared.script) notRules '$($entry.anchor)'"
+                if ("$($entry.reason)".Trim().Length -lt 60) {
+                    $problems += "${label}: the reason is missing or says almost nothing - a line declared not to be a rule needs the same written reason an exemption does (FR-004)"
+                }
+                $expected = if ($entry.PSObject.Properties.Name -contains 'siteCount' -and $entry.siteCount) { [int]$entry.siteCount } else { 1 }
+                $keys = @($script:Owned.Keys) + @($script:UnclassifiedOwned.Keys)
+                $hits = @($keys | Where-Object {
+                        $o = if ($script:Owned.ContainsKey($_)) { $script:Owned[$_] } else { $script:UnclassifiedOwned[$_] }
+                        $_.StartsWith("$($declared.script):") -and $o.Kind -eq 'not-a-rule' -and $o.Id -eq $entry.anchor
+                    } | Sort-Object -Unique)
+                if ($hits.Count -ne $expected) {
+                    $problems += "${label}: excuses $($hits.Count) site(s) [$($hits -join ', ')], declared $expected - a new line under an existing anchor is a new condition until someone says otherwise, and an anchor that excuses nothing is stale"
+                }
+            }
+        }
+        if ($problems.Count -gt 0) { throw ($problems -join "`n") }
+        $problems.Count | Should -Be 0
+    }
+
     It 'reports what is covered, what is exempt, and what is declared not to be a rule' {
         $byKind = { param($k) @($script:Owned.Values | Where-Object Kind -eq $k).Count }
         $covered = & $byKind 'covered'
@@ -361,8 +391,8 @@ Describe 'coverage' {
                 $_.PSObject.Properties.Name -contains 'exemption' -and $_.exemption } | Sort-Object id)
         Write-Host ''
         Write-Host ('coverage: {0} rule(s) exempt from a fixture pair (FR-004), each with its reason:' -f $exemptions.Count)
-        # Grouped by reason, not listed per rule. Five of the eight share one cause, and
-        # printing that paragraph five times trains the reader to skip it - which defeats the
+        # Grouped by reason, not listed per rule. Four of the seven share one cause, and
+        # printing that paragraph four times trains the reader to skip it - which defeats the
         # requirement that the reason be seen.
         foreach ($group in ($exemptions | Group-Object exemption | Sort-Object { $_.Group[0].id })) {
             foreach ($rule in $group.Group) {
@@ -373,6 +403,22 @@ Describe 'coverage' {
             }
             Write-Host 'coverage:'
         }
+
+        # The not-a-rule declarations, printed the same way and for the same reason: a line the
+        # inventory says is not a rule is a claim, and a claim nobody sees is not reviewed.
+        $declaredNot = @(foreach ($declared in ($script:Idioms.scripts | Sort-Object script)) {
+                if ($declared.PSObject.Properties.Name -contains 'notRules' -and $declared.notRules) {
+                    foreach ($entry in $declared.notRules) { [pscustomobject]@{ Script = $declared.script; Entry = $entry } }
+                }
+            })
+        Write-Host ('coverage: {0} line(s) declared not a rule, each with its reason:' -f $declaredNot.Count)
+        foreach ($item in $declaredNot) {
+            Write-Host ('coverage:   [{0}] {1}' -f $item.Script, $item.Entry.anchor)
+            foreach ($line in (Split-Reason -Text "$($item.Entry.reason)" -Width 96)) {
+                Write-Host ('coverage:       ' + $line)
+            }
+        }
+        Write-Host 'coverage:'
 
         # Asserted here: the scan ran and found something to measure. A scanner that silently
         # matched nothing would report 0 of 0 and read as clean - the exact shape of GAP-027,

@@ -445,8 +445,8 @@ still the fix. What it buys you is a red build instead of a green one that grade
 
 **What a green run meant before.** `ritual-checks.ps1` printed `OK` against a member in two
 quite different situations: the member compared what it claims to compare and found nothing,
-**or** the member ran and compared nothing at all. A depth-1 clone with no reachable base, an
-unreadable parent commit, a trunk not named `main`, a branch every one of whose commits was
+**or** the member ran and compared nothing at all. A depth-1 clone with no reachable base, a
+commit range with no commits in it, a trunk not named `main`, a branch every one of whose commits was
 skipped — each of those produced the same word as a clean grading. A run that graded nothing
 was indistinguishable from a run that graded everything and liked it. That was recorded as
 GAP-027 and it is what feature 015 closes.

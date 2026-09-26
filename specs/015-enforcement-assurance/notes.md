@@ -2276,7 +2276,9 @@ adjusted until it agrees with itself, which is the defect this feature has hit t
 (T036a, the guard test written for it, and the phase-5 vocabulary block). A declared
 `notRules` entry costs a written reason and is printed on every run. That is the difference.
 
-Fifteen lines are declared not-rules: `enforcement-pack: OK` (the success verdict, asserted by
+Fourteen lines were declared not-rules (this said fifteen; the phase 6 review, F5, counted
+fourteen, and the list below omitted the docs-lane decline, which is now rule PACK-004 — so
+thirteen): `enforcement-pack: OK` (the success verdict, asserted by
 49 expectations), `enforcement-pack: FAIL (N issue(s)):` (the roll-up over the per-issue lines,
 56), `AmendmentAuthority: graded N of M` (89), the per-issue renderers and `RESULT FAIL`
 roll-ups in `build-digests.ps1`, `doc-lint.ps1`, `verify-kit.ps1` and
@@ -2342,8 +2344,10 @@ of the verdict vocabulary (`CLEAN`/`OVERLAP`, exits 0, 1 or 2).
 
 This is the same finding round 3 of the phase-5 review reached from the other end (F2, F3), and
 it is now measured rather than argued. **`scripts/territory-check.ps1` is outside phase 6's
-Territory and this phase may not touch it**, so it is recorded here and the five sites are
-exempted with this as their written reason. It needs a roadmap GAP row, which
+Territory and this phase may not touch it**, so it is recorded here and the five sites were
+exempted with this as their written reason. (Four: the fifth, TERR-012, is a `Write-Warning`,
+which `Stop` does not make terminating, and it is reachable — the phase 6 review, F3. It has a
+fixture pair now.) It needs a roadmap GAP row, which
 `docs/roadmap.md` is outside this Territory to write — an owner action, named rather than
 quietly carried.
 
@@ -2425,9 +2429,9 @@ verdict   : expected 'enforcement-pack: FAIL (1 issue(s)):'
 
 | | runtime |
 |---|---|
-| `ritual-checks` job, CI | **16s** (run 35518845272) |
-| `enforcement-tests (ubuntu-latest)`, CI | **3m 46s** (run 35518845283) |
-| `enforcement-tests (windows-latest)`, CI | **12m 12s** (same run) |
+| `ritual-checks` job, CI | **16s** (run 35518845272, on the parent `1f05bb3`; **16s** on phase 6's own `28a99fa`, run 35547650371) |
+| `enforcement-tests (ubuntu-latest)`, CI | **3m 46s** (run 35518845283, on `1f05bb3`; **5m 37s** on `28a99fa`, run 35547650549) |
+| `enforcement-tests (windows-latest)`, CI | **12m 12s** (run 35518845283, on `1f05bb3`; **10m 54s** on `28a99fa`, run 35547650549) |
 | `ritual-checks.ps1` local, warm, Windows 11 / pwsh 7 | **122s** |
 | full harness local, warm | **35-61 min**, load-dependent |
 
@@ -2455,8 +2459,64 @@ process boundary that mocking would have hidden).
 - **The phase-5 review's F4 documents** — `specs/006-verification-pack/data-model.md:27,52`
   and the two contracts still describe verdicts the code no longer prints. Outside Territory.
   One of the three prose lines phase 5 recorded WAS reachable here and is fixed:
-  `docs/sdlc/review-process.md` now lists `UNGRADED` among the cross-repo check's lawful
-  non-blocking verdicts, and says what a reviewer must do about one.
+  `docs/sdlc/review-process.md` now says what a reviewer must do about an `UNGRADED`
+  cross-repo verdict. (It first listed `UNGRADED` among the lawful non-blocking verdicts and
+  then said it was not one; the phase 6 review, F9, and the remediation below took it out of
+  the list.)
 - **`docs/sdlc/definition-of-done.md:103`** and
   **`.github/workflows/code-repo-scope-check.yml.template:37`** — the other two. Outside
   Territory.
+
+## Phase 6 review round 1 — remediation (F1–F9)
+
+The fresh-context review (`ai-code-review-phase-6.md`) returned REQUEST CHANGES: four blocking
+findings, two for the owner, three minor. The owner took the implementer's recommendation on
+all three owner calls (2026-09-26): the docs-lane decline becomes a rule, the `OK` note is
+corrected rather than the entry removed, the empty amendment range becomes `UNGRADED` here,
+and the territory-check finding gets its GAP row in a separate docs PR (phase 6's Territory
+does not reach `docs/roadmap.md`).
+
+- **F1 — the branch-independence test was branch-dependent.** It compared every
+  `command.json` against the host checkout's branch by substring, and so was red detached
+  (`HEAD`) and on `main`. It now states the property about the fixture and reads nothing from
+  the host: every `-Branch` value is, as a whole value, a branch the case's own recipe creates.
+  All 156 `-Branch` arguments already met it. Mutation: a case passing
+  `-Branch 015-enforcement-assurance` fails it, naming the case and what its fixture creates.
+- **F2 — `notRules` had none of the exemption guards.** It now has all three: a reason of at
+  least 60 characters, a `siteCount` (default 1) the anchor must match exactly, and every entry
+  printed with its reason. Four reasons were too short to say anything and were rewritten.
+  Mutations: a new `Write-Host "AmendmentAuthority: graded ..."` site under the existing anchor
+  fails (`excuses 2 site(s) ... declared 1`); an emptied reason fails.
+- **F3 — TERR-012's exemption was false.** `Write-Warning` is not terminating under `Stop`.
+  The fixture builder gained `originFetch` (narrow origin's fetch refspec to one branch), and
+  TERR-012 has a pair: with the narrow refspec the run prints
+  `WARNING: Skipping origin/012-other: cannot compare with main.` and still ends on `CLEAN`.
+  That `CLEAN` over a skipped comparison is a further territory-check finding, recorded for the
+  same GAP row. Four exemptions remain on the one cause, and the reason text says four.
+  **A harness fix came with it:** pwsh wraps a `Write-Warning` in ANSI colour escapes on the way
+  to the host even when redirected, so the first capture carried escape bytes. `RunChild.ps1`
+  now sets `$PSStyle.OutputRendering = 'PlainText'` in the child — the child is asked to write
+  plain text, nothing is stripped after capture (the T036a lesson). No existing expectation
+  contained an escape byte, so no other case moved.
+- **F4 — "an unreadable parent commit" is not an UNGRADED cause.** Removed from the
+  `enforcement-pack.ps1` header, `adoption/updating.md` and `docs/sdlc/review-process.md`;
+  the header now says which states are UNGRADED and that AmendmentAuthority fails, not
+  ungrades, on a missing base, a shallow clone and unreadable commits.
+- **F5 — owner decision.** `is the lightweight docs/ lane` leaves `notRules` and becomes
+  PACK-004 (docs/thing against chore/thing, identical tree). `enforcement-pack: OK` stays a
+  not-rule, and the idiom note that called it a site is corrected.
+- **F6 — owner decision.** AmendmentAuthority's empty range now adds to `$ungraded`; the run
+  ends on `UNGRADED` and exits 0 (D6). `AMEND-006/fail` expects that, and inverting the guard
+  still fails both directions.
+- **F7** — the T053 table now carries phase 6's own runs beside the parent's.
+- **F8** — owner action, in the separate docs PR: the territory-check GAP row, now covering
+  the four unassertable error paths and the `CLEAN` printed over a skipped comparison.
+- **F9** — `UNGRADED` is out of the list of lawful non-blocking verdicts in
+  `review-process.md`; the next paragraph carries it.
+
+**Found while proving F2, not in the review.** The first mutation attempted was a line
+`Write-Host 'enforcement-pack: OK (silent decline)'`, and it went green — not because a guard
+failed, but because **neither pass saw the line at all**: the precise pattern requires `OK'`
+immediately, and the recall sweep did not match it either. A decline worded as a variant of the
+success verdict is invisible to the coverage instrument. Recorded here for the second review
+round to weigh; not changed in this remediation.

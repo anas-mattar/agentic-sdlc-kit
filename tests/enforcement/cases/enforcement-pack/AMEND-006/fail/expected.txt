@@ -1,3 +1,3 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
-AmendmentAuthority: no commits in HEAD..HEAD — nothing to grade
-enforcement-pack: OK
+UNGRADED: AmendmentAuthority: no commits in HEAD..HEAD — nothing to grade, so no amendment on '001-thing' was checked for its approval record
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)
