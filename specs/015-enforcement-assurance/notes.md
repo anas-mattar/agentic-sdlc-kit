@@ -2592,3 +2592,30 @@ round-2 rewrite of the flow-down note had replaced one false universal with a na
   ran. Replaced by character code; a scan of the phase-6 Territory and this directory finds no
   other 0x08. The same byte in `specs/014-amendment-authority/notes.md` is outside this
   Territory and is left for the owner.
+
+## Phase 6 review round 4 — remediation (F1, F3; F2 to the owner)
+
+Round 4 (`ai-code-review-phase-6-round-4.md`, fresh-context, REQUEST CHANGES) confirmed round
+3's F3 and F4 and found the new table false in three places — the third round in a row in
+which a claim of completeness about UNGRADED was the defect.
+
+- **F1 (BLOCKING).** The lesson taken: stop claiming completeness. The table no longer says it
+  is "every state"; it says the member's own line is the authority (every `UNGRADED` line
+  names its reason or points at the line that does) and the table is a guide. Two rows added:
+  `scope-check` without `-All` on a HEAD that is not a phase commit, and a multi-repo run
+  where one repository is graded and another is not. "Phase" corrected to **feature** in row
+  5 and in `review-process.md` step 3 — the code-repository check asks whether a branch named
+  after the feature exists there, so a docs-only phase after a code phase shows the earlier
+  phase's real `PASS`, and both documents now say so.
+- **F3 (MINOR).** MicroLane is scoped to Micro-declared features; the trunk-not-`main` cell
+  gives a remedy (name it `main`, or create a `main` ref at it — these members take no trunk
+  parameter); the missing-`tasks.md` WARN and the two not-a-repository reasons are in; the
+  `-BaseRef` remedy says to run `scope-check-repos.ps1` directly, since `ritual-checks` does
+  not pass it through.
+- **F2 (NON-BLOCKING) — owner decision owed, not fixed here.** When one declared code
+  repository is graded and another prints its own `UNGRADED`, `scope-check-repos.ps1` prints
+  no run-level `UNGRADED` (`:415` fires only when nothing was graded) and `ritual-checks`
+  reports `scope-repos OK`. That is GAP-027's shape one level down: a summary word over a run
+  part of which compared nothing. The fix is in `scripts/scope-check-repos.ps1` /
+  `scripts/ritual-checks.ps1`, outside phase 6's Territory. It is disclosed to adopters in the
+  table's last row. Proposed: a roadmap GAP row, alongside GAP-029 in docs PR #49.
