@@ -63,11 +63,12 @@ pwsh -File scripts/scope-check-repos.ps1   # multi-repo only; n/a elsewhere
    run-level `UNGRADED`, because nothing was graded anywhere. So does every
    governance-repository CI run, where the code repositories are not checked out. That is
    expected, and it is an `UNGRADED` like any other: the review records the reason in
-   writing, as the next paragraph requires. A phase that touches no code repository, on a
-   feature that does have code branches, shows those branches' latest phase commit instead —
-   a real `PASS`, but for an earlier phase. And one repository's `UNGRADED` line does not
-   change the run-level verdict while another repository was graded, so read the
-   per-repository lines.
+   writing, as the next paragraph requires. For a phase that touches no code repository, on a
+   feature that does have code branches, the command above grades each such branch's tip: a real `PASS` for an
+   earlier phase when the tip is that phase's commit, or `not applicable` when the tip carries no
+   `phase N` token. And one repository going ungraded — an `UNGRADED` line, or only skipped
+   commits — does not change the run-level verdict while another repository was graded, so
+   read the per-repository lines.
 
    **`UNGRADED` is not a pass.** It exits 0, so it will not stop you, and it means the
    check RAN AND COMPARED NOTHING: no diff base, a commit range with no commits in it, a

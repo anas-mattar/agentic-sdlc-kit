@@ -2619,3 +2619,18 @@ which a claim of completeness about UNGRADED was the defect.
   part of which compared nothing. The fix is in `scripts/scope-check-repos.ps1` /
   `scripts/ritual-checks.ps1`, outside phase 6's Territory. It is disclosed to adopters in the
   table's last row. Proposed: a roadmap GAP row, alongside GAP-029 in docs PR #49.
+
+## Phase 6 review round 5 — APPROVE, two MINORs fixed
+
+Round 5 (`ai-code-review-phase-6-round-5.md`, fresh-context) **approved** `ab49230`. It
+measured the table's disclaimer and each row against the code, including the `git branch main
+origin/<trunk>` remedy and the partly-graded `scope-repos OK`. The owner chose to fix its two
+MINORs before certification, which is prose only:
+
+- The `-BaseRef` remedy needs `-All -Repo <repo>`.
+- A partly ungraded repository may print no `UNGRADED` line at all.
+- Step 3's "latest phase commit" should be "the branch tip".
+
+**Owner follow-up, outside Territory:**
+- The run-level `scope-repos` verdict hides a partly ungraded run (round 4 F2, widened by round 5 F2).
+- `scope-check-repos.ps1`'s own `-BaseRef` hint omits `-Repo` (round 5 F1).
