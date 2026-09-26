@@ -862,7 +862,7 @@ the widening landed in its own commit, `28d2f0a`. Same-commit widening never pas
 the whole point of reading the parent.
 
 **Correction, same day.** That commit's message claims it carries no `phase N` token. It does:
-the subject reads "widen **phase 3** territory", and the matcher is `phase\s+(\d+)`, so
+the subject reads "widen **phase 3** territory", and the matcher is `\bphase\s+(\d+)\b`, so
 scope-check graded it as a phase 3 commit — `PASS phase 3 commit 28d2f0a (1 file(s))`. It passed
 because the only file it touched, `tasks.md`, was already in the territory it was widening, so
 nothing about the ordering argument changes. But the commit message asserts a fact that is
