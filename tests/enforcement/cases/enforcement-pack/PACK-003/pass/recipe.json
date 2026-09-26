@@ -1,0 +1,21 @@
+{
+  "description": "The same repository with a lane branch to aim at, so the dispatch reaches a lane's checks rather than declining. Differs from the fail direction in the branch named (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/thing",
+      "message": "fix: the thing",
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    }
+  ],
+  "checkout": "fix/thing"
+}

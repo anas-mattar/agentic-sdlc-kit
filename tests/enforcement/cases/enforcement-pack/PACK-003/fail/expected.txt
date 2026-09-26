@@ -1,0 +1,3 @@
+enforcement-pack: branch 'main', diff base '<SHA>', 0 changed file(s)
+enforcement-pack: 'main' is the trunk, not a feature/fix/chore/docs branch — no scripted checks apply
+enforcement-pack: OK

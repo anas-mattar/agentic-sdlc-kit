@@ -1,0 +1,3 @@
+enforcement-pack: branch 'docs/thing', diff base '<SHA>', 1 changed file(s)
+enforcement-pack: 'docs/thing' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+enforcement-pack: OK

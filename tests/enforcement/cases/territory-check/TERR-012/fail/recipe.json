@@ -1,0 +1,41 @@
+{
+  "description": "An open feature branch the ledger lists but this clone has no remote-tracking ref for: origin's fetch refspec covers main only. The comparison cannot be made, and the check says which branch it skipped instead of dropping it and reporting CLEAN over a comparison it never ran. Differs from the pass direction in the refspec, and in nothing else (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "phase 1: the other thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/other.txt": "other\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self",
+  "originFetch": "main"
+}

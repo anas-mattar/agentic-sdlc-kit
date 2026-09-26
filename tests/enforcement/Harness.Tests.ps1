@@ -316,3 +316,125 @@ Describe 'what the harness captures is what the script printed' {
         }
     }
 }
+Describe 'the harness leaves the repository it runs from alone (T047, FR-020)' {
+
+    # FR-020 has two halves and they fail differently. A harness that WRITES to the repository
+    # under it corrupts the thing it is measuring - and would do so silently, because the
+    # suite's own verdict would still be green. A harness that READS the repository's branch,
+    # working tree or git identity is worse in a quieter way: it passes here and fails on a
+    # colleague's machine, or on CI, for reasons nobody can see from the output. Neither half
+    # was asserted before phase 6; both were true by construction and by nobody's promise.
+
+    BeforeAll {
+        Import-Module (Join-Path $PSScriptRoot 'lib/Harness.psm1') -Force
+        # Harness.psm1 imports FixtureRepo but does not re-export it; the identity test below
+        # builds a repository directly, so it needs the builder in scope here too.
+        Import-Module (Join-Path $PSScriptRoot 'lib/FixtureRepo.psm1') -Force
+        $script:KitRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        function Get-TreeState {
+            param([string]$Root)
+            # --untracked-files=all, not the default: a harness that dropped a stray temporary
+            # file inside an ignored directory would still be writing to this repository, and
+            # the default listing would fold it into one unchanged-looking line.
+            return [pscustomobject]@{
+                Head   = (& git -C $Root rev-parse HEAD 2>$null | Out-String).Trim()
+                Branch = (& git -C $Root rev-parse --abbrev-ref HEAD 2>$null | Out-String).Trim()
+                Status = ((& git -C $Root status --porcelain=v1 --untracked-files=all 2>$null) -join "`n")
+            }
+        }
+        # One real case, chosen because it is among the most invasive the suite has: it builds a
+        # repository, clones it, runs a kit script against the clone and normalises paths.
+        $script:SampleCase = Join-Path $PSScriptRoot 'cases/enforcement-pack/GAP27-001/fail'
+    }
+
+    It 'does not change the working tree, HEAD or branch of the repository under it' {
+        $before = Get-TreeState -Root $script:KitRoot
+        $null = Invoke-FixtureCase -CaseDir $script:SampleCase -KitRoot $script:KitRoot
+        $after = Get-TreeState -Root $script:KitRoot
+
+        $after.Head | Should -Be $before.Head
+        $after.Branch | Should -Be $before.Branch
+        if ($after.Status -ne $before.Status) {
+            $added = @($after.Status -split "`n" | Where-Object { $_ -and $_ -notin ($before.Status -split "`n") })
+            throw ("running one fixture case changed the repository it was run from (FR-020). New or changed entries:`n  " +
+                ($added -join "`n  "))
+        }
+        $after.Status | Should -Be $before.Status
+    }
+
+    It 'gives every fixture commit the fixture identity, not this repository''s' {
+        # The identity half of FR-020, asserted where it can actually be observed. If the
+        # harness inherited the ambient git identity, a fixture built on a machine with no
+        # user.email would fail to commit at all - which is how this dependency announces
+        # itself: never here, always somewhere else.
+        $repo = $null
+        try {
+            $recipe = Get-Content (Join-Path $script:SampleCase 'recipe.json') -Raw | ConvertFrom-Json
+            $repo = New-FixtureRepo -Recipe $recipe -CaseDir $script:SampleCase
+            $authors = @(& git -C $repo log --all --format='%an <%ae>' 2>$null | Sort-Object -Unique)
+            $authors | Should -Not -BeNullOrEmpty
+            foreach ($author in $authors) {
+                $author | Should -Be 'Fixture Author <fixture@example.invalid>'
+            }
+            $kitIdentity = (& git -C $script:KitRoot config user.email 2>$null | Out-String).Trim()
+            if ($kitIdentity) { $authors | Should -Not -Contain $kitIdentity }
+        } finally {
+            if ($repo) { Remove-FixtureRepo -Path $repo }
+        }
+    }
+
+    It 'names, in every case command, only refs that case''s own fixture creates' {
+        # The branch half. A case that passed -Branch 015-enforcement-assurance would be green
+        # here and red for everyone else the day this branch merges.
+        #
+        # The first version of this test compared each command.json against the branch THIS
+        # repository was on, by substring - and so was itself branch-dependent: red on the
+        # detached checkout every pull_request run gets ('HEAD' is in -ReplayBase HEAD) and red
+        # on main after merge (PACK-003 names its fixture's own trunk). Phase 6 review, F1. A
+        # name in a case refers to the fixture repository, never to this one, so the property
+        # is stated about the fixture and reads nothing from the host: every ref-naming value is,
+        # as a whole value, a branch the case's recipe creates. That is true or false the same
+        # way on every checkout.
+        #
+        # -Branch was the only argument scanned until the round-2 review (F6) pointed out that
+        # -Commit, -ReplayBase, -ReplayTip and -BaseBranch name refs too; round 3 (F3) added
+        # scope-check-repos.ps1's -BaseRef, the one the first widening missed. Those five may also
+        # carry a HEAD-relative revision (HEAD, HEAD~1, HEAD^2), which is fixture-local by
+        # construction, or a ref that is absent ON PURPOSE - spelled 'no-such-*' so that a
+        # reader, and this test, can tell a deliberate miss from an accidental host name.
+        # -Branch gets neither allowance: it is a branch name, and no case needs either form.
+        # The recipe is walked whole, so a branch a nested code repository creates counts.
+        $revisionArgs = @('-Commit', '-ReplayBase', '-ReplayTip', '-BaseBranch', '-BaseRef')
+        function Get-CreatedNames($node) {
+            if ($null -eq $node) { return }
+            if ($node -is [System.Collections.IEnumerable] -and $node -isnot [string]) { foreach ($n in $node) { Get-CreatedNames $n }; return }
+            if ($node -isnot [System.Management.Automation.PSCustomObject]) { return }
+            foreach ($prop in $node.PSObject.Properties) {
+                if ($prop.Name -in @('defaultBranch', 'checkout', 'branch') -and $prop.Value -is [string]) { $prop.Value }
+                else { Get-CreatedNames $prop.Value }
+            }
+        }
+        $offenders = @()
+        foreach ($dir in (Get-CaseDirectories -TestsRoot $PSScriptRoot)) {
+            $command = Get-Content (Join-Path $dir 'command.json') -Raw | ConvertFrom-Json
+            $argv = @($command.args)
+            $named = @(for ($i = 0; $i -lt $argv.Count - 1; $i++) {
+                    if ($argv[$i] -eq '-Branch' -or $argv[$i] -in $revisionArgs) { [pscustomobject]@{ Arg = $argv[$i]; Value = "$($argv[$i + 1])" } }
+                })
+            if ($named.Count -eq 0) { continue }
+            $recipePath = Join-Path $dir 'recipe.json'
+            if (-not (Test-Path $recipePath)) { $offenders += "$dir passes $(($named | ForEach-Object { "$($_.Arg) $($_.Value)" }) -join ', ') and has no recipe that could create it"; continue }
+            $created = @(Get-CreatedNames (Get-Content $recipePath -Raw | ConvertFrom-Json) | Where-Object { $_ } | Sort-Object -Unique)
+            foreach ($n in $named) {
+                if ($n.Value -in $created) { continue }
+                if ($n.Arg -in $revisionArgs -and ($n.Value -match '^HEAD([~^]\d*)*$' -or $n.Value -like 'no-such-*')) { continue }
+                $offenders += "$dir passes $($n.Arg) '$($n.Value)', which its fixture never creates (it creates: $($created -join ', '))"
+            }
+        }
+        if ($offenders.Count -gt 0) {
+            throw ("these cases name a ref from outside their own fixture, so their verdict can depend on where they are run (FR-020):`n  " +
+                ($offenders -join "`n  "))
+        }
+        $offenders.Count | Should -Be 0
+    }
+}

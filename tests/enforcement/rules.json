@@ -14,7 +14,13 @@
     "'fail' case for 'n/a (declared but not present here)' exits 0, because the rule under test",
     "IS the n/a. Naming those directions after the exit code would have meant leaving the inert",
     "verdicts out of the inventory, and the inert verdicts are precisely what SC-004 and GAP-027",
-    "are about — a state in which nothing was graded must not read as a graded pass."
+    "are about — a state in which nothing was graded must not read as a graded pass.",
+    "",
+    "EXEMPTIONS (FR-004, added in phase 6). A rule MAY carry an 'exemption' field instead of a",
+    "pass/fail pair. The field is the written reason, it is printed on every run, and the rule",
+    "stays in the inventory so the site cannot be reworded or deleted unnoticed. An exemption is",
+    "not 'not yet covered': it is a stated position that a faithful fixture cannot be built, and",
+    "every one of them says what would be needed instead."
   ],
   "rules": [
     {
@@ -1669,6 +1675,112 @@
       "law": "feature 015 FR-010; roadmap GAP-027",
       "emitAnchor": "ritual-checks: RESULT UNGRADED",
       "notes": "Added in the phase-5 remediation (review F1). $ungradedCapableMembers is an allow-list, so the mechanism RIT-006 proves is silently inert for any member left out of it - which is how scope-check shipped its own GAP-027 fail-open through a phase that existed to close GAP-027. This case stubs scope-check instead of enforcement-pack and asserts the same three things: the word on the member's line, the word on the RESULT line, exit 0. It fails if a future edit drops a name from that list, which RIT-006 would not notice. The anchor is the same emission site RIT-006 names, and that is deliberate rather than sloppy: the allow-list is not itself an emission site, and the site it governs is this one. RIT-006 asks whether the line can be printed at all; RIT-007 asks whether it is printed for the second member to reach the state. One site, two rules, said out loud - the inventory allows it and the ambiguity check counts hits per rule, not rules per hit."
+    },
+    {
+      "id": "AMEND-006",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCheck",
+      "summary": "a range with no commits in it is reported as graded-nothing, not returned from in silence",
+      "law": "feature 015 FR-010; feature 014 plan D2c",
+      "emitAnchor": "AmendmentAuthority: no commits in ",
+      "notes": "Found by the phase 6 coverage sweep, not by reading: the site has existed since feature 014 and no fixture reached it. It is GAP-027's shape inside the check that grades amendments - a return that grades nothing. The pair reaches it through -ReplayBase/-ReplayTip (014 plan D2c), the supported way to hand the check an explicit range; HEAD..HEAD is the empty one and HEAD~1..HEAD the nearest non-empty one, which is the whole of the difference (plan D10). Until the phase 6 review (F6) the fail direction pinned the defect rather than the rule: it ended on enforcement-pack: OK. The empty range now adds to $ungraded, so the run ends on UNGRADED and exits 0 (plan D6), the same state scope-check.ps1 already gives 'no commits since merge base'."
+    },
+    {
+      "id": "PACK-003",
+      "script": "enforcement-pack.ps1",
+      "function": "(dispatch)",
+      "summary": "the trunk is not a lane, and the dispatch says so rather than printing a bare OK",
+      "law": "docs/sdlc/branch-strategy.md (the lane taxonomy)",
+      "emitAnchor": "is the trunk, not a feature/fix/chore/docs branch",
+      "notes": "Nothing in the suite asserted this line before phase 6: 49 expectations end on enforcement-pack OK and not one of them was a trunk run, so a dispatch that stopped printing the reason would have been invisible. The pair differs in the branch named (plan D10)."
+    },
+    {
+      "id": "PACK-004",
+      "script": "enforcement-pack.ps1",
+      "function": "(dispatch)",
+      "summary": "the docs/ lane runs one check, and the dispatch says so rather than letting OK read as a full Lite grading",
+      "law": "docs/sdlc/branch-strategy.md (the lane taxonomy)",
+      "emitAnchor": "is the lightweight docs/ lane",
+      "notes": "Declared a not-rule in phase 6 while the trunk decline beside it, the same shape, became PACK-003. The phase 6 review (F5) named the inconsistency and the owner decided: a lane decline is a condition the dispatch detects, so it is a rule. The pair differs in the branch named - docs/thing against chore/thing over the identical tree (plan D10)."
+    },
+    {
+      "id": "AMEND-007",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCheck",
+      "summary": "a commit rev-list yields but the metadata batch did not parse fails the check rather than being skipped",
+      "law": "feature 014 review B1",
+      "emitAnchor": "AmendmentAuthority: could not parse commit metadata for ",
+      "exemption": "Requires git rev-list to list a commit that Get-CommitMetaBatch then fails to parse - the two reading the same object store and disagreeing. The fixture model can corrupt an object (truncateCommit), but a corrupt commit makes rev-list fail first, so the run never reaches this branch. Reaching it needs a partially readable object, which the recipe cannot build and which would not be stable across git versions if it could. Exempted rather than faked: a fixture that reached a different failure and called it this one would be the inventory lying.",
+      "notes": "Exempted in phase 6 (T045, FR-004). The site stays inventoried so it cannot be reworded away unnoticed."
+    },
+    {
+      "id": "REPOS-033",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "a commit whose committer date cannot be read fails the repository rather than being graded",
+      "law": "specs/012-cross-repo-scope-check/contracts/scope-check-repos-cli.md (ERROR row)",
+      "emitAnchor": "ERROR cannot read the committer date of ",
+      "exemption": "Needs git show -s --format=%cI <sha> to return empty for a commit that rev-list already yielded and the earlier guards accepted. Every way the fixture model can break a commit object breaks it earlier in the same run, so the case would pin a different rule under this rule's name. Same reasoning as AMEND-007.",
+      "notes": "Exempted in phase 6 (T045, FR-004)."
+    },
+    {
+      "id": "VK-028",
+      "script": "verify-kit.ps1",
+      "function": "(top-level catch)",
+      "summary": "an unexpected exception inside the doctor is reported as ERROR and exits 1 rather than escaping",
+      "law": "feature 007 US3",
+      "emitAnchor": "verify-kit: ERROR $($_.Exception.Message)",
+      "exemption": "A defensive catch around the whole doctor. Its message is whatever exception reached it, so an expectation could only pin the text of some OTHER defect - and a fixture that deliberately caused one would be asserting that defect, not this handler. What the handler guarantees (no unhandled escape, exit 1) is a property of every other verify-kit case, all 27 of which would fail loudly if it broke.",
+      "notes": "Exempted in phase 6 (T045, FR-004)."
+    },
+    {
+      "id": "TERR-008",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a run started outside a git repository is refused rather than answered",
+      "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
+      "emitAnchor": "Not inside a git repository.",
+      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
+      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+    },
+    {
+      "id": "TERR-009",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "the territory check applies to the feature lane only, and says so for any other branch",
+      "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
+      "emitAnchor": "is not a numbered feature branch (NNN-name)",
+      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
+      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+    },
+    {
+      "id": "TERR-010",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a failed fetch is refused rather than answered from a stale ledger",
+      "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
+      "emitAnchor": "git fetch origin failed.",
+      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
+      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+    },
+    {
+      "id": "TERR-011",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a base branch that cannot be diffed against is refused rather than reported as clean",
+      "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
+      "emitAnchor": "Cannot diff $BaseBranch...$ownRef",
+      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
+      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+    },
+    {
+      "id": "TERR-012",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a branch that cannot be compared is skipped out loud, not dropped from the comparison",
+      "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
+      "emitAnchor": "Skipping origin/${other}: cannot compare with ",
+      "notes": "Exempted in phase 6 on a false reason - that Write-Warning is terminating under ErrorActionPreference = Stop, which it is not (measured by the phase 6 review, F3: the warning prints and the loop continues). The line is reachable in any clone whose origin fetch refspec is narrower than the ledger, so it has a fixture pair instead, built with the recipe's 'originFetch' knob. Both directions exit 0 and print CLEAN; what differs is whether the run admits a branch it skipped. That CLEAN is itself a finding - a skipped comparison should not be able to end on CLEAN - and it is recorded with the other territory-check findings for the roadmap GAP row, not changed here: scripts/territory-check.ps1 is outside phase 6's Territory."
     }
   ]
 }
