@@ -2,7 +2,7 @@
 
 **Feature Branch**: `016-multiline-code-spans`  
 **Created**: 2026-09-27  
-**Status**: Draft  
+**Status**: Approved 2026-09-27 (owner: anas.m)  
 **Delivery Level**: Standard  
 **Input**: User description: "Close GAP-028: carry inline code-span state across the lines of a paragraph so a code span that wraps onto a later line cannot leave a comment marker armed and silently swallow content, proven on both consumers (digest harvest and amendment-authority grading)"
 
