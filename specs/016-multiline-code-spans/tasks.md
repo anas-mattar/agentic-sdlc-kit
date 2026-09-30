@@ -107,6 +107,27 @@ D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**Phase-1 round-2 remediation** (round-2 review F1 BLOCKING, F3, F4; plan D10):
+
+- [ ] T014e [US2] Write four AMEND-001 fail directions: `fail-hidden-list-div`,
+      `fail-hidden-list-pre` and `fail-hidden-comment-tick`, from the round-2 review's
+      documents (a), (b) and (h); and `fail-hidden-html-block-open`, a comment opened inside a
+      raw HTML block and left open across a blank line, before the record. Run them on
+      `6f75415` and record in `notes.md` that the first three wrongly pass there, and that the
+      guard holds there.
+- [ ] T014f [US1] Write the DIGEST-001 pass direction `pass-tail-after-close` from round-1 F2's
+      second document (both markers harvested), and record that `6f75415` fails it.
+- [ ] T014g [US1] [US2] Rewrite `Convert-CodeSpanMarkers` in `scripts/markdown-lib.ps1` to D10.
+      This removes paragraph pairing and the D9 doubt rule. Correct every comment that
+      describes paragraph pairing, in `scripts/markdown-lib.ps1`, `scripts/build-digests.ps1`
+      and `scripts/enforcement-pack.ps1` (round-2 F3). Update the DIGEST-001 and AMEND-001
+      `notes` in `tests/enforcement/rules.json`.
+- [ ] T014h [US1] [US2] Run the full suite and mutations (a), (e) and (f), each failing the cases
+      it guards. Check D1 over every kit `.md` file, and re-run the round-1 and round-2 review
+      documents. Record all of it in `notes.md`.
+
+**Amendment approved by**: anas.m, 2026-09-30
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)

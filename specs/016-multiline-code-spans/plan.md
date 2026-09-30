@@ -117,6 +117,33 @@ paragraph fallback removed, and (d) the raw HTML block ends removed.
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**D10 — Disarm only an opener that cannot be a comment (supersedes D2, D3 and D9; phase-1
+round-2 review F1).** Pairing spans across lines could not be made safe by listing exceptions.
+Two review rounds found backticks the scan misreads, in constructs that open on one line and
+hold their backtick on the next, and each misread let the pairing disarm a real comment.
+`Convert-CodeSpanMarkers` now returns today's per-line result (`Convert-SpanText` on each line).
+It then disarms a `<!--` that result left armed only when all three of these hold:
+- the line is not fenced;
+- the line is not in a raw HTML block, an HTML comment block included. Such a block is tracked
+  from a line whose first text, after any list or block-quote markers, is a tag, to that block's
+  CommonMark end: a `pre`, `script`, `style` or `textarea` block at its closing tag, a comment at
+  its closer, a processing instruction at `?>`, a declaration at `>`, CDATA at `]]>`, and any
+  other tag at a blank line;
+- no `-->` appears in the raw text after the opener (from its third character) through the line
+  before the next blank line.
+
+No renderer reads such an opener as a comment, so disarming it reveals only text a reader sees,
+and the result is otherwise the parent's. D1 and D4-D8 stand; D7(b) no longer describes an
+over-reach this design can make, and is replaced by the two mutations below. Proved by four
+AMEND-001 fail directions: three from the round-2 review's documents (a), (b) and (h), each
+shown passing on `6f75415`, and one guard with a comment opened inside a raw HTML block and
+left open across a blank line. Also by a DIGEST-001 pass direction for round-1 F2's second
+document, which D10 fixes. Mutations recorded beside D7's: (e) the closer check removed, so
+every inline opener is disarmed, where the no-fail-open cases must fail; (f) the raw HTML
+exclusion removed, where the raw-HTML-block cases must fail.
+
+**Amendment approved by**: anas.m, 2026-09-30
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).

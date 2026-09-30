@@ -169,16 +169,28 @@ unclosed comment, and confirm that the run fails and names that line.
 
 - **FR-001**: The kit MUST keep exactly one implementation of the code-span rule, shared by
   both consumers. No consumer may carry a private copy or a private patch.
-- **FR-002**: A code span whose opening and closing backtick runs fall on different lines of
-  the same paragraph MUST be recognised, and every comment marker (`<!--` and `-->`) inside it
-  MUST be treated as literal text by both consumers.
-- **FR-003**: A code span MUST NOT extend beyond its paragraph. A paragraph ends at a blank line,
-  a fence line, or a line that begins a new block: an ATX heading, a list item, a block quote, a
-  table row, a line beginning with `<!--`, or a thematic break. The lines of an HTML comment
-  block, from a line beginning with `<!--` through the first line holding `-->`, belong to no
-  paragraph, so no span pairs into or out of them. Each of their lines keeps exactly today's
-  single-line treatment, and the block's end is found on the raw text. An opening run with no partner
-  before the paragraph ends opens no span.
+- **FR-002**: A comment opener that no renderer can read as a comment MUST be treated as literal
+  text by both consumers. Such an opener sits inline: not at the start of a block (after any list
+  or block-quote markers), not in a fenced block, and not in a raw HTML block. And no `-->`
+  follows it before the next blank line, because an inline comment cannot cross a blank line.
+  This is the shape GAP-028's wrapped span produces. Its quoted opener has no closer in its
+  paragraph, so it hides nothing that follows. A wrapped span is not otherwise recognised: a
+  `-->` inside one keeps today's handling.
+- **FR-003**: Outside FR-002's rule, the result MUST equal today's per-line result. The fix can
+  then never make visible anything the per-line reading hides, except text after an opener that
+  cannot be a comment. Code spans are still paired within one line only. The fix never changes
+  the lines of an HTML comment block or of a raw HTML block. A raw HTML block runs from a line
+  whose first text, after any list or block-quote markers, is a tag, through that block's
+  CommonMark end.
+
+Where the user stories, edge cases, key entities and success criteria describe pairing a span
+across the lines of a paragraph, they are read through FR-002 and FR-003 as amended. The
+paragraph now matters only as the region an inline comment cannot leave, bounded by a blank line.
+Pairing spans across lines was dropped after two review rounds found a backtick the scan
+misreads, which lets such pairing disarm a real comment
+(`ai-code-review-phase-1.md` and `ai-code-review-phase-1-round-2.md`, F1).
+
+**Amendment approved by**: anas.m, 2026-09-30
 - **FR-004**: Everything the single-line rule does today MUST continue to hold: run-length
   pairing, escaped backticks, fenced blocks, and the unterminated-comment rule. Every existing
   harness case MUST pass unchanged.
