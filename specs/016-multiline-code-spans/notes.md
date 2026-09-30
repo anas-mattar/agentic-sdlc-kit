@@ -152,10 +152,11 @@ closing backtick, gets per-line pairing and is not fixed. In that shape, one lin
 opening backtick, and the next holds the comment opener followed by the closing backtick. That is
 the fail-closed direction (the amendment check hides; the
 digest check loses the marker, which phase 2's report is scoped to name). The committed cases
-put the opener on the first line and stay fixed. Narrowing the rule to exclude the comment
-opener looks safe on analysis: a comment that opens before both backticks stays armed, so
-everything after it is still hidden. But the approved text names it, so it stays until the owner
-decides.
+put the opener on the first line and stay fixed. This note first said that narrowing the rule to
+exclude the comment opener looked safe on analysis. **That claim was wrong, and is withdrawn.**
+The round-2 review refuted it with shape (h): the shifted pairing arms a `-->` inside a real
+code span, which ends a comment early and exposes the record. Its one-line form (i) reopens
+under the narrowing (`ai-code-review-phase-1-round-2.md`, F1).
 
 ### T014d — suite and mutations
 
@@ -186,3 +187,16 @@ On the remediated scripts, run 2026-09-30 (pwsh 7.6.6, Pester 5.7.1):
 - **F4** (fail-open shapes that predate 016: a fence info string holding a backtick, F1's shapes
   kept on one line, a backtick pair inside a `div` block): not in this feature's scope. They are
   drafted beside T026's gap for the owner's main-side docs PR.
+
+### Round-2 review, and the owner's F2 decision
+
+The fresh-context round-2 review of `7a770e5` + `6f75415` (`ai-code-review-phase-1-round-2.md`)
+is **REQUEST CHANGES**. Its F1 is BLOCKING: D9 judges doubt one line at a time, so the round-1
+fail-open is still reachable through eight shapes, (a)-(h). Each counts a record as visible on
+`6f75415` that both renderers hide and `e10da18` hides. The implementer reproduced all eight
+through `Get-VisibleFromText`.
+
+**F2, owner's decision, 2026-09-30**: the D5 tail loss is accepted as covered by phase 2's
+DIGEST-020 report, which names a marker skipped because a comment is open. Whether F2's second
+document joins DIGEST-020 as a direction is a change to T016, proposed to the owner when phase 2
+starts.
