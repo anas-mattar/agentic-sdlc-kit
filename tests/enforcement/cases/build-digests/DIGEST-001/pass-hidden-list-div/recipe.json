@@ -1,0 +1,33 @@
+{
+  "description": "Guard (016 T014m, round-4 review F2: container markers). A list item opens a div block; the opener inside it has no closer before the blank line, and raw HTML passes through, so the browser's comment hides the marker after it. The digest on disk carries only the visible rule, so the check must say OK; harvesting the hidden marker would call this correct digest stale. Without the container markers in the block-start test, the div is missed and the marker harvested.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "- <div>",
+          "  z <!-- hidden",
+          "",
+          "<!-- digest: Hidden rule. -->",
+          "",
+          "<!-- digest: Visible rule. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- Visible rule. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

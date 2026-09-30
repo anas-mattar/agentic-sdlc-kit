@@ -294,7 +294,8 @@ Through the harness on `8e45e37`, `-Case pass-hidden-` fails 3 of the 5 cases (6
 
 `Get-VisibleFromText` calls `Convert-SpanText` on each non-fenced line. Compared with `e10da18`,
 comments aside, the function differs in one line: the call names the per-line helper, whose body
-is identical to the parent's `Convert-CodeSpanMarkers -Line` bar its name. On every `.md` file in
+is identical to the parent's `Convert-CodeSpanMarkers -Line` bar its name and its parameter's
+name (`-Line` became `-Text`; the round-4 review corrected this note). On every `.md` file in
 the kit and the three adopted projects, **566 files**, this branch's `Get-VisibleFromText`
 returns exactly what the parent's returns: **0 differ**. AMEND-001 `pass-wrapped-span` is now
 `fail-wrapped-span-hidden`. It is the same document, expects FAIL, and pins the limitation.
@@ -342,10 +343,82 @@ Run 2026-09-30 (pwsh 7.6.6, Pester 5.7.1), scripts backed up and restored by has
 
 > GAP-0NN — The amendment-authority check reads code spans one line at a time
 > (`Get-VisibleFromText`, `scripts/enforcement-pack.ps1`), so a code span that wraps across lines
-> and holds `<!--` hides every approver record after it: the check refuses a legitimate
+> and holds `<!--` hides every approver record after it, up to the next `-->` the reading
+> leaves armed (to the end of the document when there is none): the check refuses a legitimate
 > amendment (014 B7's shape). This fails closed, and the remedy is to keep such a span on one
 > line. It is kept on purpose. Feature 016 tried three readings that disarm more, and each let
 > some record inside a real comment, or hidden by a tag attribute or link title, count as a
 > grant (016 phase-1 reviews, rounds 1-3). A future fix needs a reading proved never to reveal
 > what a renderer hides, which likely means a real CommonMark parser, not a regex model.
 > Pinned by AMEND-001 `fail-wrapped-span-hidden`.
+
+## Phase 1 round-4 remediation (T014m)
+
+The fresh-context round-4 review of `b45cff1` (`ai-code-review-phase-1-round-4.md`, committed as
+`5d1706b`) is **REQUEST CHANGES**, but it **confirmed the security gate**. The amendment check's
+reading equals the parent's on 1,088 files and a 20,000-document fuzz, and the code differs only
+in the renamed helper. Its F1 is on the digest side (FR-003): the raw HTML tracker forgot an
+enclosing blank-ending block when an inner block closed, and a misread fence still masked a
+`div` or type-7 start. The owner approved spec SC-002/SC-004 and task T014m on 2026-09-30,
+committed alone as `641a3f5`.
+
+### The fix
+
+These changes are in `Convert-CodeSpanMarkers`, digest generator only:
+- a block with a longer end opened inside a blank-ending block returns to it when it closes;
+- every block start is read on fenced lines too;
+- block ends are read after the container markers, so a block quote's `>` does not end a
+  declaration (the review's speculative `c1`);
+- a tag line that opens `pre`, `script`, `style` or `textarea` later on the line takes that
+  element's end.
+
+Each change disarms less, never more.
+
+Across all 59 documents from reviews 2-4, the digest harvest now equals the parent's except on
+one: `e1-tab-blank`. There a tab-only line is blank in CommonMark, so the inline `<!--` ends with
+its paragraph and the marker after it is a standalone comment. This branch harvests it and the
+parent loses it, which is GAP-028 itself.
+
+### Guards: ten DIGEST-001 cases, each with a hand-written one-rule digest
+
+| Case | `b45cff1` | `e10da18` | The fix |
+|---|---|---|---|
+| `pass-hidden-div-after-comment-line` (round-4 b1) | harvests the hidden marker | right | right |
+| `pass-hidden-div-after-pre` (b3) | harvests it | right | right |
+| `pass-hidden-div-in-misread-fence` (a1) | harvests it | right | right |
+| `pass-hidden-script-after-tag` (f1) | harvests it | right | right |
+| `pass-hidden-list-div`, `pass-hidden-quote-div` (container markers) | right | right | right |
+| `pass-hidden-comment-block-open`, `-pi-block`, `-cdata-block`, `-declaration-block` | right | right | right |
+
+The last six guard code that round-4 F2 showed could be deleted with every case still green, so
+they pass on `b45cff1` by design and fail under its removal (below).
+
+### Suite and mutations, run 2026-09-30, library restored by hash (`True`)
+
+- Full suite: **863 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (843 before,
+  plus ten cases at two assertions each).
+- Each mutation was run with `-Case pass-hidden-` (15 cases), and a scratch harvest under the
+  same mutation names the failing cases:
+
+  | Mutation | Removes | Failing guards |
+  |---|---|---|
+  | (e) | the closer check | `after-backslash-spans`, `nbsp-line` |
+  | (f) | the raw HTML exclusion | 13 of 15 |
+  | (g) | blank as spaces and tabs | `nbsp-line` |
+  | (h) | the long-end override | `pre-under-tag-line` |
+  | (i) | the return to the enclosing block | `div-after-comment-line`, `div-after-pre` |
+  | (j) | block starts read on fenced lines | `div-in-misread-fence` |
+  | (k) | the container markers | `list-div`, `quote-div` |
+  | (k2) | the block-quote alternative | `quote-div` |
+  | (l1)-(l4) | the comment, PI, CDATA and declaration ends | one each, the matching guard |
+  | (m) | the raw-text element opened later on a tag line | `script-after-tag` |
+
+  Every mutation fails, exit 1. `pre-in-misread-fence`, which (h) alone failed on `b45cff1`, is
+  now also covered by (j). Removing (h) alone leaves it green, because (j) sees the `pre` line
+  as a block start. **Unguarded:** reading ends after the container markers (the `c1` change)
+  has no case. It is a conservative-direction change, and the review marked its shape
+  speculative.
+- Amendment-reading parity with `e10da18`: **567 files, 0 differ** (the new review file makes
+  it 567). D1 over 235 kit `.md` files: 0 violations. The digest reading still differs from
+  per-line on the same 5 review-document lines, and the digest freshness check covers the
+  committed digests.

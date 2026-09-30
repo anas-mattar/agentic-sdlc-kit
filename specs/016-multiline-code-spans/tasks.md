@@ -152,7 +152,7 @@ D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
 
 **Phase-1 round-4 remediation** (round-4 review F1, F2, F4; FR-003 as amended, digest consumer):
 
-- [ ] T014m [US1] Fix the digest rule's raw HTML tracker in `scripts/markdown-lib.ps1`.
+- [x] T014m [US1] Fix the digest rule's raw HTML tracker in `scripts/markdown-lib.ps1`.
       - When a block with a longer end closes inside a block that ends at a blank line, the
         tracker returns to the enclosing block.
       - A start of a block ending at a blank line is honoured on a line the fence map calls

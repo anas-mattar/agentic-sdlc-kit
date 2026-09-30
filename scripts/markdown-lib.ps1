@@ -109,8 +109,13 @@ function Convert-SpanText {
 #     processing instruction to '?>', a declaration to '>', CDATA to ']]>', any other tag to a
 #     blank line. Raw HTML passes through to the browser, where a comment does cross a blank
 #     line. A start of a block with one of the longer ends is honoured even inside a block
-#     that ends at a blank line, and even on a line the fence map calls fenced, so a tag line
-#     or a misread fence cannot mask it (round-3 review F1).
+#     that ends at a blank line, and the enclosing block resumes when it closes (round-3 and
+#     round-4 review F1). Every block start is read on fenced lines too, for the fence map
+#     misreads some fences. A tag line that opens a pre, script, style or textarea element
+#     later on the line takes that element's end. Ends are read after the container markers.
+#     These are the shapes the reviews found and the cases guard; containers are otherwise
+#     not modelled (a container that closes does not end a block here), which keeps more
+#     lines on the per-line result, never fewer.
 # Not modelled, and left on the per-line result: a code span that wraps is not recognised, so
 # a '-->' inside one stays armed, and so does the '<!--' of one whose paragraph holds a '-->'
 # later. Constructs other than comments that hide text (attributes, titles) are not modelled
@@ -150,13 +155,21 @@ function Convert-CodeSpanMarkers {
     # The end of the raw HTML block being read: $null outside one, 'blank' for a block that
     # ends at a blank line, otherwise the pattern of the line that ends it.
     $htmlEnd = $null
+    # The block to return to when a block with a longer end, opened inside a block that ends
+    # at a blank line, closes: the enclosing block runs on to its blank line (round-4 F1).
+    $resume = $null
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         $raw = $Lines[$i]
         $blank = $raw -match $blankLine
         $body = [regex]::Replace($raw, $container, '', 1)
         # A block start with a longer end than a blank line: honoured anywhere but inside a
-        # block that already has one, fenced lines included.
-        $longEnd = if ($body -match '(?i)^<(pre|script|style|textarea)(\s|>|$)') { '(?i)</(pre|script|style|textarea)>' }
+        # block that already has one, fenced lines included. Every start is read on fenced
+        # lines too, so a misread fence masks none; on a real fence's lines the only effect is
+        # that more lines keep the per-line result.
+        # A tag line that opens one of the four raw-text elements later on the line takes that
+        # element's end too: the browser stays inside it past the blank line CommonMark ends at.
+        $longEnd = if ($body -match '(?i)^<(pre|script|style|textarea)(\s|>|$)' -or
+                       ($body -match '^<[A-Za-z/]' -and $body -match '(?i)<(pre|script|style|textarea)(\s|>|$)')) { '(?i)</(pre|script|style|textarea)>' }
                    elseif ($body -match '^<!--') { '-->' }
                    elseif ($body -match '^<\?') { '\?>' }
                    elseif ($body -match '^<!\[CDATA\[') { '\]\]>' }
@@ -165,13 +178,16 @@ function Convert-CodeSpanMarkers {
         $inHtml = $false
         if ($longEnd -and ($null -eq $htmlEnd -or $htmlEnd -eq 'blank')) {
             $inHtml = $true
+            $resume = if ($htmlEnd -eq 'blank') { 'blank' } else { $null }
             # A block whose end is on its own opening line is over already.
-            $htmlEnd = if ($body -match $longEnd) { $null } else { $longEnd }
+            if ($body -match $longEnd) { $htmlEnd = $resume; $resume = $null } else { $htmlEnd = $longEnd }
         } elseif ($htmlEnd) {
             $inHtml = $true
             if ($htmlEnd -eq 'blank') { if ($blank) { $htmlEnd = $null } }
-            elseif ($raw -match $htmlEnd) { $htmlEnd = $null }
-        } elseif (-not $fenced[$i] -and $body -match '^<[A-Za-z/]') {
+            # Ends are read after the container markers, so a block quote's own '>' does not
+            # end a declaration.
+            elseif ($body -match $htmlEnd) { $htmlEnd = $resume; $resume = $null }
+        } elseif ($body -match '^<[A-Za-z/]') {
             $inHtml = $true
             $htmlEnd = 'blank'
         }
