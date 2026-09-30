@@ -1,5 +1,5 @@
 {
-  "description": "GAP-028, the green-turning pass case for the amendment consumer. The approved plan holds a code span that wraps within its paragraph and holds '<!--'; the amending commit adds a conforming record after it, and its message names the approver. A reader sees the record, so the check must pass. Per-line reading left the '<!--' armed and the unterminated-comment rule hid everything after it, record included: a legitimate amendment with no path to green (014 B7's shape).",
+  "description": "GAP-028's known limitation in the amendment consumer (016 plan D11, spec US2 as amended). The approved plan holds a code span that wraps within its paragraph and holds '<!--'; the amending commit adds a conforming record after it, named in its message. A reader sees the record, but the amendment check keeps the per-line reading: the '<!--' stays armed and the unterminated-comment rule hides the record, so the check FAILS (014 B7's shape). That is the fail-closed direction, kept on purpose: three review rounds found every other reading let some hidden record count as a grant. The author's remedy is to keep such a span on one line. This case pins the limitation, so a change to the reading must be made deliberately, with its no-fail-open cases.",
   "defaultBranch": "main",
   "commits": [
     {

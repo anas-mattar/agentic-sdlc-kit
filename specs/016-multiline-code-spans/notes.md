@@ -262,3 +262,90 @@ Run 2026-09-30 (pwsh 7.6.6, Pester 5.7.1), scripts backed up and restored by has
   and all four become visible under mutation (f).
 - Round-1 F2's two documents: both markers are harvested for each. The owner's decision to leave
   F2 to phase 2 stands as recorded, and it is now moot for these two documents.
+
+## Phase 1 round-3 remediation — the fix is the digest generator's (plan D11)
+
+The round-3 review of `8e45e37` (`ai-code-review-phase-1-round-3.md`, committed as `1960f51`) is
+**REQUEST CHANGES**. Its F1 found three ways D10 still counted a hidden record as visible: a tag
+line masking a `pre` block, a misread fence masking one, and a Unicode "blank" line. Its F2 showed
+something deeper. The parent's unterminated-comment rule also hid text that renderers hide for
+other reasons (a tag attribute, a link title), so disarming even a true non-comment opener can
+reveal it. The implementer's earlier claim that D10 was "safe by construction" was wrong, and is
+withdrawn with the comments that made it (round-3 F5).
+
+The owner chose the digest-only fix and approved spec US2 as amended, plan D11 and tasks
+T014i-T014l on 2026-09-30, committed alone as `6e7e902`.
+
+### T014i — the digest guards, on `8e45e37` and the parent
+
+`Get-DocMarkers` harvest against the digest on disk (both carry the two markers outside the comment):
+
+| DIGEST-001 case | `8e45e37` | `e10da18` |
+|---|---|---|
+| `pass-hidden-nbsp-line` | harvests 3 — **wrong** | 2 |
+| `pass-hidden-pre-under-tag-line` | harvests 3 — **wrong** | 2 |
+| `pass-hidden-pre-in-misread-fence` | harvests 3 — **wrong** | 2 |
+| `pass-hidden-html-block-open` | 2 | 2 |
+| `pass-hidden-after-backslash-spans` | 2 | 2 |
+
+Through the harness on `8e45e37`, `-Case pass-hidden-` fails 3 of the 5 cases (6 assertions).
+
+### T014j — the amendment check keeps the parent's reading
+
+`Get-VisibleFromText` calls `Convert-SpanText` on each non-fenced line. Compared with `e10da18`,
+comments aside, the function differs in one line: the call names the per-line helper, whose body
+is identical to the parent's `Convert-CodeSpanMarkers -Line` bar its name. On every `.md` file in
+the kit and the three adopted projects, **566 files**, this branch's `Get-VisibleFromText`
+returns exactly what the parent's returns: **0 differ**. AMEND-001 `pass-wrapped-span` is now
+`fail-wrapped-span-hidden`. It is the same document, expects FAIL, and pins the limitation.
+
+### T014k — the digest rule's round-3 fixes
+
+These are in `Convert-CodeSpanMarkers`:
+- a blank line is spaces and tabs only (`^[ \t]*\r?$`);
+- a block start whose end is not a blank line switches the raw HTML tracker, even inside a
+  blank-ending block and on a line the fence map calls fenced. That covers `pre`, `script`,
+  `style` and `textarea`, a comment, a processing instruction, CDATA and a declaration;
+- candidates are found first, and a document with none returns the per-line result before the
+  tracker runs (FR-010 as amended).
+
+The comments no longer claim "no renderer can", "never less strict" or "never fewer"
+(round-3 F5). They say the model is the digest generator's, and name what it does not model,
+attributes and titles included. The DIGEST-001 and AMEND-001 `notes` in `rules.json` are updated.
+
+### T014l — suite, mutations, D1, parity
+
+Run 2026-09-30 (pwsh 7.6.6, Pester 5.7.1), scripts backed up and restored by hash (`True`):
+
+- Full suite: **843 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (833 before,
+  plus five cases at two assertions each).
+- Mutation (a), the three scripts at `e10da18`: `-Case wrapped-span` fails 2 of 3 cases, the
+  DIGEST-001 `pass-wrapped-span` and `fail-wrapped-span`, exit 1. `fail-wrapped-span-hidden`
+  passes on the parent, which is right: it pins the parent's behaviour.
+- Mutations of the digest rule, `-Case pass-hidden-` each, with the failing cases named from a
+  scratch harvest under the same mutation:
+
+  | Mutation | What it removes | Harness result | Failing cases |
+  |---|---|---|---|
+  | (e) | the closer check | 4 failed, exit 1 | `after-backslash-spans`, `nbsp-line` |
+  | (f) | the raw HTML exclusion | 6 failed, exit 1 | `html-block-open`, `pre-in-misread-fence`, `pre-under-tag-line` |
+  | (g) | blank as spaces and tabs (read as `\s` again) | 2 failed, exit 1 | `nbsp-line` |
+  | (h) | the long-end override (`8e45e37`'s tracker) | 4 failed, exit 1 | `pre-in-misread-fence`, `pre-under-tag-line` |
+
+  Every guard fails under the mutation it was written for.
+- D1 over the kit's 234 `.md` files: 0 violations.
+- The digest reading differs from per-line pairing on 5 lines across the kit and adopters, all in
+  review documents that quote these shapes. `ritual-checks`' digest freshness check covers the
+  committed digests.
+
+### Draft for the owner — the GAP-028 limitation (beside T026's gap, main-side docs PR)
+
+> GAP-0NN — The amendment-authority check reads code spans one line at a time
+> (`Get-VisibleFromText`, `scripts/enforcement-pack.ps1`), so a code span that wraps across lines
+> and holds `<!--` hides every approver record after it: the check refuses a legitimate
+> amendment (014 B7's shape). This fails closed, and the remedy is to keep such a span on one
+> line. It is kept on purpose. Feature 016 tried three readings that disarm more, and each let
+> some record inside a real comment, or hidden by a tag attribute or link title, count as a
+> grant (016 phase-1 reviews, rounds 1-3). A future fix needs a reading proved never to reveal
+> what a renderer hides, which likely means a real CommonMark parser, not a regex model.
+> Pinned by AMEND-001 `fail-wrapped-span-hidden`.

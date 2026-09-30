@@ -1,0 +1,35 @@
+{
+  "description": "Guard (016 plan D10/D11, mutation e). A comment opens after a code span ending in a backslash and closes at the next line's digest marker, with no blank line between: a real inline comment, holding the marker. The digest on disk carries only the two markers outside the comment, so the check must say OK; harvesting the hidden marker would call this correct digest stale. D10 disarms an opener only when no closer follows before a blank line; without that check the marker would be harvested.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: A rule marked before the comment. -->",
+          "",
+          "Paths end in a separator, as in `scripts\\` and <!-- a note",
+          "<!-- digest: A rule inside a real comment, which must never be harvested. -->",
+          "and the rest.",
+          "",
+          "<!-- digest: A rule marked after the comment. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- A rule marked before the comment. (`docs/sdlc/fixture-law.md`)",
+          "- A rule marked after the comment. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

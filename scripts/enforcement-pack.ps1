@@ -856,11 +856,13 @@ function Get-BlobLines {
 
 # The Markdown-visibility helpers moved to scripts/markdown-lib.ps1 (feature 015, phase 2):
 # build-digests.ps1 needed the same rule for GAP-025, and a copy would have to relearn
-# every fix this one took. Disable-CommentMarkers, Convert-CodeSpanMarkers and
-# Get-FencedLineMap arrive from there. Feature 016 changed Convert-CodeSpanMarkers to take
-# the whole document and also disarm any opener that no renderer can read as a comment
-# (GAP-028: a span that wrapped onto the next line hid every record after it; 016 D10). Spans
-# are still paired per line; the comment rules below are unchanged.
+# every fix this one took. Disable-CommentMarkers, Convert-SpanText and Get-FencedLineMap
+# arrive from there. This check uses Convert-SpanText, the per-line pairing, and NOT the
+# whole-document Convert-CodeSpanMarkers the digest generator uses (016 plan D11). Three
+# review rounds found that every reading that disarms more than per-line pairing let some
+# record inside a real comment, or hidden by an attribute or title, count as a grant. So a
+# code span that wraps across lines holding '<!--' still hides what follows it here (GAP-028):
+# fail-closed, remedied by keeping such a span on one line.
 . (Join-Path $PSScriptRoot 'markdown-lib.ps1')
 
 # Visible lines of a text blob — HTML comments stripped, same rule as Get-VisiblePlanLines
@@ -884,13 +886,10 @@ function Get-VisibleFromText {
     # No marker anywhere means no comment anywhere: nothing to neutralise and nothing to strip.
     if ($raw -notmatch '<!--') { return $raw -split "`r?`n" }
     $fenced = Get-FencedLineMap -Lines $Lines
-    # The whole document goes in one call: whether an opener can be a comment depends on the
-    # lines after it (016 D1, D10).
-    $spans = Convert-CodeSpanMarkers -Lines $Lines
     $processed = [System.Collections.Generic.List[string]]::new()
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         if ($fenced[$i]) { $processed.Add((Disable-CommentMarkers -Text $Lines[$i])) }
-        else             { $processed.Add($spans[$i]) }
+        else             { $processed.Add((Convert-SpanText -Text $Lines[$i])) }
     }
     $raw = ($processed -join "`n")
     $stripped = [regex]::Replace($raw, '(?s)<!--.*?-->', '')

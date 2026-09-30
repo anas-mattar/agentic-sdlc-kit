@@ -87,7 +87,7 @@ function Get-DocMarkers {
     $fenceClose = $null
     $lineNo = 0
     # The scan lines are computed once for the whole document and indexed below (016 D5): the
-    # rule needs the lines after each opener to tell whether it can be a comment (016 D10).
+    # rule needs the lines after each opener to tell whether it can be a comment (016 D10, D11).
     $rawLines = [IO.File]::ReadAllLines($abs)
     $scanLines = Convert-CodeSpanMarkers -Lines $rawLines
     foreach ($rawLine in $rawLines) {
@@ -135,7 +135,8 @@ function Get-DocMarkers {
         # document, and every marker after it vanished with no message — the generator wrote a
         # digest missing real rules and reported OK. 015's fix read spans per line, so a span
         # that wrapped onto the next line of its paragraph did the same thing (GAP-028); $scan
-        # now also has every opener disarmed that no renderer can read as a comment (016 D10).
+        # also has each opener disarmed that the shared model finds cannot open a comment (016
+        # D10, D11; this generator only, since the amendment check keeps per-line pairing).
         # Not modelled: a '<!--' opened mid-line in prose that runs on into later lines, and a
         # '-->' inside a span that wraps. Disarmed for the STATE UPDATE only:
         # the grammar checks above read $rawLine, and inside a comment Markdown renders

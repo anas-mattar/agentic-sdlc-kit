@@ -16,16 +16,18 @@
 
     Feature 016 found the fix for both was per-line (GAP-028): a code span that wrapped onto
     the next line of its paragraph looked like an unpaired backtick, so its '<!--' stayed
-    armed and hid everything after it, in both consumers. Its first two fixes paired spans
-    across the lines of a paragraph, and two review rounds showed that pairing can disarm a
-    REAL comment whenever the scan misreads a backtick — and Markdown has too many ways to
-    hide one (autolinks, raw HTML, link titles, backslashes before a closer, containers) for a
-    list of exceptions to be complete. So spans are still paired one line at a time, and the
-    wrapped span is handled from the other side: an opener that no renderer can read as a
-    comment is disarmed (Convert-CodeSpanMarkers says exactly when). Still not modelled: a
-    '-->' inside a span that wraps, and a '<!--' opened mid-line in prose that runs on into
-    later lines. That is the comment model's business; 016's phase 2 is scoped to make
-    build-digests report a marker it passes over inside one.
+    armed and hid everything after it, in both consumers. Three review rounds then showed
+    that every reading which disarms more than per-line pairing lets the amendment check
+    count some hidden record as a grant: pairing spans across lines misreads backticks, and
+    even disarming an opener that is not a comment reveals text hidden by an attribute or a
+    title. So the fix is the digest generator's alone (016 D11). Spans are still paired one
+    line at a time everywhere (Convert-SpanText, which the amendment check uses as it is),
+    and the generator also disarms an opener its model finds cannot open a comment
+    (Convert-CodeSpanMarkers says exactly when). In the amendment check GAP-028 stays, on
+    purpose, fail-closed. Still not modelled: a '-->' inside a span that wraps, and a '<!--'
+    opened mid-line in prose that runs on into later lines. That is the comment model's
+    business; 016's phase 2 is scoped to make build-digests report a marker it passes over
+    inside one.
 
     Three of these functions were enforcement-pack.ps1's. They live here because the next
     script to read a Markdown document should not be the fourth to learn it. Same reason
@@ -84,35 +86,63 @@ function Convert-SpanText {
     return $result
 }
 
-# Disarm comment markers inside the inline code spans of a whole document, and disarm every
-# comment opener that no renderer can read as a comment (016 D1, D10). Returns the same number
-# of lines, each the same length as its input, so a caller may index the result by line and
-# take substrings of it by the raw line's offsets.
+# The DIGEST generator's reading of a whole document (016 D1, D10, D11): the per-line span
+# pairing every line had before 016 (Convert-SpanText), plus one change. A '<!--' that result
+# left armed is disarmed when the model below finds no way for it to open a comment. Returns
+# the same number of lines, each the same length as its input, so a caller may index the
+# result by line and take substrings of it by the raw line's offsets.
 #
-# The result is the per-line pairing every line had before 016 (Convert-SpanText), plus one
-# change: a '<!--' that result left armed is disarmed when it CANNOT be a comment. Such an
-# opener sits inline, and no '-->' follows it before the next blank line. An inline comment
-# cannot cross a blank line, so no renderer hides anything behind it. That is GAP-028's
-# wrapped span: its quoted opener has no closer in its paragraph. The change only ever
-# reveals text a reader sees, so the result is never less strict than the per-line reading
-# about a real comment. "Inline" excludes:
-#   - fenced lines (their markers are the caller's, and literal);
-#   - raw HTML blocks, an HTML comment block included, found on the raw text after any list
-#     or block-quote markers and run to their CommonMark end: a pre, script, style or
-#     textarea block at its closing tag, a comment at its closer, a processing instruction at
-#     '?>', a declaration at '>', CDATA at ']]>', any other tag at a blank line. Raw HTML
-#     passes through to the browser, where a comment DOES cross a blank line.
-# Line starts are read generously: any line whose first text after container markers is a
-# tag counts as a block start, so more lines stay on the per-line result, never fewer.
-# What is NOT modelled, and keeps the per-line result: a code span that wraps is not
-# recognised, so a '-->' inside one stays armed, and so does the '<!--' of one whose
-# paragraph holds a '-->' later.
+# The amendment-authority check does NOT use this: it keeps per-line Convert-SpanText (016
+# D11). Three review rounds found that every reading which disarms more than per-line pairing
+# let some record in a real comment, or hidden by a tag attribute or link title, count as a
+# grant. Here the stakes are a digest line, and an opener this rule disarms wrongly costs at
+# most a harvested marker the source never showed.
+#
+# An opener is disarmed when it sits inline and no '-->' follows it, in the raw text, before
+# the next blank line: an inline comment cannot cross a blank line. That is GAP-028's wrapped
+# span, whose quoted opener has no closer in its paragraph. What the model counts:
+#   - Blank: a line of spaces and tabs only, as CommonMark reads it. A no-break space or a
+#     form feed is content, so a comment runs on through it (016 round-3 review F1).
+#   - Not inline: a fenced line, and a line inside a raw HTML block. A block is found on the
+#     raw text after any list or block-quote markers and runs to its CommonMark end: a pre,
+#     script, style or textarea block to its closing tag, a comment to its closer, a
+#     processing instruction to '?>', a declaration to '>', CDATA to ']]>', any other tag to a
+#     blank line. Raw HTML passes through to the browser, where a comment does cross a blank
+#     line. A start of a block with one of the longer ends is honoured even inside a block
+#     that ends at a blank line, and even on a line the fence map calls fenced, so a tag line
+#     or a misread fence cannot mask it (round-3 review F1).
+# Not modelled, and left on the per-line result: a code span that wraps is not recognised, so
+# a '-->' inside one stays armed, and so does the '<!--' of one whose paragraph holds a '-->'
+# later. Constructs other than comments that hide text (attributes, titles) are not modelled
+# at all; a marker inside one may be harvested.
 function Convert-CodeSpanMarkers {
     param([string[]]$Lines)
     $out = [string[]]::new($Lines.Count)
     for ($i = 0; $i -lt $Lines.Count; $i++) { $out[$i] = Convert-SpanText -Text $Lines[$i] }
     # No opener anywhere means nothing more to disarm (016 R5).
     if (($Lines -join "`n") -notmatch '<!--') { return ,$out }
+
+    $blankLine = '^[ \t]*\r?$'
+    # Candidates first: each armed opener with no raw closer before the next blank line. A
+    # document with none takes no further work (FR-010 as amended).
+    $candidates = @{}
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        $from = 0
+        while (($p = $out[$i].IndexOf('<!--', $from)) -ge 0) {
+            $from = $p + 4
+            # From the opener's third character, so '<!-->' and '<!--->' close themselves.
+            $closed = $Lines[$i].IndexOf('-->', $p + 2) -ge 0
+            for ($k = $i + 1; -not $closed -and $k -lt $Lines.Count; $k++) {
+                if ($Lines[$k] -match $blankLine) { break }
+                if ($Lines[$k].IndexOf('-->') -ge 0) { $closed = $true }
+            }
+            if (-not $closed) {
+                if (-not $candidates.ContainsKey($i)) { $candidates[$i] = [System.Collections.Generic.List[int]]::new() }
+                $candidates[$i].Add($p)
+            }
+        }
+    }
+    if ($candidates.Count -eq 0) { return ,$out }
 
     $fenced = Get-FencedLineMap -Lines $Lines
     # Container markers before a block's first text: indentation, list markers, block quotes.
@@ -122,42 +152,31 @@ function Convert-CodeSpanMarkers {
     $htmlEnd = $null
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         $raw = $Lines[$i]
-        $blank = $raw -match '^\s*$'
+        $blank = $raw -match $blankLine
+        $body = [regex]::Replace($raw, $container, '', 1)
+        # A block start with a longer end than a blank line: honoured anywhere but inside a
+        # block that already has one, fenced lines included.
+        $longEnd = if ($body -match '(?i)^<(pre|script|style|textarea)(\s|>|$)') { '(?i)</(pre|script|style|textarea)>' }
+                   elseif ($body -match '^<!--') { '-->' }
+                   elseif ($body -match '^<\?') { '\?>' }
+                   elseif ($body -match '^<!\[CDATA\[') { '\]\]>' }
+                   elseif ($body -match '^<![A-Za-z]') { '>' }
+                   else { $null }
         $inHtml = $false
-        if ($htmlEnd) {
+        if ($longEnd -and ($null -eq $htmlEnd -or $htmlEnd -eq 'blank')) {
+            $inHtml = $true
+            # A block whose end is on its own opening line is over already.
+            $htmlEnd = if ($body -match $longEnd) { $null } else { $longEnd }
+        } elseif ($htmlEnd) {
             $inHtml = $true
             if ($htmlEnd -eq 'blank') { if ($blank) { $htmlEnd = $null } }
             elseif ($raw -match $htmlEnd) { $htmlEnd = $null }
-        } elseif (-not $fenced[$i]) {
-            $body = [regex]::Replace($raw, $container, '', 1)
-            if ($body -match '^<[A-Za-z/?!]') {
-                $inHtml = $true
-                $end = if ($body -match '(?i)^<(pre|script|style|textarea)(\s|>|$)') { '(?i)</(pre|script|style|textarea)>' }
-                       elseif ($body -match '^<!--') { '-->' }
-                       elseif ($body -match '^<\?') { '\?>' }
-                       elseif ($body -match '^<!\[CDATA\[') { '\]\]>' }
-                       elseif ($body -match '^<![A-Za-z]') { '>' }
-                       else { 'blank' }
-                # A block whose end is on its own opening line is over already.
-                if ($end -ne 'blank' -and $body -match $end) { $end = $null }
-                $htmlEnd = $end
-            }
+        } elseif (-not $fenced[$i] -and $body -match '^<[A-Za-z/]') {
+            $inHtml = $true
+            $htmlEnd = 'blank'
         }
-        if ($inHtml -or $fenced[$i] -or $blank) { continue }
-        # Each opener the per-line result left armed: disarmed only if nothing after it, up to
-        # the next blank line, could close it. The search reads the RAW text, so a closer the
-        # per-line pairing disarmed still counts, which keeps the opener armed.
-        $from = 0
-        while (($p = $out[$i].IndexOf('<!--', $from)) -ge 0) {
-            $from = $p + 4
-            # From the opener's third character, so '<!-->' and '<!--->' close themselves.
-            $closed = $raw.IndexOf('-->', $p + 2) -ge 0
-            for ($k = $i + 1; -not $closed -and $k -lt $Lines.Count; $k++) {
-                if ($Lines[$k] -match '^\s*$') { break }
-                if ($Lines[$k].IndexOf('-->') -ge 0) { $closed = $true }
-            }
-            if (-not $closed) { $out[$i] = $out[$i].Substring(0, $p) + '<!@@' + $out[$i].Substring($p + 4) }
-        }
+        if ($inHtml -or $fenced[$i] -or -not $candidates.ContainsKey($i)) { continue }
+        foreach ($p in $candidates[$i]) { $out[$i] = $out[$i].Substring(0, $p) + '<!@@' + $out[$i].Substring($p + 4) }
     }
     return ,$out
 }
