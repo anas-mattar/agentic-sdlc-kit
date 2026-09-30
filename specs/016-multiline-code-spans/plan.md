@@ -100,6 +100,23 @@ does not begin with `malformed digest marker:`, so the two rules keep distinct e
 coverage check (FR-008, FR-009). A marker commented out on purpose is deleted instead, and the
 flow-down note says so.
 
+**D9 — A doubtful paragraph keeps per-line pairing, and raw HTML blocks end where CommonMark
+ends them (phase-1 review F1).** Paragraph pairing may reach further than per-line pairing only
+where every backtick in the paragraph can be read as a span delimiter. Two shapes break that. A
+backslash touching a backtick: backslash escapes do not apply inside a span, so the run scan
+misreads a span's closer. And a construct that binds before a span on the same line: a `<` that
+opens a tag, autolink or comment, or a link destination `](`, before a backtick. A paragraph
+holding either keeps per-line pairing, the reviewed baseline. Raw HTML blocks end by CommonMark's
+rule, not at the next blank line: `pre`, `script`, `style` and `textarea` blocks at their closing
+tag, a processing instruction at `?>`, a declaration at `>`, CDATA at `]]>`, and any other tag
+at a blank line. Their lines keep per-line pairing throughout. Both rules only move the result
+toward per-line pairing, never beyond it, which is D3's direction. They are proved by three
+AMEND-001 fail directions built from the review's documents, each shown passing on `7a770e5`
+(the fail-open) and failing on the fix. Two more mutations are recorded beside D7's: (c) the
+paragraph fallback removed, and (d) the raw HTML block ends removed.
+
+**Amendment approved by**: anas.m, 2026-09-30
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).
