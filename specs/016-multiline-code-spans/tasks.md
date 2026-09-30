@@ -128,6 +128,28 @@ D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**Phase-1 round-3 remediation** (round-3 review F1, F3-F5; plan D11; spec US2 as amended):
+
+- [ ] T014i [US1] Write the five DIGEST-001 guards of D11, each a marker inside a real comment
+      with a correct digest on disk that omits it: `pass-hidden-nbsp-line`,
+      `pass-hidden-pre-under-tag-line`, `pass-hidden-pre-in-misread-fence`,
+      `pass-hidden-html-block-open` and `pass-hidden-after-backslash-spans`. Run them on
+      `8e45e37` and record which fail there.
+- [ ] T014j [US2] Replace AMEND-001 `pass-wrapped-span` with `fail-wrapped-span-hidden` (the
+      same document, expecting FAIL), and point `Get-VisibleFromText` back at per-line
+      `Convert-SpanText` (D11).
+- [ ] T014k [US1] Apply the round-3 F1 fixes to `Convert-CodeSpanMarkers`: a blank line is
+      spaces and tabs only; a long-ending block start switches the tracker; and a document with
+      no candidate opener returns early (FR-010 as amended). Correct every comment and note the
+      round-3 review found overclaiming (F5). Update the DIGEST-001 and AMEND-001 `notes` in
+      `tests/enforcement/rules.json`.
+- [ ] T014l [US1] [US2] Run the full suite and mutations (a), (e), (f), (g) and (h). Check D1.
+      Compare `Get-VisibleFromText` with the parent's over every `.md` file in the kit and the
+      three adopted projects. Record all of it in `notes.md`, with the GAP-028 limitation drafted
+      for the owner's gap row beside T026's.
+
+**Amendment approved by**: anas.m, 2026-09-30
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)

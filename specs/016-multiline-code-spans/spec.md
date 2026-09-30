@@ -115,6 +115,18 @@ commit whose record sits inside a real comment and confirm it fails.
    record stays hidden: a span never reaches across the paragraph boundary to disarm the
    comment.
 
+**Amended after the phase-1 round-3 review**: scenario 1 is withdrawn. Three review rounds found
+that every change to how the amendment check reads a document let some record inside a real
+comment, or hidden some other way, count as a grant. Two designs were tried: paragraph pairing,
+and disarming an opener that cannot be a comment. So the amendment check keeps exactly the
+per-line reading it had before this feature. A wrapped code span holding `<!--` still hides a
+record after it there. That is the fail-closed direction: the check refuses, never grants, and
+the author's remedy is to keep such a span on one line, as this feature's own notes already
+require. Scenarios 2 and 3 stand, and hold because the reading is unchanged. The story is met
+in its safety half. Its usability half is a known limitation, recorded for the owner as a gap.
+
+**Amendment approved by**: anas.m, 2026-09-30
+
 ---
 
 ### User Story 3 - A marker the generator skips is never skipped silently (Priority: P2)
@@ -219,6 +231,25 @@ misreads, which lets such pairing disarm a real comment
 - **FR-012**: On ship, GAP-028 MUST be recorded as closed, and the comment in the shared library
   that describes the rule as per-line MUST be corrected. So must any kit text that still claims
   GAP-025 is closed without qualification.
+
+**Amended after the phase-1 round-3 review** (US2 as amended above). The fix applies to the
+digest consumer only. The amendment consumer keeps today's per-line reading, unchanged. Read
+the requirements above through that:
+- FR-002's rule, and FR-003's "outside FR-002's rule", govern the digest consumer. Its rule
+  counts a line as blank only when it holds nothing but spaces and tabs, as CommonMark does.
+  FR-003 holds for the amendment consumer everywhere: its result is today's per-line result.
+- FR-001 stands: both consumers use the one shared library. The amendment consumer calls its
+  per-line pairing, and the digest consumer calls the whole-document rule built on that same
+  pairing. Neither carries a copy.
+- FR-005's amendment-consumer pass case is replaced by a case that pins the limitation: a
+  record after a wrapped span holding `<!--` stays hidden, and the check fails. FR-006 and
+  FR-007 stand.
+- FR-010 becomes: a document with no opener that the rule could disarm takes no additional
+  work, and the change adds no child process to any check.
+- FR-012 becomes: GAP-028 is recorded as closed for the digest consumer, and as a known
+  fail-closed limitation for the amendment consumer, in a gap row the owner files.
+
+**Amendment approved by**: anas.m, 2026-09-30
 
 ### Out of Scope
 

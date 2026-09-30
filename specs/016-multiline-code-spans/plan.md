@@ -144,6 +144,39 @@ exclusion removed, where the raw-HTML-block cases must fail.
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**D11 — The fix is the digest consumer's only; the amendment consumer keeps the per-line
+reading (phase-1 round-3 review; spec US2 as amended).** Three rounds showed that any change to
+how the amendment check reads a document can let a hidden record count. Round 3's F2 shows why
+no version of D10 can be proved safe there. The parent's unterminated-comment rule also hid text
+that renderers hide for other reasons, such as a tag attribute or a link title spanning lines,
+so disarming even an opener that is truly not a comment can reveal such text.
+- `Get-VisibleFromText` goes back to the parent's reading: `Convert-SpanText` on each non-fenced
+  line. That function's logic is byte-identical to the parent's per-line function, bar its name
+  and comments. The amendment check's result then equals the parent's on every document.
+- `Get-DocMarkers` keeps `Convert-CodeSpanMarkers` (D10), with the round-3 F1 fixes:
+  - a line is blank only when it is spaces and tabs;
+  - a line that starts a block ending somewhere other than a blank line switches the tracker to
+    that end. That covers a `pre`, `script`, `style` or `textarea` block, a comment, a
+    processing instruction, CDATA and a declaration. It applies even inside a block that ends at
+    a blank line, and even on a line the fence map calls fenced.
+  - a document with no opener the rule could disarm returns the per-line result before the
+    tracker runs (FR-010 as amended).
+- **Cases.**
+  - AMEND-001 `pass-wrapped-span` is replaced by `fail-wrapped-span-hidden`. It is the same
+    document, expects FAIL, and pins the limitation.
+  - DIGEST-001 gains a guard for each D10 safety rule, in the digest direction. Each holds a
+    marker inside a real comment that the generator must not harvest, with a correct digest on
+    disk. They are `pass-hidden-nbsp-line`, `pass-hidden-pre-under-tag-line`,
+    `pass-hidden-pre-in-misread-fence`, `pass-hidden-html-block-open` and
+    `pass-hidden-after-backslash-spans`.
+  - The AMEND-001 no-fail-open cases stay, guarding the unchanged reading.
+- **Mutations** are recorded beside D7's, each failing the digest guard it names: (e) the closer
+  check removed; (f) the raw HTML exclusion removed; (g) blank read as .NET whitespace; (h) the
+  long-end override removed. A further check compares `Get-VisibleFromText` with the parent's
+  on every `.md` file in the kit and the three adopted projects: equal on every file.
+
+**Amendment approved by**: anas.m, 2026-09-30
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).
