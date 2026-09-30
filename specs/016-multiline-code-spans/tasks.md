@@ -92,17 +92,17 @@ D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
 
 **Phase-1 review remediation** (review F1 BLOCKING, F3; plan D9):
 
-- [ ] T014a [US2] Write three AMEND-001 fail directions from the review's F1 documents:
+- [x] T014a [US2] Write three AMEND-001 fail directions from the review's F1 documents:
       `fail-hidden-backslash-closer`, `fail-hidden-autolink-backtick` and
       `fail-hidden-pre-block`. Each holds a record inside a real comment and expects FAIL. Run them
       on `7a770e5` and record in `notes.md` that each wrongly passes there (the fail-open is real).
-- [ ] T014b [US2] Implement D9 in `scripts/markdown-lib.ps1`: the per-line fallback for a
+- [x] T014b [US2] Implement D9 in `scripts/markdown-lib.ps1`: the per-line fallback for a
       paragraph with a backslash touching a backtick, or a tag, autolink, comment or link
       destination before a backtick on a line; and raw HTML block ends by CommonMark's rule.
-- [ ] T014c [US1] [US2] Correct the comments the review found overstated (F3): the phase-2 report
+- [x] T014c [US1] [US2] Correct the comments the review found overstated (F3): the phase-2 report
       described as present, the claim that a stray backtick cannot disarm a real comment, and the
       raw HTML description. Update AMEND-001's `notes` in `tests/enforcement/rules.json`.
-- [ ] T014d [US1] [US2] Run the full suite, then mutations (c) and (d) of D9, each failing the cases
+- [x] T014d [US1] [US2] Run the full suite, then mutations (c) and (d) of D9, each failing the cases
       it guards. Record both, and the dispositions of review F2 and F4, in `notes.md`.
 
 **Amendment approved by**: anas.m, 2026-09-30

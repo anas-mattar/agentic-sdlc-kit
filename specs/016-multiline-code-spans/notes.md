@@ -122,3 +122,67 @@ check, not as zero. The amendment check was not timed separately; it calls the s
 
 The T002/T005 and D6 amendment was approved by the owner on 2026-09-30 and committed alone as
 `85c8650`, before this phase's commit; `enforcement-pack.ps1` graded it (4 of 4 commits, OK).
+
+## Phase 1 remediation — the review's F1 (plan D9)
+
+The fresh-context review of `7a770e5` (`ai-code-review-phase-1.md`, REQUEST CHANGES) found that
+paragraph pairing let a record inside a real HTML comment count as a grant (F1, 014's H1 shape).
+The owner approved plan D9 and tasks T014a-T014d on 2026-09-30, committed alone as `44f6c94`.
+
+### T014a — the fail-open, shown on the unremediated fix
+
+Three AMEND-001 fail directions from the review's documents, run on `7a770e5` with
+`Run-Tests.ps1 -Case <name>`: `fail-hidden-backslash-closer`, `fail-hidden-autolink-backtick` and
+`fail-hidden-pre-block` each **fail as cases**, because the check printed `enforcement-pack: OK`, exit
+0, for a record no renderer shows. The fail-open is real.
+
+### T014b-T014c — the fix and the comments
+
+`Convert-CodeSpanMarkers` pairs a paragraph as one text only when no line has a backslash
+touching a backtick, or a `<` opening a tag, autolink, comment or declaration, or a link
+destination, before a backtick. Otherwise the paragraph is paired line by line. Raw HTML blocks
+now run to their CommonMark end, so a `pre` block no longer ends at a blank line. The review's F3
+sentences are corrected: the phase-2 report is described as scoped, not present; the header no
+longer claims a stray backtick cannot disarm a real comment; the raw HTML description matches
+the code. AMEND-001's `notes` in `rules.json` name the three new directions.
+
+**A cost D9 accepts, for the owner to see.** The rule treats a comment opener before a backtick
+as doubtful, as approved. So a span that wraps with its opener on the *second* line, before the
+closing backtick, gets per-line pairing and is not fixed. In that shape, one line holds the
+opening backtick, and the next holds the comment opener followed by the closing backtick. That is
+the fail-closed direction (the amendment check hides; the
+digest check loses the marker, which phase 2's report is scoped to name). The committed cases
+put the opener on the first line and stay fixed. Narrowing the rule to exclude the comment
+opener looks safe on analysis: a comment that opens before both backticks stays armed, so
+everything after it is still hidden. But the approved text names it, so it stays until the owner
+decides.
+
+### T014d — suite and mutations
+
+On the remediated scripts, run 2026-09-30 (pwsh 7.6.6, Pester 5.7.1):
+
+- Full suite: **823 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (817 before,
+  plus the three new cases at two assertions each).
+- Mutation (c), the doubtful-paragraph fallback removed (`$doubtful` set to a pattern that never
+  matches): `-Case backslash-closer` 33 passed, 2 failed, exit 1; `-Case autolink-backtick` 33
+  passed, 2 failed, exit 1. Both cases fail.
+- Mutation (d), the `pre`/`script`/`style`/`textarea` block end removed, so such a block ends at a
+  blank line again: `-Case pre-block` 33 passed, 2 failed, exit 1. It fails.
+- The library was restored and hash-checked after each mutation (`True`).
+- The targeted 016 runs on the fix: `fail-hidden-` 43/0 (five cases), `wrapped-span` 39/0,
+  `comment-block-backticks` 37/0.
+
+### Review F2 and F4 — dispositions
+
+- **F2** (the paragraph reading can arm a marker the per-line reading disarmed): D9 closes its
+  first document. That line quotes the opener in a span, so it is doubtful and paired per line,
+  and both markers are harvested again. The second document is **still open**. It is the D5
+  tail after a mid-line comment close, and 1 marker is harvested where the parent got 2: D5
+  takes the tail from the whole line's pairing, and the parent paired the tail alone. No file in
+  the kit or the three adopters has the shape (the review's scan). **The owner decides** between
+  two options. One is to accept it as covered by phase 2's DIGEST-020 report and add that
+  document as a DIGEST-020 direction. The other is an amendment to D5 that re-pairs the tail on
+  its own, as the parent did.
+- **F4** (fail-open shapes that predate 016: a fence info string holding a backtick, F1's shapes
+  kept on one line, a backtick pair inside a `div` block): not in this feature's scope. They are
+  drafted beside T026's gap for the owner's main-side docs PR.

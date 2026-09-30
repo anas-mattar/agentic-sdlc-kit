@@ -17,9 +17,11 @@
     Feature 016 found the fix for both was per-line (GAP-028): a code span that wrapped onto
     the next line of its paragraph looked like an unpaired backtick, so its '<!--' stayed
     armed and hid everything after it, in both consumers. Spans now pair within their
-    paragraph, never beyond it (Convert-CodeSpanMarkers says exactly what is modelled). Still
-    not modelled: a '<!--' opened mid-line in prose that runs on into later lines. That is the
-    comment model's business; build-digests reports a marker it passes over inside one.
+    paragraph, never beyond it, and only where pairing further than one line cannot disarm a
+    real comment (Convert-CodeSpanMarkers says exactly what is modelled; its first version
+    could, and the phase-1 review showed it). Still not modelled: a '<!--' opened mid-line in
+    prose that runs on into later lines. That is the comment model's business; 016's phase 2
+    is scoped to make build-digests report a marker it passes over inside one.
 
     Three of these functions were enforcement-pack.ps1's. They live here because the next
     script to read a Markdown document should not be the fourth to learn it. Same reason
@@ -85,20 +87,33 @@ function Convert-SpanText {
 # result by line and take substrings of it by the raw line's offsets.
 #
 # A code span pairs within its PARAGRAPH, never beyond it (016 FR-003): a span that wraps
-# onto the next line of its paragraph hides nothing, and a stray backtick cannot pair into a
-# later block and disarm a real comment there (014's H1). What is modelled:
+# onto the next line of its paragraph hides nothing, and a stray backtick in one block cannot
+# pair into a later block and disarm a real comment there (014's H1). Pairing reaches past one
+# line ONLY where that can never disarm more than per-line pairing would in a paragraph whose
+# backticks the scan may misread; everywhere else the result is per-line pairing, the reviewed
+# baseline, and every rule below moves toward it, never beyond it (016 D3, D9). What is modelled:
 #   - A paragraph is a run of plain lines. It ends at a blank line and at any line that
 #     begins a block. Block starts are read generously (016 D3): a heading, list item, block
 #     quote, table row or HTML tag at any indentation, a thematic break or setext underline.
-#     Every extra break moves the result toward per-line pairing, the reviewed baseline.
+#   - A paragraph is paired as one text only when every backtick in it can be read as a span
+#     delimiter (016 D9, phase-1 review F1). It keeps per-line pairing when a backslash touches
+#     a backtick (backslash escapes do not apply inside a span, so the scan misreads a closer
+#     such as the one in a quoted Windows path), or when a line has a '<' opening a tag,
+#     autolink or comment, or a link destination '](', before a backtick (those bind first, so
+#     their backticks delimit nothing). Paired across lines anyway, such a paragraph could
+#     disarm a real comment between two backticks the renderer never pairs.
 #   - Lines that join no paragraph keep per-line pairing, exactly as before 016: fenced
 #     lines; an HTML comment block, from a line whose first text is '<!--' through the first
-#     line whose raw text holds '-->' after the opener (016 D4); a line starting with an HTML
-#     tag and the lines after it up to a blank line; a heading, thematic break, setext
-#     underline or table row; and an indented line that does not continue a paragraph.
+#     line whose raw text holds '-->' after the opener (016 D4); a raw HTML block, from a line
+#     starting with a tag to its CommonMark end (a pre, script, style or textarea block at its
+#     closing tag, a processing instruction at '?>', a declaration at '>', CDATA at ']]>', any
+#     other tag at a blank line); a heading, thematic break, setext underline or table row; and
+#     an indented line that does not continue a paragraph.
 # What is NOT modelled: a '<!--' opened mid-line in prose that runs on into later lines. That
-# is the comment model's business, not this function's, and build-digests reports a marker it
-# passes over inside such a comment (016 D8).
+# is the comment model's business, not this function's; feature 016's phase 2 is scoped to make
+# build-digests report a marker it passes over inside such a comment (016 D8). Nor does per-line
+# pairing itself honour autolinks, raw HTML or backslashes, so a shape that fooled it on one line
+# before 016 still does (recorded in specs/016-multiline-code-spans/notes.md).
 function Convert-CodeSpanMarkers {
     param([string[]]$Lines)
     $out = [string[]]::new($Lines.Count)
@@ -110,33 +125,49 @@ function Convert-CodeSpanMarkers {
 
     $fenced = Get-FencedLineMap -Lines $Lines
     $para = [System.Collections.Generic.List[int]]::new()
-    # Pair the pending paragraph's spans across its lines, then split it back in place.
+    # A paragraph line whose backticks the run scan may misread (D9): a backslash touching a
+    # backtick, or a tag, autolink, comment or link destination before a backtick.
+    $doubtful = '\\`|`\\|<[A-Za-z/!?].*`|\]\(.*`'
+    # Pair the pending paragraph's spans across its lines, then split it back in place. A
+    # doubtful paragraph is paired line by line instead.
     $flush = {
-        if ($para.Count -gt 1) {
+        $whole = $para.Count -gt 1
+        if ($whole) {
+            foreach ($j in $para) { if ($Lines[$j] -match $doubtful) { $whole = $false; break } }
+        }
+        if ($whole) {
             $joined = ($para | ForEach-Object { $Lines[$_] }) -join "`n"
             $parts = (Convert-SpanText -Text $joined) -split "`n"
             for ($p = 0; $p -lt $para.Count; $p++) { $out[$para[$p]] = $parts[$p] }
-        } elseif ($para.Count -eq 1) {
-            $out[$para[0]] = Convert-SpanText -Text $Lines[$para[0]]
+        } else {
+            foreach ($j in $para) { $out[$j] = Convert-SpanText -Text $Lines[$j] }
         }
         $para.Clear()
     }
 
     $inCommentBlock = $false
-    $inHtmlBlock = $false
+    # The end of the raw HTML block being read: $null outside one, 'blank' for a block that
+    # ends at a blank line, otherwise the pattern of the line that ends it (D9).
+    $htmlEnd = $null
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         $line = $Lines[$i]
         # An HTML comment block: its lines join no paragraph and keep per-line pairing (D4).
-        if (-not $inCommentBlock) {
-            $m = [regex]::Match($line, '^ {0,3}<!--')
-            if ($m.Success -and -not $fenced[$i]) {
-                . $flush
-                $inCommentBlock = $line.IndexOf('-->', $m.Index + $m.Length) -lt 0
-                $out[$i] = Convert-SpanText -Text $line
-                continue
-            }
-        } else {
+        if ($inCommentBlock) {
             if ($line.IndexOf('-->') -ge 0) { $inCommentBlock = $false }
+            $out[$i] = Convert-SpanText -Text $line
+            continue
+        }
+        # Inside a raw HTML block: per-line pairing to the block's CommonMark end (D9).
+        if ($htmlEnd) {
+            $out[$i] = Convert-SpanText -Text $line
+            if ($htmlEnd -eq 'blank') { if ($line -match '^\s*$') { $htmlEnd = $null } }
+            elseif ($line -match $htmlEnd) { $htmlEnd = $null }
+            continue
+        }
+        $m = [regex]::Match($line, '^ {0,3}<!--')
+        if ($m.Success -and -not $fenced[$i]) {
+            . $flush
+            $inCommentBlock = $line.IndexOf('-->', $m.Index + $m.Length) -lt 0
             $out[$i] = Convert-SpanText -Text $line
             continue
         }
@@ -147,14 +178,22 @@ function Convert-CodeSpanMarkers {
         }
         if ($line -match '^\s*$') {
             . $flush
-            $inHtmlBlock = $false
             continue
         }
-        # Raw HTML runs to the next blank line, and spans do not apply inside it.
-        if ($inHtmlBlock -or $line -match '^\s*</?[A-Za-z!?]') {
+        # A raw HTML block opens on a line starting with a tag. Its lines join no paragraph,
+        # keep per-line pairing, and run to the block's CommonMark end (D9) — a pre block
+        # does not end at a blank line, so a paragraph must not resume inside it.
+        if ($line -match '^\s*</?[A-Za-z!?]') {
             . $flush
-            $inHtmlBlock = $true
             $out[$i] = Convert-SpanText -Text $line
+            $end = if ($line -match '(?i)^\s*<(pre|script|style|textarea)(\s|>|$)') { '(?i)</(pre|script|style|textarea)>' }
+                   elseif ($line -match '^\s*<\?') { '\?>' }
+                   elseif ($line -match '^\s*<!\[CDATA\[') { '\]\]>' }
+                   elseif ($line -match '^\s*<![A-Za-z]') { '>' }
+                   else { 'blank' }
+            # A block whose end is on its own opening line is over already.
+            if ($end -ne 'blank' -and $line -match $end) { $end = $null }
+            $htmlEnd = $end
             continue
         }
         # Blocks of one line: heading, thematic break, setext underline, table row.
