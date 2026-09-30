@@ -121,8 +121,8 @@ comment, or hidden some other way, count as a grant. Two designs were tried: par
 and disarming an opener that cannot be a comment. So the amendment check keeps exactly the
 per-line reading it had before this feature. A wrapped code span holding `<!--` still hides a
 record after it there. That is the fail-closed direction: the check refuses, never grants, and
-the author's remedy is to keep such a span on one line, as this feature's own notes already
-require. Scenarios 2 and 3 stand, and hold because the reading is unchanged. The story is met
+the author's remedy is to keep such a span on one line, as the Notes section of this feature's
+`tasks.md` already requires of its own documents. Scenarios 2 and 3 stand, and hold because the reading is unchanged. The story is met
 in its safety half. Its usability half is a known limitation, recorded for the owner as a gap.
 
 **Amendment approved by**: anas.m, 2026-09-30
@@ -294,6 +294,17 @@ the requirements above through that:
   number.
 - **SC-007**: The generator's skipped-marker report finds **zero** occurrences across the kit
   and the three adopted projects at ship time. Any it does find are resolved in the flow-down.
+
+**Amended after the phase-1 round-4 review** (plan D11). Two of the outcomes above are read as
+follows.
+- **SC-002**: across the amendment consumer's cases, **zero** records inside a real comment
+  are counted, and that consumer's reading equals the parent's on every document measured. A
+  visible record after a wrapped span stays hidden there, as US2 as amended accepts.
+- **SC-004**: the guard half reads: **every** digest guard fails under the recorded mutation of
+  the rule it guards. These are D10's and D11's mutations, since this design has no paragraph
+  boundary to remove.
+
+**Amendment approved by**: anas.m, 2026-09-30
 
 ## Assumptions
 

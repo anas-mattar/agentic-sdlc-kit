@@ -150,6 +150,22 @@ D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**Phase-1 round-4 remediation** (round-4 review F1, F2, F4; FR-003 as amended, digest consumer):
+
+- [ ] T014m [US1] Fix the digest rule's raw HTML tracker in `scripts/markdown-lib.ps1`.
+      - When a block with a longer end closes inside a block that ends at a blank line, the
+        tracker returns to the enclosing block.
+      - A start of a block ending at a blank line is honoured on a line the fence map calls
+        fenced.
+      - Write DIGEST-001 guards for the round-4 F1 documents (show each harvesting the hidden
+        marker on `b45cff1`), and for the ends round-4 F2 found unguarded: the container
+        markers, and the comment, processing-instruction, CDATA and declaration ends.
+      - Correct the comments and notes round-4 F4 found overclaiming.
+      - Run the full suite, a mutation for each newly guarded rule, and the amendment-reading
+        parity check. Record all of it in `notes.md`.
+
+**Amendment approved by**: anas.m, 2026-09-30
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)
