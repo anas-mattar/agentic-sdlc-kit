@@ -200,3 +200,65 @@ through `Get-VisibleFromText`.
 DIGEST-020 report, which names a marker skipped because a comment is open. Whether F2's second
 document joins DIGEST-020 as a direction is a change to T016, proposed to the owner when phase 2
 starts.
+
+## Phase 1 round-2 remediation — the redesign (plan D10)
+
+The owner approved spec FR-002/FR-003, plan D10 and tasks T014e-T014h on 2026-09-30, committed
+alone as `b58d3f3`. D10 supersedes D2, D3 and D9. It returns the parent's per-line pairing,
+then disarms only an opener that no renderer can read as a comment. It was prototyped in scratch
+before the owner decided, and the prototype and the committed code give identical results on
+every document below.
+
+### T014e-T014f — the cases, on `6f75415`
+
+`Run-Tests.ps1 -Case <name>` against `6f75415`'s scripts:
+
+| Case | On `6f75415` | Meaning |
+|---|---|---|
+| AMEND-001 `fail-hidden-list-div` (round-2 shape a) | fails as a case: the check said OK | the fail-open is real |
+| AMEND-001 `fail-hidden-list-pre` (shape b) | fails as a case | the fail-open is real |
+| AMEND-001 `fail-hidden-comment-tick` (shape h) | fails as a case | the fail-open is real |
+| AMEND-001 `fail-hidden-html-block-open` (guard) | passes | holds there, and on the parent |
+| DIGEST-001 `pass-tail-after-close` (round-1 F2, second document) | fails as a case: stale | the marker loss is real |
+
+### T014g — the rewrite
+
+`Convert-CodeSpanMarkers` is per-line `Convert-SpanText` on every line, plus the D10 rule. Paragraph
+pairing and the D9 doubt pattern are gone. The comments that described paragraph pairing are
+corrected in all three scripts (round-2 F3): the library header, the function comment, the
+`Convert-SpanText` comment, the two `build-digests.ps1` comments and the two
+`enforcement-pack.ps1` comments. Round-2 F4 (two D9 alternatives unguarded) no longer applies,
+because D9's pattern is removed. The DIGEST-001 and AMEND-001 `notes` in `rules.json` name the
+five new directions.
+
+### T014h — suite, mutations, D1, and the review documents
+
+Run 2026-09-30 (pwsh 7.6.6, Pester 5.7.1), scripts backed up and restored by hash (`True`):
+
+- Full suite on the fix: **833 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0
+  (823 before, plus five cases at two assertions each).
+- Mutation (a), the three scripts reverted to `e10da18`: `-Case wrapped-span` fails all 3 cases
+  (6 failed assertions), exit 1. `-Case tail-after-close` **passes** on the parent. That is
+  expected, because the parent paired the tail alone and harvested both markers. The loss was
+  introduced by 016's first design, so this case guards against 016 regressing, not against
+  the fix being reverted.
+- Mutation (e), the closer check removed so every inline opener is disarmed: `-Case fail-hidden-`
+  fails 3 of 9 (6 assertions), exit 1. By name: `fail-hidden-autolink-backtick`,
+  `fail-hidden-backslash-closer` and `fail-hidden-comment-tick`.
+- Mutation (f), the raw HTML exclusion removed: `-Case fail-hidden-` fails 2 of 9 (4
+  assertions), exit 1. By name: `fail-hidden-html-block-open` and the pre-existing
+  `fail-hidden-record`.
+- `fail-hidden-list-div` and `fail-hidden-list-pre` fail under neither mutation, because the closer
+  check alone keeps their records hidden. They guard against paragraph pairing returning, and
+  they failed on `6f75415`, which is what they are for.
+- D1 over all 233 `.md` files in the kit: 0 violations of line count or line length.
+- Every review document from rounds 1 and 2 was run through `Get-VisibleFromText`. All 21 that
+  hide the record in a renderer are hidden, including the eight round-2 shapes (a)-(h) and the
+  narrowing shape (i). The two where a real code span holds the record (`x-multirun`,
+  `x-pre-sameline`) are also hidden, as the parent hides them. That is the fail-closed
+  direction, a fix not made rather than a regression.
+- Four more documents put a comment inside raw HTML and leave it open across a blank line: a
+  `div`, a `div` in a list item, a `pre`, and a `div` in a block quote. All four stay hidden,
+  and all four become visible under mutation (f).
+- Round-1 F2's two documents: both markers are harvested for each. The owner's decision to leave
+  F2 to phase 2 stands as recorded, and it is now moot for these two documents.

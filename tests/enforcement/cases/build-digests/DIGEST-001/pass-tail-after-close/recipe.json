@@ -1,0 +1,34 @@
+{
+  "description": "016 phase-1 review F2, second document (plan D10). A comment opens mid-line and closes on the next line, and the same line then quotes '<!--' in a code span; a marker follows in its own block. A renderer shows the quoted opener as code, and the digest on disk carries both markers, so the check must say OK. 7a770e5 and 6f75415 took the text after the close from the whole line's pairing, which paired the wrong backticks and left the quoted '<!--' armed, so the second marker vanished and this correct digest was called stale. Per-line pairing plus D10 (that opener has no closer before the blank line) harvests both.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: A rule marked before the wrapped span. -->",
+          "",
+          "Prose that opens a note <!-- mid-line and",
+          "closes it a ` b --> then quotes `<!--` in a span.",
+          "",
+          "<!-- digest: A rule marked after the wrapped span, which GAP-028 made invisible. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- A rule marked before the wrapped span. (`docs/sdlc/fixture-law.md`)",
+          "- A rule marked after the wrapped span, which GAP-028 made invisible. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}
