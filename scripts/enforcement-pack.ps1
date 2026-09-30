@@ -857,7 +857,9 @@ function Get-BlobLines {
 # The Markdown-visibility helpers moved to scripts/markdown-lib.ps1 (feature 015, phase 2):
 # build-digests.ps1 needed the same rule for GAP-025, and a copy would have to relearn
 # every fix this one took. Disable-CommentMarkers, Convert-CodeSpanMarkers and
-# Get-FencedLineMap arrive from there, unchanged.
+# Get-FencedLineMap arrive from there. Feature 016 changed Convert-CodeSpanMarkers to take
+# the whole document and pair spans within their paragraphs (GAP-028: a span that wrapped
+# onto the next line hid every record after it); the comment rules below are unchanged.
 . (Join-Path $PSScriptRoot 'markdown-lib.ps1')
 
 # Visible lines of a text blob — HTML comments stripped, same rule as Get-VisiblePlanLines
@@ -881,10 +883,12 @@ function Get-VisibleFromText {
     # No marker anywhere means no comment anywhere: nothing to neutralise and nothing to strip.
     if ($raw -notmatch '<!--') { return $raw -split "`r?`n" }
     $fenced = Get-FencedLineMap -Lines $Lines
+    # Spans pair within their paragraphs, so the whole document goes in one call (016 D1).
+    $spans = Convert-CodeSpanMarkers -Lines $Lines
     $processed = [System.Collections.Generic.List[string]]::new()
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         if ($fenced[$i]) { $processed.Add((Disable-CommentMarkers -Text $Lines[$i])) }
-        else             { $processed.Add((Convert-CodeSpanMarkers -Line $Lines[$i])) }
+        else             { $processed.Add($spans[$i]) }
     }
     $raw = ($processed -join "`n")
     $stripped = [regex]::Replace($raw, '(?s)<!--.*?-->', '')

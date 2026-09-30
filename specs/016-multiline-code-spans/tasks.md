@@ -30,26 +30,26 @@ the same commit, and the cases that prove it land beside it, shown failing on th
 - `scripts/build-digests.ps1`
 - `tests/**`
 
-- [ ] T001 [P] [US1] Write the digest cases under
+- [x] T001 [P] [US1] Write the digest cases under
       `tests/enforcement/cases/build-digests/DIGEST-001/`: `pass-wrapped-span` (a paragraph whose
       span opens on one line, holds `<!--`, and closes on the next; a marker in its own block
       after it; the committed digest contains every marker) and `fail-wrapped-span` (the same
       sources, the committed digest missing that marker's rule). Expectations are hand-written
       (plan D6, spec US1 scenarios 1-2).
-- [ ] T002 [P] [US1] Write `tests/enforcement/cases/build-digests/DIGEST-001/pass-comment-block-backticks/`:
+- [x] T002 [P] [US1] Write `tests/enforcement/cases/build-digests/DIGEST-001/pass-comment-block-backticks/`:
       a line beginning with `<!--` that holds one backtick, a later line holding `-->` and two
       backticks, then a later paragraph quoting `<!--` in a span of its own, then a marker. Every
       marker is harvested. This is a guard: it passes today, and fails under a fix that pairs
       spans across the block (plan D6, D7, spec FR-007).
-- [ ] T003 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/pass-wrapped-span/`:
+- [x] T003 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/pass-wrapped-span/`:
       an approved `plan.md` holding a wrapped span with `<!--`, then a commit adding a conforming
       approver record after it, named in the commit message. The check passes (spec US2
       scenario 1).
-- [ ] T004 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/fail-hidden-after-unpaired/`:
+- [x] T004 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/fail-hidden-after-unpaired/`:
       a paragraph with an unpaired backtick, then a later block holding a real comment that
       contains a conforming record, then a backtick after the comment's `-->`. The record stays
       hidden and the check fails. This is the no-fail-open guard (spec US2 scenario 3, FR-006).
-- [ ] T005 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/pass-comment-block-backticks/`:
+- [x] T005 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/pass-comment-block-backticks/`:
       an HTML comment block with a backtick on its first line and another on its closing line,
       then a conforming record after the block. The record is visible and the check passes. A
       fix that paired across the block would disarm its closing arrow and hide the record (guard,
@@ -59,34 +59,34 @@ the same commit, and the cases that prove it land beside it, shown failing on th
 
 T002 and T005 changed after approval because the guards as first written could not fail under
 D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
-- [ ] T006 [US1] [US2] Run T001-T005 against the current scripts and record the result in
+- [x] T006 [US1] [US2] Run T001-T005 against the current scripts and record the result in
       `notes.md`: `pass-wrapped-span` in both rules must FAIL (the defect is real), and every
       guard must PASS (it holds today) (plan Testing Strategy, spec FR-005).
-- [ ] T007 [US1] [US2] Rewrite `Convert-CodeSpanMarkers` in `scripts/markdown-lib.ps1` to the
+- [x] T007 [US1] [US2] Rewrite `Convert-CodeSpanMarkers` in `scripts/markdown-lib.ps1` to the
       whole-document form: `-Lines`, same count out as in, each line the same length (D1); the
       paragraph model with generous block starts (D3); HTML comment blocks found on the raw text
       and left on today's single-line treatment (D4); paragraph pairing through the existing
       algorithm over newline-joined lines (D2); early return for a document, and for a paragraph,
       with no backtick or no marker (research R5).
-- [ ] T008 [US2] Move `Get-VisibleFromText` in `scripts/enforcement-pack.ps1` to one
+- [x] T008 [US2] Move `Get-VisibleFromText` in `scripts/enforcement-pack.ps1` to one
       whole-document call, keeping its fence handling and its comment rules unchanged.
-- [ ] T009 [US1] Move `Get-DocMarkers` in `scripts/build-digests.ps1` to precompute the scan
+- [x] T009 [US1] Move `Get-DocMarkers` in `scripts/build-digests.ps1` to precompute the scan
       lines once and index them, including the substring after a mid-line comment close (D5).
       The comment state machine, fence state machine and grammar checks do not change.
-- [ ] T010 [US1] [US2] Correct the comments that describe the rule as per-line: the header and the
+- [x] T010 [US1] [US2] Correct the comments that describe the rule as per-line: the header and the
       function comment in `scripts/markdown-lib.ps1`, the GAP-025 comment in
       `scripts/build-digests.ps1`, and the helper note in `scripts/enforcement-pack.ps1`. Each
       states what is and is not modelled (the comment model, F2's shape), not "closed" without
       qualification (spec FR-012).
-- [ ] T011 [US1] [US2] Update `tests/enforcement/rules.json`: the `notes` of DIGEST-001 and
+- [x] T011 [US1] [US2] Update `tests/enforcement/rules.json`: the `notes` of DIGEST-001 and
       AMEND-001 count and name their new directions (plan D6).
-- [ ] T012 [US1] [US2] Run the full suite locally. Every pre-existing case passes unchanged and the
+- [x] T012 [US1] [US2] Run the full suite locally. Every pre-existing case passes unchanged and the
       five new cases pass. Record the counts in `notes.md` (SC-003).
-- [ ] T013 [US1] [US2] Mutation (a): revert T007-T009 locally and confirm both `pass-wrapped-span`
+- [x] T013 [US1] [US2] Mutation (a): revert T007-T009 locally and confirm both `pass-wrapped-span`
       cases fail. Mutation (b): remove the paragraph boundary (pair across the whole document)
       and confirm all three guards fail. Rewrite any guard that survives (b). Record both runs in
       `notes.md` (D7, SC-004).
-- [ ] T014 [US1] [US2] Record the deterministic cost in `notes.md`: child processes per check
+- [x] T014 [US1] [US2] Record the deterministic cost in `notes.md`: child processes per check
       before and after (must be equal), and whether the wall-clock delta is inside this machine's
       noise (FR-010, SC-006).
 

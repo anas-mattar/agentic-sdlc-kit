@@ -1,0 +1,36 @@
+{
+  "description": "Guard (016 FR-007). A multi-line HTML comment block holds one backtick on its first line and two on its closing line, then a later paragraph quotes '<!--' in a span of its own. A renderer ends the block at its '-->' whatever backticks it holds, and per-line reading agrees, so both markers are harvested. A fix that pairs across the block would pair the first-line backtick with the first closing-line one, leave the second unpaired, pair it into the later paragraph, and so leave that paragraph's '<!--' armed: the second marker would vanish.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: A rule marked before the note. -->",
+          "",
+          "<!-- a maintainer note that mentions `foo",
+          "--> and then prose that quotes `x` inline.",
+          "",
+          "A later paragraph that quotes `<!--` in a span of its own.",
+          "",
+          "<!-- digest: A rule marked after the note and a span of its own. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- A rule marked before the note. (`docs/sdlc/fixture-law.md`)",
+          "- A rule marked after the note and a span of its own. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}
