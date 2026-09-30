@@ -77,11 +77,15 @@ digest cases are new directions under DIGEST-001, beside GAP-025's pair: the wra
 with a correct digest (`pass-wrapped-span`) and with the rule missing (`fail-wrapped-span`). The
 amendment cases are new directions under AMEND-001: a visible record after a wrapped span
 (`pass-wrapped-span`), and two guards, `fail-hidden-after-unpaired` (no-fail-open, FR-006) and
-`fail-comment-block-backticks` (the HTML comment block, FR-007). The digest consumer's comment-block
-guard is `pass-comment-block-backticks` under DIGEST-001. The skipped-marker report of phase 2 is a
-new rule, **DIGEST-020**, with `pass` and `fail` directions and F2's document as a third direction
-(`fail-f2-shape`). Each rule's `notes` field in `rules.json` is updated to count and name its
-directions, as AMEND-001's already does.
+`pass-comment-block-backticks` (the HTML comment block, FR-007: the record follows the block and
+must stay visible). The digest consumer's comment-block guard is `pass-comment-block-backticks`
+under DIGEST-001. A guard earns its place only by failing under D7(b), so each is shaped to be
+sensitive to it. The skipped-marker report of phase 2 is a new rule, **DIGEST-020**, with `pass`
+and `fail` directions and F2's document as a third direction (`fail-f2-shape`). Each rule's
+`notes` field in `rules.json` is updated to count and name its directions, as AMEND-001's
+already does.
+
+**Amendment approved by**: anas.m, 2026-09-30
 
 **D7 — Two mutations, recorded.** SC-004 is shown with two local mutation runs recorded in
 `notes.md`: (a) the fix reverted, where every case the fix turns green must fail; (b) the paragraph

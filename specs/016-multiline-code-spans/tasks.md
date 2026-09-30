@@ -37,9 +37,10 @@ the same commit, and the cases that prove it land beside it, shown failing on th
       sources, the committed digest missing that marker's rule). Expectations are hand-written
       (plan D6, spec US1 scenarios 1-2).
 - [ ] T002 [P] [US1] Write `tests/enforcement/cases/build-digests/DIGEST-001/pass-comment-block-backticks/`:
-      a line beginning with `<!--` that holds a backtick, a later line holding `-->` and a second
-      backtick, then a marker. Every marker is harvested. This is a guard: it passes today (plan
-      D6, spec FR-007).
+      a line beginning with `<!--` that holds one backtick, a later line holding `-->` and two
+      backticks, then a later paragraph quoting `<!--` in a span of its own, then a marker. Every
+      marker is harvested. This is a guard: it passes today, and fails under a fix that pairs
+      spans across the block (plan D6, D7, spec FR-007).
 - [ ] T003 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/pass-wrapped-span/`:
       an approved `plan.md` holding a wrapped span with `<!--`, then a commit adding a conforming
       approver record after it, named in the commit message. The check passes (spec US2
@@ -48,9 +49,16 @@ the same commit, and the cases that prove it land beside it, shown failing on th
       a paragraph with an unpaired backtick, then a later block holding a real comment that
       contains a conforming record, then a backtick after the comment's `-->`. The record stays
       hidden and the check fails. This is the no-fail-open guard (spec US2 scenario 3, FR-006).
-- [ ] T005 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/fail-comment-block-backticks/`:
-      the HTML-comment-block shape of T002, with the record inside the block. The record stays
-      hidden and the check fails (guard, spec FR-007).
+- [ ] T005 [P] [US2] Write `tests/enforcement/cases/enforcement-pack/AMEND-001/pass-comment-block-backticks/`:
+      an HTML comment block with a backtick on its first line and another on its closing line,
+      then a conforming record after the block. The record is visible and the check passes. A
+      fix that paired across the block would disarm its closing arrow and hide the record (guard,
+      spec FR-007).
+
+**Amendment approved by**: anas.m, 2026-09-30
+
+T002 and T005 changed after approval because the guards as first written could not fail under
+D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
 - [ ] T006 [US1] [US2] Run T001-T005 against the current scripts and record the result in
       `notes.md`: `pass-wrapped-span` in both rules must FAIL (the defect is real), and every
       guard must PASS (it holds today) (plan Testing Strategy, spec FR-005).
