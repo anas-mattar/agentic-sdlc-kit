@@ -196,6 +196,23 @@ so disarming even an opener that is truly not a comment can reveal such text.
 
 **Amendment approved by**: anas.m, 2026-10-01
 
+**Amended after the phase-1 round-6 review** (round-6 F1, F2; the review approved, the owner
+asked for both minor findings to be fixed in phase 1):
+- **The raw-text-start exclusion is guarded** (round-6 F1). A line that is itself a `pre`,
+  `script`, `style` or `textarea` start returns to inline text when its element closes. A
+  DIGEST-001 direction with a visible marker after a closed `<pre>x</pre>` line and a wrapped
+  span pins it. **Mutation (o)** removes the exclusion and fails that direction.
+- **A raw-text element is closed only when the last one the line opens is closed** (round-6
+  F2). A line that closes one of the four elements and opens another after it, such as
+  `<div><script>a</script><script>` or `</script><script>`, keeps the element's end. This holds
+  both on the line that starts the block and on a later line that would end it. **Mutation (p)**
+  goes back to "the line holds an end tag" and fails the round-6 F2 guards.
+- **Not modelled, named:** raw-text elements other than the four (`title`, `xmp`, `iframe`,
+  `noembed`, `noframes`; round-6 `q04`) stay on the per-line reading. The library's "Not
+  modelled" paragraph names them.
+
+**Amendment approved by**: anas.m, 2026-10-01
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).

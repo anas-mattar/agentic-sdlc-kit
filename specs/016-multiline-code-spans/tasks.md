@@ -185,6 +185,25 @@ plan D11 as amended after round 5):
 
 **Amendment approved by**: anas.m, 2026-10-01
 
+**Phase-1 round-6 follow-up** (round-6 review F1, F2; FR-003 as amended, digest consumer; plan
+D11 as amended after round 6):
+
+- [ ] T014o [US1] Guard the exclusion and model a same-line reopen in `scripts/markdown-lib.ps1`.
+      - Write a DIGEST-001 direction for round-6 `v05` (`<pre>x</pre>`, then a wrapped
+        `` `<!--`` span, then a visible marker the digest must carry). Show it fails under
+        mutation (o), the exclusion removed.
+      - Write DIGEST-001 `pass-hidden-*` guards for round-6 `q01` (`<div><script>a</script><script>`),
+        `q02` (top-level `<script>a</script><script>`) and `q03` (`</script><script>` on a later
+        line). Show each harvesting the hidden marker on `517f9d2`.
+      - Implement it: a raw-text end counts only when no raw-text element opens after the line's
+        last raw-text close, on the start line and on a later line alike. Record mutation (p).
+      - Name the other raw-text elements (`title`, `xmp`, `iframe`, `noembed`, `noframes`) in the
+        library's "Not modelled" paragraph.
+      - Run the full suite, mutations (e)-(p), the corpus and review-document harvest comparison,
+        and the round-5/6 probe documents. Record all of it in `notes.md`.
+
+**Amendment approved by**: anas.m, 2026-10-01
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)
