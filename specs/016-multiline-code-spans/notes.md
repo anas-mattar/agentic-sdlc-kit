@@ -543,3 +543,54 @@ removal.
 - Amendment-reading parity: `Test-HtmlBlockEnd` and `Convert-CodeSpanMarkers` are called by the
   digest generator only; `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are
   unchanged from `517f9d2`, so the amendment check's reading is unchanged.
+
+## Phase 1 round-7 remediation (T014p)
+
+The fresh-context round-7 review of `c565240` (`ai-code-review-phase-1-round-7.md`, committed as
+`2477ad9`) is **REQUEST CHANGES**. Its F1: T014o's reopen check kept a raw-text element open past
+the line where CommonMark ends its block, so a `div` or processing-instruction block starting
+inside it was missed, and the close returned to inline text, disarming a real comment's opener
+(round-7 `b04`-`b10`, all hidden on `517f9d2`). That breaks FR-003; the reopen it fixed hides a
+marker by a script, which FR-003 allows. The owner chose to withdraw the reopen rule and approved
+plan D11 (amended after round 7) and task T014p on 2026-10-01, committed alone as `f7b9bb3`.
+
+### The change
+
+- `Test-HtmlBlockEnd` is removed; a raw-text end tag anywhere on a line closes the element, as on
+  `517f9d2`. `Convert-CodeSpanMarkers` is again byte-identical in code to `517f9d2`'s; the
+  library differs from it only in the "Not modelled" paragraph, which now names the reopen, the
+  round-7 F2 forms (`<script/>`, an end tag inside an attribute or of another element) and the
+  browser's other raw-text elements, `noscript` and `plaintext` included.
+- The T014o reopen guards (`pass-hidden-reopen-same-line`, `-reopen-type1`, `-reopen-later-line`)
+  are removed with the rule. One case, `fail-reopen-not-modelled` (round-6 `q01`), pins the
+  limitation: the digest carrying only the visible rule is read as stale.
+- `pass-wrapped-after-closed-pre` and mutation (o) stay.
+
+### Cases: four DIGEST-001 cases, test-first
+
+| Case | Shape | `c565240` | The change |
+|---|---|---|---|
+| `pass-hidden-div-in-reopen` | round-7 `b04`: `<script>a</script><script>` / `<div>` / `</script>` / `x <!--` | harvests the hidden marker | right |
+| `pass-hidden-div-in-later-reopen` | `b08`: `<pre>` / `</pre><script>` / `<div>` / `</script>` / `x <!--` | harvests it | right |
+| `pass-hidden-pi-in-reopen` | `b09`: `<script>a</script><script>` / `<?x` … past a blank line | harvests it | right |
+| `fail-reopen-not-modelled` (pin) | round-6 `q01`: `<div><script>a</script><script>` | reads the digest fresh | reads it stale, exit 1 |
+
+On `c565240` each of the four fails, 2 assertions each.
+
+### Suite, mutations, corpus and probes, run 2026-10-01
+
+- Full suite: **881 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (879 before,
+  less three removed cases, plus four new, at two assertions each).
+- Mutations (e)-(o), each run with `-Case DIGEST-001` (30 cases) in a scratch copy of the working
+  tree, the library restored by hash after each (`d58196a0…`, unchanged). Each fails, exit 1, as
+  in T014o's table, with the new guards where they apply: (f) 40 failed, 20 guards including the
+  three new ones; (l2) also fails `pi-in-reopen`; (o) fails `pass-wrapped-after-closed-pre`.
+  (p), (p1) and (p2) are retired with the rule. `c1`: 93 passed, exit 0 (unguarded,
+  owner-accepted).
+- Corpus: the 567 `.md` files, harvested by `517f9d2`'s library and this one on the same file
+  contents: identical, markers and scan lines. The 91 earlier review documents: identical.
+- Probe documents of rounds 5, 6 and 7 (84): every one harvests as on `517f9d2`. Round-7
+  `b04`-`b10` hide the marker again; round-6 `q01`-`q03` harvest it, by the record above.
+- Amendment-reading parity: `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are
+  unchanged from `517f9d2`, and the library's code equals `517f9d2`'s, so the amendment check's
+  reading is unchanged.

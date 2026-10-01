@@ -86,19 +86,6 @@ function Convert-SpanText {
     return $result
 }
 
-# True when $Body holds the end $End of a raw HTML block. A pre, script, style or textarea
-# end counts only when no such element opens after the line's last end tag, so
-# '<script>a</script><script>' leaves the browser inside the second script (016 round-6
-# review F2). Every other end counts wherever it falls.
-function Test-HtmlBlockEnd {
-    param([string]$Body, [string]$End)
-    if ($End -ne '(?i)</(pre|script|style|textarea)>') { return $Body -match $End }
-    $close = [regex]::Matches($Body, $End)
-    if ($close.Count -eq 0) { return $false }
-    $open = [regex]::Matches($Body, '(?i)<(pre|script|style|textarea)(\s|>|$)')
-    return $open.Count -eq 0 -or $open[$open.Count - 1].Index -lt $close[$close.Count - 1].Index
-}
-
 # The DIGEST generator's reading of a whole document (016 D1, D10, D11): the per-line span
 # pairing every line had before 016 (Convert-SpanText), plus one change. A '<!--' that result
 # left armed is disarmed when the model below finds no way for it to open a comment. Returns
@@ -134,9 +121,13 @@ function Test-HtmlBlockEnd {
 # Not modelled, and left on the per-line result: a code span that wraps is not recognised, so
 # a '-->' inside one stays armed, and so does the '<!--' of one whose paragraph holds a '-->'
 # later. Constructs other than comments that hide text (attributes, titles) are not modelled
-# at all; a marker inside one may be harvested. So are the browser's other raw-text elements
-# (title, xmp, iframe, noembed, noframes): only pre, script, style and textarea are read to
-# their end (016 round-6 review F2).
+# at all; a marker inside one may be harvested. Raw-text elements are modelled only as far as
+# CommonMark's block end: a pre, script, style or textarea end tag anywhere on a line closes
+# the element, so one closed and reopened on a line ('<script>a</script><script>'), a
+# '<script/>', an end tag inside an attribute or of another element, and the browser's other
+# raw-text elements (title, xmp, iframe, noembed, noframes, noscript, plaintext) are all read
+# as closed or absent, and a marker inside one may be harvested. Modelling the reopen hid the
+# blocks that start inside it and disarmed a real comment (016 round-7 review F1).
 function Convert-CodeSpanMarkers {
     param([string[]]$Lines)
     $out = [string[]]::new($Lines.Count)
@@ -201,13 +192,13 @@ function Convert-CodeSpanMarkers {
                           ($null -eq $htmlEnd -and $body -match '^<[A-Za-z/]' -and
                            $body -notmatch '(?i)^<(pre|script|style|textarea)(\s|>|$)')) { 'blank' } else { $null }
             # A block whose end is on its own opening line is over already.
-            if (Test-HtmlBlockEnd -Body $body -End $longEnd) { $htmlEnd = $resume; $resume = $null } else { $htmlEnd = $longEnd }
+            if ($body -match $longEnd) { $htmlEnd = $resume; $resume = $null } else { $htmlEnd = $longEnd }
         } elseif ($htmlEnd) {
             $inHtml = $true
             if ($htmlEnd -eq 'blank') { if ($blank) { $htmlEnd = $null } }
             # Ends are read after the container markers, so a block quote's own '>' does not
             # end a declaration.
-            elseif (Test-HtmlBlockEnd -Body $body -End $htmlEnd) { $htmlEnd = $resume; $resume = $null }
+            elseif ($body -match $htmlEnd) { $htmlEnd = $resume; $resume = $null }
         } elseif ($body -match '^<[A-Za-z/]') {
             $inHtml = $true
             $htmlEnd = 'blank'

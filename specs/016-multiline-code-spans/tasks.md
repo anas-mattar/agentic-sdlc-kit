@@ -207,7 +207,7 @@ D11 as amended after round 6):
 **Phase-1 round-7 remediation** (round-7 review F1, F2; FR-003 as amended, digest consumer; plan
 D11 as amended after round 7):
 
-- [ ] T014p [US1] Withdraw the reopen rule from `scripts/markdown-lib.ps1`.
+- [x] T014p [US1] Withdraw the reopen rule from `scripts/markdown-lib.ps1`.
       - Write DIGEST-001 `pass-hidden-*` guards for round-7 `b04`, `b08` and `b09`. Show each
         harvesting the hidden marker on `c565240`.
       - Remove `Test-HtmlBlockEnd`; a raw-text end counts wherever it falls, as on `517f9d2`.
