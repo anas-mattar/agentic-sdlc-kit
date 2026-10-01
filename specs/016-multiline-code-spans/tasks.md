@@ -166,6 +166,25 @@ D7(b), so they measured nothing. The reasoning is in `notes.md`, phase 1.
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**Phase-1 round-5 remediation** (round-5 review F1, F3; FR-003 as amended, digest consumer;
+plan D11 as amended after round 5):
+
+- [ ] T014n [US1] Fix the tag-line raw-text branch of the digest tracker in
+      `scripts/markdown-lib.ps1`.
+      - A tag line that opens a `pre`, `script`, `style` or `textarea` element after its first
+        tag returns, when the element closes, to the blank-ending block the line itself starts.
+      - Write DIGEST-001 `pass-hidden-*` guards for the round-5 F1 shapes: at least the
+        same-line close (n3 `<div><script src="a.js"></script>`), the later-line close (n2) and
+        a container form (n6 or n7). Show each harvesting the hidden marker on `c6d95a1`.
+      - Record mutation (n) (the tag-line start returns to inline text) and show it fails those
+        guards.
+      - Correct the overclaiming sentences round-5 F1 names: the `markdown-lib.ps1` comment
+        ("never fewer") and `notes.md` ("Each change disarms less, never more").
+      - Run the full suite, mutations (e)-(n), the amendment-reading parity check and the corpus
+        harvest comparison. Record all of it in `notes.md`.
+
+**Amendment approved by**: anas.m, 2026-10-01
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)

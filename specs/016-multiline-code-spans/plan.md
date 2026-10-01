@@ -177,6 +177,25 @@ so disarming even an opener that is truly not a comment can reveal such text.
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**Amended after the phase-1 round-5 review** (round-5 F1, F3). The digest tracker of
+`Convert-CodeSpanMarkers` makes four changes beyond the bullets above, and each is named here:
+- **Return to the enclosing block.** When a block with a longer end closes inside a block that
+  ends at a blank line, the tracker goes back to the blank-ending block, not to inline text.
+- **Blank-ending starts on fenced lines.** A start of a block that ends at a blank line is
+  honoured on a line the fence map calls fenced, as the long-end starts already are.
+- **Ends after the container markers.** A block's end is read on the line with its list and
+  block-quote markers removed (round-4 `c1`). This change has no guard, by the owner's
+  acceptance of round-5 F2; it only keeps more lines in HTML.
+- **A raw-text element opened later on a tag line.** A tag line that opens `pre`, `script`,
+  `style` or `textarea` after its first tag takes that element's end. The tag line itself starts
+  a block that ends at a blank line, so when the element closes the tracker returns to that
+  blank-ending block (round-5 F1). Only a line that is itself a `pre`, `script`, `style` or
+  `textarea` start returns to inline text.
+- **Mutation (n)**, recorded beside (e)-(m): the tag-line start returns to inline text instead
+  of the blank-ending block. It fails the round-5 F1 guards.
+
+**Amendment approved by**: anas.m, 2026-10-01
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).
