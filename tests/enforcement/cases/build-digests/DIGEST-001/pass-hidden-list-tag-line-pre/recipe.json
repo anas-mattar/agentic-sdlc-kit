@@ -1,0 +1,33 @@
+{
+  "description": "Guard (016 T014n, round-5 review F1, n6). A list item's div tag line opens and closes a pre element; the div block runs to the blank line, and the opener after it has no closer before it. Raw HTML passes through, so the browser's comment hides the marker after it. The digest on disk carries only the visible rule, so the check must say OK; harvesting the hidden marker would call this correct digest stale. c6d95a1 gave the tag line the element's end but forgot the block the line itself starts, so when the element closed the opener was disarmed and the marker harvested.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "- <div><pre>x</pre>",
+          "  z <!-- hidden",
+          "",
+          "<!-- digest: Hidden rule. -->",
+          "",
+          "<!-- digest: Visible rule. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- Visible rule. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

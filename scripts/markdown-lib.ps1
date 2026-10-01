@@ -112,10 +112,12 @@ function Convert-SpanText {
 #     that ends at a blank line, and the enclosing block resumes when it closes (round-3 and
 #     round-4 review F1). Every block start is read on fenced lines too, for the fence map
 #     misreads some fences. A tag line that opens a pre, script, style or textarea element
-#     later on the line takes that element's end. Ends are read after the container markers.
-#     These are the shapes the reviews found and the cases guard; containers are otherwise
-#     not modelled (a container that closes does not end a block here), which keeps more
-#     lines on the per-line result, never fewer.
+#     later on the line takes that element's end, and its own block, which ends at a blank
+#     line, resumes when the element closes (round-5 F1). Ends are read after the container
+#     markers. These are the shapes the reviews found and the cases guard; containers are
+#     otherwise not modelled (a container that closes does not end a block here). Each
+#     modelled rule is meant to keep lines on the per-line result, but that is checked only
+#     for the shapes the cases guard: round 5 found a rule of round 4 that disarmed more.
 # Not modelled, and left on the per-line result: a code span that wraps is not recognised, so
 # a '-->' inside one stays armed, and so does the '<!--' of one whose paragraph holds a '-->'
 # later. Constructs other than comments that hide text (attributes, titles) are not modelled
@@ -178,7 +180,11 @@ function Convert-CodeSpanMarkers {
         $inHtml = $false
         if ($longEnd -and ($null -eq $htmlEnd -or $htmlEnd -eq 'blank')) {
             $inHtml = $true
-            $resume = if ($htmlEnd -eq 'blank') { 'blank' } else { $null }
+            # A tag line that opens the element later on the line starts a block that ends at
+            # a blank line itself, so that block resumes when the element closes (round-5 F1).
+            $resume = if ($htmlEnd -eq 'blank' -or
+                          ($null -eq $htmlEnd -and $body -match '^<[A-Za-z/]' -and
+                           $body -notmatch '(?i)^<(pre|script|style|textarea)(\s|>|$)')) { 'blank' } else { $null }
             # A block whose end is on its own opening line is over already.
             if ($body -match $longEnd) { $htmlEnd = $resume; $resume = $null } else { $htmlEnd = $longEnd }
         } elseif ($htmlEnd) {

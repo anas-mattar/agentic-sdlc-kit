@@ -372,7 +372,9 @@ These changes are in `Convert-CodeSpanMarkers`, digest generator only:
 - a tag line that opens `pre`, `script`, `style` or `textarea` later on the line takes that
   element's end.
 
-Each change disarms less, never more.
+Each change was meant to disarm less, never more. The round-5 review found that the last one
+disarms more: the tag line's own blank-ending block was lost when the element closed (round-5
+F1, corrected by T014n below).
 
 Across all 59 documents from reviews 2-4, the digest harvest now equals the parent's except on
 one: `e1-tab-blank`. There a tab-only line is blank in CommonMark, so the inline `<!--` ends with
@@ -422,3 +424,64 @@ they pass on `b45cff1` by design and fail under its removal (below).
   it 567). D1 over 235 kit `.md` files: 0 violations. The digest reading still differs from
   per-line on the same 5 review-document lines, and the digest freshness check covers the
   committed digests.
+
+## Phase 1 round-5 remediation (T014n)
+
+The fresh-context round-5 review of `c6d95a1` (`ai-code-review-phase-1-round-5.md`, committed as
+`115d092`) is **REQUEST CHANGES**. Round-4 F1-F4 are closed and the security gate is untouched.
+Its F1 is on the digest side (FR-003): the tag-line raw-text branch added in `c6d95a1` left the
+tracker's resume unset, so the tag line's own blank-ending block was lost when the element
+closed, and an unclosed `<!--` later in that block was disarmed. Seven shapes (n1-n7) were right
+on `e10da18` and `b45cff1` and wrong on `c6d95a1`. The owner approved plan D11 (amended after
+round 5) and task T014n on 2026-10-01, committed alone as `79b5763`.
+
+### The fix
+
+In `Convert-CodeSpanMarkers` only: when a long-end start is read outside any block, and the line
+is a tag line that is not itself a `pre`, `script`, `style` or `textarea` start, the block to
+resume is the blank-ending block that line starts. The library comment's "never fewer" claim is
+replaced by what is actually checked: the rules keep lines on the per-line result for the shapes
+the cases guard. The round-4 "never more" sentence above is corrected the same way.
+
+### Guards: four DIGEST-001 cases, test-first
+
+| Case | Shape | `c6d95a1` | The fix |
+|---|---|---|---|
+| `pass-hidden-tag-line-script-closed` | n3, `<div><script src="a.js"></script>` | harvests the hidden marker | right |
+| `pass-hidden-tag-line-pre-later-close` | n2, `<div><pre>` / `x</pre>` | harvests it | right |
+| `pass-hidden-list-tag-line-pre` | n6, `- <div><pre>x</pre>` | harvests it | right |
+| `pass-hidden-quote-tag-line-script` | n7, `> <div><script></script>` | harvests it | right |
+
+On `c6d95a1` the four fail, 8 assertions, each `digests: FAIL - stale or hand-edited digest`.
+
+### Suite, mutations, parity and corpus, run 2026-10-01
+
+- Full suite: **871 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (863 before,
+  plus four cases at two assertions each).
+- Mutations, each run with `-Case DIGEST-001` (25 cases) in a scratch copy of the working tree,
+  the library restored by hash after each (`ce05a3e3…`, unchanged):
+
+  | Mutation | Removes | Result | Failing guards |
+  |---|---|---|---|
+  | (e) | the closer check | 4 failed, exit 1 | `after-backslash-spans`, `nbsp-line` |
+  | (f) | the raw HTML exclusion | 34 failed, exit 1 | 17 of 19 `pass-hidden-*` |
+  | (g) | blank as spaces and tabs | 2 failed, exit 1 | `nbsp-line` |
+  | (h) | the long-end override inside a blank-ending block | 2 failed, exit 1 | `pre-under-tag-line` |
+  | (i) | every return to an enclosing block | 12 failed, exit 1 | `div-after-comment-line`, `div-after-pre`, and the four new guards |
+  | (j) | block starts read on fenced lines | 2 failed, exit 1 | `div-in-misread-fence` |
+  | (k) | the container markers | 8 failed, exit 1 | `list-div`, `quote-div`, `list-tag-line-pre`, `quote-tag-line-script` |
+  | (k2) | the block-quote alternative | 4 failed, exit 1 | `quote-div`, `quote-tag-line-script` |
+  | (l1)-(l4) | the comment, PI, CDATA and declaration ends | 2 failed each, exit 1 | the matching guard |
+  | (m) | the raw-text element opened later on a tag line | 2 failed, exit 1 | `script-after-tag` |
+  | **(n)** | the tag-line start's return to its own block (`c6d95a1`'s resume) | 8 failed, exit 1 | the four new guards |
+  | `c1` | ends read after the container markers | 83 passed, exit 0 | none (unguarded, round-5 F2 accepted) |
+
+- Round-5 probe documents (`r5/docs`, `r5/docs2`), harvested on `b45cff1`, `c6d95a1` and the fix:
+  n1-n7 hide the marker on the fix, as on `b45cff1`; a1, b1, b3 and c1 stay hidden; `ok1` keeps its
+  visible rule; q7 and q8 are as on `c6d95a1` (the conservative direction the review noted).
+- Corpus: the 567 `.md` files (kit plus the three adopted projects) and the 91 earlier review
+  documents harvest identically on `c6d95a1` and the fix, markers and scan lines alike.
+- Amendment-reading parity: the fix touches only `Convert-CodeSpanMarkers`, which the amendment
+  check does not call; `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are
+  unchanged from `c6d95a1`. The reading therefore still equals the parent's, by construction; the
+  file-by-file comparison was not rerun this round.
