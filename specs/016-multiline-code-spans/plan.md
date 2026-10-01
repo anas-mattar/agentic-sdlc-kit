@@ -213,6 +213,26 @@ asked for both minor findings to be fixed in phase 1):
 
 **Amendment approved by**: anas.m, 2026-10-01
 
+**Amended after the phase-1 round-7 review** (round-7 F1). The reopen rule above is
+**withdrawn**. Keeping the element open past a line where CommonMark ends its block hid the
+blocks that start inside it, and the close then returned to inline text, so a real comment's
+opener was disarmed (round-7 `b04`-`b09`). That breaks FR-003; the reopen it fixed does not, since
+what hides the marker there is a script, not a comment.
+- **A raw-text end counts wherever it falls on the line**, as on `517f9d2`. `Test-HtmlBlockEnd`
+  and mutations (p), (p1), (p2) are removed.
+- **The raw-text-start exclusion stays guarded**: `pass-wrapped-after-closed-pre` and mutation
+  (o) are kept.
+- **Not modelled, named:** an element closed and reopened on one line (round-6 `q01`-`q03`),
+  besides the other raw-text elements and the reopen forms round-7 F2 lists (`<script/>`, an end
+  tag inside an attribute, an end tag of another element, `noscript`, `plaintext`). A marker
+  inside such an element may be harvested. One DIGEST-001 case pins the reopen: the digest that
+  carries only the visible rule is read as stale.
+- **Guards**: round-7 `b04` (div inside the reopen), `b08` (the reopen on a later line) and `b09`
+  (a PI past a blank line) become DIGEST-001 `pass-hidden-*` cases, each harvesting the hidden
+  marker on `c565240`.
+
+**Amendment approved by**: anas.m, 2026-10-01
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).

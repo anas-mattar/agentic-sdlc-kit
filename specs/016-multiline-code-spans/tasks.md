@@ -204,6 +204,22 @@ D11 as amended after round 6):
 
 **Amendment approved by**: anas.m, 2026-10-01
 
+**Phase-1 round-7 remediation** (round-7 review F1, F2; FR-003 as amended, digest consumer; plan
+D11 as amended after round 7):
+
+- [ ] T014p [US1] Withdraw the reopen rule from `scripts/markdown-lib.ps1`.
+      - Write DIGEST-001 `pass-hidden-*` guards for round-7 `b04`, `b08` and `b09`. Show each
+        harvesting the hidden marker on `c565240`.
+      - Remove `Test-HtmlBlockEnd`; a raw-text end counts wherever it falls, as on `517f9d2`.
+      - Replace the three reopen guards with one case, `fail-reopen-not-modelled` (round-6
+        `q01`), that expects the visible-only digest to be read as stale and pins the limitation.
+        Keep `pass-wrapped-after-closed-pre`.
+      - Rewrite the "Not modelled" paragraph to name the reopen and the round-7 F2 forms.
+      - Run the full suite, mutations (e)-(o), the corpus and review-document harvest comparison
+        (against `517f9d2`), and the round-5/6/7 probe documents. Record all of it in `notes.md`.
+
+**Amendment approved by**: anas.m, 2026-10-01
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)
