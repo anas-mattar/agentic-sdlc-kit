@@ -485,3 +485,61 @@ On `c6d95a1` the four fail, 8 assertions, each `digests: FAIL - stale or hand-ed
   check does not call; `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are
   unchanged from `c6d95a1`. The reading therefore still equals the parent's, by construction; the
   file-by-file comparison was not rerun this round.
+
+## Phase 1 round-6 follow-up (T014o)
+
+The fresh-context round-6 review of `517f9d2` (`ai-code-review-phase-1-round-6.md`, committed as
+`edc9bb7`) is **APPROVE**, with two minor findings the owner asked to fix in phase 1. F1: the
+raw-text-start exclusion of T014n's resume rule had no guard. F2: a raw-text element closed and
+reopened on one line (`<div><script>a</script><script>`, or `</script><script>` on a later line)
+was read as closed, so a marker inside the reopened script was harvested; `e10da18` hid it, and
+`b45cff1` to `517f9d2` harvested it. The owner approved plan D11 (amended after round 6) and task
+T014o on 2026-10-01, committed alone as `bdcd773`.
+
+### The fix
+
+`Test-HtmlBlockEnd` (new, pure) decides whether a line ends a raw HTML block. A `pre`, `script`,
+`style` or `textarea` end counts only when no such element opens after the line's last end tag;
+every other end counts wherever it falls, as before. `Convert-CodeSpanMarkers` uses it on the line
+that starts a block and on a later line that would end one. The library's "Not modelled"
+paragraph now names the browser's other raw-text elements (`title`, `xmp`, `iframe`, `noembed`,
+`noframes`; round-6 `q04` still harvests its marker, by that record).
+
+### Cases: four DIGEST-001 cases, test-first
+
+| Case | Shape | `517f9d2` | The fix |
+|---|---|---|---|
+| `pass-wrapped-after-closed-pre` (direction) | round-6 `v05`: `<pre>x</pre>`, a wrapped `` `<!--`` span, a visible marker | right | right; fails under (o) |
+| `pass-hidden-reopen-same-line` | `q01`: `<div><script>a</script><script>` | harvests the hidden marker | right |
+| `pass-hidden-reopen-type1` | `q02`: `<script>a</script><script>` | harvests it | right |
+| `pass-hidden-reopen-later-line` | `q03`: `<div><script>` / `</script><script>` | harvests it | right |
+
+On `517f9d2` the three guards fail, 6 assertions, each `digests: FAIL - stale or hand-edited
+digest`. The direction passes there by design: it pins the exclusion, and fails only under its
+removal.
+
+### Suite, mutations, corpus and probes, run 2026-10-01
+
+- Full suite: **879 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (871 before,
+  plus four cases at two assertions each).
+- Mutations, each run with `-Case DIGEST-001` (29 cases) in a scratch copy of the working tree,
+  the library restored by hash after each (`9eb08565…`, unchanged). (e)-(n) fail as in T014n's
+  table, now with the new guards where they apply: (f) 40 failed, 20 of 23 guards; (m) also
+  fails `reopen-same-line` and `reopen-later-line`. The new ones:
+
+  | Mutation | Removes | Result | Failing cases |
+  |---|---|---|---|
+  | (o) | the raw-text-start exclusion from the tag-line resume | 2 failed, exit 1 | `pass-wrapped-after-closed-pre` |
+  | (p) | the reopen check (an end tag anywhere closes the element) | 6 failed, exit 1 | the three reopen guards |
+  | (p1) | the reopen check on the start line only | 4 failed, exit 1 | `reopen-same-line`, `reopen-type1` |
+  | (p2) | the reopen check on a later line only | 2 failed, exit 1 | `reopen-later-line` |
+  | `c1` | ends read after the container markers | 91 passed, exit 0 | none (unguarded, owner-accepted) |
+
+- Corpus: the 567 `.md` files (kit plus the three adopted projects), harvested by `517f9d2`'s
+  library and the fix on the same file contents: identical, markers and scan lines. The 91
+  earlier review documents: identical.
+- Probe documents of rounds 5 and 6 (42): only round-6 `q01`-`q03` change, each now hiding the
+  marker. `q04` (`title`) harvests it, as recorded above.
+- Amendment-reading parity: `Test-HtmlBlockEnd` and `Convert-CodeSpanMarkers` are called by the
+  digest generator only; `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are
+  unchanged from `517f9d2`, so the amendment check's reading is unchanged.

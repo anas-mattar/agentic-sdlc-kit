@@ -1,0 +1,32 @@
+{
+  "description": "Direction (016 T014o, round-6 review F1, v05). A line that is itself a pre start closes its element on the same line, so the tracker returns to inline text, not to a block ending at a blank line. The wrapped code span after it holds a quoted opener with no closer before the blank line, so the visible rule's marker after it is a standalone comment and must be harvested. The digest on disk carries the visible rule, so the check must say OK. Without the exclusion of a raw-text start from the tag-line resume, the span's opener is not disarmed and the visible marker is lost.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<pre>x</pre>",
+          "Quote `<!--",
+          "here` in prose.",
+          "",
+          "<!-- digest: Visible rule. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- Visible rule. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

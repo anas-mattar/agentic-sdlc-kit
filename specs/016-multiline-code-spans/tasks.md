@@ -188,7 +188,7 @@ plan D11 as amended after round 5):
 **Phase-1 round-6 follow-up** (round-6 review F1, F2; FR-003 as amended, digest consumer; plan
 D11 as amended after round 6):
 
-- [ ] T014o [US1] Guard the exclusion and model a same-line reopen in `scripts/markdown-lib.ps1`.
+- [x] T014o [US1] Guard the exclusion and model a same-line reopen in `scripts/markdown-lib.ps1`.
       - Write a DIGEST-001 direction for round-6 `v05` (`<pre>x</pre>`, then a wrapped
         `` `<!--`` span, then a visible marker the digest must carry). Show it fails under
         mutation (o), the exclusion removed.
