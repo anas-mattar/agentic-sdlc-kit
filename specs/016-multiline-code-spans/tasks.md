@@ -223,7 +223,7 @@ D11 as amended after round 7):
 **Phase-1 round-8 remediation** (round-8 review F1, F2, F3; FR-003 as amended after round 8,
 digest consumer; plan D11 as amended after round 8):
 
-- [ ] T014q [US1] Record the three routes in `scripts/markdown-lib.ps1`; no behaviour change.
+- [x] T014q [US1] Record the three routes in `scripts/markdown-lib.ps1`; no behaviour change.
       - Write DIGEST-001 pins `fail-fence-long-end-not-modelled` (round-8 `c01`),
         `fail-indented-long-end-not-modelled` (`c02`) and `fail-container-long-end-not-modelled`
         (`c03`). Each expects the visible-only digest to be read as stale; show each so on

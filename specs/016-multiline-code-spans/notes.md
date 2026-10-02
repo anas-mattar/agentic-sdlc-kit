@@ -594,3 +594,55 @@ On `c565240` each of the four fails, 2 assertions each.
 - Amendment-reading parity: `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are
   unchanged from `517f9d2`, and the library's code equals `517f9d2`'s, so the amendment check's
   reading is unchanged.
+
+## Phase 1 round-8 remediation (T014q)
+
+The fresh-context round-8 review of `3ad7408` (`ai-code-review-phase-1-round-8.md`, committed as
+`793efbd`) is **REQUEST CHANGES**. Its F1: a long-end start the tracker reads where CommonMark has
+none (on a real fence's line, in an indented code block, or in a container that closes) masks a
+later block start, and on the tracker's end a real comment's opener is disarmed (round-8 `c01`-
+`c18`; present since `517f9d2`). The owner chose to record the routes rather than model them, and
+approved spec FR-003 (a named exception), plan D11 and task T014q (all amended after round 8) on
+2026-10-02, committed alone as `43e607c`.
+
+### The change
+
+- No behaviour change. The library's non-comment token stream equals `3ad7408`'s (976 tokens);
+  `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are unchanged. The amendment
+  check reaches 14 functions, and `Convert-CodeSpanMarkers` is not among them.
+- The "Not modelled" paragraph names the three routes and the consequence: a real comment's
+  opener may be disarmed and a marker inside it harvested (FR-003's named exception).
+- The long-end start's comment no longer claims that on a real fence "the only effect is that
+  more lines keep the per-line result"; a start there can mask a block start after the fence.
+- F2 wording: `pre` and `textarea` are no longer called raw-text elements, and
+  `fail-reopen-not-modelled`'s description says that if the reopen is ever modelled the digest
+  check passes, so the case fails and must be retired or turned into a guard.
+
+### Cases: three DIGEST-001 pins
+
+| Case | Shape | `e10da18` (parent) | `3ad7408` and this change |
+|---|---|---|---|
+| `fail-fence-long-end-not-modelled` | round-8 `c01`: a fenced `<?x`, then `<div>` / `?>` / `x <!--` | reads the digest fresh (case fails) | reads it stale, exit 1 |
+| `fail-indented-long-end-not-modelled` | `c02`: an indented `    <?x`, a blank line, then the same | reads it fresh (case fails) | reads it stale, exit 1 |
+| `fail-container-long-end-not-modelled` | `c03`: `> <?x`, then an unquoted `<div>` / `?>` / `x <!--` | reads it fresh (case fails) | reads it stale, exit 1 |
+
+On `e10da18`'s three scripts the pins give 33 passed, 6 failed: each marks a limitation the
+parent did not have, and each flips if its route is ever modelled.
+
+### Suite, mutations, corpus and probes, run 2026-10-02
+
+- Full suite: **887 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (881 before,
+  plus three cases at two assertions each).
+- Mutations, the round-8 reviewer's runner reused read-only, each run with `-Case DIGEST-001`
+  (33 cases) in a scratch copy of the working tree, the library restored by hash after each
+  (`True`). Unmutated: 99 passed. (e)-(o) each fail, exit 1, as in T014p's record; the pins fail
+  where a mutation touches their route: (k) also fails `container-long-end`, (l2) all three.
+  `p-reapply` fails `fail-reopen-not-modelled` and the two reopen guards. `c1`: 99 passed, exit 0
+  (unguarded, owner-accepted).
+- F3: `j-long` (no long-end start on fenced lines) now gives 97 passed, 2 failed, but only
+  through the pin `fail-fence-long-end-not-modelled`. A pin detects the change; no guard shows
+  what the misread-fence half of the rule buys. Recorded beside `c1`, as D11 says.
+- Corpus: the 567 `.md` files, harvested by `3ad7408`'s library and this one on the same file
+  contents: identical, markers and scan lines. The 91 earlier review documents: identical.
+- Probe documents of rounds 5 to 8 (101): every one harvests as on `3ad7408`. Round-8 `c01`-`c03`
+  harvest the hidden marker, by the record above.

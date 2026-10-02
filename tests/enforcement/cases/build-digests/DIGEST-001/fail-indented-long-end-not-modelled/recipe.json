@@ -1,5 +1,5 @@
 {
-  "description": "Limitation pin (016 T014p, plan D11 as amended after round 7; round-6 review F2, q01). A div tag line closes a script and opens another, so the browser stays inside the second script past the blank line, and the hidden rule's marker is inside it. The reading does not model the reopen: the end tag on the line closes the element, so the marker is harvested and the digest that carries only the visible rule is read as stale. What hides the marker is a script, not a comment, which FR-003 allows. If the reopen is ever modelled, the digest check passes, so this case fails and must be retired or turned into a guard.",
+  "description": "Limitation pin (016 T014q, plan D11 as amended after round 8; round-8 review F1, c02). A processing-instruction start in an indented code block: CommonMark reads it as code, then starts a div block after the blank line that runs to the next blank line. Indented code is not modelled, so the tracker opens a PI block at the indented <?x and ignores the div until ?>. A raw HTML block CommonMark starts inside the tracker's span is missed, so on the tracker's end the following line reads as inline text and its opener, with no closer before the blank line, is disarmed; the marker is harvested and the digest that carries only the visible rule is read as stale. Both renderers (markdown-it, commonmark.js) hide the marker in a real comment, as the parent e10da18 does. This is FR-003's named exception as amended after round 8. If the route is ever modelled, the digest check passes, so this case fails and must be retired or turned into a guard.",
   "defaultBranch": "main",
   "commits": [
     {
@@ -10,12 +10,13 @@
         "docs/sdlc/fixture-law.md": [
           "# Fixture law",
           "",
-          "<div><script>a</script><script>",
+          "    <?x",
           "",
-          "z <!-- hidden",
+          "<div>",
+          "?>",
+          "x <!--",
           "",
           "<!-- digest: Hidden rule. -->",
-          "</script>",
           "",
           "<!-- digest: Visible rule. -->"
         ],

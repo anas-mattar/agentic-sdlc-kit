@@ -121,13 +121,21 @@ function Convert-SpanText {
 # Not modelled, and left on the per-line result: a code span that wraps is not recognised, so
 # a '-->' inside one stays armed, and so does the '<!--' of one whose paragraph holds a '-->'
 # later. Constructs other than comments that hide text (attributes, titles) are not modelled
-# at all; a marker inside one may be harvested. Raw-text elements are modelled only as far as
-# CommonMark's block end: a pre, script, style or textarea end tag anywhere on a line closes
-# the element, so one closed and reopened on a line ('<script>a</script><script>'), a
-# '<script/>', an end tag inside an attribute or of another element, and the browser's other
-# raw-text elements (title, xmp, iframe, noembed, noframes, noscript, plaintext) are all read
-# as closed or absent, and a marker inside one may be harvested. Modelling the reopen hid the
-# blocks that start inside it and disarmed a real comment (016 round-7 review F1).
+# at all; a marker inside one may be harvested. The pre, script, style and textarea elements
+# are modelled only as far as CommonMark's block end: an end tag of one anywhere on a line
+# closes it, so one closed and reopened on a line ('<script>a</script><script>'), a
+# '<script/>', an end tag inside an attribute or of another element, and the other elements
+# whose text the browser reads raw (title, xmp, iframe, noembed, noframes, noscript,
+# plaintext) are all read as closed or absent, and a marker inside one may be harvested.
+# Modelling the reopen hid the blocks that start inside it and disarmed a real comment (016
+# round-7 review F1).
+# Not modelled either, and here the rule can disarm a real comment (FR-003's named exception,
+# 016 round-8 review F1): a start with a longer end read where CommonMark has none, on a real
+# fence's line, in an indented code block, or in a list item or block quote that CommonMark
+# then closes. Until that end the block starts CommonMark reads are ignored, and the end
+# returns to inline text, so in a raw HTML block CommonMark started meanwhile a comment's
+# opener with no closer before the blank line is disarmed, and a marker inside the comment
+# may be harvested. Closing these routes means modelling CommonMark's block structure.
 function Convert-CodeSpanMarkers {
     param([string[]]$Lines)
     $out = [string[]]::new($Lines.Count)
@@ -172,8 +180,9 @@ function Convert-CodeSpanMarkers {
         $body = [regex]::Replace($raw, $container, '', 1)
         # A block start with a longer end than a blank line: honoured anywhere but inside a
         # block that already has one, fenced lines included. Every start is read on fenced
-        # lines too, so a misread fence masks none; on a real fence's lines the only effect is
-        # that more lines keep the per-line result.
+        # lines too, so a misread fence masks none. On a real fence's lines a start can also
+        # mask a block start after the fence, and a comment there may be disarmed (see "Not
+        # modelled" above).
         # A tag line that opens one of the four raw-text elements later on the line takes that
         # element's end too: the browser stays inside it past the blank line CommonMark ends at.
         $longEnd = if ($body -match '(?i)^<(pre|script|style|textarea)(\s|>|$)' -or
