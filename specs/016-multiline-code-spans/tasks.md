@@ -220,6 +220,24 @@ D11 as amended after round 7):
 
 **Amendment approved by**: anas.m, 2026-10-01
 
+**Phase-1 round-8 remediation** (round-8 review F1, F2, F3; FR-003 as amended after round 8,
+digest consumer; plan D11 as amended after round 8):
+
+- [ ] T014q [US1] Record the three routes in `scripts/markdown-lib.ps1`; no behaviour change.
+      - Write DIGEST-001 pins `fail-fence-long-end-not-modelled` (round-8 `c01`),
+        `fail-indented-long-end-not-modelled` (`c02`) and `fail-container-long-end-not-modelled`
+        (`c03`). Each expects the visible-only digest to be read as stale; show each so on
+        `3ad7408`.
+      - Extend the "Not modelled" paragraph with the three routes and the consequence that a real
+        comment's opener may be disarmed. Replace the "only effect" sentence at the long-end start.
+        Fix the F2 wording there and in `fail-reopen-not-modelled`'s description.
+      - Confirm the library's non-comment token stream equals `3ad7408`'s.
+      - Run the full suite, mutations (e)-(o), the corpus and review-document harvest comparison
+        (against `3ad7408`), and the round-5 to round-8 probe documents. Record all of it, and F3
+        (`j-long` unguarded, beside `c1`), in `notes.md`.
+
+**Amendment approved by**: anas.m, 2026-10-02
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)

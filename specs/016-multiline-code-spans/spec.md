@@ -251,6 +251,26 @@ the requirements above through that:
 
 **Amendment approved by**: anas.m, 2026-09-30
 
+**Amended after the phase-1 round-8 review** (round-8 F1; plan D11 as amended after round 8).
+FR-003 gains one named exception, for the digest consumer only. The rule's raw HTML tracker can
+read a block with a long end (a `pre`, `script`, `style` or `textarea` element, a comment, a
+processing instruction, a declaration or CDATA) where CommonMark has none: on a real fenced
+line, in an indented code block, or in a list item or block quote that CommonMark then closes.
+Until its own end it ignores the block starts CommonMark reads, and it then returns to inline
+text. In a raw HTML block CommonMark started in that span, a real comment's opener may be
+disarmed, and a marker inside that comment may be harvested into a digest. Five review rounds
+found this class through a new route each time. Closing it means modelling CommonMark's block
+structure, which the Out of Scope below excludes, so it is recorded and pinned, not modelled.
+The amendment consumer is untouched: its reading stays the parent's everywhere.
+- FR-003's "never changes the lines of an HTML comment block or of a raw HTML block" holds
+  except where such a block begins inside a span the tracker opened through one of these three
+  routes.
+- The Out of Scope line "Indented code blocks … and lazy continuation lines … keep their
+  current handling" holds except through this exception: a long-end start in an indented code
+  block, or in a container that closes, can change how a later line is read.
+
+**Amendment approved by**: anas.m, 2026-10-02
+
 ### Out of Scope
 
 - Full CommonMark conformance. Indented code blocks, setext headings, lazy continuation lines

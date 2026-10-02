@@ -233,6 +233,33 @@ what hides the marker there is a script, not a comment.
 
 **Amendment approved by**: anas.m, 2026-10-01
 
+**Amended after the phase-1 round-8 review** (round-8 F1, F2, F3). The tracker is **not
+extended**. Round 8 found three more routes into the round-7 mechanism (a real fence, an
+indented code block, a container that closes), present since `517f9d2`. Rounds 4, 5, 7 and 8
+each found the class through a new route, and every patch opened another. Modelling these
+would rebuild CommonMark's block structure, which the spec's Out of Scope excludes. They are
+recorded as an FR-003 exception (spec as amended after round 8), and the library's code stays
+token-identical to `3ad7408`.
+- **Not modelled, named:** a long-end start read on a real fence's line, in an indented code
+  block, or inside a list item or block quote that CommonMark closes. The tracker ignores
+  block starts until its own end and then returns to `$null`, so in a raw HTML block CommonMark
+  started meanwhile a real comment's opener may be disarmed and a marker inside it harvested.
+  The library's "Not modelled" paragraph names the three routes and that consequence.
+- **The overclaim is corrected**: the comment that on a real fence's lines "the only effect is
+  that more lines keep the per-line result" is replaced. The long-end start can also mask a
+  block start after the fence (round-8 `c01`).
+- **Pins**: round-8 `c01` (fence), `c02` (indented code) and `c03` (closing container) become
+  DIGEST-001 `fail-*-not-modelled` cases, as `fail-reopen-not-modelled` does for the reopen:
+  the digest carrying only the visible rule is read as stale. Each is shown so on `3ad7408`.
+- **F3 recorded, not guarded**: the long-end half of "every start is read on fenced lines" has
+  no guard (mutation `j-long` gives DIGEST-001 93/0). It is recorded beside `c1`; adding a guard
+  would defend a rule that is itself one of the recorded routes.
+- **F2 wording**: the "Not modelled" paragraph stops calling `pre` and `textarea` raw-text
+  elements, and the reopen pin's description says that if the reopen is ever modelled the
+  digest check passes, so the case fails and must be retired.
+
+**Amendment approved by**: anas.m, 2026-10-02
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).
