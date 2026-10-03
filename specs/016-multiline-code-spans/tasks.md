@@ -296,6 +296,17 @@ marker it passes over inside a comment, and F2's document becomes a loud failure
 - [ ] T021 [US3] Run the full suite and mutation (a) for this phase: with T018 reverted, `fail`
       and `fail-f2-shape` must fail. Record both in `notes.md` (SC-004).
 
+**Amended at the start of phase 2** (round-2 F2, the owner's 2026-09-30 decision; round-10 F5;
+plan D6 as amended at the start of phase 2):
+
+- [ ] T016a [US3] Write `tests/enforcement/cases/build-digests/DIGEST-020/fail-d5-tail` from
+      the D5-tail document (`d1-tail-sameline` from the round-3 review's probes, verbatim; round-2
+      F2's shape): the run fails and names the marker's file and line. Run it with T017 against the phase-1 scripts and record that it does not
+      produce the report today. T019's notes name four directions, and T021's mutation (a) must
+      also fail `fail-d5-tail`.
+
+**Amendment approved by**: anas.m, 2026-10-03
+
 ---
 
 ## Phase 3: Adopters are told, and the prediction is checked (FR-011)

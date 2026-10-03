@@ -284,6 +284,17 @@ where CommonMark reads a paragraph continuation. None is a regression of round 8
 
 **Amendment approved by**: anas.m, 2026-10-03
 
+**Amended at the start of phase 2** (round-2 F2, the owner's 2026-09-30 decision; round-10 F5).
+DIGEST-020 gains a fourth direction, `fail-d5-tail`: the D5-tail document (`d1-tail-sameline`
+from the round-3 review's probes, round-2 F2's shape with a marker: a `<!--` opened mid-line in
+prose, closed on the next line after a backtick, then a `<!--` quoted in a span, then a marker).
+Phase 1 loses its marker where the parent `e10da18` harvested it; the
+owner accepted that loss as covered by DIGEST-020's report, and this direction pins the report on
+it: the run fails and names the marker's file and line. D6's direction list for DIGEST-020 reads
+`pass`, `fail`, `fail-f2-shape` and `fail-d5-tail`.
+
+**Amendment approved by**: anas.m, 2026-10-03
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).
