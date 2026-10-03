@@ -1,0 +1,36 @@
+{
+  "description": "Limitation pin (016 T014r, plan D11 as amended after round 9; round-9 review F1, d05). A paragraph door: the indented <?x continues the paragraph (indented code cannot interrupt one), so CommonMark has no processing instruction there and starts a div block at <div> that runs to the blank line. The container regex strips the indentation, so the tracker opens a PI block at <?x and ignores the div until ?>; on its end x <!--, a line of CommonMark's div block, is read as inline text with no closer before the blank line and disarmed; the marker is harvested and the digest that carries only the visible rule is read as stale. Both renderers (markdown-it, commonmark.js) hide the marker in a real comment, as the parent e10da18 does. This is FR-003's exception as amended after round 9 (a long-end span the tracker holds and CommonMark does not). If the mechanism is ever modelled, the digest check passes, so this case fails and must be retired or turned into a guard.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "para",
+          "    <?x",
+          "<div>",
+          "?>",
+          "x <!--",
+          "",
+          "<!-- digest: Hidden rule. -->",
+          "",
+          "<!-- digest: Visible rule. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- Visible rule. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

@@ -646,3 +646,66 @@ parent did not have, and each flips if its route is ever modelled.
   contents: identical, markers and scan lines. The 91 earlier review documents: identical.
 - Probe documents of rounds 5 to 8 (101): every one harvests as on `3ad7408`. Round-8 `c01`-`c03`
   harvest the hidden marker, by the record above.
+
+## Phase 1 round-9 remediation (T014r)
+
+The fresh-context round-9 review of `c81a12d` (`ai-code-review-phase-1-round-9.md`, committed as
+`8306a96`) is **REQUEST CHANGES**. Its F1: the round-8 exception named three routes, and six more
+documents (`d01`-`d06`) reach the same mechanism by other doors, through the tracker's own round-4
+and round-5 rules and through paragraph lines whose indentation or ordered marker the container
+pattern strips (present since `517f9d2`). The owner chose option (b), the exception restated by
+mechanism, and approved spec FR-003, plan D11 and task T014r (all amended after round 9) on
+2026-10-03, committed alone as `bf68130`.
+
+### The change
+
+- No behaviour change. The library's non-comment token stream equals `3ad7408`'s (976 tokens);
+  `scripts/enforcement-pack.ps1` and `scripts/build-digests.ps1` are unchanged since `3ad7408`.
+- The "Not modelled either" paragraph states the mechanism: wherever the rule holds a block with
+  a longer end that CommonMark does not hold at that line, from misread block structure or from
+  following the browser into an element CommonMark's block does not contain. The doors it lists
+  are examples, not a closed list: the three round-8 routes, a start honoured inside a block
+  that ends at a blank line, a tag line that takes its element's end, and a paragraph line whose
+  indentation or ordered marker the container pattern strips.
+- F2 wording: `title` is no longer listed among the raw-text elements; it is named as RCDATA.
+
+### Cases: two DIGEST-001 pins
+
+| Case | Shape | `e10da18` (parent) | `c81a12d` and this change |
+|---|---|---|---|
+| `fail-modelled-rule-long-end-not-modelled` | round-9 `d01`: `<div><script>` / blank / `<?y` / `</script>` / blank / `x <!--` | reads the digest fresh, exit 0 (case fails) | reads it stale, exit 1 |
+| `fail-paragraph-long-end-not-modelled` | round-9 `d05`: `para` / `    <?x` / `<div>` / `?>` / `x <!--` | reads it fresh, exit 0 (case fails) | reads it stale, exit 1 |
+
+Setup: this branch's 35 DIGEST-001 cases, run with `-Case DIGEST-001` in a `HEAD` kit with the
+three scripts of the commit named. `e10da18`: 85 passed, 18 failed (the five pins, the reopen pin
+and the three cases the parent cannot pass, two assertions each). `c81a12d`: 103 passed, 0 failed.
+The three round-8 pins stay.
+
+### Corrections to the T014q record (round-9 F2)
+
+- "On `e10da18`'s three scripts the pins give 33 passed, 6 failed" holds only for the three pins
+  run alone. With `c81a12d`'s 33 cases and `e10da18`'s scripts the round-9 review measured 85
+  passed, 14 failed; with this change's 35 cases it is 85 passed, 18 failed (above).
+- "Probe documents of rounds 5 to 8 (101)": the round-9 review counted the eight directories at
+  102. All of them harvested as on `3ad7408`, so the conclusion stands.
+- The plan's "rounds 4, 5, 7 and 8" and the spec's "five review rounds" now read alike, as
+  "rounds 4, 5, 7, 8 and 9" (spec and plan as amended after round 9).
+
+### Suite, mutations, corpus and probes, run 2026-10-03
+
+- Full suite: **891 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (887 before,
+  plus two cases at two assertions each).
+- Mutations, the round-8 reviewer's runner reused read-only (MD5 `0d46111d…` before and after),
+  each run with `-Case DIGEST-001` (35 cases) in a scratch copy of the working tree, the library
+  restored by hash after each (`True`). Unmutated: 103 passed. (e)-(o) each fail, exit 1, on the
+  same guards as in T014q's record; the pins fail where a mutation touches their door: (k) also
+  fails `container-long-end`, (l2) the four processing-instruction pins (fence, indented,
+  container, paragraph), and (m) `modelled-rule-long-end`. `p-reapply` fails
+  `fail-reopen-not-modelled` and the two reopen guards. `j-long`: 101 passed, 2 failed (the fence
+  pin only, as recorded). `c1`: 103 passed, exit 0 (unguarded, owner-accepted).
+- Corpus: the 567 `.md` files, harvested by `3ad7408`'s library and this one on the same file
+  contents: identical, markers and scan lines. The 91 earlier review documents: identical.
+- Probe documents of the earlier review rounds and round 9 (194 in 15 directories, including round
+  9's `d01`-`d08` and its six fixtures): every one harvests as on `3ad7408`. Round-9 `d01`-`d06`
+  harvest the hidden marker, inside FR-003's exception as amended after round 9; the controls
+  `d07` and `d08` hide it.

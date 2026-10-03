@@ -241,7 +241,7 @@ digest consumer; plan D11 as amended after round 8):
 **Phase-1 round-9 remediation** (round-9 review F1, F2; FR-003 as amended after round 9,
 digest consumer; plan D11 as amended after round 9):
 
-- [ ] T014r [US1] Restate the exception by mechanism in `scripts/markdown-lib.ps1`; no behaviour
+- [x] T014r [US1] Restate the exception by mechanism in `scripts/markdown-lib.ps1`; no behaviour
       change.
       - Write DIGEST-001 pins `fail-modelled-rule-long-end-not-modelled` (round-9 `d01`) and
         `fail-paragraph-long-end-not-modelled` (`d05`). Each expects the visible-only digest to

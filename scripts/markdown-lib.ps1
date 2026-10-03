@@ -125,17 +125,22 @@ function Convert-SpanText {
 # are modelled only as far as CommonMark's block end: an end tag of one anywhere on a line
 # closes it, so one closed and reopened on a line ('<script>a</script><script>'), a
 # '<script/>', an end tag inside an attribute or of another element, and the other elements
-# whose text the browser reads raw (title, xmp, iframe, noembed, noframes, noscript,
-# plaintext) are all read as closed or absent, and a marker inside one may be harvested.
+# whose text the browser reads raw (xmp, iframe, noembed, noframes, noscript, plaintext) or as
+# RCDATA (title) are all read as closed or absent, and a marker inside one may be harvested.
 # Modelling the reopen hid the blocks that start inside it and disarmed a real comment (016
 # round-7 review F1).
-# Not modelled either, and here the rule can disarm a real comment (FR-003's named exception,
-# 016 round-8 review F1): a start with a longer end read where CommonMark has none, on a real
-# fence's line, in an indented code block, or in a list item or block quote that CommonMark
-# then closes. Until that end the block starts CommonMark reads are ignored, and the end
-# returns to inline text, so in a raw HTML block CommonMark started meanwhile a comment's
-# opener with no closer before the blank line is disarmed, and a marker inside the comment
-# may be harvested. Closing these routes means modelling CommonMark's block structure.
+# Not modelled either, and here the rule can disarm a real comment (FR-003's exception, 016
+# round-8 and round-9 review F1): wherever this rule holds a block with a longer end that
+# CommonMark does not hold at that line, whether because it misreads block structure or
+# because it follows the browser into an element CommonMark's block does not contain. Until
+# that end the block starts CommonMark reads are ignored, and the end returns to inline text
+# (or to a block that ends at a blank line), so in a raw HTML block CommonMark started
+# meanwhile a comment's opener with no closer before the blank line is disarmed, and a marker
+# inside the comment may be harvested. The doors are examples, not a closed list: a real
+# fence's line, an indented code block, a list item or block quote that CommonMark then
+# closes, a start honoured inside a block that ends at a blank line, a tag line that takes its
+# element's end, and a paragraph line whose indentation or ordered marker the container
+# pattern strips. Closing it means modelling CommonMark's block structure.
 function Convert-CodeSpanMarkers {
     param([string[]]$Lines)
     $out = [string[]]::new($Lines.Count)
