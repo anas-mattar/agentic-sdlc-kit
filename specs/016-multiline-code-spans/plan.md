@@ -295,6 +295,18 @@ it: the run fails and names the marker's file and line. D6's direction list for 
 
 **Amendment approved by**: anas.m, 2026-10-03
 
+**Amended during phase 2** (T020's stop rule; the owner's decision, 2026-10-03). DIGEST-020's
+report fires on every marker inside an open comment, as D8 says, and the 22 DIGEST-001
+`pass-hidden-*` guards that phase 1 added (D11, T014i-T014p) each put a marker inside a real
+comment and expected `digests: OK`. Without modelling CommonMark the report cannot tell a real
+comment from a phantom one, so D8 stands unchanged and the guards change: each now expects the
+`skipped digest marker` line naming its hidden marker, and exit 1. A guard keeps its purpose,
+because a mutation that harvests the marker removes the report and makes the digest stale, so its
+output differs; every recorded mutation is re-run to show it. No case that existed before this
+feature changes (SC-003), and the guards' documents and digests are untouched.
+
+**Amendment approved by**: anas.m, 2026-10-03
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).

@@ -307,6 +307,17 @@ plan D6 as amended at the start of phase 2):
 
 **Amendment approved by**: anas.m, 2026-10-03
 
+**Amended during phase 2** (T020's stop rule; the owner's decision, 2026-10-03; plan D8 and D11 as
+amended during phase 2):
+
+- [ ] T020a [US3] Change the expectation of each of the 22 DIGEST-001 `pass-hidden-*` guards to
+      the `skipped digest marker` line naming its hidden marker, and exit 1; leave each document
+      and digest untouched and add one sentence to each description. Update DIGEST-001's notes in
+      `rules.json` to say so. Re-run mutations (e)-(o) and `p-reapply` and record that each guard
+      still fails under the mutation it guards, as in phase 1's tables.
+
+**Amendment approved by**: anas.m, 2026-10-03
+
 ---
 
 ## Phase 3: Adopters are told, and the prediction is checked (FR-011)
