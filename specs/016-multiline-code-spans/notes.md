@@ -709,3 +709,16 @@ The three round-8 pins stay.
   9's `d01`-`d08` and its six fixtures): every one harvests as on `3ad7408`. Round-9 `d01`-`d06`
   harvest the hidden marker, inside FR-003's exception as amended after round 9; the controls
   `d07` and `d08` hide it.
+
+### Phase 1 gate — CERTIFIED
+
+> Gate 1 certified (user-run): `pwsh -File tests/enforcement/Run-Tests.ps1 && pwsh -File
+> scripts/ritual-checks.ps1` on commit `5caedb7` (phase 1, T014r) — 891 passed, 0 failed,
+> `ritual-checks: RESULT OK`, `EXIT: 0` confirmed by the owner — approved, anas.m, 2026-10-03.
+
+The plan declares `ci-held`, but no CI run exists on `5caedb7`: the branch was pushed with the
+round-10 review `2f6726d` on top, so CI ran on that commit (ritual-checks run 37102222178,
+enforcement-tests run 37102222026), and a run on any other commit certifies nothing
+(`docs/sdlc/gate-command.md`). The owner took the user-run gate, which remains lawful always.
+The round-10 review (`ai-code-review-phase-1-round-10.md`, `2f6726d`) is APPROVE; its F1 and F2
+are minor and left for a later amendment, F3-F6 carried.
