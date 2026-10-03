@@ -1,0 +1,20 @@
+{
+  "description": "016 T016a, plan D6 as amended at the start of phase 2 (round-2 F2, the owner's 2026-09-30 decision; round-10 F5). The D5-tail document verbatim (d1-tail-sameline, the round-3 review's probe of round-2 F2's shape): a comment opened mid-line on line 1 closes on line 2, whose tail pairs a backtick from before the close with the quoted opener, so that opener stays armed and the marker on line 4 is passed over. The parent e10da18 harvested it. The owner accepted that loss as covered by this report: the run fails and names line 4. No marker is harvested, so no digest is written.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "Prose that opens a note <!-- mid-line and",
+          "closes it a ` b --> then `<!--` and ``-->`` x.",
+          "",
+          "<!-- digest: Rule two. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n"
+      }
+    }
+  ]
+}

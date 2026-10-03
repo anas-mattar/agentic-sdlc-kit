@@ -101,6 +101,13 @@ function Get-DocMarkers {
             continue
         }
         if ($inComment) {
+            # A marker passed over because a comment opened earlier is still open fails the
+            # run, by file and line (016 D8, FR-009): the comment model can disagree with a
+            # renderer, so such a skip is never silent. A marker commented out on purpose is
+            # deleted instead. The message is distinct from the malformed-marker one.
+            if ($rawLine -match '^\s*<!--\s*digest\b') {
+                $script:issues += "skipped digest marker: ${RelPath}:${lineNo} — it sits inside a comment opened earlier in the file"
+            }
             $close = $line.IndexOf('-->')
             if ($close -lt 0) { continue }
             $inComment = $false

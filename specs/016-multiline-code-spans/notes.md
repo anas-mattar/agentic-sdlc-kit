@@ -722,3 +722,102 @@ enforcement-tests run 37102222026), and a run on any other commit certifies noth
 (`docs/sdlc/gate-command.md`). The owner took the user-run gate, which remains lawful always.
 The round-10 review (`ai-code-review-phase-1-round-10.md`, `2f6726d`) is APPROVE; its F1 and F2
 are minor and left for a later amendment, F3-F6 carried.
+
+## Phase 2: a skipped marker is never skipped silently (T015-T021)
+
+Phase 1's gate was certified on 2026-10-03 (above). At the start of phase 2 the owner settled the
+change to T016 left open on 2026-09-30: the D5-tail document joins DIGEST-020 as a fourth
+direction, `fail-d5-tail` (plan D6 and task T016a, amended at the start of phase 2, committed
+alone as `2a51c55`).
+
+### T015 — measured first: zero hits (SC-007)
+
+The phase-2 report (T018's lines) applied to a scratch copy of `build-digests.ps1` beside this
+branch's `markdown-lib.ps1`, then `-Check -Root <root>` on each root, read-only:
+
+| Root | Skipped-marker reports | Result |
+|---|---|---|
+| the kit (`D:/solutions/agentic-sdlc-kit`, `f240e21`) | 0 | `digests: OK (5 digest(s) fresh, 82 marker(s))`, exit 0 |
+| `D:/solutions/fitforge` (`40ec9e2`) | 0 | `digests: OK (5 digest(s) fresh, 82 marker(s))`, exit 0 |
+| `D:/solutions/flowboard` (`3d7a472`) | 0 | `digests: OK (5 digest(s) fresh, 59 marker(s))`, exit 0 |
+| `D:/solutions/expense-tracker` (`4dca06a`) | 0 | `digests: OK (5 digest(s) fresh, 59 marker(s))`, exit 0 |
+
+The generator reads the documents its pack manifest names, so this covers every digested
+document in each root. Control: the same scratch build on the D5-tail document alone reports
+`skipped digest marker: docs/sdlc/law.md:4`, exit 1, so the zeros are not a dead report.
+
+### T016, T016a — four DIGEST-020 directions, test-first
+
+| Case | Document | Expected |
+|---|---|---|
+| `fail` | `<!-- a note left open`, then a marker on line 4, then a visible marker | report names line 4, exit 1 |
+| `pass` | the same note closed by `-->` on its own line before the marker | both harvested, `digests: OK`, exit 0 |
+| `fail-f2-shape` | 015 phase-2 review F2's document | report names line 4, exit 1 |
+| `fail-d5-tail` | the D5-tail document (`d1-tail-sameline`) verbatim | report names line 4, exit 1 |
+
+Each fixture's digest on disk carries exactly the markers the generator harvests, so the report
+is the run's only issue. **`fail-f2-shape` is not wholly verbatim**: the 015 review records its
+7-line document only as lines 3-5 and says two of three markers were harvested. Lines 3-5 are
+verbatim at lines 3-5; lines 1 and 7 are markers of my wording (`The first marker is harvested.`,
+`The third marker is harvested.`) and lines 2 and 6 are blank. The case's description says so.
+
+### T017 — none of the three produces the report today (FR-005)
+
+`-Case DIGEST-020` on the phase-1 scripts (`f240e21`): `pass` passes; `fail` observes `digests: OK
+(1 digest(s) fresh, 1 marker(s))`, `fail-f2-shape` observes `digests: OK (1 digest(s) fresh, 2
+marker(s))` (the middle marker swallowed with an OK, the silent loss this phase closes), and
+`fail-d5-tail` observes `digests: n/a (no digest markers)`; each exits 0 where 1 is expected.
+
+### T018 — the report
+
+`Get-DocMarkers` in `scripts/build-digests.ps1`: inside the `$inComment` branch, a raw line that
+begins like a marker (`^\s*<!--\s*digest\b`, the same test DIGEST-005 uses) adds `skipped digest
+marker: <path>:<line> — it sits inside a comment opened earlier in the file`, and `-Check` and
+generation both fail on it (D8, FR-009). The test runs before the close is looked for, because a
+marker line carries its own `-->` and closes the open comment, which is how its rule was lost.
+Lines outside a comment take no additional work, and no child process is added (FR-010).
+
+### T019 — DIGEST-020 in the inventory (FR-008)
+
+`tests/enforcement/rules.json` gains DIGEST-020 (`(marker extraction)`, emit anchor `skipped
+digest marker:`, law FR-009/US3/D8, notes naming the four directions). The coverage check counts
+it: `build-digests.ps1 20 of 20 site(s) fixtured` (19 before).
+
+### T020 — DIGEST-005 unchanged (SC-003)
+
+Both DIGEST-005 cases pass with their expectations untouched. Its `fail` marker is malformed but
+closed on its own line (`<!-- digest The whole ritual on one page. -->`) and nothing follows it,
+so no comment is open after it and the report cannot fire. No expectation changed, so nothing was
+raised with the owner.
+
+### T020a — the 22 phase-1 guards expect the report (owner's decision)
+
+The first full-suite run with T018 gave **855 passed, 44 failed**: all 22 DIGEST-001
+`pass-hidden-*` guards that phase 1 added, two assertions each, each observing `digests: RESULT
+FAIL (1 issue(s))` with the skipped-marker line for its hidden marker. Each guard puts a marker
+inside a real comment, which is exactly what D8 makes fail, and the report cannot tell a real
+comment from a phantom one without modelling CommonMark. No case that existed before this feature
+failed (SC-003). Following T020's stop rule this went to the owner, who chose on 2026-10-03 to keep
+D8 and change the guards (plan D8/D11 and task T020a, amended during phase 2, committed alone as
+`f4b544e`). Each guard now expects the `skipped digest marker` line naming its hidden marker and
+exit 1; its document and digest are untouched, its description gains one sentence, and DIGEST-001's
+notes in `rules.json` say so. The reported line was checked against the document (for example
+`pass-hidden-nbsp-line`: line 7, its hidden marker).
+
+Mutations re-run (the round-8 reviewer's runner, MD5 `0d46111d…` before and after, `-Case
+DIGEST-001` in a scratch copy of the working tree, library restored by hash, `True`): every
+mutation fails exactly the cases it failed in T014r's table, (e)-(o) and `p-reapply`; `c1` still
+103 passed (unguarded, owner-accepted). The counts halve, for example (f) 83 passed, 20 failed
+where T014r had 63/40: a mutation that harvests a guard's marker still exits 1 (the digest reads
+stale), so a guard now fails on its output assertion only. Each guard still fails under its
+mutation.
+
+### T021 — full suite and mutation (a) (SC-004)
+
+- Full suite: **899 passed, 0 failed, 0 skipped**, `enforcement-tests: OK`, exit 0 (891 at phase 1,
+  plus four DIGEST-020 cases at two assertions each). Coverage: `build-digests.ps1 20 of 20
+  site(s) fixtured`.
+- Mutation (a), T018 reverted in a scratch copy of the final tree, `-Case DIGEST-0` (75 cases): 131
+  passed, 52 failed. `fail`, `fail-f2-shape` and `fail-d5-tail` fail (both assertions each), as do
+  the 22 guards (they now expect the report) and the inventory's anchor check; `pass` passes.
+  Measured before T020a too, on the phase-2 cases alone: the same three fail and `pass` passes.

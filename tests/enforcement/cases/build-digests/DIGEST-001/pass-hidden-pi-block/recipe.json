@@ -1,5 +1,5 @@
 {
-  "description": "Guard (016 T014m, round-4 review F2: the processing-instruction end). A processing instruction runs past blank lines to its closing '?>', and the hidden rule's marker sits inside it. The digest on disk carries only the visible rule, so the check must say OK; harvesting the hidden marker would call this correct digest stale. If the block ended at a blank line, the opener inside would be disarmed and the marker harvested.",
+  "description": "Guard (016 T014m, round-4 review F2: the processing-instruction end). A processing instruction runs past blank lines to its closing '?>', and the hidden rule's marker sits inside it. The digest on disk carries only the visible rule, so the check must say OK; harvesting the hidden marker would call this correct digest stale. If the block ended at a blank line, the opener inside would be disarmed and the marker harvested. Since 016 phase 2 (plan D8 and D11 as amended during phase 2) the marker passed over inside the comment is also reported by DIGEST-020, so the run fails naming its line; a mutation that harvests it drops that report and reads the digest stale.",
   "defaultBranch": "main",
   "commits": [
     {

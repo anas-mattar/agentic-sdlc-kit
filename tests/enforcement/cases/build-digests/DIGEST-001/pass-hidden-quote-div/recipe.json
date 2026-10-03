@@ -1,5 +1,5 @@
 {
-  "description": "Guard (016 T014m, round-4 review F2: container markers). A block quote opens a div block holding an opener with no closer before the blank line. The digest on disk carries only the visible rule, so the check must say OK; harvesting the hidden marker would call this correct digest stale. Without the block-quote alternative of the container markers, the div is missed and the marker harvested.",
+  "description": "Guard (016 T014m, round-4 review F2: container markers). A block quote opens a div block holding an opener with no closer before the blank line. The digest on disk carries only the visible rule, so the check must say OK; harvesting the hidden marker would call this correct digest stale. Without the block-quote alternative of the container markers, the div is missed and the marker harvested. Since 016 phase 2 (plan D8 and D11 as amended during phase 2) the marker passed over inside the comment is also reported by DIGEST-020, so the run fails naming its line; a mutation that harvests it drops that report and reads the digest stale.",
   "defaultBranch": "main",
   "commits": [
     {

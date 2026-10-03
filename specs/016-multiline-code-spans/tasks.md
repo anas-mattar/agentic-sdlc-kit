@@ -270,36 +270,36 @@ marker it passes over inside a comment, and F2's document becomes a loud failure
 - `scripts/build-digests.ps1`
 - `tests/**`
 
-- [ ] T015 [US3] Measure first: run the phase-2 build of `scripts/build-digests.ps1` in a scratch
+- [x] T015 [US3] Measure first: run the phase-2 build of `scripts/build-digests.ps1` in a scratch
       copy against the kit and all three adopted projects (`D:/solutions/fitforge`,
       `D:/solutions/flowboard`, `D:/solutions/expense-tracker`) and record every skipped-marker
       hit in `notes.md`. Expected zero. A hit is resolved with the owner before this phase
       commits (SC-007).
-- [ ] T016 [P] [US3] Write `tests/enforcement/cases/build-digests/DIGEST-020/` with `fail` (a
+- [x] T016 [P] [US3] Write `tests/enforcement/cases/build-digests/DIGEST-020/` with `fail` (a
       marker inside a comment opened earlier; the run fails and names the file and line),
       `pass` (the nearest state: the comment closes before the marker; no report) and
       `fail-f2-shape` (015 review F2's three-marker document verbatim) (plan D6, spec US1
       scenario 3, US3).
-- [ ] T017 [US3] Run T016 against the phase-1 scripts and record in `notes.md` that `fail` and
+- [x] T017 [US3] Run T016 against the phase-1 scripts and record in `notes.md` that `fail` and
       `fail-f2-shape` do not produce the report today (spec FR-005).
-- [ ] T018 [US3] Implement the report in `Get-DocMarkers` in `scripts/build-digests.ps1`: a line
+- [x] T018 [US3] Implement the report in `Get-DocMarkers` in `scripts/build-digests.ps1`: a line
       matching the marker grammar, passed over because a comment is open, adds
       `skipped digest marker: <path>:<line> — it sits inside a comment opened earlier in the file`
       to the issues, and the run fails (D8, FR-009).
-- [ ] T019 [US3] Add DIGEST-020 to `tests/enforcement/rules.json` with its emit anchor
+- [x] T019 [US3] Add DIGEST-020 to `tests/enforcement/rules.json` with its emit anchor
       `skipped digest marker:`, the law it enforces, and notes naming its three directions, and
       confirm the coverage check counts it (FR-008).
-- [ ] T020 [US3] Check DIGEST-005's cases: its unclosed malformed marker deliberately opens a
+- [x] T020 [US3] Check DIGEST-005's cases: its unclosed malformed marker deliberately opens a
       comment block, so a marker after it may now also be reported. If any pre-existing expectation
       changes, stop and raise it with the owner before editing it, because SC-003 promises the
       existing cases pass unchanged. Record the outcome in `notes.md`.
-- [ ] T021 [US3] Run the full suite and mutation (a) for this phase: with T018 reverted, `fail`
+- [x] T021 [US3] Run the full suite and mutation (a) for this phase: with T018 reverted, `fail`
       and `fail-f2-shape` must fail. Record both in `notes.md` (SC-004).
 
 **Amended at the start of phase 2** (round-2 F2, the owner's 2026-09-30 decision; round-10 F5;
 plan D6 as amended at the start of phase 2):
 
-- [ ] T016a [US3] Write `tests/enforcement/cases/build-digests/DIGEST-020/fail-d5-tail` from
+- [x] T016a [US3] Write `tests/enforcement/cases/build-digests/DIGEST-020/fail-d5-tail` from
       the D5-tail document (`d1-tail-sameline` from the round-3 review's probes, verbatim; round-2
       F2's shape): the run fails and names the marker's file and line. Run it with T017 against the phase-1 scripts and record that it does not
       produce the report today. T019's notes name four directions, and T021's mutation (a) must
@@ -310,7 +310,7 @@ plan D6 as amended at the start of phase 2):
 **Amended during phase 2** (T020's stop rule; the owner's decision, 2026-10-03; plan D8 and D11 as
 amended during phase 2):
 
-- [ ] T020a [US3] Change the expectation of each of the 22 DIGEST-001 `pass-hidden-*` guards to
+- [x] T020a [US3] Change the expectation of each of the 22 DIGEST-001 `pass-hidden-*` guards to
       the `skipped digest marker` line naming its hidden marker, and exit 1; leave each document
       and digest untouched and add one sentence to each description. Update DIGEST-001's notes in
       `rules.json` to say so. Re-run mutations (e)-(o) and `p-reapply` and record that each guard

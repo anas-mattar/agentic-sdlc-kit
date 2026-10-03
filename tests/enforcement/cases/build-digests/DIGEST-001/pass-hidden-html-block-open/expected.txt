@@ -1,1 +1,2 @@
-digests: OK (1 digest(s) fresh, 2 marker(s))
+digests: FAIL — skipped digest marker: docs/sdlc/fixture-law.md:8 — it sits inside a comment opened earlier in the file
+digests: RESULT FAIL (1 issue(s))
