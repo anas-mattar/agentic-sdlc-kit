@@ -238,6 +238,26 @@ digest consumer; plan D11 as amended after round 8):
 
 **Amendment approved by**: anas.m, 2026-10-02
 
+**Phase-1 round-9 remediation** (round-9 review F1, F2; FR-003 as amended after round 9,
+digest consumer; plan D11 as amended after round 9):
+
+- [ ] T014r [US1] Restate the exception by mechanism in `scripts/markdown-lib.ps1`; no behaviour
+      change.
+      - Write DIGEST-001 pins `fail-modelled-rule-long-end-not-modelled` (round-9 `d01`) and
+        `fail-paragraph-long-end-not-modelled` (`d05`). Each expects the visible-only digest to
+        be read as stale; show each stale on `c81a12d` and fresh on `e10da18`'s three scripts.
+      - Rewrite the "Not modelled either" paragraph to state the mechanism (a long-end span the
+        tracker holds and CommonMark does not, from misread block structure or from following
+        the browser), naming the three round-8 routes and the round-4/round-5 rules and
+        paragraph continuations as examples. Take `title` out of the raw-text element list.
+      - Confirm the library's non-comment token stream equals `3ad7408`'s.
+      - Run the full suite, mutations (e)-(o), the corpus and review-document harvest comparison
+        (against `3ad7408`), and the round-5 to round-9 probe documents. Record all of it in
+        `notes.md`, with the F2 corrections (the setup behind the `e10da18` pin counts; 102 probe
+        documents).
+
+**Amendment approved by**: anas.m, 2026-10-03
+
 ---
 
 ## Phase 2: A skipped marker is never skipped silently (US3)

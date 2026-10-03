@@ -260,6 +260,30 @@ token-identical to `3ad7408`.
 
 **Amendment approved by**: anas.m, 2026-10-02
 
+**Amended after the phase-1 round-9 review** (round-9 F1, F2). The tracker is **not extended**,
+and the library's code stays token-identical to `3ad7408`. Round 9 found six documents
+(`d01`-`d06`) that reach the round-7/round-8 mechanism through doors outside the three named
+routes: `d01`-`d04` through the tracker's own round-4 rule (a long-end start honoured inside a
+blank-ending block) and round-5 rule (a tag line takes its raw-text element's end), `d05`/`d06`
+through the container regex, which strips any indentation and any `\d{1,9}[.)]` marker even
+where CommonMark reads a paragraph continuation. None is a regression of round 8 (all harvest on
+`517f9d2` and `c6d95a1`), and corpus exposure is nil.
+- **Exception by mechanism**: the spec's FR-003 exception (as amended after round 9) is stated as
+  "a long-end span the tracker holds and CommonMark does not", with the causes as examples, not
+  as a closed list. The library's "Not modelled either" paragraph and the Out of Scope
+  reconciliation say the same; the three round-8 routes remain named as examples.
+- **Pins**: one per family not yet pinned, as DIGEST-001 `fail-*-not-modelled` cases with the
+  visible-only digest read as stale: `fail-modelled-rule-long-end-not-modelled` (round-9 `d01`,
+  a modelled-rule door) and `fail-paragraph-long-end-not-modelled` (round-9 `d05`, a paragraph
+  door). Each is shown stale on `c81a12d` and fresh on `e10da18`. The three round-8 pins stay.
+- **F2**: D11's round count is "rounds 4, 5, 7, 8 and 9" and the spec now agrees; `notes.md`
+  states which setup gives the `e10da18` pin counts and corrects the probe count to 102; the
+  library stops listing `title` among the raw-text elements (it is RCDATA, like `textarea`).
+- **F3-F6** stay as recorded (`j-long` pinned by the fence case, `c1`, the D5 tail for phase 2,
+  FR-010's wording).
+
+**Amendment approved by**: anas.m, 2026-10-03
+
 ## Constitution Check
 
 Source: `.specify/memory/constitution.md` (version 0.7.0).

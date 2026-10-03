@@ -271,6 +271,31 @@ The amendment consumer is untouched: its reading stays the parent's everywhere.
 
 **Amendment approved by**: anas.m, 2026-10-02
 
+**Amended after the phase-1 round-9 review** (round-9 F1, F2; plan D11 as amended after round 9).
+The round-8 exception is restated **by mechanism, not by route**. Round 9 found six more doors
+into it (`d01`-`d06`): the tracker's own round-4 and round-5 rules, and a paragraph line whose
+indentation or ordered marker the container regex strips. A list of routes was incomplete
+again. Rounds 4, 5, 7, 8 and 9 each found the class through a new door (this replaces the
+round-8 amendment's "Five review rounds … through a new route each time").
+- **The exception, for the digest consumer only**: wherever the rule's raw HTML tracker holds a
+  block with a long end (a `pre`, `script`, `style` or `textarea` element, a comment, a
+  processing instruction, a declaration or CDATA) that CommonMark does not hold at that line —
+  whether because the tracker misreads block structure (a fence, an indented code block, a
+  container, a paragraph continuation) or because it follows the browser into an element that
+  CommonMark's block does not contain — it ignores the block starts CommonMark reads until its
+  own end, and then returns to inline text. A raw HTML block CommonMark starts inside that span
+  is not seen, a real comment's opener after the span's end may be disarmed, and a marker
+  inside that comment may be harvested into a digest. The three routes named after round 8 are
+  instances of this exception, not its bounds.
+- FR-003's "never changes the lines of an HTML comment block or of a raw HTML block" holds
+  except where such a block begins inside a span the tracker holds and CommonMark does not.
+- The Out of Scope line "Indented code blocks … and lazy continuation lines … keep their
+  current handling" holds except through this exception: a long-end start the tracker reads
+  where CommonMark has none can change how a later line is read.
+- The amendment consumer is untouched: its reading stays the parent's everywhere.
+
+**Amendment approved by**: anas.m, 2026-10-03
+
 ### Out of Scope
 
 - Full CommonMark conformance. Indented code blocks, setext headings, lazy continuation lines
