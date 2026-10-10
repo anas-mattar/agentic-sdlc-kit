@@ -255,3 +255,54 @@ the check.
   working tree is not evidence and is not cited: it ran while phase 3's files changed under it.
 - Phase 3: targeted runs on the working tree only so far (`LEVEL-` 30 cases, 93 tests, 0 failed).
   A full run on a clean checkout of the remediation commit follows.
+
+- Phase 3, full harness on a clean, isolated checkout of `2e93252` (the remediation commit):
+  **983 passed, 0 failed, 0 skipped**, exit 0. That is 923 (phase 2) plus the 60 tests the 30
+  `LEVEL-` cases and the rule entries added, with every pre-existing test still passing.
+
+## Phase 4
+
+Written 2026-10-11. Implemented, not yet committed when this section was first written.
+
+**T025, against the parent commit (2e93252).** All 25 new cases were run before any code changed.
+24 failed for the right reason (the script printed none of the new `LevelRationale` lines and
+exited 0 where a fixture expects 1). The one that already passed is `LEVEL-008/pass-no-marker`,
+a guard: a spec from before the rule is exempt, silent, and the run is what it was. After the
+change all pass; `LEVEL-` is 51 cases (135 tests) and the coverage test reports 64 of 69
+`enforcement-pack` sites fixtured.
+
+**Rule ids.** `LEVEL-008`..`LEVEL-010` as in `tasks.md`, plus `LEVEL-011` (a marker value other
+than `1`, UNGRADED), which `tasks.md` does not list. It exists because the alternatives are worse:
+a spec from a newer rule version silently exempt, or graded by rules it was not written for.
+`LEVEL-010` has `siteCount` 2 (the two directions of contradiction), sharing one anchor.
+
+**Decisions made in the implementation (none changes an approved document).**
+- *Who owes a rationale.* Standard and Critical specs that carry `**Rationale Rule**: 1`. Micro
+  does not (its mini-spec has no such section; spec FR-002 names Standard and Critical). A spec
+  without the marker is exempt and silent, so the 80 existing expectations and every shipped
+  feature are untouched.
+- *Phase 1 review F3, honoured.* The marker line is read from visible text and trimmed, so the
+  template's trailing space and multi-line comment do not matter (`pass-template-marker`); the
+  verdict is anchored to the start of the bullet; text that starts with `[` or `<`, or whose reason
+  is `TODO`/`TBD`/`FIXME`/`XXX`, is unfilled, so the template as shipped can never read as four
+  answers (`fail-template-placeholder`); the same rule applies to a `**Critical because**` line.
+- *One finding per unanswered trigger*, so an unedited template names all four. (The first
+  version of that fixture expected only the first one named; the design changed before the code
+  was written and the expectation with it.)
+- *Graded line.* When all four triggers are answered the check prints one line
+  (`LevelRationale: graded ... 4 of 4 triggers answered, N apply`), declared a not-a-rule like the
+  other roll-ups. It prints before any contradiction finding.
+- *Duplicates.* A trigger answered twice is an unanswered trigger ("answered more than once"):
+  neither answer silently wins.
+- *Where it sits.* In `scripts/enforcement-pack.ps1` right after the surface check.
+
+**Beyond the fixtures: the real template, end to end.** Using `.specify/templates/spec-template.md`
+as shipped, in a throwaway git repository: with only the level filled in it fails with four
+findings (one per trigger); with the four bullets filled in the way an author would, and the
+template's bracketed `**Critical because**` placeholder left in place, it passes with
+`0 apply`; with one answer flipped to `applies` on a Standard feature it fails as a
+contradiction. This is not a harness case; it is recorded here.
+
+**Evidence status.** Targeted runs on the working tree: `LEVEL-` 51 cases pass (135 tests); every
+existing `enforcement-pack` rule prefix passes with 0 failed; `ritual-checks` RESULT OK. A full
+harness run on a clean checkout of the phase 4 commit follows.

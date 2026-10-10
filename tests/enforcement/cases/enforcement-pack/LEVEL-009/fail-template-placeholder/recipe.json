@@ -1,0 +1,75 @@
+{
+  "description": "The section exactly as the template ships it, never filled in. Text that starts with [ is unfilled, so an unedited template can never read as four answers (phase 1 review F3). Every unanswered trigger is named, one finding each.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"schemaVersion\": 1,",
+          "  \"projectName\": \"fixture-project\",",
+          "  \"topology\": \"single\",",
+          "  \"tiers\": [\"backend\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "**Rationale Rule**: 1",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing.",
+          "",
+          "## Level Rationale",
+          "",
+          "- **domain-invariants**: [applies | does not apply] — [reason: the template placeholder]",
+          "- **irreversible-data**: [applies | does not apply] — [reason: the template placeholder]",
+          "- **authn-authz-payment**: [applies | does not apply] — [reason: the template placeholder]",
+          "- **auditable-evidence**: [applies | does not apply] — [reason: the template placeholder]"
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: the thing",
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

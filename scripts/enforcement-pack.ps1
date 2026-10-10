@@ -35,6 +35,15 @@
                          informational line and no change of verdict. Every way the check
                          cannot grade - an unusable or unreadable record, a Territory it cannot
                          read - adds an UNGRADED line instead of passing.
+      - LevelRationale   (NNN-* branches declared Standard or Critical; feature 017): the
+                         written half of the level claim. A spec carrying '**Rationale Rule**: 1'
+                         (the spec template stamps it) answers the four Critical triggers in a
+                         '## Level Rationale' section, each 'applies' or 'does not apply' with a
+                         reason; the check fails an absent or incomplete section, a Standard spec
+                         that answers a trigger 'applies', and a Critical spec that answers every
+                         trigger 'does not apply' with no '**Critical because**' reason. A spec
+                         without the marker predates the rule and is exempt. It is a claim a
+                         reviewer can falsify, not proof that the claim is true.
       - LiteAndAbuse     (fix/*, chore/* branches): no changed file matches a prohibited
                          category (dependency manifest, auth, schema/migration, contracts,
                          domain invariants); migrations are always prohibited on this lane
@@ -834,6 +843,104 @@ function Invoke-LevelSurfaceCheck {
     Write-Host "LevelSurface: graded $Branch ($levelName) — $n Territory $noun against $(@($surfaces.Globs).Count) critical surface(s): $reached reached, $excepted excepted"
 }
 
+# --- Level rationale (feature 017; constitution X, Level declaration) ---
+# The written half of the level claim. A spec made from the current template carries
+# '**Rationale Rule**: 1' and a '## Level Rationale' section that answers the four Critical
+# triggers of docs/sdlc/critical-delivery.md, each 'applies' or 'does not apply' with a reason.
+# The check fails an absent or incomplete section, and a section that contradicts the declared
+# level. It is a claim a reviewer can falsify, not proof: an owner can still write 'does not
+# apply', and the check says nothing about whether it is true.
+#
+# Only a spec that CARRIES the marker owes the section. A spec from before the rule has none,
+# and failing it would fail every shipped feature and every adopted project's history (FR-008).
+# The cost is stated in the constitution: a spec can omit the marker, as it can omit its
+# Delivery Level, and the omission shows in the diff.
+#
+# Everything is read from VISIBLE text, trimmed. The phase 1 review's F3: the template ships
+# placeholder lines, so text that starts with '[' is UNFILLED and never an answer, and the
+# verdict is anchored to the start of the bullet, so an unedited template cannot read as four
+# answers.
+
+$script:RationaleKeys = @('domain-invariants', 'irreversible-data', 'authn-authz-payment', 'auditable-evidence')
+$script:RationaleVerdictPattern = '^(applies|does not apply)\s*(?:[—–]|-{1,2})\s*(\S.*)$'
+
+function Test-RationalePlaceholder {
+    param([string]$Text)
+    return [bool]($Text -match '^[\[<].*[\]>]$' -or $Text -match '^(TODO|TBD|FIXME|XXX)\b')
+}
+
+function Invoke-LevelRationaleCheck {
+    param([string]$Branch)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    $dir = "specs/$Branch"
+    $specPath = Join-Path $dir 'spec.md'
+    if (-not (Test-Path -LiteralPath $specPath)) { return }          # the Structure check owns a missing spec
+    $level = Get-DeliveryLevel -SpecPath $specPath
+    # Micro's mini-spec has no such section (its eligibility checklist stands in), and Lite has no
+    # spec. Standard and Critical are the levels that owe a rationale (spec FR-002).
+    if ($level -notmatch '^(Standard|Critical)\b') { return }
+    $levelName = if ($matches[1] -ieq 'Critical') { 'Critical' } else { 'Standard' }
+
+    $lines = @(Get-VisiblePlanLines -PlanPath $specPath)
+    $marker = $lines | Where-Object { $_ -match '^\*\*Rationale Rule\*\*:' } | Select-Object -First 1
+    if (-not $marker) { return }                                      # predates the rule: exempt (FR-008)
+    $version = ($marker -replace '^\*\*Rationale Rule\*\*:\s*', '').Trim()
+    if ($version -ne '1') {
+        $script:ungraded += "LevelRationale: $Branch spec.md carries '**Rationale Rule**: $version', a version this check does not know — the Level Rationale was not checked, which is not the same as passing it"
+        return
+    }
+
+    $start = -1
+    for ($i = 0; $i -lt $lines.Count; $i++) { if ($lines[$i] -match '^##\s+Level Rationale\b') { $start = $i; break } }
+    if ($start -lt 0) {
+        $script:failures += "LevelRationale: $Branch spec.md has no Level Rationale — a spec carrying '**Rationale Rule**: 1' answers the four Critical triggers in a '## Level Rationale' section (domain-invariants, irreversible-data, authn-authz-payment, auditable-evidence; docs/sdlc/critical-delivery.md)"
+        return
+    }
+    $answers = @{}
+    foreach ($k in $script:RationaleKeys) { $answers[$k] = @() }
+    for ($i = $start + 1; $i -lt $lines.Count; $i++) {
+        if ($lines[$i] -match '^#{1,2}\s') { break }                  # the section ends at the next heading
+        if ($lines[$i] -match '^\s*[-*]\s+\*\*([A-Za-z-]+)\*\*:\s*(.*?)\s*$') {
+            $key = $matches[1].ToLowerInvariant()
+            if ($answers.ContainsKey($key)) { $answers[$key] += $matches[2] }
+        }
+    }
+
+    $verdicts = @{}
+    $unanswered = 0
+    foreach ($k in $script:RationaleKeys) {
+        $texts = @($answers[$k])
+        $why = ''
+        if ($texts.Count -eq 0) {
+            $why = 'no bullet for it in the Level Rationale section'
+        } elseif ($texts.Count -gt 1) {
+            $why = 'it is answered more than once'
+        } elseif ($texts[0] -notmatch $script:RationaleVerdictPattern -or (Test-RationalePlaceholder $matches[2])) {
+            $why = "'$($texts[0])' is not 'applies' or 'does not apply' followed by a reason"
+        } else {
+            $verdicts[$k] = $matches[1].ToLowerInvariant()
+        }
+        if ($why) {
+            $unanswered++
+            $script:failures += "LevelRationale: $Branch spec.md leaves trigger '$k' unanswered: $why — answer it as '- **$k**: applies — <reason>' or '- **$k**: does not apply — <reason>'"
+        }
+    }
+    if ($unanswered -gt 0) { return }
+
+    $applying = @($script:RationaleKeys | Where-Object { $verdicts[$_] -eq 'applies' })
+    Write-Host "LevelRationale: graded $Branch ($levelName) — 4 of 4 triggers answered, $($applying.Count) apply"
+    if ($levelName -eq 'Standard' -and $applying.Count -gt 0) {
+        $quoted = ($applying | ForEach-Object { "'$_'" }) -join ', '
+        $script:failures += "LevelRationale: $Branch spec.md contradicts its level: declared Standard, but it answers $quoted as 'applies' — a feature that touches a Critical trigger is Critical (docs/sdlc/critical-delivery.md); declare it Critical, or correct the answer"
+    }
+    if ($levelName -eq 'Critical' -and $applying.Count -eq 0) {
+        $because = @($lines | Where-Object { $_ -match '^\*\*Critical because\*\*:\s*(\S.*)$' -and -not (Test-RationalePlaceholder $matches[1].Trim()) })
+        if ($because.Count -eq 0) {
+            $script:failures += "LevelRationale: $Branch spec.md contradicts its level: declared Critical, but every trigger is answered 'does not apply' and there is no '**Critical because**: <reason>' line — say why it is Critical regardless, or declare it Standard"
+        }
+    }
+}
+
 # --- Review-provenance check (006 FR-006: DoD gate 5, reviewer separation) ---
 # Inspects only AI-review files ADDED in the branch's diff vs base (--diff-filter=A), so
 # reviews shipped before the verification pack — and every adopted project's history —
@@ -1482,6 +1589,7 @@ if ($Branch -in @('main', 'master')) {
 } elseif ($Branch -match '^\d{3}-') {
     Invoke-StructureCheck -Branch $Branch
     Invoke-LevelSurfaceCheck -Branch $Branch
+    Invoke-LevelRationaleCheck -Branch $Branch
     Invoke-MicroLaneCheck -Branch $Branch -Base $diffBase
     Invoke-CriticalEvidenceCheck -Branch $Branch
     Invoke-GateBatchingCheck -Branch $Branch

@@ -176,22 +176,22 @@ carrying the marker (plan D7).
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T024 [P] [US2] Write fixtures for `LEVEL-008` (`fail-absent`: marker present, no block;
+- [x] T024 [P] [US2] Write fixtures for `LEVEL-008` (`fail-absent`: marker present, no block;
       `pass-no-marker`: a pre-rule spec with no block is exempt, FR-008), `LEVEL-009`
       (`fail-missing-trigger` for each of the four keys, `fail-no-reason`, `fail-bad-verdict`) and
       `LEVEL-010` (`fail-standard-applies`, `fail-critical-all-no`, `pass-critical-because`,
       `pass-critical-applies`, `pass-standard-all-no`). Expectations are hand-written.
-- [ ] T025 [US2] Run T024 against the current script and record in `notes.md`: the `fail-*`
+- [x] T025 [US2] Run T024 against the current script and record in `notes.md`: the `fail-*`
       cases pass today (the gap is real), the `pass-*` cases already pass.
-- [ ] T026 [US2] Add `Invoke-LevelRationaleCheck` to `scripts/enforcement-pack.ps1`, called from
+- [x] T026 [US2] Add `Invoke-LevelRationaleCheck` to `scripts/enforcement-pack.ps1`, called from
       the `NNN-*` dispatch after the surface check: read the marker, the section and its four
       bullets from visible text only (comment-stripped, like `Get-DeliveryLevel`); apply the
       consistency rules of data-model.md; every failure names the feature and the trigger or the
       contradiction (contract section 3). Update the file's `.DESCRIPTION` block.
-- [ ] T027 [US2] Add `LEVEL-008` through `LEVEL-010` to `tests/enforcement/rules.json` and run
+- [x] T027 [US2] Add `LEVEL-008` through `LEVEL-010` to `tests/enforcement/rules.json` and run
       `pwsh -File tests/enforcement/Run-Tests.ps1`. Everything passes, including every phase 3
       case and every pre-existing `enforcement-pack` case.
-- [ ] T028 [US2] Run `pwsh -File scripts/ritual-checks.ps1` on this branch. This spec carries no
+- [x] T028 [US2] Run `pwsh -File scripts/ritual-checks.ps1` on this branch. This spec carries no
       marker (it predates the rule), so nothing changes; record that in `notes.md`.
 
 ---

@@ -1526,6 +1526,43 @@
       "notes": "Fires in addition to the reaching-path failure, never instead of it: 'fail' has no approval line, 'fail-placeholder-approver' has an unfilled name (feature 014's D6, same function). 'fail-wrong-path' pins that an approved exception naming a DIFFERENT path covers nothing: the reaching path still fails and the exception is reported stale. 'pass' is a conforming approval."
     },
     {
+      "id": "LEVEL-008",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "a spec carrying the Rationale Rule marker has no Level Rationale section",
+      "law": "feature 017 FR-002, FR-008; constitution X (Level declaration)",
+      "emitAnchor": "has no Level Rationale",
+      "notes": "The written half of the level claim. The marker is the promise that the section exists, so its absence is the failure ('fail'). 'pass-no-marker' pins FR-008: a spec from before the rule is exempt, silent, and the run is what it was before this feature - without that exemption every shipped feature and every adopted project's history would fail. 'pass-template-marker' is the marker exactly as the spec template writes it, a trailing space and a multi-line comment: the reader must see the line the author sees (phase 1 review F3). A spec can omit the marker and so stand outside the rule; the constitution states that evasion rather than hiding it."
+    },
+    {
+      "id": "LEVEL-009",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "a trigger is left unanswered: absent, with no reason, with a bad verdict, left as the template placeholder, or answered twice",
+      "law": "feature 017 FR-002; docs/sdlc/critical-delivery.md (the four triggers)",
+      "emitAnchor": "leaves trigger",
+      "notes": "One finding per unanswered trigger, so an unedited template names all four. Each of the four keys has its own direction (fail, fail-missing-irreversible-data, fail-missing-authn-authz-payment, fail-missing-auditable-evidence), so a reader that stopped after three or matched keys loosely would pass one of them. 'fail-no-reason' and 'fail-bad-verdict' pin that a verdict needs its reason. 'fail-template-placeholder' pins phase 1 review F3: text that starts with [ is unfilled, so the template as shipped can never read as four answers. 'fail-duplicate' pins that the first of two answers does not silently win over the second."
+    },
+    {
+      "id": "LEVEL-010",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "the declared level contradicts the answers: Standard with a trigger that applies, or Critical with nothing applying and no reason",
+      "law": "feature 017 FR-003; constitution X (Level declaration)",
+      "emitAnchor": "contradicts its level",
+      "siteCount": 2,
+      "notes": "Two sites, one rule: the claim and the level disagree in either direction. Over-declaring is lawful ('pass-critical-because'), but it must be said why, or the level is the unexplained choice this feature exists to make explicit; a Critical because line left as the template's bracketed placeholder is not a reason ('fail-critical-because-placeholder'). The Critical cases also fail the Critical lane's own missing second-model review, independently; the case pins that LevelRationale adds only its own finding."
+    },
+    {
+      "id": "LEVEL-011",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "a Rationale Rule marker whose value this check does not know leaves the rationale UNGRADED",
+      "law": "feature 017 FR-012; feature 015 D6",
+      "emitAnchor": "a version this check does not know",
+      "notes": "A spec from a newer rule version must not be silently exempt, nor graded by rules it was not written for. UNGRADED exits 0, on the record, like every other member that forms no opinion."
+    },
+    {
       "id": "CLAIM-001",
       "script": "roadmap-claim-check.ps1",
       "function": "(claim ledger)",
