@@ -939,3 +939,20 @@ wording needs an owner-approved amendment, and the `docs/roadmap.md` GAP-028 and
 Phase 2's gate (`7158c4c`) is not recorded here. Its CI evidence exists (enforcement-tests run
 37107680349, ritual-checks run 37107680181, both `success`) and its AI review is APPROVE
 (`ai-code-review-phase-2.md`); the owner's approval on that triplet has not been recorded.
+
+### Phase 2 gate — CERTIFIED
+
+> Gate 2 certified (ci-held): CI evidence triplet on the phase-2 commit `7158c4c` (T015-T021, the
+> only phase-2 commit; no remediation followed) — enforcement-tests run
+> https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/37107680349 (`success`) and
+> ritual-checks run https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/37107680181
+> (`success`), both push-event runs on `7158c4c31089fae80940b0e2bc9c85582fa563bb` — approved,
+> anas.m, 2026-10-10.
+
+This supplies the approval the phase-3 record above says was missing. The runs were green when
+the phase was pushed on 2026-10-03 and were re-read on 2026-10-10. The phase-2 AI review is
+APPROVE (`ai-code-review-phase-2.md`, `08cbee9`); its non-blocking findings F1 (a marker after a
+same-line `-->` is neither harvested nor reported), F2 (the 22 amended `pass-hidden-*`
+descriptions still say "the check must say OK") and F3 (the report matches case-insensitively by
+design) are carried, not closed. Phase 2's code is unchanged by phase 3: `scripts/build-digests.ps1`
+has no commit after `7158c4c`.
