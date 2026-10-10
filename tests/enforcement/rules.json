@@ -1557,10 +1557,11 @@
       "id": "LEVEL-011",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-LevelRationaleCheck",
-      "summary": "a Rationale Rule marker whose value this check does not know leaves the rationale UNGRADED",
+      "summary": "a Rationale Rule marker this check cannot read - an unknown value anywhere, or a line that looks like the marker but is not one - leaves the rationale UNGRADED",
       "law": "feature 017 FR-012; feature 015 D6",
-      "emitAnchor": "a version this check does not know",
-      "notes": "A spec from a newer rule version must not be silently exempt, nor graded by rules it was not written for. UNGRADED exits 0, on the record, like every other member that forms no opinion."
+      "emitAnchor": "the Level Rationale was not checked",
+      "siteCount": 2,
+      "notes": "Two sites, one rule. A spec from a newer rule version must not be silently exempt, nor graded by rules it was not written for ('fail'), and with two marker lines the ORDER must not decide the verdict ('fail-two-markers' and 'fail-two-markers-reversed' say the same thing). A line that merely LOOKS like the marker - indented, quoted, a space before the colon - is not 'no marker': that would silently exempt a spec that tried to opt in, so it is UNGRADED by name ('fail-near-miss-marker', 'fail-near-miss-spaced-colon'), the way a Territory marker the parser cannot read already is (phase 4 review F3, F4). UNGRADED exits 0, on the record, like every other member that forms no opinion."
     },
     {
       "id": "CLAIM-001",

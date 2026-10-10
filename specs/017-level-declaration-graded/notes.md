@@ -306,3 +306,57 @@ contradiction. This is not a harness case; it is recorded here.
 **Evidence status.** Targeted runs on the working tree: `LEVEL-` 51 cases pass (135 tests); every
 existing `enforcement-pack` rule prefix passes with 0 failed; `ritual-checks` RESULT OK. A full
 harness run on a clean checkout of the phase 4 commit follows.
+
+### Review and remediation — phase 4
+
+Fresh-context AI review: `ai-code-review-phase-4.md`, verdict APPROVED WITH MINOR FINDINGS, no
+Blocker, no Major. About 100 throwaway-repository probes (marker, heading, bullet, verdict, level
+and Critical-because variants) found nothing that let a missing or contradictory rationale pass
+by accident; `$matches` handling was confirmed correct; no input threw; a 5,000-line spec graded
+in under 2 seconds. The commit changed no approved document.
+
+All six cheap findings are fixed. For each, the new fixtures were run on the unfixed script first:
+8 failed for the right reason (`pass-fenced-marker`, `fail-fenced-section`, `fail-second-section`,
+`fail-two-markers`, `fail-near-miss-marker`, `fail-near-miss-spaced-colon`,
+`fail-reason-says-nothing`, `fail-reason-placeholder`) and the other 7 already passed and now pin
+directions the first suite lacked.
+
+- **F1 (Minor): fixed.** Fenced code is not content. A fenced `**Critical because**`, a fenced
+  whole section, or a quoted marker used to count. The check now reads visible text with fenced
+  lines removed, through `Get-FencedLineMap` (feature 015's reader, already used by the amendment
+  check), not a second idea of what a fence is.
+- **F2 (Minor): fixed.** Answers are collected across every `## Level Rationale` section, so a
+  second section that contradicts the first makes the trigger "answered more than once".
+- **F3 (Minor): fixed.** The marker is every header-shaped line, not the first. A value other than
+  `1` anywhere is UNGRADED, so `1` then `2` and `2` then `1` say the same thing.
+- **F4 (Minor): fixed.** A line that looks like the marker and is not one (indented, quoted, a space
+  before the colon) is UNGRADED by name, not silently exempt, the way a Territory marker the parser
+  cannot read already is. `LEVEL-011` now has two sites.
+- **F5 (Minor): fixed.** A reason needs a word of at least two characters, so `x`, `-` and `n/a`
+  are not reasons. The same helper serves the `**Critical because**` line.
+- **F6 (Minor): fixed.** New directions: a Micro spec carrying the marker (silent), the marker
+  after the section, a fenced marker, a Critical spec missing a trigger, a Standard spec with two
+  triggers applying (one finding naming both), a Critical because reason that merely contains
+  brackets.
+- **F8 (Note): partly fixed.** A verdict followed by a placeholder or empty reason now says the
+  reason is the problem ("its reason 'TODO' is a placeholder or says nothing") instead of saying the
+  verdict is missing. NOT done: the exact bullet syntax lives in the spec template and the check's
+  messages, not in `docs/sdlc/critical-delivery.md` or the constitution. Those documents are outside
+  phase 4's Territory; the template and messages agree with each other and with the check. Carried
+  to the owner's attention, not changed. (The template comment saying an absent level means
+  Standard, while Structure fails it, predates this feature.)
+
+**Open, for the owner (not decided by the implementer):**
+
+- F7 (Note): `LEVEL-011`, the UNGRADED verdict for a marker this check cannot read, is not in
+  `tasks.md`, the contract's section 3 anchor table or `data-model.md`'s verdict table. The reviewer
+  agrees UNGRADED is the right verdict: it fits FR-012, does not conflict with FR-008, and exits 0
+  with "not the same as passing it". Adding the contract line and a data-model row is an amendment to
+  approved documents, so it needs your approval line. Until then this file and `rules.json` are the
+  record.
+
+**Evidence status for phase 4.** Targeted runs on the working tree: `LEVEL-` 66 cases (165 tests)
+pass; every existing `enforcement-pack` prefix passes with 0 failed; `ritual-checks` RESULT OK; the
+real spec template, run end to end, still fails when unfilled (four findings), passes when filled,
+and fails as a contradiction when a Standard feature answers `applies`. A full harness run on a
+clean checkout of the remediation commit follows.

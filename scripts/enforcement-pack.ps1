@@ -866,7 +866,9 @@ $script:RationaleVerdictPattern = '^(applies|does not apply)\s*(?:[—–]|-{1,2
 
 function Test-RationalePlaceholder {
     param([string]$Text)
-    return [bool]($Text -match '^[\[<].*[\]>]$' -or $Text -match '^(TODO|TBD|FIXME|XXX)\b')
+    # Unfilled: a bracketed or angle-bracketed placeholder, a TODO-style word, or text with no word
+    # of at least two characters in it ('x', '-', 'n/a'): the rule needs a reason, not a pixel.
+    return [bool]($Text -match '^[\[<].*[\]>]$' -or $Text -match '^(TODO|TBD|FIXME|XXX)\b' -or $Text -notmatch '\w{2,}')
 }
 
 function Invoke-LevelRationaleCheck {
@@ -881,29 +883,51 @@ function Invoke-LevelRationaleCheck {
     if ($level -notmatch '^(Standard|Critical)\b') { return }
     $levelName = if ($matches[1] -ieq 'Critical') { 'Critical' } else { 'Standard' }
 
-    $lines = @(Get-VisiblePlanLines -PlanPath $specPath)
-    $marker = $lines | Where-Object { $_ -match '^\*\*Rationale Rule\*\*:' } | Select-Object -First 1
-    if (-not $marker) { return }                                      # predates the rule: exempt (FR-008)
-    $version = ($marker -replace '^\*\*Rationale Rule\*\*:\s*', '').Trim()
-    if ($version -ne '1') {
-        $script:ungraded += "LevelRationale: $Branch spec.md carries '**Rationale Rule**: $version', a version this check does not know — the Level Rationale was not checked, which is not the same as passing it"
+    # Visible text with FENCED CODE removed (phase 4 review F1). A fence is an example, and an
+    # example is not an answer, a reason or a marker: counting fenced lines would pass a spec whose
+    # whole rationale is a quoted illustration, and would fail one that merely documents the rule.
+    # Get-FencedLineMap is the CommonMark-shaped reader feature 015 built and the amendment check
+    # already uses; this check does not grow a second idea of what a fence is.
+    $visible = @(Get-VisiblePlanLines -PlanPath $specPath)
+    $fenced = Get-FencedLineMap -Lines $visible
+    $lines = @(for ($i = 0; $i -lt $visible.Count; $i++) { if (-not $fenced[$i]) { $visible[$i] } })
+
+    # The marker is every header-shaped line, not the first one (review F3): with the first one
+    # only, '1' then '2' graded under rule 1 and '2' then '1' did not, so the order of two lines
+    # decided the verdict. A value this check does not know ANYWHERE leaves the spec UNGRADED.
+    $markers = @($lines | Where-Object { $_ -match '^\*\*Rationale Rule\*\*:' } | ForEach-Object { ($_ -replace '^\*\*Rationale Rule\*\*:\s*', '').Trim() })
+    if ($markers.Count -eq 0) {
+        # A line that LOOKS like the marker and is not one (indented, quoted, a space before the
+        # colon) is not "no marker": that would silently exempt a spec that tried to opt in (review
+        # F4). It is UNGRADED by name, the way a Territory marker the parser cannot read already is.
+        $near = $lines | Where-Object { $_ -match '^[\s>*+-]*\*\*\s*Rationale Rule\s*\*\*' } | Select-Object -First 1
+        if (-not $near) { return }                                    # predates the rule: exempt (FR-008)
+        $script:ungraded += "LevelRationale: $Branch spec.md has a line that looks like the '**Rationale Rule**' marker but cannot be read as one ('$($near.Trim())') — the Level Rationale was not checked, which is not the same as passing it"
+        return
+    }
+    $unknown = $markers | Where-Object { $_ -ne '1' } | Select-Object -First 1
+    if ($null -ne $unknown) {
+        $script:ungraded += "LevelRationale: $Branch spec.md carries '**Rationale Rule**: $unknown', a version this check does not know — the Level Rationale was not checked, which is not the same as passing it"
         return
     }
 
-    $start = -1
-    for ($i = 0; $i -lt $lines.Count; $i++) { if ($lines[$i] -match '^##\s+Level Rationale\b') { $start = $i; break } }
-    if ($start -lt 0) {
-        $script:failures += "LevelRationale: $Branch spec.md has no Level Rationale — a spec carrying '**Rationale Rule**: 1' answers the four Critical triggers in a '## Level Rationale' section (domain-invariants, irreversible-data, authn-authz-payment, auditable-evidence; docs/sdlc/critical-delivery.md)"
-        return
-    }
+    # Every '## Level Rationale' section counts, not the first (review F2): a second section that
+    # contradicts the first makes the trigger answered twice, and neither answer wins silently.
     $answers = @{}
     foreach ($k in $script:RationaleKeys) { $answers[$k] = @() }
-    for ($i = $start + 1; $i -lt $lines.Count; $i++) {
-        if ($lines[$i] -match '^#{1,2}\s') { break }                  # the section ends at the next heading
-        if ($lines[$i] -match '^\s*[-*]\s+\*\*([A-Za-z-]+)\*\*:\s*(.*?)\s*$') {
+    $inSection = $false
+    $sections = 0
+    foreach ($line in $lines) {
+        if ($line -match '^##\s+Level Rationale\b') { $inSection = $true; $sections++; continue }
+        if ($line -match '^#{1,2}\s') { $inSection = $false; continue }   # a section ends at the next heading
+        if ($inSection -and $line -match '^\s*[-*]\s+\*\*([A-Za-z-]+)\*\*:\s*(.*?)\s*$') {
             $key = $matches[1].ToLowerInvariant()
             if ($answers.ContainsKey($key)) { $answers[$key] += $matches[2] }
         }
+    }
+    if ($sections -eq 0) {
+        $script:failures += "LevelRationale: $Branch spec.md has no Level Rationale — a spec carrying '**Rationale Rule**: 1' answers the four Critical triggers in a '## Level Rationale' section (domain-invariants, irreversible-data, authn-authz-payment, auditable-evidence; docs/sdlc/critical-delivery.md)"
+        return
     }
 
     $verdicts = @{}
@@ -915,10 +939,18 @@ function Invoke-LevelRationaleCheck {
             $why = 'no bullet for it in the Level Rationale section'
         } elseif ($texts.Count -gt 1) {
             $why = 'it is answered more than once'
-        } elseif ($texts[0] -notmatch $script:RationaleVerdictPattern -or (Test-RationalePlaceholder $matches[2])) {
+        } elseif ($texts[0] -notmatch $script:RationaleVerdictPattern) {
             $why = "'$($texts[0])' is not 'applies' or 'does not apply' followed by a reason"
         } else {
-            $verdicts[$k] = $matches[1].ToLowerInvariant()
+            # Read the groups into locals BEFORE calling the helper, so what is tested is the
+            # reason of THIS bullet whatever the helper does with its own match state.
+            $verdict = $matches[1].ToLowerInvariant()
+            $reason = $matches[2].Trim()
+            if (Test-RationalePlaceholder $reason) {
+                $why = "its reason '$reason' is a placeholder or says nothing"
+            } else {
+                $verdicts[$k] = $verdict
+            }
         }
         if ($why) {
             $unanswered++
