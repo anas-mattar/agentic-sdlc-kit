@@ -330,19 +330,19 @@ should, and write the flow-down note.
 - `adoption/updating.md`
 - `docs/digests/*-digest.md`
 
-- [ ] T022 Run `pwsh -File scripts/update-kit.ps1 -DryRun -Target <project>` from this branch
+- [x] T022 Run `pwsh -File scripts/update-kit.ps1 -DryRun -Target <project>` from this branch
       against each adopted project and record what would flow down (the three scripts, verbatim;
       no surgical file expected) in `notes.md`.
-- [ ] T023 In a scratch copy of each adopted project with this branch's three scripts applied,
+- [x] T023 In a scratch copy of each adopted project with this branch's three scripts applied,
       regenerate digests and run `ritual-checks`. Record in `notes.md` whether every digest is
       byte-identical and every verdict unchanged (SC-005, FR-011).
-- [ ] T024 Write the flow-down note in `adoption/updating.md`: what changed (a span wrapping within
+- [x] T024 Write the flow-down note in `adoption/updating.md`: what changed (a span wrapping within
       a paragraph now hides nothing), the new DIGEST-020 failure and its remedy (delete a marker
       commented out on purpose, or close the comment above it), what T023 measured, and that F2's
       shape is reported, not fixed (FR-011).
-- [ ] T025 Regenerate the kit's digests (`pwsh -File scripts/build-digests.ps1`) and confirm the
+- [x] T025 Regenerate the kit's digests (`pwsh -File scripts/build-digests.ps1`) and confirm the
       freshness check is green.
-- [ ] T026 Draft the new gap for the owner in `notes.md`, for a main-side docs PR after merge: the
+- [x] T026 Draft the new gap for the owner in `notes.md`, for a main-side docs PR after merge: the
       kit's comment model disagrees with a renderer on an unpaired `<!--` in prose (research R1,
       row 2), with the measured evidence (spec Out of Scope).
 

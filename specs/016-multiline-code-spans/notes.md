@@ -821,3 +821,87 @@ mutation.
   passed, 52 failed. `fail`, `fail-f2-shape` and `fail-d5-tail` fail (both assertions each), as do
   the 22 guards (they now expect the report) and the inventory's anchor check; `pass` passes.
   Measured before T020a too, on the phase-2 cases alone: the same three fail and `pass` passes.
+
+## Phase 3 (T022, T023)
+
+### T022 — what would flow down (SC-005, FR-011)
+
+`pwsh -File scripts/update-kit.ps1 -DryRun -Target <project>` from `08cbee9`. Zero writes. The
+target must be a clean git tree, so `fitforge` (untracked `.claude/settings.local.json`) and
+`flowboard` (that file plus `docs/product/flowboard-prototype.html`) were refused in place.
+Neither was touched. Both were graded as `git clone` copies of their committed HEAD instead
+(`fitforge` `40ec9e2`, `flowboard` `3d7a472`); `expense-tracker` (`4dca06a`) ran in place.
+
+| Project | Applied (verbatim, clean update) | Surgical | Conflicts | Result |
+|---|---|---|---|---|
+| fitforge | `scripts/build-digests.ps1`, `scripts/enforcement-pack.ps1`, `scripts/markdown-lib.ps1` | none | none | kit 0.7.0 @ `08cbee9`, not written |
+| flowboard | the same three | none | none | the same |
+| expense-tracker | the same three | none | none | the same |
+
+Exactly the three scripts, no surgical file, as predicted. No constitution or law document
+flows down, so no adopter has an amendment to re-express.
+
+### T023 — digests and verdicts in a scratch copy of each project (SC-005, FR-011)
+
+Per project, in a clone of its committed HEAD: `ritual-checks.ps1` before, copy this branch's
+three scripts over, `build-digests.ps1`, `ritual-checks.ps1` after.
+
+| Project | `ritual-checks` before | After | Regenerated digests vs committed blobs | Markers |
+|---|---|---|---|---|
+| fitforge | `RESULT OK` | `RESULT OK`, member lines unchanged | 5 of 5 byte-identical | 82 |
+| flowboard | `RESULT OK` | `RESULT OK`, member lines unchanged | 5 of 5 byte-identical | 59 |
+| expense-tracker | `RESULT OK` | `RESULT OK`, member lines unchanged | 5 of 5 byte-identical | 59 |
+
+The first comparison read as a difference (md5 of the working files moved) and was wrong: the
+clones check out with CRLF (`core.autocrlf=true`) and the generator writes LF. Comparing the
+regenerated file to `git show HEAD:<file>` byte for byte gives identical for all 15 digests,
+and `git diff --ignore-cr-at-eol` is empty. Nothing an adopter sees changes: no digest, no
+verdict, no new skipped-marker report (zero hits, as T015 measured).
+
+The kit itself is T025's: its digests are regenerated there, because T024 edits a digest
+source.
+
+### T024 — the flow-down note
+
+Written in `adoption/updating.md` under "Flow-down note: the 2026-10-03 multi-line code spans and
+the skipped-marker report", before "3. Other surgical files". It says what changed (a span
+wrapping within a paragraph now hides nothing), the DIGEST-020 failure and its two remedies,
+that F2's shape is reported and not fixed, and what T022 and T023 measured (three scripts, no
+surgical file; every digest byte-identical, every verdict unchanged). It carries one digest
+marker, within the 120-character bound (the first draft was 132 and the generator refused it).
+
+### T025 — the kit's digests
+
+`build-digests.ps1` regenerated the kit's digests: only `docs/digests/adoption-digest.md` changed
+(one added line, the new marker; 82 markers became 83). `build-digests.ps1 -Check` reports
+`digests: OK (5 digest(s) fresh, 83 marker(s))`. `ritual-checks.ps1` on the kit: doc-lint,
+enforcement-pack, scope-check, digests and roadmap-claims `OK`; scope-repos and verify-kit `n/a`
+(the kit is a single-repo, unadopted tree); `RESULT OK`.
+
+### T026 — draft for the owner: the new gap (for a main-side docs PR after merge)
+
+**Title**: the kit's comment model disagrees with a renderer on an unpaired `<!--` in prose.
+
+**What is wrong.** The kit reads an unpaired `<!--` as the start of an HTML comment that runs
+to the next `-->`, or to the end of the file. A CommonMark renderer shows the same text as
+plain prose when the `<!--` sits mid-line in a paragraph, and each marker line after it is
+still a marker block. So a document can hide a digest marker from the generator that the
+renderer shows.
+
+**Evidence** (research R1, row 2, `markdown-it-py` CommonMark preset): a paragraph with an
+unpaired backtick and `<!--`, then a marker line, then the closing backtick. The renderer reads
+line 3 as plain text (no `code_inline`, no `html_inline`) and both markers as `html_block`s. The
+kit reads `<!--` armed and swallows the middle marker: 2 of 3 are harvested. The tail form is
+pinned as `fail-d5-tail` under DIGEST-020.
+
+**Why this feature did not fix it.** The amendment check relies on the unterminated-comment
+rule; changing the comment model to agree with a renderer changes what that check grades
+(research R1, alternatives; spec Out of Scope). The owner accepted the loss as covered by a
+report (round-2 F2, 2026-09-30).
+
+**What exists now.** The loss is loud: `skipped digest marker: <path>:<line>` fails the run
+(DIGEST-020). Zero hits in the kit and in all three adopted projects (T015, T023).
+
+**Open question for the owner.** Whether the comment model should follow the renderer for
+mid-line `<!--` in a paragraph, and what that does to amendment grading. Until then the report
+is the control.
