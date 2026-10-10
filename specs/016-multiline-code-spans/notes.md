@@ -918,3 +918,24 @@ is the control.
   regenerate and commit).
 - **F2**: the note's "no longer silent" is now limited to a marker on its own line; a marker
   after a same-line `-->` is stated as still not reported (phase-2 review F1).
+
+### Phase 3 gate — CERTIFIED
+
+> Gate 3 certified (ci-held): CI evidence triplet on the phase-3 commit `3cb0671` (the remediation
+> that closes round-1 F1-F2 of the phase-3 review; the phase's first commit is `6fbee08`) —
+> enforcement-tests run https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/38063119973
+> (`success`) and ritual-checks run
+> https://github.com/anas-mattar/agentic-sdlc-kit/actions/runs/38063119968 (`success`), both
+> push-event runs on `3cb0671747d5d3869845e72ff6b2e02bcb7ca7dc` — approved, anas.m, 2026-10-10.
+
+The certified sha is the last phase-3 commit, as phase 1 certified its last remediation commit
+`5caedb7`. `6fbee08` also carries green runs of both workflows (enforcement-tests 38062630922,
+ritual-checks 38062630924) but it is superseded by the remediation. The phase-3 AI review is
+round 2 APPROVE (`ai-code-review-phase-3-round-2.md`; round 1 REQUEST CHANGES, F1-F2 resolved by
+`3cb0671`). Its non-blocking items are carried, not closed: `tasks.md` T022's "three scripts"
+wording needs an owner-approved amendment, and the `docs/roadmap.md` GAP-028 and GAP-025 rows
+(FR-012) sit outside phase 3's Territory.
+
+Phase 2's gate (`7158c4c`) is not recorded here. Its CI evidence exists (enforcement-tests run
+37107680349, ritual-checks run 37107680181, both `success`) and its AI review is APPROVE
+(`ai-code-review-phase-2.md`); the owner's approval on that triplet has not been recorded.
