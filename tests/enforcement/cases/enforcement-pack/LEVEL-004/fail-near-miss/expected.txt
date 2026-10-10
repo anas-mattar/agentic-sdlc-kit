@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+UNGRADED: LevelSurface: no readable Territory for 001-thing (Standard): a **Territory** marker has no colon, so the block cannot be read (keep the marker and its colon on one line) — the surface floor could not be checked, which is not the same as passing it
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

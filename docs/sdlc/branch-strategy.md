@@ -103,7 +103,12 @@ mini-spec's eligibility checklist: no schema/packages/architecture/domain-invari
 visual-reference surface); anything larger, or any feature needing phases or planning, is
 Standard. A Micro feature that outgrows its bounds mid-flight is **promoted in place to
 Standard** (full spec + plan.md + tasks.md, committed before any further phase commit) —
-exactly like promoting a `fix/` branch that grew into a feature.
+exactly like promoting a `fix/` branch that grew into a feature. **Standard vs Critical** —
+Critical when any of the four triggers in `docs/sdlc/critical-delivery.md` applies. The spec's
+**Level Rationale** answers them in writing, and a project that declares critical surfaces in
+`kit-adoption.json` gets a machine floor: a Standard or Micro feature whose Territory reaches
+one is promoted, narrowed, or carries an approved Surface Exception (constitution X, Level
+declaration).
 
 <!-- digest: Behavior change is at least Micro; a Micro feature that outgrows a bound promotes in place to Standard, never stretches. -->
 

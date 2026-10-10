@@ -1,0 +1,6 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+LevelRationale: graded 001-thing (Critical) — 4 of 4 triggers answered, 0 apply
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+enforcement-pack: FAIL (2 issue(s)):
+  - LevelRationale: 001-thing spec.md contradicts its level: declared Critical, but every trigger is answered 'does not apply' and there is no '**Critical because**: <reason>' line — say why it is Critical regardless, or declare it Standard
+  - CriticalEvidence: specs/001-thing/second-model-review.md is missing (required for Critical features — docs/sdlc/critical-delivery.md item 5)

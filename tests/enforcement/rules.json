@@ -1443,6 +1443,127 @@
       "notes": "The line an adopted project's CI prints on every green run, and the one most readers of the doctor ever see. Same reasoning as DOC-009, and the same asymmetry: the FAIL summary beside it prints $failCount and $warnCount and stays a printer."
     },
     {
+      "id": "VK-029",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the doctor states whether the critical-surface floor is armed: declared, empty, or not declared",
+      "law": "feature 017 FR-013; constitution X (Level declaration)",
+      "emitAnchor": "the surface floor is ",
+      "siteCount": 3,
+      "notes": "Three sites, one rule, because they are the three states of one fact. Absence is information and never a finding (FR-005, FR-013): an adoption predating feature 017 declares nothing and is simply not armed, so the fail direction is the list not being usable as a floor and the armed line simply does not appear, the way VK-018's fail direction is the field's absence. 'fail' (not declared) and 'fail-empty' exit 0, and 'pass-normalised' pins that backslashes read as slashes and case-insensitive duplicates collapse. Reads scripts/adoption-lib.ps1 (Get-CriticalSurfaces), the same function the enforcement check will read; the empty list is deliberately NOT a problem - an explicit statement that a project has none is lawful."
+    },
+    {
+      "id": "VK-030",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a criticalSurfaces list that is declared and unusable is a finding",
+      "law": "feature 017 FR-004, FR-013; constitution X (Level declaration)",
+      "emitAnchor": "Add-Finding FAIL 'record' $surfaceProblem.Message $surfaceProblem.Fix",
+      "notes": "The check cannot arm on a list it cannot read in full, so it reports UNGRADED (phase 3); the doctor is the half that tells the project why its floor is not there. Seven failing directions, each a different way for a declaration to be unusable: 'fail' (a non-array), 'fail-null', 'fail-blank-entry', 'fail-non-string', and three that would otherwise sit in the list looking like coverage and match nothing, a hole in the floor - 'fail-absolute-path', 'fail-drive-letter' and 'fail-dotdot'. The drive-letter and dotdot cases exist because deleting those alternatives from the reader's pattern passes every other case. A problem never makes the result MORE armed than the same record without it, and an unusable entry is never silently dropped from an otherwise armed list."
+    },
+    {
+      "id": "LEVEL-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelSurfaceCheck",
+      "summary": "a Standard or Micro feature whose Territory reaches a declared critical surface fails",
+      "law": "feature 017 FR-006, FR-007, FR-011; constitution X (Level declaration)",
+      "emitAnchor": "but its Territory reaches critical surface",
+      "notes": "The point of the feature: the declared level was the one decision that selects every other rule's rigour and nothing graded it. Seven directions. 'fail' is a literal file under a surface; 'fail-glob-prefix' is a Territory glob broader than the surface (src/** against src/auth/), which a literal-only reading would let through; 'fail-micro' reads the feature-global block in spec.md; 'fail-multirepo' is the nested layout, Territory and surface both repo-prefixed (feature 012), so one matcher serves a path inside a code repository as it serves one in the governance repository; 'fail-case-and-slash' pins that case is folded and a backslash reads as a slash, the same on every runner. 'pass' is armed, graded, clean. 'pass-critical' pins FR-011: the same Territory on a Critical feature adds no LevelSurface failure - the only failure there is the Critical lane's own missing second-model review. The prefix rule over-reports by design (two overlapping-prefix patterns are called intersecting even when their globs are disjoint): a false positive costs one written exception, a false negative costs the point of the rule."
+    },
+    {
+      "id": "LEVEL-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelSurfaceCheck",
+      "summary": "a project that declares no critical surfaces sees one informational line and no change of verdict",
+      "law": "feature 017 FR-005, SC-004; constitution X (Level declaration)",
+      "emitAnchor": "LevelSurface: not armed",
+      "notes": "Absence is information, never a failure and never UNGRADED: an adoption that predates feature 017 declares nothing, and updating the kit must not turn it red or change its verdict. The line exists so the absence is audible rather than a quiet pass. The fail direction is the line NOT appearing, because a usable list arms the floor and the run grades instead (the way VK-018's fail direction is an absence). An explicit empty list is lawful and reads the same."
+    },
+    {
+      "id": "LEVEL-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelSurfaceCheck",
+      "summary": "a criticalSurfaces declaration that is unusable or whose record cannot be read leaves the run UNGRADED, by name",
+      "law": "feature 017 FR-012; feature 015 D6 (UNGRADED never changes the exit code)",
+      "emitAnchor": "LevelSurface: criticalSurfaces in kit-adoption.json is unusable",
+      "siteCount": 2,
+      "notes": "Two sites, one rule: the list is malformed ('fail', a string where an array belongs), or the record itself exists and cannot be read ('fail-unreadable', JSON that does not parse). The second is deliberately NOT the same as a project that never asked: the check cannot know whether a floor was declared, so it says so by name (spec FR-012, phase 2 review F2) instead of reporting an unarmed pass. UNGRADED exits 0, on the record, because feature 014's FR-009 forbids a new hard failure on the Lite lane; the doctor reports the malformed list as a finding (VK-030)."
+    },
+    {
+      "id": "LEVEL-004",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelSurfaceCheck",
+      "summary": "an armed floor with no readable Territory to grade is UNGRADED, never a pass",
+      "law": "feature 017 FR-012; research R3",
+      "emitAnchor": "LevelSurface: no readable Territory",
+      "notes": "A spec-only branch has no Territory yet (it is written in tasks.md, after the spec is approved), so the floor cannot run and must not look clean. 'fail' is Standard with no tasks.md; 'fail-near-miss' is a **Territory** marker with no colon, the shape the parser reports rather than guesses at. The Structure check independently fails a missing tasks.md; the two findings are separate."
+    },
+    {
+      "id": "LEVEL-005",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelSurfaceCheck",
+      "summary": "an approved Surface Exception for the exact reaching path passes that path and is listed in the run",
+      "law": "feature 017 FR-009, US4; constitution X (Level declaration), constitution I",
+      "emitAnchor": "LevelSurface: exception live",
+      "notes": "The way an honest feature passes (GAP-020's lesson: a check with no legitimate way to pass trains people to route around it). Listed, not silent: a reader of the run sees what was excepted and why. The approval is validated by the amendment check's own function, so what counts as a well-formed approver has one definition. The self-approval prohibition is held by review alone, as in constitution I."
+    },
+    {
+      "id": "LEVEL-006",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelSurfaceCheck",
+      "summary": "an exception that names no Territory entry reaching a surface is reported as stale and never fails",
+      "law": "feature 017 FR-010",
+      "emitAnchor": "LevelSurface: exception stale",
+      "notes": "The Territory narrowed, or the path was never on a surface. Left in a spec the exception would read as protection it no longer gives, so it is named; it is not failed, because a stale line is housekeeping rather than a violation."
+    },
+    {
+      "id": "LEVEL-007",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelSurfaceCheck",
+      "summary": "an exception without a conforming approval does not count, and the run says why",
+      "law": "feature 017 FR-009; constitution I (Amendment authority)",
+      "emitAnchor": "LevelSurface: exception not counted",
+      "notes": "Fires in addition to the reaching-path failure, never instead of it: 'fail' has no approval line, 'fail-placeholder-approver' has an unfilled name (feature 014's D6, same function). 'fail-wrong-path' pins that an approved exception naming a DIFFERENT path covers nothing: the reaching path still fails and the exception is reported stale. 'pass' is a conforming approval."
+    },
+    {
+      "id": "LEVEL-008",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "a spec carrying the Rationale Rule marker has no Level Rationale section",
+      "law": "feature 017 FR-002, FR-008; constitution X (Level declaration)",
+      "emitAnchor": "has no Level Rationale",
+      "notes": "The written half of the level claim. The marker is the promise that the section exists, so its absence is the failure ('fail'). 'pass-no-marker' pins FR-008: a spec from before the rule is exempt, silent, and the run is what it was before this feature - without that exemption every shipped feature and every adopted project's history would fail. 'pass-template-marker' is the marker exactly as the spec template writes it, a trailing space and a multi-line comment: the reader must see the line the author sees (phase 1 review F3). A spec can omit the marker and so stand outside the rule; the constitution states that evasion rather than hiding it."
+    },
+    {
+      "id": "LEVEL-009",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "a trigger is left unanswered: absent, with no reason, with a bad verdict, left as the template placeholder, or answered twice",
+      "law": "feature 017 FR-002; docs/sdlc/critical-delivery.md (the four triggers)",
+      "emitAnchor": "leaves trigger",
+      "notes": "One finding per unanswered trigger, so an unedited template names all four. Each of the four keys has its own direction (fail, fail-missing-irreversible-data, fail-missing-authn-authz-payment, fail-missing-auditable-evidence), so a reader that stopped after three or matched keys loosely would pass one of them. 'fail-no-reason' and 'fail-bad-verdict' pin that a verdict needs its reason. 'fail-template-placeholder' pins phase 1 review F3: text that starts with [ is unfilled, so the template as shipped can never read as four answers. 'fail-duplicate' pins that the first of two answers does not silently win over the second."
+    },
+    {
+      "id": "LEVEL-010",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "the declared level contradicts the answers: Standard with a trigger that applies, or Critical with nothing applying and no reason",
+      "law": "feature 017 FR-003; constitution X (Level declaration)",
+      "emitAnchor": "contradicts its level",
+      "siteCount": 2,
+      "notes": "Two sites, one rule: the claim and the level disagree in either direction. Over-declaring is lawful ('pass-critical-because'), but it must be said why, or the level is the unexplained choice this feature exists to make explicit; a Critical because line left as the template's bracketed placeholder is not a reason ('fail-critical-because-placeholder'). The Critical cases also fail the Critical lane's own missing second-model review, independently; the case pins that LevelRationale adds only its own finding."
+    },
+    {
+      "id": "LEVEL-011",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-LevelRationaleCheck",
+      "summary": "a Rationale Rule marker this check cannot read - an unknown value anywhere, or a line that looks like the marker but is not one - leaves the rationale UNGRADED",
+      "law": "feature 017 FR-012; feature 015 D6",
+      "emitAnchor": "the Level Rationale was not checked",
+      "siteCount": 2,
+      "notes": "Two sites, one rule. A spec from a newer rule version must not be silently exempt, nor graded by rules it was not written for ('fail'), and with two marker lines the ORDER must not decide the verdict ('fail-two-markers' and 'fail-two-markers-reversed' say the same thing). A line that merely LOOKS like the marker - indented, quoted, a space before the colon - is not 'no marker': that would silently exempt a spec that tried to opt in, so it is UNGRADED by name ('fail-near-miss-marker', 'fail-near-miss-spaced-colon'), the way a Territory marker the parser cannot read already is (phase 4 review F3, F4). UNGRADED exits 0, on the record, like every other member that forms no opinion."
+    },
+    {
       "id": "CLAIM-001",
       "script": "roadmap-claim-check.ps1",
       "function": "(claim ledger)",

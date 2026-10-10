@@ -1,3 +1,4 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
 UNGRADED: AmendmentAuthority: no commits in HEAD..HEAD — nothing to grade, so no amendment on '001-thing' was checked for its approval record
 enforcement-pack: UNGRADED (1 check(s) formed no opinion)

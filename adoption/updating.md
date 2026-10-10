@@ -542,6 +542,98 @@ before this update; fix it as described in item 2.
 
 <!-- digest: A skipped digest marker now fails the run by file and line: delete it or close the comment above it. -->
 
+### Flow-down note: the level declaration (kit feature 017 — constitution 0.7.0 → 0.8.0)
+
+**What changes.** Ten files flow down as a clean update: the spec template, three law documents
+(`docs/sdlc/branch-strategy.md`, `docs/sdlc/critical-delivery.md`,
+`docs/sdlc/definition-of-done.md`), this document, and five scripts: `scripts/adoption-lib.ps1`,
+`scripts/enforcement-pack.ps1`, `scripts/verify-kit.ps1` (feature 017) and
+`scripts/build-digests.ps1`, `scripts/markdown-lib.ps1` (feature 016, which arrive with this update
+if you have not applied the 016 note above). **One surgical item is reported, the constitution.**
+It is never applied by the update: re-express the 0.8.0 amendment in your own constitution, with
+your own version bump, SYNC IMPACT entry and human approval, as section 2 describes.
+
+**What the amendment says** (Principle X, *Level declaration*). The delivery level a feature
+declares is a written claim, and the kit grades it. A numbered feature's `spec.md` carries a
+**Level Rationale** answering the four triggers of `docs/sdlc/critical-delivery.md`
+(`domain-invariants`, `irreversible-data`, `authn-authz-payment`, `auditable-evidence`), each
+*applies* or *does not apply* with a reason; a Standard feature answers *applies* to none, and a
+Critical feature to at least one or states why it is Critical regardless. A project may declare
+**critical surfaces**; a Standard or Micro feature whose Territory reaches one is promoted,
+narrowed, or carries an approved **Surface Exception**. Add `scripts/enforcement-pack.ps1`'s new
+constants (the four trigger keys and the `**Rationale Rule**` marker value) to your constitution's
+sync-list line, as the kit's does.
+
+**Two new checks, both in `scripts/enforcement-pack.ps1`.**
+
+1. **The surface floor is opt-in.** Declare `criticalSurfaces` in `kit-adoption.json`, a JSON array
+   of path globs written governance-root-relative and repo-prefixed in a multi-repo project, the
+   way a Territory block is:
+
+   ```json
+   { "criticalSurfaces": ["src/auth/", "api/Payments/**"] }
+   ```
+
+   `scripts/init-kit.ps1` does not prompt for it. **Until you declare it, nothing is graded and
+   no verdict changes**: each Standard or Micro feature's run prints one line,
+   `LevelSurface: not armed`. Once declared, a Standard or Micro feature whose Territory (the union
+   of every phase in `tasks.md`; for Micro, the block in `spec.md`) reaches a surface fails, naming
+   the entry, the surface and the three ways forward. Patterns are compared by literal directory
+   prefix, which **over-reports by design** (a Territory glob over a whole source tree reaches a surface inside it); a false positive costs one
+   written exception, a false negative would cost the rule. A Critical feature is never failed by
+   it. An unusable `criticalSurfaces`, an unreadable record or a Territory the check cannot read
+   leaves the run `UNGRADED` by name, never clean.
+2. **The Level Rationale applies only to a spec that carries `**Rationale Rule**: 1`**, which the
+   new template stamps. Every spec you already have lacks it and is exempt and silent; a spec made
+   from the new template owes the section. An unfilled template fails with one finding per
+   trigger. A marker this check cannot read, such as a value other than `1` or a line that looks
+   like the marker but is not one, is `UNGRADED`, not exempt.
+
+**A Surface Exception** is two lines in `spec.md`, the second its approval, and is validated by the
+function the amendment check uses. It names the exact Territory entry. A reason that is a
+placeholder (bracketed, angle-bracketed, a TODO-style word, or with no word in it) does not count,
+and neither does an approver left as an unfilled slot (double-braced, bracketed, angle-bracketed, or
+`TODO(` followed by a name). **A bare word such as `TODO` as the approver is not caught**: that
+validation is shared with the amendment check, so tightening it is a decision for the kit's owner
+and review has to hold that line until then.
+
+**When they start.** The checks run as soon as the scripts land, whether or not you have ratified
+the 0.8.0 amendment in your constitution: a spec made from the new template owes its Level Rationale
+from that day, and a declared `criticalSurfaces` is graded from that day. Ratify first or in the same
+sitting. Micro and Lite owe no rationale; a Micro spec is held only to the surface floor.
+
+**What these checks are not.** The rationale is a claim a reviewer can falsify, not proof: an owner
+can still write *does not apply*. A spec can omit the marker and so stand outside the rationale rule,
+as one can omit its `**Delivery Level**`; the omission shows in the diff, and the surface floor does
+not depend on it. That an approver named in an exception agreed is held by review alone.
+
+**What the doctor says.** `scripts/verify-kit.ps1` prints one line on every run that reaches the
+record: `N critical surface(s) declared`, `criticalSurfaces is empty` or
+`criticalSurfaces not declared`. The last two are information and never fail an adoption that
+declares nothing; a declared list that is unusable is a finding. A test or script of your own that
+matches the doctor's complete output needs that one line added.
+
+**What was measured** (SC-004). The update was dry-run against FitForge, FlowBoard and
+ExpenseTracker, each as a clone of its committed HEAD with nothing in place touched: ten files
+applied cleanly, one surgical item (the constitution), no conflict. In each clone, every shipped
+feature (1, 9 and 3 of them) was graded by the project's own `enforcement-pack.ps1` and then by the
+new one: **no exit code moved and no verdict moved**, and no line was removed. Each non-Critical
+feature whose level the pack can read gained the one `not armed` line. FlowBoard's shipped specs
+mostly have no readable `**Delivery Level**` header and fail the Structure check on both the old and
+the new script; the new checks say nothing about a level they cannot read and that finding is
+unchanged. `verify-kit.ps1` gained the one line above and its verdict stayed `OK`. `ritual-checks.ps1`
+on the trunk went from `RESULT OK` to a `digests` failure, which is the regenerate step below, and
+back to `RESULT OK` once it was done.
+
+**What to do about it.** Apply the update, re-express the amendment in your constitution, then run
+`scripts/build-digests.ps1` and commit the result with the flow-down; without it the digest
+freshness check fails. Expect the adoption digest to gain two lines (one is the 016 note, if you had
+not taken it) and the critical digest one; the other three digests are unchanged. Your new specs
+will carry the marker and owe the Level Rationale, so decide your critical surfaces in the same
+sitting if you want the floor armed.
+
+<!-- digest: Level declaration: re-express constitution 0.8.0, declare criticalSurfaces to arm the floor, then run build-digests. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

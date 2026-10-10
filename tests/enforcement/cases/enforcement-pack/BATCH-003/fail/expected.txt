@@ -1,4 +1,5 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
 AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
 enforcement-pack: FAIL (1 issue(s)):
   - GateBatching: specs/001-thing/plan.md declares 'phases 1-4' (4 phases) — a batch covers at most 3 consecutive phases (constitution X, Batched gates)

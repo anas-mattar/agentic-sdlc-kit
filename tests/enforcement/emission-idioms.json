@@ -46,6 +46,8 @@
         "\\$script:failures\\s*\\+=",
         "\\$script:warnings\\s*\\+=",
         "Write-Host\\s+['\"]AmendmentAuthority: ",
+        "Write-Host\\s+['\"]LevelSurface: ",
+        "Write-Host\\s+['\"]LevelRationale: ",
         "Write-Host\\s+['\"]enforcement-pack: ('\\$Branch' is|OK\\b)",
         "\\$(script:)?ungraded\\s*\\+="
       ],
@@ -54,6 +56,14 @@
         {
           "anchor": "AmendmentAuthority: graded ",
           "reason": "The roll-up the check prints on every graded run. Not a failure condition: it reports the count. Asserted verbatim by 89 expectations, so it cannot change unnoticed."
+        },
+        {
+          "anchor": "LevelRationale: graded ",
+          "reason": "The roll-up the rationale check prints when all four triggers are answered, the counterpart of the LevelSurface and AmendmentAuthority lines. Not a failure condition: it reports how many triggers apply. Asserted verbatim by the LEVEL-008..010 expectations."
+        },
+        {
+          "anchor": "LevelSurface: graded ",
+          "reason": "The roll-up the surface floor prints on every graded run, the counterpart of the AmendmentAuthority line above. Not a failure condition: it reports how many Territory entries were compared and how many reached a surface. Asserted verbatim by the LEVEL-* expectations."
         },
         {
           "anchor": "enforcement-pack: FAIL ($($failures.Count) issue(s)):",

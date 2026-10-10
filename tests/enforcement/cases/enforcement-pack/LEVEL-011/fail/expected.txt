@@ -1,0 +1,5 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+UNGRADED: LevelRationale: 001-thing spec.md carries '**Rationale Rule**: 2', a version this check does not know — the Level Rationale was not checked, which is not the same as passing it
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

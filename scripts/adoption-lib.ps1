@@ -1,6 +1,8 @@
 <#
 .SYNOPSIS
-    Shared reader for the adoption record's developer declaration.
+    Shared readers for the adoption record's declarations: the developer roster
+    (Get-DeveloperMode, feature 013) and the critical surfaces (Get-CriticalSurfaces,
+    feature 017).
 
 .DESCRIPTION
     Dot-sourced by scripts/enforcement-pack.ps1 (which enforces) and scripts/verify-kit.ps1
@@ -128,4 +130,107 @@ function Get-DeveloperMode {
         Why      = "$($unique.Count) $noun declared in kit-adoption.json"
         Problems = $problems
     }
+}
+
+# The project's critical surfaces (constitution X, Level declaration; feature 017): path globs
+# naming where its critical code lives, from the optional `criticalSurfaces` key. A Standard or
+# Micro feature whose Territory reaches one is graded by scripts/enforcement-pack.ps1, and the
+# doctor (scripts/verify-kit.ps1) reports the declaration. Both read it HERE and nowhere else,
+# the way Get-DeveloperMode is read: two interpreters of one record is what 013 shipped and
+# paid for.
+#
+# The direction of every degenerate input is the OPPOSITE of Get-DeveloperMode's. There, the
+# unusable record falls to the stricter arm (solo). Here the strict state is ARMED, and a list
+# nobody can read in full must never arm a floor that has a hole in it, nor read as an armed
+# floor that is clean: so any problem leaves Armed false, State 'malformed', and the check
+# reports UNGRADED. A problem therefore never makes this result MORE armed than the same record
+# without it, and an unusable entry is never silently dropped from an otherwise armed list.
+#
+# Returns:
+#   State     'absent' | 'unreadable' | 'empty' | 'malformed' | 'valid'
+#   Armed     true only for State 'valid'
+#   Globs     the usable entries: trimmed, `\` read as `/`, duplicates collapsed
+#             case-insensitively. Populated for 'malformed' too, for messages only — a caller
+#             must not grade against it unless Armed
+#   Declared  whether the key is present at all (an explicit null counts as present)
+#   Why       one clause naming the state, for the caller's message
+#   Problems  zero or more @{ Message; Fix } the doctor reports as findings
+#
+# An empty array is NOT a problem. 'criticalSurfaces': [] reads as an explicit statement that
+# the project has none, which is lawful; it is simply not armed. A record that exists but cannot
+# be read (unreadable, not parseable, root not an object) is State 'unreadable', distinct from
+# 'absent' so the check can say so by name instead of grading it as unarmed; it carries no
+# Problems, because Get-DeveloperMode and the doctor already report that defect and the doctor
+# must not print it twice.
+function Get-CriticalSurfaces {
+    param([Parameter(Mandatory)][string]$Root)
+
+    $problems = [System.Collections.Generic.List[object]]::new()
+    $absent = { param($why) @{ State = 'absent'; Armed = $false; Globs = @(); Declared = $false; Why = $why; Problems = $problems } }
+    # 'unreadable' is NOT 'absent' (017 phase 2 review F2, approved by the owner). Absent means
+    # the project said nothing, which is lawful and merely not armed. Unreadable means the
+    # record exists and this reader cannot tell what it says, so it cannot know whether the
+    # project asked for a floor. A caller that folded the two together would grade a project
+    # with broken JSON exactly like one that never asked, which is the quiet clean grade spec
+    # FR-012 forbids. No Problems here: the defect is reported once, by the doctor itself and
+    # by Get-DeveloperMode, and a second report would be noise.
+    $unreadable = { param($why) @{ State = 'unreadable'; Armed = $false; Globs = @(); Declared = $false; Why = $why; Problems = $problems } }
+
+    $recordPath = Join-Path $Root 'kit-adoption.json'
+    if (-not (Test-Path -LiteralPath $recordPath)) { return (& $absent 'no kit-adoption.json') }
+    try {
+        $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw -ErrorAction Stop)"
+    } catch {
+        return (& $unreadable 'kit-adoption.json could not be read')
+    }
+    if ($rawRecord.TrimStart([char]0xFEFF, ' ', "`t", "`r", "`n") -notmatch '^\{') {
+        return (& $unreadable 'kit-adoption.json is not a JSON object at its root')
+    }
+    try { $record = $rawRecord | ConvertFrom-Json } catch { return (& $unreadable 'kit-adoption.json does not parse') }
+    if ($record -isnot [PSCustomObject]) { return (& $unreadable 'kit-adoption.json is not a JSON object') }
+
+    $present = $record.PSObject.Properties.Name -contains 'criticalSurfaces'
+    if (-not $present) { return (& $absent 'no criticalSurfaces declared in kit-adoption.json') }
+
+    $malformed = {
+        param($message, $fix, $globs)
+        $problems.Add(@{ Message = $message; Fix = $fix })
+        @{ State = 'malformed'; Armed = $false; Globs = @($globs); Declared = $true; Why = $message; Problems = $problems }
+    }
+    if ($null -eq $record.criticalSurfaces) {
+        return (& $malformed 'kit-adoption.json criticalSurfaces is null' 'declare it as a JSON array of path globs, or remove the key — an explicit null leaves the surface floor unarmed (adoption/updating.md)' @())
+    }
+    if ($record.criticalSurfaces -isnot [Array]) {
+        return (& $malformed 'kit-adoption.json criticalSurfaces is not an array' 'declare it as a JSON array of path globs, e.g. ["src/auth/", "api/Payments/**"] — a non-array leaves the surface floor unarmed (adoption/updating.md)' @())
+    }
+
+    $entries = @($record.criticalSurfaces)
+    if ($entries.Count -eq 0) {
+        return @{ State = 'empty'; Armed = $false; Globs = @(); Declared = $true; Why = 'criticalSurfaces is empty'; Problems = $problems }
+    }
+
+    $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    $usable = [System.Collections.Generic.List[string]]::new()
+    $sawBlank = $false
+    $unsafe = [System.Collections.Generic.List[string]]::new()
+    foreach ($e in $entries) {
+        if ($e -isnot [string] -or [string]::IsNullOrWhiteSpace($e)) { $sawBlank = $true; continue }
+        $glob = $e.Trim().Replace('\', '/')
+        # The same shape Get-Territory refuses (scripts/scope-lib.ps1): a drive or leading slash
+        # can never match a repo-relative Territory path, and a '..' segment addresses outside
+        # the tree. Either would sit in the list looking like coverage and match nothing.
+        if ($glob -match '^([A-Za-z]:|/)' -or $glob -match '(^|/)\.\.(/|$)') { $unsafe.Add($glob); continue }
+        if ($seen.Add($glob)) { $usable.Add($glob) }
+    }
+    if ($sawBlank) {
+        $problems.Add(@{ Message = 'kit-adoption.json criticalSurfaces contains a blank or non-string entry'; Fix = 'every entry is a non-empty path or glob; the floor is not armed until the whole list is usable, because a dropped entry would silently weaken it' })
+    }
+    foreach ($u in $unsafe) {
+        $problems.Add(@{ Message = "kit-adoption.json criticalSurfaces entry '$u' is not a repo-relative path"; Fix = 'write surfaces governance-root-relative (repo-prefixed in a multi-repo project) with no drive letter, leading slash or .. segment — an entry that can never match leaves a hole in the floor' })
+    }
+    if ($problems.Count -gt 0) {
+        return @{ State = 'malformed'; Armed = $false; Globs = @($usable); Declared = $true; Why = 'criticalSurfaces holds an entry that cannot be used'; Problems = $problems }
+    }
+    $noun = if ($usable.Count -eq 1) { 'critical surface' } else { 'critical surface(s)' }
+    return @{ State = 'valid'; Armed = $true; Globs = @($usable); Declared = $true; Why = "$($usable.Count) $noun declared in kit-adoption.json"; Problems = $problems }
 }

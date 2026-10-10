@@ -1,0 +1,6 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+LevelSurface: graded 001-thing (Standard) — 1 Territory entry against 1 critical surface(s): 1 reached, 0 excepted
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+enforcement-pack: FAIL (2 issue(s)):
+  - LevelSurface: 001-thing is declared Standard but its Territory reaches critical surface 'src/auth/' via 'src/auth/login.ps1' — a Standard feature may not touch a critical surface unannounced (constitution X, Level declaration). Promote it to Critical, narrow the Territory so it no longer reaches the surface, or record a Surface Exception in specs/001-thing/spec.md: '**Surface Exception**: `src/auth/login.ps1` — <reason>' with '**Exception approved by**: <name>, <YYYY-MM-DD>' on the next line
+  - LevelSurface: exception not counted for 'src/auth/login.ps1' in specs/001-thing/spec.md — the reason 'TODO' is a placeholder, not a reason; the path is graded as if it had no exception
