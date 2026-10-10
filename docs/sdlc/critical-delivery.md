@@ -40,6 +40,22 @@ Declare Critical when the feature touches any of:
 
 <!-- digest: Declare Critical for domain invariants, irreversible data operations, authn/authz/payment, or auditor-facing evidence. -->
 
+### The level is a written claim
+
+The four triggers have stable keys — `domain-invariants`, `irreversible-data`,
+`authn-authz-payment`, `auditable-evidence` — and a numbered feature's `spec.md` answers
+each in its **Level Rationale**: *applies* or *does not apply*, with a reason. The declared
+level must agree with the answers: a Standard feature answers *applies* to none, and a
+Critical feature answers *applies* to at least one or states why it is Critical regardless.
+A project may also name its **critical surfaces** — path globs — in `kit-adoption.json`
+(`criticalSurfaces`); a Standard or Micro feature whose Territory reaches one is promoted,
+narrowed, or carries an approved **Surface Exception**. `scripts/enforcement-pack.ps1`
+grades both (constitution X, Level declaration). The rationale is a claim a reviewer can
+falsify, not proof: the owner who writes *does not apply* is still trusted, and the written
+claim is what makes the choice visible in review.
+
+<!-- digest: spec.md answers the four Critical triggers in a Level Rationale; a sub-Critical Territory on a declared surface fails. -->
+
 ## Additional requirements (all MUST)
 
 1. **Rollback plan before implementation** — `specs/_templates/rollback-template.md` is

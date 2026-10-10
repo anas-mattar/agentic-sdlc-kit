@@ -1,7 +1,36 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.6.0 → 0.7.0 (kit template — not yet ratified by a project)
+Version change: 0.7.0 → 0.8.0 (kit template — not yet ratified by a project)
+Bump rationale: MINOR — Level declaration clause added to Principle X (feature 017,
+  level-declaration-graded; roadmap GAP-023). The delivery level decides how much rigour a
+  feature gets and was the one decision no check graded: the only validation was spelling. The
+  clause makes the level a written claim and puts a machine floor under it. (1) A numbered
+  feature's spec.md states, against each of the four Critical triggers of
+  docs/sdlc/critical-delivery.md (domain-invariants, irreversible-data, authn-authz-payment,
+  auditable-evidence), whether it applies and why — a Level Rationale — and the level must
+  agree with it. (2) A project MAY declare critical surfaces, path globs, in its adoption
+  record (criticalSurfaces in kit-adoption.json); a Standard or Micro feature whose Territory
+  intersects one MUST be promoted to Critical, narrow its Territory, or carry a Surface
+  Exception that records an approver, and a Critical feature is never failed by the floor.
+  (3) A project that declares no surfaces sees no new failure — the floor is then reported as
+  not armed, loudly enough that nobody reads silence as a pass. The clause states plainly
+  what a machine cannot verify: that a rationale is TRUE, that a named approver agreed, the
+  self-approval prohibition (held by review alone, as in Principle I), and the one evasion the
+  design accepts — a spec may omit the rule marker and so stand outside the rationale rule,
+  as a spec may omit its Delivery Level and read as Standard; the omission shows in the diff
+  and the surface floor does not depend on it. Nothing is redefined and no principle is
+  removed: Micro's "no domain-invariant surface" bound is unchanged and a branch declaring no
+  surfaces behaves exactly as before. As with the amendment-authority clause (014), the law
+  ships first: the kit must not enforce a rule it has not ratified. The machine halves —
+  scripts/adoption-lib.ps1 (the surface reader) and scripts/enforcement-pack.ps1 (the surface
+  and rationale checks) — land in this same feature's later phases on the same branch. Human
+  adoption of this amendment: the owner's approval (anas.m, 2026-10-11, at the feature's phase 1 gate, task T006)
+  plus the feature's gate-6 human review at merge. Mirrors synced in the same change:
+  spec-template.md (rationale block and marker), critical-delivery.md (stable trigger keys and
+  the floor), definition-of-done.md (gate 1), branch-strategy.md (level menu).
+
+Prior version history (0.6.0 → 0.7.0):
 Bump rationale: MINOR — Amendment authority clause added to Principle I (feature 014,
   amendment-authority; roadmap GAP-019). Once a feature's spec.md or plan.md has been
   approved, any later change to that feature's spec.md, plan.md, tasks.md or contracts/
@@ -165,7 +194,8 @@ Templates requiring updates when this file changes:
   - scripts/enforcement-pack.ps1 (encodes constitutional constants — batch-phase cap,
     Critical cooling-off hours, the Gate Certification legal values `user-run`/`ci-held`
     and the Critical ci-held exclusion, the Micro-lane bounds (territory-file cap 5,
-    phase-line hard bound 400, single-phase rule) and the Delivery Level legal values —
+    phase-line hard bound 400, single-phase rule), the Delivery Level legal values, the four
+    Level Rationale trigger keys and the `**Rationale Rule**` marker value —
     these MUST change in lockstep with amendments touching them)
 
 Follow-up TODOs (resolve before ratification):
@@ -394,6 +424,28 @@ are added (Territory moves under the phase headings), in a commit made **before*
 further phase commit; promotion is one-way and all-or-nothing.
 `scripts/enforcement-pack.ps1` fails a Micro branch that violates any of these bounds.
 
+**Level declaration**: the level a feature declares is a written claim, and the kit grades
+it. A numbered feature's `spec.md` carries a **Level Rationale** that answers each of the
+four triggers in `docs/sdlc/critical-delivery.md` — `domain-invariants`, `irreversible-data`,
+`authn-authz-payment`, `auditable-evidence` — with *applies* or *does not apply* and a reason;
+a Standard feature MUST NOT answer *applies* to any of them, and a Critical feature MUST
+answer *applies* to at least one or state why it is Critical regardless. A project MAY
+declare **critical surfaces** — path globs, repo-prefixed in a multi-repo project — in its
+adoption record. A Standard or Micro feature whose Territory intersects a critical surface
+MUST be promoted to Critical, narrow its Territory, or carry a **Surface Exception**: a
+per-path statement with a recorded approver, which an implementing agent MUST NOT give to
+itself. A Critical feature is never failed by this floor. A project that declares no surfaces
+is unaffected, and the floor is then reported as not armed. A specification that carries the
+rule's marker (`**Rationale Rule**: 1`, stamped by the spec template) owes the Level
+Rationale; one that predates the rule does not. `scripts/enforcement-pack.ps1` grades all of
+this. **What a machine cannot verify**: that a rationale is true — an owner can write *does
+not apply* — or that a named approver agreed; the self-approval prohibition is held by review
+alone, as in Principle I. And one evasion is accepted by design: a specification can omit
+the marker, as it can omit its `**Delivery Level**` and read as Standard. The omission shows
+in the diff, and the surface floor does not depend on the marker. What the rule buys is that
+the decision which selects every other rule's rigour becomes a claim in writing that a
+reviewer can falsify, with a floor under it for the case a claim cannot see.
+
 **Rationale**: Small, gated increments keep changes reviewable, reversible, and low-risk; the
 user-held exit code keeps the trust boundary human. Batching trades gate frequency — never
 per-phase revertibility or review — for fewer owner interruptions on low-risk work, and only
@@ -427,4 +479,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.7.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.8.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)

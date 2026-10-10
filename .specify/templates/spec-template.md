@@ -9,6 +9,8 @@
   Micro features use the single-page mini-spec (micro-spec-template.md in this directory)
   instead of this template — so on this template the value is Standard or Critical.
   Absent the field, a numbered feature is Standard (constitution X, Micro lane). -->
+**Rationale Rule**: 1 <!-- Keep this line. It marks a spec that owes the Level Rationale
+  section below (constitution X, Level declaration). A spec without it predates the rule. -->
 **Input**: User description: "$ARGUMENTS"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -80,6 +82,25 @@
 
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
+
+## Level Rationale *(mandatory — answers the four Critical triggers, in writing)*
+
+<!--
+  Answer each trigger of docs/sdlc/critical-delivery.md with "applies" or "does not apply"
+  and a reason. Keep the four keys exactly as written: scripts/enforcement-pack.ps1 reads them.
+  A Standard feature must have no "applies"; a Critical feature must have at least one, or
+  carry a Critical because line. If a path in this feature's Territory is a critical surface
+  declared in kit-adoption.json, either promote the feature, narrow the Territory, or record
+  a Surface Exception (contracts/level-declaration-contract.md, section 2 of feature 017).
+-->
+
+- **domain-invariants**: [applies | does not apply] — [reason: rules in the domain-invariants pack — postings, balances, consent trails, state machines]
+- **irreversible-data**: [applies | does not apply] — [reason: migrations or operations that drop or rewrite data]
+- **authn-authz-payment**: [applies | does not apply] — [reason: authentication, authorization or payment flows]
+- **auditable-evidence**: [applies | does not apply] — [reason: anything a regulator, auditor or contract can ask evidence for]
+
+<!-- Critical feature with all four "does not apply"? Add the line below; delete it otherwise. -->
+**Critical because**: [why this feature is Critical regardless]
 
 ## Visual Inventory *(mandatory when the feature has `screenshots/` — else delete this section)*
 

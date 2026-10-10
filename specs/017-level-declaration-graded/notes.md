@@ -20,3 +20,16 @@ What the approval covers:
   needs its own approval at T006 before phase 2 begins. This approval does not stand in for it.
 
 ## Phase 1
+
+Written 2026-10-11. T001-T005 were implemented and checked before the commit: `doc-lint` OK,
+`digests` OK (84 markers; one digest line shortened to the 120-character bound),
+`enforcement-pack` OK. `scope-check` was UNGRADED until the phase commit existed, as expected.
+
+T006: the owner (anas.m) approved the constitution 0.8.0 amendment on 2026-10-11; the
+approval is recorded in the SYNC IMPACT REPORT ("Human adoption of this amendment").
+
+Baseline for later phases: `tests/enforcement/Run-Tests.ps1` on the tree at `b82e362`,
+before any phase 1 edit — 899 passed, 0 failed, 0 skipped (726 s).
+
+Gate: the user-run gate exit code for this phase had not been reported when the phase was
+committed; it is the owner's to certify (constitution X) and is not claimed here.

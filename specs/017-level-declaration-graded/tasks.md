@@ -36,7 +36,7 @@ template. Documents only.
 - `docs/sdlc/branch-strategy.md`
 - `docs/digests/**`
 
-- [ ] T001 [US2] Draft the *Level declaration* clause in `.specify/memory/constitution.md`
+- [x] T001 [US2] Draft the *Level declaration* clause in `.specify/memory/constitution.md`
       Principle X: a numbered feature states its level in writing against the four triggers of
       `docs/sdlc/critical-delivery.md`; a project may declare critical surfaces in its adoption
       record; a Standard or Micro feature whose Territory reaches one must be promoted, narrow
@@ -46,22 +46,22 @@ template. Documents only.
       seen (research R4). Bump the version 0.7.0 to 0.8.0 (MINOR) and add the SYNC IMPACT REPORT
       entry, including the new constants (the four trigger keys, the marker value) in the
       `scripts/enforcement-pack.ps1` sync-list line (plan D1, research R8).
-- [ ] T002 [P] [US2] Add the `**Rationale Rule**: 1` header line and the `## Level Rationale`
+- [x] T002 [P] [US2] Add the `**Rationale Rule**: 1` header line and the `## Level Rationale`
       section (four bullets keyed `domain-invariants`, `irreversible-data`,
       `authn-authz-payment`, `auditable-evidence`, each `applies | does not apply — reason`,
       plus the `**Critical because**:` line for the all-`does not apply` Critical case) to
       `.specify/templates/spec-template.md`, with a comment pointing at the contract's
       section 2 (plan D7, research R6).
-- [ ] T003 [P] [US2] Mirror the clause in `docs/sdlc/critical-delivery.md`: the four triggers
+- [x] T003 [P] [US2] Mirror the clause in `docs/sdlc/critical-delivery.md`: the four triggers
       now have stable keys, the level is a written claim, and the surface floor exists.
       Name `scripts/enforcement-pack.ps1` as the enforcer without describing its internals.
       Keep every existing digest marker; add one for the new rule.
-- [ ] T004 [P] [US2] Mirror it in `docs/sdlc/definition-of-done.md` (the gate that reads the
+- [x] T004 [P] [US2] Mirror it in `docs/sdlc/definition-of-done.md` (the gate that reads the
       declared level) and in the level menu of `docs/sdlc/branch-strategy.md`.
-- [ ] T005 [US2] Regenerate the digests with `pwsh -File scripts/build-digests.ps1`, then run
+- [x] T005 [US2] Regenerate the digests with `pwsh -File scripts/build-digests.ps1`, then run
       `pwsh -File scripts/ritual-checks.ps1`; `doc-lint` and `digests` must be OK (the one expected
       failure on this branch is closed by this file existing).
-- [ ] T006 [US2] STOP. Ask the owner to approve the amendment. Record the approver in the
+- [x] T006 [US2] STOP. Ask the owner to approve the amendment. Record the approver in the
       constitution's SYNC IMPACT REPORT ("Human adoption of this amendment") and name them in
       the commit. Phase 2 does not start before this. An implementing agent never approves
       its own amendment (constitution I).
