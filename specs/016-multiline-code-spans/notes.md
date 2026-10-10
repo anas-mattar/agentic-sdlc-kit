@@ -905,3 +905,16 @@ report (round-2 F2, 2026-09-30).
 **Open question for the owner.** Whether the comment model should follow the renderer for
 mid-line `<!--` in a paragraph, and what that does to amendment grading. Until then the report
 is the control.
+
+### Phase 3 review round 1 remediation (review F1, F2)
+
+- **F1 (blocking)**: T022 was run at `08cbee9`, before the flow-down note existed, so it saw
+  three files. From the branch tip the update applies **four**: the three scripts and
+  `adoption/updating.md` itself, the adoption digest pack's only member. The T023 "after" column
+  above is the **scripts-only** state: with only the three scripts, all 15 digests are
+  byte-identical and verdicts unchanged. With the tip's `updating.md` as well, the adoption
+  digest gains one line (the note's marker) and an adopter must regenerate. The flow-down note
+  now says exactly that (four files; scripts change nothing; the document adds one digest line;
+  regenerate and commit).
+- **F2**: the note's "no longer silent" is now limited to a marker on its own line; a marker
+  after a same-line `-->` is stated as still not reported (phase-2 review F1).
