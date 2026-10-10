@@ -431,3 +431,49 @@ cited.)
 `ritual-checks` RESULT OK on the working tree. Full harness: phase 4's run on a clean checkout of
 `815733e` is the evidence for the scripts and tests, which phase 5 does not change; a run on the
 phase 5 commit follows.
+
+### Review and remediation — phase 5
+
+Fresh-context AI review: `ai-code-review-phase-5.md`, verdict APPROVED WITH MINOR FINDINGS, no
+Blocker, no Major. The reviewer reproduced the three-project measurement end to end on its own
+clones (every shipped feature graded by the old pack, the ten files copied, graded again): the only
+output change anywhere is the `LevelSurface: not armed` line (fitforge, and expense-tracker's `003`);
+flowboard has zero changed lines; no exit code moved; the doctor gains one line; `ritual-checks` is
+OK, fails on `digests`, and is OK again after regeneration; markers 85 and 62 after; digests adoption
++2 and critical +1. It did not separately reproduce the "before" counts 82 and 59. Lint, digests,
+roadmap-claims and the dry run (ten files, the constitution as the one surgical item) are clean, and
+the commit changed no approved document.
+
+- **F1 (Minor): fixed.** The note said an "unfilled name" approver does not count. Only an unfilled
+  slot does (double-braced, bracketed, angle-bracketed, or `TODO(` followed by a name); a bare `TODO`
+  or `TBD` approver is accepted. The note now says so, and says that tightening the shared validator
+  is the kit owner's decision and review holds that line until then.
+- **F2 (Minor): fixed.** The decisions log now lists the `LEVEL-011` item (the UNGRADED verdict for a
+  marker the check cannot read exists in the code and fixtures but not in the approved contract or
+  data model, which need the owner's approval line), which was in `notes.md` and the phase 4 review
+  but not where a reader of the roadmap would look.
+- **F3 (Minor): fixed in part.** A missing full stop before the GAP-023 status sentence is added, and
+  the log says that "shipped" and "closed" mean built, reviewed and measured, with the owner's gate and
+  the human review at merge still to come. The status flip itself is what T032 asked for and follows
+  the precedent of features 015 and 016.
+- **F4 (Note): fixed.** The note now has a "When they start" paragraph: the checks run as soon as the
+  scripts land, whether or not the adopter has ratified 0.8.0; a new-template spec owes its rationale
+  from that day; Micro and Lite owe no rationale.
+- **F5 (Note): accepted, and disclosed here.** The measurement runs at each clone's trunk HEAD, so the
+  diff base is HEAD: zero changed files, and `AmendmentAuthority` is UNGRADED in every run, before and
+  after. SC-004's "exactly one new informational line" is therefore not literally met for flowboard
+  (no readable level, so no line) or for expense-tracker's `001` and `002`; the note says why. The
+  phase 5 task wording "no surgical file" is superseded by the dry-run finding that the constitution is
+  surgical, which the note and the log both state.
+- **F6 (Note): fixed.** `docs/roadmap.md` now ends with a newline.
+
+### Evidence status, final for the scripts and tests
+
+- Phase 4, full harness on a clean, isolated checkout of `815733e`: **1055 passed, 0 failed,
+  0 skipped**, exit 0. That is 983 (phase 3) plus the 72 tests the 36 new phase 4 cases added.
+- Phases 2 and 3: 923 and 983, recorded above.
+- Phase 5 changes no script and no test, so the phase 4 run is the evidence for them; a run on the
+  final tip follows this commit anyway.
+- Owner gate: only phase 1's is recorded (exit 0, `RESULT OK`, confirmed in words by the owner). The
+  owner pasted a `ritual-checks` run on `815733e` showing `RESULT OK`; no exit code was stated and it
+  has not been recorded as certification. Phases 2 to 5 are uncertified until the owner says so.

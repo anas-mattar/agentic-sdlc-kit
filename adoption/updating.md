@@ -590,8 +590,17 @@ sync-list line, as the kit's does.
    like the marker but is not one, is `UNGRADED`, not exempt.
 
 **A Surface Exception** is two lines in `spec.md`, the second its approval, and is validated by the
-function the amendment check uses. It names the exact Territory entry, and a reason that is a
-placeholder, an empty approver or an unfilled name does not count.
+function the amendment check uses. It names the exact Territory entry. A reason that is a
+placeholder (bracketed, angle-bracketed, a TODO-style word, or with no word in it) does not count,
+and neither does an approver left as an unfilled slot (double-braced, bracketed, angle-bracketed, or
+`TODO(` followed by a name). **A bare word such as `TODO` as the approver is not caught**: that
+validation is shared with the amendment check, so tightening it is a decision for the kit's owner
+and review has to hold that line until then.
+
+**When they start.** The checks run as soon as the scripts land, whether or not you have ratified
+the 0.8.0 amendment in your constitution: a spec made from the new template owes its Level Rationale
+from that day, and a declared `criticalSurfaces` is graded from that day. Ratify first or in the same
+sitting. Micro and Lite owe no rationale; a Micro spec is held only to the surface floor.
 
 **What these checks are not.** The rationale is a claim a reviewer can falsify, not proof: an owner
 can still write *does not apply*. A spec can omit the marker and so stand outside the rationale rule,
