@@ -331,8 +331,9 @@ should, and write the flow-down note.
 - `docs/digests/*-digest.md`
 
 - [x] T022 Run `pwsh -File scripts/update-kit.ps1 -DryRun -Target <project>` from this branch
-      against each adopted project and record what would flow down (the three scripts, verbatim;
-      no surgical file expected) in `notes.md`.
+      against each adopted project and record what would flow down (the three scripts, verbatim,
+      and, from a tip that carries T024's note, `adoption/updating.md` itself; no surgical file
+      expected) in `notes.md`.
 - [x] T023 In a scratch copy of each adopted project with this branch's three scripts applied,
       regenerate digests and run `ritual-checks`. Record in `notes.md` whether every digest is
       byte-identical and every verdict unchanged (SC-005, FR-011).
@@ -345,6 +346,16 @@ should, and write the flow-down note.
 - [x] T026 Draft the new gap for the owner in `notes.md`, for a main-side docs PR after merge: the
       kit's comment model disagrees with a renderer on an unpaired `<!--` in prose (research R1,
       row 2), with the measured evidence (spec Out of Scope).
+
+**Amended after the phase-3 round-1 review** (review F1; T022's wording only, the owner's decision,
+2026-10-10):
+
+T022 said the update flows down three scripts. From a tip that carries T024's flow-down note it flows
+down four: the three scripts and `adoption/updating.md`, the adoption digest pack's only member,
+so the adoption digest gains one line an adopter regenerates. The task now says so. T023's record
+is the scripts-only state; `notes.md` (phase-3 round-1 remediation) carries the measurement.
+
+**Amendment approved by**: anas.m, 2026-10-10
 
 ---
 
