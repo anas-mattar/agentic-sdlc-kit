@@ -360,3 +360,74 @@ pass; every existing `enforcement-pack` prefix passes with 0 failed; `ritual-che
 real spec template, run end to end, still fails when unfilled (four findings), passes when filled,
 and fails as a contradiction when a Standard feature answers `applies`. A full harness run on a
 clean checkout of the remediation commit follows.
+
+## Phase 5
+
+Written 2026-10-11.
+
+### T029 — the three adopted projects (SC-004)
+
+Method, the same as feature 016's: each project cloned from its committed HEAD into a scratch
+directory (`fitforge` `40ec9e2`, `flowboard` `3d7a472`, `expense-tracker` `4dca06a`); the real
+projects were not touched. `scripts/update-kit.ps1 -DryRun -Target <clone>` from this branch
+(`815733e`), then the ten files it named applied to the clone, then the old and new scripts run.
+
+**What flows down (dry run, identical for all three).** Applied cleanly, ten: the spec template, the
+three law documents (`branch-strategy`, `critical-delivery`, `definition-of-done`),
+`adoption/updating.md`, and five scripts: `adoption-lib`, `enforcement-pack`, `verify-kit` (this
+feature) and `build-digests`, `markdown-lib` (feature 016, which the three have not applied yet).
+Surgical, one: `.specify/memory/constitution.md`, reported and never applied. No conflict.
+Two consequences are in the flow-down note: each adopter re-expresses the 0.8.0 amendment by hand, and
+a spec made from the new template carries the marker and so owes the Level Rationale.
+
+**Every shipped feature, graded by the project's own pack and then by the new one**
+(`enforcement-pack.ps1 -Branch <feature>`):
+
+| Project | Features | Exit code moved | Verdict moved | Line removed | Lines added |
+|---|---|---|---|---|---|
+| fitforge | 1 | 0 | 0 | 0 | 1 x `LevelSurface: not armed` |
+| flowboard | 9 | 0 | 0 | 0 | none (see below) |
+| expense-tracker | 3 | 0 | 0 | 0 | 1 x `LevelSurface: not armed` |
+
+Flowboard's shipped specs mostly have no readable `**Delivery Level**` header (two write the value
+in bold: `**Critical** (...)`), so they fail the Structure check on the old script AND the new one,
+identically; the new checks are silent about a level they cannot read, and that pre-existing finding
+is unchanged. It is not caused by this feature and is not fixed here. Where a Standard level is
+readable the one line appears: fitforge's single feature is Standard, and so is expense-tracker's
+`003`; expense-tracker's `001` and `002` have no readable level and fail Structure on both scripts
+alike. Neither project has a shipped Critical feature, so the Critical exemption was not exercised
+on real specs here (the harness covers it).
+
+`verify-kit.ps1`: verdict unchanged (`OK`, 2 warnings) in all three; exactly one line added,
+`criticalSurfaces not declared`.
+
+**`ritual-checks.ps1` on each project's trunk.** `RESULT OK` before. After the ten files:
+`RESULT FAIL (1 of 7)`, the `digests` member, in all three: the law documents changed, so the
+critical and adoption digests no longer match their sources. This is the regenerate step the note
+tells an adopter to take, and it is the cost of the update, not a defect. After
+`scripts/build-digests.ps1`: `RESULT OK` in all three, markers 82 to 85 (fitforge) and 59 to 62
+(flowboard, expense-tracker).
+
+**Digests, compared by git with line endings ignored.** `adoption-digest` +2 lines (feature 016's
+marker, which none of the three has taken, and this feature's), `critical-digest` +1, the other
+three byte-identical. (A first comparison of mine reported +10/-10 on every digest. That was my
+comparison script splitting lines differently from git, not a difference in the files, and is not
+cited.)
+
+### T030-T032
+
+- The flow-down note in `adoption/updating.md` is finished: what flows down, the amendment to
+  re-express, both checks, the exception, what the checks are not, the doctor line, and the
+  measurement above. It had to avoid inline example paths: `doc-lint` resolves path-looking inline
+  code, so the example is in a fenced block.
+- `kit-manifest.json`: no change. Every file this feature changed was already classified, and it adds
+  no new shipped file (`doc-lint` classifies all 79 and passes). Only `specs/` and `tests/` gained
+  files, and neither ships.
+- The roadmap row is `shipped` with its spec link unbracketed; the GAP-023 inventory row carries a
+  status sentence naming what stays open by decision; the decisions log has the entry.
+
+### Evidence status
+
+`ritual-checks` RESULT OK on the working tree. Full harness: phase 4's run on a clean checkout of
+`815733e` is the evidence for the scripts and tests, which phase 5 does not change; a run on the
+phase 5 commit follows.

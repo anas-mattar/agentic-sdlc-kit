@@ -208,20 +208,20 @@ No kit script changes.
 - `docs/digests/**`
 - `kit-manifest.json`
 
-- [ ] T029 Run the updated scripts over each of the three adopted projects, read-only, and
+- [x] T029 Run the updated scripts over each of the three adopted projects, read-only, and
       compare every verdict with its current one (SC-004). Expect no new failure and exactly one
       new informational line each. Record the table in `notes.md`. A project whose verdict
       moves is a finding to report, not to round.
-- [ ] T030 [P] Finish the flow-down note in `adoption/updating.md`: which scripts change, that
+- [x] T030 [P] Finish the flow-down note in `adoption/updating.md`: which scripts change, that
       no surgical file is touched, how to declare `criticalSurfaces`, and that the spec template
       gained the rationale block.
-- [ ] T031 [P] Confirm every file the feature added or changed that ships to adopters is
+- [x] T031 [P] Confirm every file the feature added or changed that ships to adopters is
       classified in `kit-manifest.json`; change it only if a file is new and unclassified.
-- [ ] T032 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`), flip the roadmap row
+- [x] T032 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`), flip the roadmap row
       for GAP-023 to `shipped` with its spec link unbracketed, and add the decisions-log entry
       (what shipped, what stays open by decision: the rationale is a claim, the marker can be
       deleted, the prefix rule over-reports).
-- [ ] T033 Run `pwsh -File scripts/ritual-checks.ps1` and
+- [x] T033 Run `pwsh -File scripts/ritual-checks.ps1` and
       `pwsh -File tests/enforcement/Run-Tests.ps1`. Every member OK. Then stop and ask the owner
       to run the gate.
 
