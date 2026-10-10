@@ -24,8 +24,13 @@ with `Get-DeveloperMode`):
 | `Why` | one clause naming the state, for the caller's message |
 | `Problems` | zero or more `@{ Message; Fix }` for the doctor |
 
-States: *absent* (not armed, silent verdict), *empty* (not armed, an unfinished edit),
-*malformed* (cannot run, UNGRADED), *valid* (armed).
+States: *absent* (not armed, silent verdict), *unreadable* (the record exists and cannot be
+read, so the reader cannot know whether a floor was asked for: cannot run, UNGRADED, and never
+folded into *absent*; it carries no problems, since the doctor and the developer reader already
+report that defect), *empty* (not armed, an unfinished edit), *malformed* (cannot run,
+UNGRADED), *valid* (armed).
+
+**Amendment approved by**: anas.m, 2026-10-11
 
 ## Level Rationale (spec.md)
 
@@ -65,7 +70,7 @@ or a near-miss marker makes the feature UNGRADED for this check.
 | armed, a sub-Critical Territory path intersects a surface, no live exception | failure |
 | armed, graded, clean | nothing printed beyond the check's one-line summary |
 | armed, Territory unreadable or absent | UNGRADED line |
-| list malformed | UNGRADED line |
+| list malformed, or the record unreadable | UNGRADED line |
 | list absent or empty | one informational line |
 | live exception | a listed line, not a failure |
 | stale exception | a reported line, not a failure |

@@ -147,7 +147,7 @@ function Get-DeveloperMode {
 # without it, and an unusable entry is never silently dropped from an otherwise armed list.
 #
 # Returns:
-#   State     'absent' | 'empty' | 'malformed' | 'valid'
+#   State     'absent' | 'unreadable' | 'empty' | 'malformed' | 'valid'
 #   Armed     true only for State 'valid'
 #   Globs     the usable entries: trimmed, `\` read as `/`, duplicates collapsed
 #             case-insensitively. Populated for 'malformed' too, for messages only — a caller
@@ -157,27 +157,37 @@ function Get-DeveloperMode {
 #   Problems  zero or more @{ Message; Fix } the doctor reports as findings
 #
 # An empty array is NOT a problem. 'criticalSurfaces': [] reads as an explicit statement that
-# the project has none, which is lawful; it is simply not armed. The root-object and parse
-# failures are reported once, by Get-DeveloperMode's Problems, and here fall to 'absent', so
-# the doctor does not print the same defect twice.
+# the project has none, which is lawful; it is simply not armed. A record that exists but cannot
+# be read (unreadable, not parseable, root not an object) is State 'unreadable', distinct from
+# 'absent' so the check can say so by name instead of grading it as unarmed; it carries no
+# Problems, because Get-DeveloperMode and the doctor already report that defect and the doctor
+# must not print it twice.
 function Get-CriticalSurfaces {
     param([Parameter(Mandatory)][string]$Root)
 
     $problems = [System.Collections.Generic.List[object]]::new()
     $absent = { param($why) @{ State = 'absent'; Armed = $false; Globs = @(); Declared = $false; Why = $why; Problems = $problems } }
+    # 'unreadable' is NOT 'absent' (017 phase 2 review F2, approved by the owner). Absent means
+    # the project said nothing, which is lawful and merely not armed. Unreadable means the
+    # record exists and this reader cannot tell what it says, so it cannot know whether the
+    # project asked for a floor. A caller that folded the two together would grade a project
+    # with broken JSON exactly like one that never asked, which is the quiet clean grade spec
+    # FR-012 forbids. No Problems here: the defect is reported once, by the doctor itself and
+    # by Get-DeveloperMode, and a second report would be noise.
+    $unreadable = { param($why) @{ State = 'unreadable'; Armed = $false; Globs = @(); Declared = $false; Why = $why; Problems = $problems } }
 
     $recordPath = Join-Path $Root 'kit-adoption.json'
     if (-not (Test-Path -LiteralPath $recordPath)) { return (& $absent 'no kit-adoption.json') }
     try {
         $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw -ErrorAction Stop)"
     } catch {
-        return (& $absent 'kit-adoption.json could not be read')
+        return (& $unreadable 'kit-adoption.json could not be read')
     }
     if ($rawRecord.TrimStart([char]0xFEFF, ' ', "`t", "`r", "`n") -notmatch '^\{') {
-        return (& $absent 'kit-adoption.json is not a JSON object at its root')
+        return (& $unreadable 'kit-adoption.json is not a JSON object at its root')
     }
-    try { $record = $rawRecord | ConvertFrom-Json } catch { return (& $absent 'kit-adoption.json does not parse') }
-    if ($record -isnot [PSCustomObject]) { return (& $absent 'kit-adoption.json is not a JSON object') }
+    try { $record = $rawRecord | ConvertFrom-Json } catch { return (& $unreadable 'kit-adoption.json does not parse') }
+    if ($record -isnot [PSCustomObject]) { return (& $unreadable 'kit-adoption.json is not a JSON object') }
 
     $present = $record.PSObject.Properties.Name -contains 'criticalSurfaces'
     if (-not $present) { return (& $absent 'no criticalSurfaces declared in kit-adoption.json') }

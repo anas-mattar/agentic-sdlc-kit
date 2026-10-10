@@ -1450,7 +1450,7 @@
       "law": "feature 017 FR-013; constitution X (Level declaration)",
       "emitAnchor": "the surface floor is ",
       "siteCount": 3,
-      "notes": "Three sites, one rule, because they are the three states of one fact. Absence is information and never a finding (FR-005, FR-013): an adoption predating feature 017 declares nothing and is simply not armed, so the fail direction is the list not being usable as a floor and the armed line simply does not appear, the way VK-018's fail direction is the field's absence. 'fail-not-declared' and 'fail-empty' exit 0. Reads scripts/adoption-lib.ps1 (Get-CriticalSurfaces), the same function the enforcement check will read; the empty list is deliberately NOT a problem - an explicit statement that a project has none is lawful."
+      "notes": "Three sites, one rule, because they are the three states of one fact. Absence is information and never a finding (FR-005, FR-013): an adoption predating feature 017 declares nothing and is simply not armed, so the fail direction is the list not being usable as a floor and the armed line simply does not appear, the way VK-018's fail direction is the field's absence. 'fail' (not declared) and 'fail-empty' exit 0, and 'pass-normalised' pins that backslashes read as slashes and case-insensitive duplicates collapse. Reads scripts/adoption-lib.ps1 (Get-CriticalSurfaces), the same function the enforcement check will read; the empty list is deliberately NOT a problem - an explicit statement that a project has none is lawful."
     },
     {
       "id": "VK-030",
@@ -1459,7 +1459,7 @@
       "summary": "a criticalSurfaces list that is declared and unusable is a finding",
       "law": "feature 017 FR-004, FR-013; constitution X (Level declaration)",
       "emitAnchor": "Add-Finding FAIL 'record' $surfaceProblem.Message $surfaceProblem.Fix",
-      "notes": "The check cannot arm on a list it cannot read in full, so it reports UNGRADED (phase 3); the doctor is the half that tells the project why its floor is not there. Three failing directions, each a different way for an entry to be unusable: a non-array, a blank entry, and an absolute path - the last is the one that would otherwise sit in the list looking like coverage and match nothing, a hole in the floor. A problem never makes the result MORE armed than the same record without it, and an unusable entry is never silently dropped from an otherwise armed list."
+      "notes": "The check cannot arm on a list it cannot read in full, so it reports UNGRADED (phase 3); the doctor is the half that tells the project why its floor is not there. Seven failing directions, each a different way for a declaration to be unusable: 'fail' (a non-array), 'fail-null', 'fail-blank-entry', 'fail-non-string', and three that would otherwise sit in the list looking like coverage and match nothing, a hole in the floor - 'fail-absolute-path', 'fail-drive-letter' and 'fail-dotdot'. The drive-letter and dotdot cases exist because deleting those alternatives from the reader's pattern passes every other case. A problem never makes the result MORE armed than the same record without it, and an unusable entry is never silently dropped from an otherwise armed list."
     },
     {
       "id": "CLAIM-001",

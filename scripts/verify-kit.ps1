@@ -288,7 +288,7 @@ try {
                 Add-Finding FAIL 'record' $surfaceProblem.Message $surfaceProblem.Fix
             }
             if ($surfaces.State -eq 'valid') {
-                Add-Finding ok 'record' "$($surfaces.Globs.Count) critical surface(s) declared — the surface floor is armed: a Standard or Micro feature whose Territory reaches one fails the ritual checks (docs/sdlc/critical-delivery.md)" ''
+                Add-Finding ok 'record' "$($surfaces.Globs.Count) critical surface(s) declared — the surface floor is recorded (docs/sdlc/critical-delivery.md)" ''
             } elseif ($surfaces.State -eq 'empty') {
                 Add-Finding ok 'record' 'criticalSurfaces is empty — the surface floor is not armed (adoption/updating.md)' ''
             } elseif ($surfaces.State -eq 'absent') {
