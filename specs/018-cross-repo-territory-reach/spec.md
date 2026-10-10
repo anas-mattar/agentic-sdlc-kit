@@ -2,7 +2,7 @@
 
 **Feature Branch**: `018-cross-repo-territory-reach`  
 **Created**: 2026-10-11  
-**Status**: Draft  
+**Status**: Approved 2026-10-11 (owner: anas.m)  
 **Delivery Level**: Standard  
 **Rationale Rule**: 1  
 **Input**: User description: "Close GAP-018: the pre-phase territory check reads the declared code repositories as sibling working trees and reports file overlap between the current feature and every other open feature claim across them, the way feature 012 extended the scope check; and never says CLEAN over a comparison it did not make"
