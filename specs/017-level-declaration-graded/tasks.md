@@ -81,28 +81,28 @@ the enforcement check and the doctor use. Nothing enforces yet, so no run change
 - `docs/digests/**`
 - `tests/**`
 
-- [ ] T007 [P] [US3] Write the doctor cases under `tests/enforcement/cases/verify-kit/` for
+- [x] T007 [P] [US3] Write the doctor cases under `tests/enforcement/cases/verify-kit/` for
       `LEVEL-011` (`pass-declared`: a valid list prints `criticalSurfaces: N declared`;
       `pass-not-declared`: no key prints `criticalSurfaces: not declared` and does not fail) and
       `LEVEL-012` (`fail-not-array`, `fail-blank-entry`, `fail-absolute-path`: each finding
       names the key and a fix). Expectations are hand-written (plan D8, spec US3 scenarios 2-3).
-- [ ] T008 [US3] Run T007 against the current scripts and record in `notes.md`: the
+- [x] T008 [US3] Run T007 against the current scripts and record in `notes.md`: the
       `fail-*` cases must show no finding today (the defect is real), the `pass-*` cases must
       already pass.
-- [ ] T009 [US3] Add `Get-CriticalSurfaces` to `scripts/adoption-lib.ps1` returning `Armed`,
+- [x] T009 [US3] Add `Get-CriticalSurfaces` to `scripts/adoption-lib.ps1` returning `Armed`,
       `Globs`, `Declared`, `Why`, `Problems` (data-model.md). Follow `Get-DeveloperMode`'s shape
       and its degenerate-input discipline: no record, unreadable or unparsable record, root not an
       object, key absent, non-array, empty array, blank or non-string entries, duplicates
       (case-insensitive), absolute or drive-prefixed entry, a `..` segment. Update the file's
       header comment, which currently says it reads the developer declaration only. A problem
       never makes the result *more* armed than the same record without the problem.
-- [ ] T010 [US3] Print the doctor lines from that reader in `scripts/verify-kit.ps1`, beside the
+- [x] T010 [US3] Print the doctor lines from that reader in `scripts/verify-kit.ps1`, beside the
       existing developers block, using the reader's `Problems` verbatim. Never fail a project
       that declares none (FR-013).
-- [ ] T011 [P] [US3] Add a flow-down note to `adoption/updating.md`: the optional key, its
+- [x] T011 [P] [US3] Add a flow-down note to `adoption/updating.md`: the optional key, its
       shape, that absence changes no verdict, and that the doctor reports it. Run
       `pwsh -File scripts/build-digests.ps1` if the adoption digest is affected.
-- [ ] T012 [US3] Add `LEVEL-011` and `LEVEL-012` to `tests/enforcement/rules.json` with
+- [x] T012 [US3] Add `LEVEL-011` and `LEVEL-012` to `tests/enforcement/rules.json` with
       summary, law, emit anchor and notes, then run `pwsh -File tests/enforcement/Run-Tests.ps1`
       and `pwsh -File scripts/ritual-checks.ps1`. Every case passes; no existing verdict moves.
 

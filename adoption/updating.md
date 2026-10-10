@@ -542,6 +542,38 @@ before this update; fix it as described in item 2.
 
 <!-- digest: A skipped digest marker now fails the run by file and line: delete it or close the comment above it. -->
 
+### Flow-down note: the level declaration (kit feature 017 — constitution 0.7.0 → 0.8.0, in progress)
+
+This note is written as the feature's phases land and is finished at its last phase. What
+phase 2 delivers is the record and the doctor; the checks that read the record arrive in later
+phases of the same feature, and nothing here changes how any run grades.
+
+**The new optional key.** `kit-adoption.json` may declare `criticalSurfaces`: a JSON array of
+path globs naming where the project's critical code lives, written governance-root-relative
+and repo-prefixed in a multi-repo project, the way a Territory block is:
+
+```json
+{ "criticalSurfaces": ["src/auth/", "api/Payments/**"] }
+```
+
+`scripts/init-kit.ps1` does not prompt for it: write it when you know your surfaces. Absent,
+nothing changes for you. An explicit empty array is lawful and means the project has none.
+
+**What the doctor now says.** `scripts/verify-kit.ps1` prints one line about it on every run
+that reaches the record: `N critical surface(s) declared`, `criticalSurfaces is empty` or
+`criticalSurfaces not declared`. The last two are information, never a finding, and an adoption
+that declares nothing is not failed. A list that is declared and unusable is a finding: not an
+array, a blank or non-string entry, or an entry that is not repo-relative (a drive letter, a
+leading slash or a `..` segment). The doctor names the problem and the fix. One unusable entry
+leaves the whole floor unarmed, because dropping it would silently weaken an otherwise armed list.
+
+**What to do about it.** Apply the update. Your doctor output gains one line, so a test or
+script of your own that matches the doctor's complete output needs that line added. No surgical
+file changes. Because this document carries the note and one digest marker, run
+`scripts/build-digests.ps1` and commit the result; expect the adoption digest to gain one line.
+
+<!-- digest: criticalSurfaces in kit-adoption.json is optional; the doctor reports it, and an unusable list is a finding. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

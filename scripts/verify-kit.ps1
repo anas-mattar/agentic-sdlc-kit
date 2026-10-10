@@ -275,6 +275,26 @@ try {
                 Add-Finding ok 'record' "$($devMode.Count) developer(s) declared — Critical features use the $($devMode.Mode) evidence rule (docs/sdlc/critical-delivery.md item 5)" ''
             }
 
+            # criticalSurfaces (017): where the project's critical code lives, which arms the
+            # surface floor in scripts/enforcement-pack.ps1 (constitution X, Level declaration).
+            # Read through scripts/adoption-lib.ps1, the same function the check uses.
+            #
+            # Absence is information, never a finding: every adoption predating 017 declares
+            # nothing, and the floor is then simply not armed. A declared-but-unusable list IS a
+            # finding, because the check cannot arm on it and the project would otherwise never
+            # learn that the floor it asked for is not there.
+            $surfaces = Get-CriticalSurfaces -Root $Root
+            foreach ($surfaceProblem in $surfaces.Problems) {
+                Add-Finding FAIL 'record' $surfaceProblem.Message $surfaceProblem.Fix
+            }
+            if ($surfaces.State -eq 'valid') {
+                Add-Finding ok 'record' "$($surfaces.Globs.Count) critical surface(s) declared — the surface floor is armed: a Standard or Micro feature whose Territory reaches one fails the ritual checks (docs/sdlc/critical-delivery.md)" ''
+            } elseif ($surfaces.State -eq 'empty') {
+                Add-Finding ok 'record' 'criticalSurfaces is empty — the surface floor is not armed (adoption/updating.md)' ''
+            } elseif ($surfaces.State -eq 'absent') {
+                Add-Finding ok 'record' 'criticalSurfaces not declared — the surface floor is not armed (adoption/updating.md)' ''
+            }
+
             $proofOk = @($record.gateProof) | Where-Object { $_.exitCode -eq 0 }
             if (-not $proofOk) {
                 Add-Finding FAIL 'record' 'no gate proof with exit code 0 recorded in kit-adoption.json' 'prove the gate green and record command/exitCode/date/recordedBy (adoption step 3 — "a gate that has never been green is not a gate")'
