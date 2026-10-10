@@ -2,7 +2,7 @@
 
 **Feature Branch**: `017-level-declaration-graded`  
 **Created**: 2026-10-11  
-**Status**: Draft  
+**Status**: Approved 2026-10-11 (owner: anas.m)  
 **Delivery Level**: Standard  
 **Input**: User description: "Close GAP-023: a Level Rationale block in spec.md answering the four Critical triggers explicitly; criticalSurfaces path globs in the adoption record; and an enforcement-pack check that fails a sub-Critical Delivery Level whose Territory intersects those surfaces, reusing feature 012's repo-aware path reading"
 
