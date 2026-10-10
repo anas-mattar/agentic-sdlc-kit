@@ -1,0 +1,36 @@
+{
+  "description": "Guard (016 plan D11, round-3 review F1, mutation g). An inline comment opens mid-line and runs on through a line holding only a no-break space, which CommonMark does not count as blank, to a digest marker whose closing arrow ends it. The marker sits inside the comment. The digest on disk carries only the two markers outside the comment, so the check must say OK; harvesting the hidden marker would call this correct digest stale. 8e45e37 read the no-break-space line as blank, disarmed the opener and harvested it. Since 016 phase 2 (plan D8 and D11 as amended during phase 2) the marker passed over inside the comment is also reported by DIGEST-020, so the run fails naming its line; a mutation that harvests it drops that report and reads the digest stale.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: A rule marked before the comment. -->",
+          "",
+          "Some prose <!-- a note that runs on",
+          " ",
+          "<!-- digest: A rule inside a real comment, which must never be harvested. -->",
+          "the rest.",
+          "",
+          "<!-- digest: A rule marked after the comment. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- A rule marked before the comment. (`docs/sdlc/fixture-law.md`)",
+          "- A rule marked after the comment. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

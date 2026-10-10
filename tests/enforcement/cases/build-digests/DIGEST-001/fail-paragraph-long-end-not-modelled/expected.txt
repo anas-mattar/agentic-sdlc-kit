@@ -1,0 +1,2 @@
+digests: FAIL — stale or hand-edited digest: docs/digests/fixture-digest.md does not match its sources — regenerate: pwsh -File scripts/build-digests.ps1
+digests: RESULT FAIL (1 issue(s))

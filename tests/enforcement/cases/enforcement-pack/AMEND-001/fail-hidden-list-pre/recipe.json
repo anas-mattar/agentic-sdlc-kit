@@ -1,0 +1,83 @@
+{
+  "description": "No-fail-open, 016 phase-1 round-2 review F1, shape (b) (plan D10). The same as fail-hidden-list-div with a pre block: a list item opens a raw HTML pre block holding a real HTML comment with a conforming record between two backticks. The browser hides the record: the check must fail. 6f75415 paired the backticks across the item's lines and counted the record as a grant.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001-thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "A paragraph with a stray backtick ` that pairs with nothing."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "amend 001 plan: widen the summary - approved by ada",
+      "write": {
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "Two phases: the thing, then the other thing.",
+          "",
+          "- <pre>",
+          "  Step a ` b <!-- ada has not signed this yet",
+          "  **Amendment approved by**: ada, 2026-01-02",
+          "  --> done `",
+          "  </pre>"
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

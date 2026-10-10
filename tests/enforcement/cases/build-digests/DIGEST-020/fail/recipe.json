@@ -1,0 +1,31 @@
+{
+  "description": "016 US3, FR-009, plan D8. A comment opened on line 3 is still open when the marker on line 4 arrives, so the generator passes over it. Both renderers hide that marker too, so the digest that carries only the visible rule is correct; what fails the run is that the skip is no longer silent: the report names the file and line. A marker commented out on purpose is deleted instead (D8).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- a note left open",
+          "<!-- digest: Commented-out rule. -->",
+          "",
+          "<!-- digest: Visible rule. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- Visible rule. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

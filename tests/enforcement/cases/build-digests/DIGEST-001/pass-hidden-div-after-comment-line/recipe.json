@@ -1,0 +1,34 @@
+{
+  "description": "Guard (016 T014m, round-4 review F1). A div block holds a one-line comment, then a line opening a comment that the hidden rule's marker closes. The div block runs on to its blank line and raw HTML passes through, so the browser's comment hides the marker. The digest on disk carries only the visible rule, so the check must say OK; harvesting the hidden marker would call this correct digest stale. b45cff1 forgot the enclosing div when the one-line comment ended, disarmed the opener and harvested it. Since 016 phase 2 (plan D8 and D11 as amended during phase 2) the marker passed over inside the comment is also reported by DIGEST-020, so the run fails naming its line; a mutation that harvests it drops that report and reads the digest stale.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<div>",
+          "<!-- a note -->",
+          "z <!-- hidden",
+          "",
+          "<!-- digest: Hidden rule. -->",
+          "",
+          "<!-- digest: Visible rule. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- Visible rule. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

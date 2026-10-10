@@ -1,0 +1,33 @@
+{
+  "description": "GAP-028, the green-turning fail case. The same sources as pass-wrapped-span, with the second marker's rule missing from the digest on disk. Per-line reading lost the same marker, computed the same one-bullet digest, and called this stale file fresh: the fail-open direction.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- digest: A rule marked before the wrapped span. -->",
+          "",
+          "Prose that quotes the opener in a code span that wraps, `a <!-- b",
+          "c`, and then carries on in the same paragraph.",
+          "",
+          "<!-- digest: A rule marked after the wrapped span, which GAP-028 made invisible. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- A rule marked before the wrapped span. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "description": "016 US3, plan D6: the nearest state to fail. The same note is closed on its own line before the marker, so no comment is open when the marker arrives: both markers are harvested, the digest carries both, and nothing is reported.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "# Fixture law",
+          "",
+          "<!-- a note left open",
+          "-->",
+          "<!-- digest: Rule after the note. -->",
+          "",
+          "<!-- digest: Visible rule. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- Rule after the note. (`docs/sdlc/fixture-law.md`)",
+          "- Visible rule. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}

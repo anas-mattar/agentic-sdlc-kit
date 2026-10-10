@@ -1,0 +1,33 @@
+{
+  "description": "016 FR-007, US1 scenario 3, plan D6. Feature 015's phase-2 review F2 document (specs/015-enforcement-assurance/ai-code-review-phase-2.md): its lines 3-5 verbatim, framed by the first and third markers that review reports as harvested (2 of 3), whose wording it does not record. The unpaired backtick leaves the line-3 opener armed, so the line-4 marker is passed over; a renderer reads line 3 as plain text and shows all three markers as comments. The kit's comment model is out of scope (spec Out of Scope); the loss is made loud: the run fails and names line 4. The digest carries the two harvested markers.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the law and its digests",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/sdlc/fixture-law.md": [
+          "<!-- digest: The first marker is harvested. -->",
+          "",
+          "A digest marker opens with `<!-- unclosed on this line",
+          "<!-- digest: this marker should be visible but sits inside the phantom comment window -->",
+          "closing backtick example` more prose here, no bearing now",
+          "",
+          "<!-- digest: The third marker is harvested. -->"
+        ],
+        "docs/digests/digest-packs.json": "{\n  \"schemaVersion\": 1,\n  \"packs\": [\n    { \"name\": \"fixture\", \"docs\": [\"docs/sdlc/fixture-law.md\"] }\n  ]\n}\n",
+        "docs/digests/fixture-digest.md": [
+          "# fixture pack — law digest (GENERATED)",
+          "",
+          "<!-- GENERATED FILE — do not edit. Regenerate: pwsh -File scripts/build-digests.ps1",
+          "     Non-authoritative: for orientation only. The source documents prevail (constitution",
+          "     II is unchanged); read the full document before acting on its area. -->",
+          "",
+          "- The first marker is harvested. (`docs/sdlc/fixture-law.md`)",
+          "- The third marker is harvested. (`docs/sdlc/fixture-law.md`)"
+        ]
+      }
+    }
+  ]
+}
