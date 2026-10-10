@@ -160,3 +160,41 @@ function Test-InTerritory {
     }
     return $false
 }
+
+# A code repository's trunk, by the one candidate order every kit script that walks the nested
+# repositories uses (feature 012, shared since feature 018). Code repositories are pre-existing and
+# independent, so their trunk is often master or develop, unlike the kit-created governance
+# repository (012 phase 1 review, F5): it is RESOLVED, never assumed.
+function Get-RepoTrunkCandidates {
+    return @('origin/main', 'main', 'origin/master', 'master', 'origin/HEAD')
+}
+
+# The merge base of $Ref with the first trunk candidate that exists in the repository AND shares a
+# history with it. $Candidates overrides the order (the scope check's -BaseRef).
+#
+# Returns:
+#   Base      the merge-base sha, or $null when none resolved
+#   Trunk     the candidate it resolved against, or $null
+#   Tried     every candidate asked about, in order, for a caller's message
+#   Existing  the candidates that exist in the repository at all
+#
+# Existing is returned separately because two different things look alike from outside. "No trunk":
+# none of the candidates exists, so the repository cannot be compared with anything. "No merge base":
+# a trunk exists and this ref shares no history with it. The scope check reports both as one message
+# and may keep doing so; the territory check names them differently, because they send the owner to
+# different places (feature 018, research R3).
+function Get-RepoMergeBase {
+    param([Parameter(Mandatory)][string]$RepoPath, [Parameter(Mandatory)][string]$Ref, [string[]]$Candidates)
+    if (-not $Candidates -or $Candidates.Count -eq 0) { $Candidates = Get-RepoTrunkCandidates }
+    $existing = @()
+    foreach ($c in $Candidates) {
+        git -C $RepoPath rev-parse --verify --quiet $c *> $null
+        if ($LASTEXITCODE -ne 0) { continue }
+        $existing += $c
+        $b = git -C $RepoPath merge-base $Ref $c 2>$null
+        if ($LASTEXITCODE -eq 0 -and $b) {
+            return @{ Base = "$b".Trim(); Trunk = $c; Tried = @($Candidates); Existing = @($existing) }
+        }
+    }
+    return @{ Base = $null; Trunk = $null; Tried = @($Candidates); Existing = @($existing) }
+}

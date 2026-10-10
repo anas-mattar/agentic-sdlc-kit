@@ -20,7 +20,13 @@
     "pass/fail pair. The field is the written reason, it is printed on every run, and the rule",
     "stays in the inventory so the site cannot be reworded or deleted unnoticed. An exemption is",
     "not 'not yet covered': it is a stated position that a faithful fixture cannot be built, and",
-    "every one of them says what would be needed instead."
+    "every one of them says what would be needed instead.",
+    "",
+    "ANCHOR FILE (feature 018). A rule MAY carry an 'anchorFile': a file under scripts/ that is not the",
+    "script the case runs. It is for a message emitted by a shared library the script calls (the",
+    "reader of codeRepos moved from scripts/scope-check-repos.ps1 into scripts/adoption-lib.ps1 when",
+    "a second script needed it). The rule is still graded by running the script; only where its",
+    "anchor is searched changes, and the anchor must name exactly siteCount non-comment lines of that file."
   ],
   "rules": [
     {
@@ -851,6 +857,7 @@
       "summary": "kit-adoption.json is not valid JSON",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; adoption/updating.md (the record’s shape)",
       "emitAnchor": "WARN kit-adoption.json is not valid JSON",
+      "anchorFile": "adoption-lib.ps1",
       "notes": "The record is the only statement of which repositories exist. Unreadable means unknown, and unknown is reported twice — here, and again as the run-level n/a."
     },
     {
@@ -860,6 +867,7 @@
       "summary": "codeRepos is present but is not an array",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; adoption/updating.md",
       "emitAnchor": "WARN kit-adoption.json codeRepos is not an array",
+      "anchorFile": "adoption-lib.ps1",
       "notes": "A bare string is what an author writes when there is one repository. Enumerating it would look for repositories named after its characters."
     },
     {
@@ -869,6 +877,7 @@
       "summary": "a codeRepos entry is a path, a traversal or a drive prefix rather than a plain directory name",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F7",
       "emitAnchor": "WARN ignoring codeRepos entry",
+      "anchorFile": "adoption-lib.ps1",
       "notes": "The doctor FAILs these; the grader refuses them independently, because a code repository’s own CI may never run the doctor. One bad entry does not stop the run."
     },
     {

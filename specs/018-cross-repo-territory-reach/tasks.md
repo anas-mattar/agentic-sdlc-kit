@@ -34,10 +34,10 @@ can share them. Nothing observable changes; the existing suites are the proof.
 - `scripts/scope-check-repos.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the counts from
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the counts from
       `pwsh -File tests/enforcement/Run-Tests.ps1 -Case REPOS-`, `-Case SCOPE-` and `-Case TERR-`, so "no
       behaviour change" is measured against a number and not asserted.
-- [ ] T002 Add `Get-CodeRepos` to `scripts/adoption-lib.ps1` returning `Repos`, `Warnings` and
+- [x] T002 Add `Get-CodeRepos` to `scripts/adoption-lib.ps1` returning `Repos`, `Warnings` and
       `Unusable` (data-model.md). It reads exactly what `Get-DeclaredRepos` in
       `scripts/scope-check-repos.ps1` reads and applies exactly its validation (a plain directory name,
       no path, no traversal, no drive; an absent record, an empty array and an absent key are silent;
@@ -45,16 +45,16 @@ can share them. Nothing observable changes; the existing suites are the proof.
       prints today, without its prefix). `Unusable` is true whenever the declaration was present and
       could not be read in full. Update the file's header, which names only the developer and surface
       readers.
-- [ ] T003 [P] Add `Get-RepoMergeBase` to `scripts/scope-lib.ps1`: for a repository path and a ref, the
+- [x] T003 [P] Add `Get-RepoMergeBase` to `scripts/scope-lib.ps1`: for a repository path and a ref, the
       merge base with the first trunk candidate that exists and shares a history with it, returning the
       base, the trunk used and the candidates tried. The candidate order is the scope check's
       (`origin/main`, `main`, `origin/master`, `master`, `origin/HEAD`), overridable by the caller (the
       scope check's `-BaseRef`). Keep a separate way to ask "does any candidate exist at all", because
       the territory check must tell "no trunk" from "this ref has no merge base" (research R3).
-- [ ] T004 Edit `scripts/scope-check-repos.ps1` to call both: `Get-DeclaredRepos` becomes a thin caller of
+- [x] T004 Edit `scripts/scope-check-repos.ps1` to call both: `Get-DeclaredRepos` becomes a thin caller of
       `Get-CodeRepos` that prints each warning with its own prefix, and the inline trunk loop becomes a
       call to `Get-RepoMergeBase`. Every message it prints stays byte-identical.
-- [ ] T005 Re-run `-Case REPOS-`, `-Case SCOPE-`, `-Case TERR-` and `pwsh -File scripts/ritual-checks.ps1`.
+- [x] T005 Re-run `-Case REPOS-`, `-Case SCOPE-`, `-Case TERR-` and `pwsh -File scripts/ritual-checks.ps1`.
       The counts equal T001's and nothing is red. Also call `Get-CodeRepos` directly on throwaway
       records (no file, unparseable, a string, an object, `[]`, a path entry, a traversal entry, a drive
       entry, a mix of good and bad entries) and record what it returns in `notes.md`.

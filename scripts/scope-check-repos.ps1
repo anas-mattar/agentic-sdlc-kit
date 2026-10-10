@@ -61,40 +61,21 @@ $Root = (Resolve-Path $Root).Path
 $explicitCommit = $PSBoundParameters.ContainsKey('Commit')
 
 . (Join-Path $PSScriptRoot 'scope-lib.ps1')   # shared territory parsing / matching (D6)
+. (Join-Path $PSScriptRoot 'adoption-lib.ps1')   # the one reader of codeRepos (feature 018 extracted it from here)
 
 $name = 'scope-repos'   # matches the ritual-checks member name (build-digests -> 'digests' precedent)
 
 function Write-Line { param([string]$Text) Write-Host "${name}: $Text" }
 
 # --- Declared code repositories (D2) -------------------------------------------------------
+# The reading itself moved to scripts/adoption-lib.ps1 (Get-CodeRepos) when feature 018 needed it in
+# a second script: two interpreters of one record is what 013 paid for. This keeps the scope
+# check's own voice, so every message below is byte-identical to what it printed before.
 function Get-DeclaredRepos {
     param([string]$GovRoot)
-    $recordPath = Join-Path $GovRoot 'kit-adoption.json'
-    if (-not (Test-Path $recordPath)) { return @() }
-    try {
-        $record = Get-Content -Raw -Path $recordPath | ConvertFrom-Json
-    } catch {
-        Write-Line "WARN kit-adoption.json is not valid JSON — no code repositories read (fix the record; scripts/verify-kit.ps1 explains the shape)"
-        return @()
-    }
-    if ($null -ne $record.codeRepos -and $record.codeRepos -isnot [Array]) {
-        Write-Line "WARN kit-adoption.json codeRepos is not an array — ignoring it (shape: adoption/updating.md)"
-        return @()
-    }
-    $entries = @($record.codeRepos | Where-Object { $_ })
-    # Entries are single directory names (D2). A path, a traversal or a drive prefix would
-    # address a directory outside the governance root — read-only here, but it grades the
-    # wrong tree. The doctor FAILs these (feature 012 phase 2); the grader refuses them too,
-    # because a code repository's CI may never run the doctor (phase 1 review, F7).
-    $clean = @()
-    foreach ($e in $entries) {
-        if ("$e" -notmatch '^(?!\.+$)[A-Za-z0-9._-]+$') {
-            Write-Line "WARN ignoring codeRepos entry '$e' — entries are plain directory names under this repository, not paths (scripts/verify-kit.ps1 explains the shape)"
-            continue
-        }
-        $clean += "$e"
-    }
-    return $clean
+    $declared = Get-CodeRepos -Root $GovRoot
+    foreach ($w in $declared.Warnings) { Write-Line $w }
+    return @($declared.Repos)
 }
 
 # The governance ref whose history carries the declaration. A CI job that clones the
@@ -374,15 +355,9 @@ foreach ($repoName in $toGrade) {
         # Code repositories are pre-existing independent repositories: their trunk is often
         # master or develop, unlike the kit-created governance repo (phase 1 review, F5).
         $base = $null
-        $candidates = @('origin/main', 'main', 'origin/master', 'master', 'origin/HEAD')
+        $candidates = Get-RepoTrunkCandidates
         if ($BaseRef) { $candidates = @($BaseRef) }
-        foreach ($c in $candidates) {
-            git -C $repoPath rev-parse --verify --quiet $c *> $null
-            if ($LASTEXITCODE -eq 0) {
-                $b = git -C $repoPath merge-base $Branch $c 2>$null
-                if ($LASTEXITCODE -eq 0 -and $b) { $base = "$b".Trim(); break }
-            }
-        }
+        $base = (Get-RepoMergeBase -RepoPath $repoPath -Ref $Branch -Candidates $candidates).Base
         if (-not $base) {
             Write-Line "${repoName}: UNGRADED could not resolve a merge base with a trunk ($($candidates -join ', ')) — NOTHING WAS GRADED in this repository; pass -BaseRef <ref> naming its trunk"
             continue

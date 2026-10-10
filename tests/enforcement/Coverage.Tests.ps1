@@ -132,11 +132,17 @@ Describe 'rule inventory integrity' {
     It 'every inventoried rule still exists in the script it names' {
         $stale = @()
         foreach ($rule in $script:Inventory.rules) {
-            $path = Join-Path $script:ScriptsDir $rule.script
-            if (-not (Test-Path $path)) { $stale += "$($rule.id): script $($rule.script) not found"; continue }
+            # 'anchorFile' (feature 018): a rule whose message is emitted by a SHARED LIBRARY the script
+            # it runs calls, rather than by the script itself. The rule is still graded through the
+            # script (that is what the case runs); only where its message lives differs. Without this
+            # the choice was to leave a message in the script that no longer owns it, or to lose the
+            # rule when the reader was extracted into a library.
+            $file = if ($rule.PSObject.Properties.Name -contains 'anchorFile' -and $rule.anchorFile) { $rule.anchorFile } else { $rule.script }
+            $path = Join-Path $script:ScriptsDir $file
+            if (-not (Test-Path $path)) { $stale += "$($rule.id): script $file not found"; continue }
             $text = [IO.File]::ReadAllText($path)
             if (-not $text.Contains($rule.emitAnchor)) {
-                $stale += "$($rule.id): emitAnchor no longer found in $($rule.script) — the rule was reworded or removed, and this entry now measures nothing"
+                $stale += "$($rule.id): emitAnchor no longer found in $file — the rule was reworded or removed, and this entry now measures nothing"
             }
         }
         if ($stale.Count -gt 0) { throw ($stale -join "`n") }
@@ -154,11 +160,22 @@ Describe 'rule inventory integrity' {
         # sentence), but only by saying so in 'siteCount'. Declared, never inferred.
         $ambiguous = @()
         foreach ($rule in $script:Inventory.rules) {
+            $expected = if ($rule.PSObject.Properties.Name -contains 'siteCount' -and $rule.siteCount) { [int]$rule.siteCount } else { 1 }
+            if ($rule.PSObject.Properties.Name -contains 'anchorFile' -and $rule.anchorFile) {
+                # A library has no emission-idiom entry (it is not a grading script), so the exactness
+                # claim is made the plain way: the anchor names exactly the declared number of
+                # non-comment lines of that file. A comment that quotes the message does not count.
+                $libLines = @([IO.File]::ReadAllLines((Join-Path $script:ScriptsDir $rule.anchorFile)) |
+                    Where-Object { $_.Contains($rule.emitAnchor) -and $_ -notmatch '^\s*#' })
+                if ($libLines.Count -ne $expected) {
+                    $ambiguous += "$($rule.id): anchor matches $($libLines.Count) line(s) of $($rule.anchorFile), declared $expected"
+                }
+                continue
+            }
             $idiom = $script:Idioms.scripts | Where-Object { $_.script -eq $rule.script }
             if (-not $idiom -or @($idiom.accumulators).Count -eq 0) { continue }   # idiom undeclared — T030..T034
             $scan = $script:Scan[$rule.script]
             if (-not $scan) { continue }
-            $expected = if ($rule.PSObject.Properties.Name -contains 'siteCount' -and $rule.siteCount) { [int]$rule.siteCount } else { 1 }
             $hits = @($scan.Precise | Where-Object { $_.Text.Contains($rule.emitAnchor) })
             if ($hits.Count -ne $expected) {
                 $where = ($hits | ForEach-Object { "$($_.Script):$($_.Line)" }) -join ', '

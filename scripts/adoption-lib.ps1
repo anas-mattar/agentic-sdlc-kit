@@ -1,8 +1,9 @@
 <#
 .SYNOPSIS
     Shared readers for the adoption record's declarations: the developer roster
-    (Get-DeveloperMode, feature 013) and the critical surfaces (Get-CriticalSurfaces,
-    feature 017).
+    (Get-DeveloperMode, feature 013), the critical surfaces (Get-CriticalSurfaces,
+    feature 017) and the nested code repositories (Get-CodeRepos, feature 012, shared since
+    feature 018).
 
 .DESCRIPTION
     Dot-sourced by scripts/enforcement-pack.ps1 (which enforces) and scripts/verify-kit.ps1
@@ -233,4 +234,55 @@ function Get-CriticalSurfaces {
     }
     $noun = if ($usable.Count -eq 1) { 'critical surface' } else { 'critical surface(s)' }
     return @{ State = 'valid'; Armed = $true; Globs = @($usable); Declared = $true; Why = "$($usable.Count) $noun declared in kit-adoption.json"; Problems = $problems }
+}
+
+# The nested code repositories a project declares (feature 012; shared by feature 018). One reader,
+# read by every script that has to walk them: scripts/scope-check-repos.ps1 grades their commits and
+# scripts/territory-check.ps1 compares their branches. It used to live inside the scope check, and a
+# second script that needed it would have carried a second interpretation of the record, which is
+# what 013 paid for. The scope check now calls this and prints exactly what it printed before.
+#
+# The messages are RETURNED, not printed, because each caller speaks in its own voice: the scope
+# check prefixes them with its own name, the territory check prints them as warnings. The text is
+# byte-identical to what the scope check printed, so the REPOS-* rules are the guard.
+#
+# Returns:
+#   Repos     the usable entries, in the record's order: single directory names, never a path
+#   Warnings  zero or more message strings, each beginning 'WARN '
+#   Unusable  true when the declaration was PRESENT and could not be read in full: unparseable JSON,
+#             a non-array, or any rejected entry. An absent record, an absent key and an empty array
+#             are lawful statements that there are none and are NOT unusable. A caller that needs to
+#             tell "declared nothing" from "declared something I cannot use" reads this.
+function Get-CodeRepos {
+    param([Parameter(Mandatory)][string]$Root)
+    $result = @{ Repos = @(); Warnings = @(); Unusable = $false }
+    $recordPath = Join-Path $Root 'kit-adoption.json'
+    if (-not (Test-Path $recordPath)) { return $result }
+    try {
+        $record = Get-Content -Raw -Path $recordPath | ConvertFrom-Json
+    } catch {
+        $result.Warnings += 'WARN kit-adoption.json is not valid JSON — no code repositories read (fix the record; scripts/verify-kit.ps1 explains the shape)'
+        $result.Unusable = $true
+        return $result
+    }
+    if ($null -ne $record.codeRepos -and $record.codeRepos -isnot [Array]) {
+        $result.Warnings += 'WARN kit-adoption.json codeRepos is not an array — ignoring it (shape: adoption/updating.md)'
+        $result.Unusable = $true
+        return $result
+    }
+    # Entries are single directory names (012 D2). A path, a traversal or a drive prefix would address
+    # a directory outside the governance root: read-only here, but it grades the wrong tree. The
+    # doctor FAILs these too; the readers refuse them because a code repository's CI may never run
+    # the doctor (012 phase 1 review, F7).
+    $clean = @()
+    foreach ($e in @($record.codeRepos | Where-Object { $_ })) {
+        if ("$e" -notmatch '^(?!\.+$)[A-Za-z0-9._-]+$') {
+            $result.Warnings += "WARN ignoring codeRepos entry '$e' — entries are plain directory names under this repository, not paths (scripts/verify-kit.ps1 explains the shape)"
+            $result.Unusable = $true
+            continue
+        }
+        $clean += "$e"
+    }
+    $result.Repos = @($clean)
+    return $result
 }
