@@ -91,7 +91,7 @@
   A Standard feature must have no "applies"; a Critical feature must have at least one, or
   carry a Critical because line. If a path in this feature's Territory is a critical surface
   declared in kit-adoption.json, either promote the feature, narrow the Territory, or record
-  a Surface Exception (contracts/level-declaration-contract.md, section 2 of feature 017).
+  a Surface Exception (the two-line shape is in docs/sdlc/critical-delivery.md).
 -->
 
 - **domain-invariants**: [applies | does not apply] — [reason: rules in the domain-invariants pack — postings, balances, consent trails, state machines]

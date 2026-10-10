@@ -33,3 +33,26 @@ before any phase 1 edit — 899 passed, 0 failed, 0 skipped (726 s).
 
 Gate: the user-run gate exit code for this phase had not been reported when the phase was
 committed; it is the owner's to certify (constitution X) and is not claimed here.
+
+### Gate and review — 2026-10-11
+
+Gate: the owner ran `pwsh -File scripts/ritual-checks.ps1` on `f5bfab9`; it printed
+`RESULT OK`, exit code 0, and the owner confirmed `RESULT OK` as the certification. Recorded
+here as the owner's statement, not an agent claim.
+
+Fresh-context AI review: `ai-code-review-phase-1.md`, verdict APPROVE with follow-ups, no
+Blocker, no Major. Dispositions:
+
+- F1 (Minor): fixed. The Definition of Done mirror now says the failure applies to a spec
+  carrying the `**Rationale Rule**` marker.
+- F2 (Minor): fixed. The two-line Surface Exception shape now lives in
+  `docs/sdlc/critical-delivery.md`, which ships to adopters; the template comment points
+  there instead of at this feature's contract.
+- F4 (Note): fixed in the same mirror, not in the constitution: a Micro feature owes no
+  rationale and is held only to the surface floor.
+- F3 (Minor): carried to phase 3 and 4 as reader requirements, not changed now. The reader
+  anchors the verdict word; treats text led by `[` as unfilled, so the template's placeholder
+  lines never read as answers; and trims the marker line. Fixtures for each belong with
+  LEVEL-008/009.
+- F5 (Note): accepted as stated. The approval of the constitution amendment is prose in the
+  sync report and the commit; gate-6 human review confirms it.

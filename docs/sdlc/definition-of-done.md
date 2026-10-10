@@ -33,8 +33,9 @@ Gates apply at two different points, not uniformly at every phase:
    mini-spec — `spec.md` from `.specify/templates/micro-spec-template.md` — alone
    satisfies this item; no `plan.md` or `tasks.md` exists while the feature remains
    Micro. The spec's **Level Rationale** states why its declared level is the right one
-   (constitution X, Level declaration), and `scripts/enforcement-pack.ps1` fails a rationale
-   that is absent, incomplete or contradicts the level, and a Standard or Micro Territory
+   (constitution X, Level declaration), and `scripts/enforcement-pack.ps1` fails, on a spec
+   carrying the `**Rationale Rule**` marker, a rationale that is absent, incomplete or
+   contradicts the level, and a Standard or Micro Territory
    that reaches a critical surface the project declared.
 
    <!-- digest: Gate 1: spec.md, plan.md, tasks.md approved before implementation begins; Micro: the approved mini-spec alone. -->

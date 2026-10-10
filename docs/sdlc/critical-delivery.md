@@ -52,7 +52,18 @@ A project may also name its **critical surfaces** — path globs — in `kit-ado
 narrowed, or carries an approved **Surface Exception**. `scripts/enforcement-pack.ps1`
 grades both (constitution X, Level declaration). The rationale is a claim a reviewer can
 falsify, not proof: the owner who writes *does not apply* is still trusted, and the written
-claim is what makes the choice visible in review.
+claim is what makes the choice visible in review. A **Micro** feature owes no rationale (its
+mini-spec has no such section) and is held only to the surface floor.
+
+A Surface Exception is two lines in the feature's `spec.md`, and the second is its approval:
+
+```text
+**Surface Exception**: `path/in/territory` — reason
+**Exception approved by**: <name>, <YYYY-MM-DD>
+```
+
+The approval is a recorded claim like any other (constitution I): an implementing agent does
+not give it to itself, and a machine can check only that it is well formed.
 
 <!-- digest: spec.md answers the four Critical triggers in a Level Rationale; a sub-Critical Territory on a declared surface fails. -->
 
