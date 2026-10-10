@@ -118,49 +118,49 @@ its honest non-answers, proved by fixtures including the nested multi-repo layou
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T013 [P] [US1] Write the fixtures for `LEVEL-001` under
+- [x] T013 [P] [US1] Write the fixtures for `LEVEL-001` under
       `tests/enforcement/cases/enforcement-pack/LEVEL-001/`: `fail-standard-literal` (a Territory
       file under a surface), `fail-standard-glob-prefix` (Territory `src/**`, surface
       `src/auth/`; research R1), `fail-micro` (the global block in `spec.md`), `fail-multirepo`
       (repo-prefixed Territory and surface in the nested layout; SC-001), `pass-no-overlap`,
       `pass-critical` (same Territory, level Critical; FR-011) and `pass-case-and-slash` (a
       backslash and a different case still match). Expectations are hand-written.
-- [ ] T014 [P] [US3] Write fixtures for `LEVEL-002` (`pass-no-key`, `pass-empty-list`: one
+- [x] T014 [P] [US3] Write fixtures for `LEVEL-002` (`pass-no-key`, `pass-empty-list`: one
       info line, exit code and verdict unchanged) and `LEVEL-003` (`fail-malformed-list`: the
       run ends UNGRADED, exit 0, names the key).
-- [ ] T015 [P] [US1] Write fixtures for `LEVEL-004` (`fail-spec-only`: armed, Standard, no
+- [x] T015 [P] [US1] Write fixtures for `LEVEL-004` (`fail-spec-only`: armed, Standard, no
       `tasks.md` yet; `fail-near-miss`: a `**Territory**` marker with no colon): UNGRADED,
       never a pass (research R3).
-- [ ] T016 [P] [US4] Write fixtures for `LEVEL-005` (`pass-live-exception`: approved exception
+- [x] T016 [P] [US4] Write fixtures for `LEVEL-005` (`pass-live-exception`: approved exception
       for the exact path; the run lists it), `LEVEL-006` (`pass-stale-exception`: names a path
       no longer in the Territory; reported, no failure) and `LEVEL-007`
       (`fail-unapproved-exception`, `fail-placeholder-approver`, `fail-wrong-path`).
-- [ ] T017 [US1] Run T013-T016 against the current script and record in `notes.md`: every
+- [x] T017 [US1] Run T013-T016 against the current script and record in `notes.md`: every
       `fail-*` that should fail must pass today (the gap is real), and every `pass-*` must
       already pass.
-- [ ] T018 [US1] In `scripts/enforcement-pack.ps1`, add the Territory reader for the check: the
+- [x] T018 [US1] In `scripts/enforcement-pack.ps1`, add the Territory reader for the check: the
       union over every `## Phase N` block of `tasks.md` for Standard, the global block of
       `spec.md` for Micro, using the existing `Get-Territory` and nothing else (plan D4). Missing
       file, no block or a `NearMiss` returns "unreadable" so the caller reports UNGRADED.
-- [ ] T019 [US1] Add the intersection rule (plan D3, research R1): the literal directory prefix
+- [x] T019 [US1] Add the intersection rule (plan D3, research R1): the literal directory prefix
       of an entry, both-way prefix test, a no-prefix pattern intersects everything, `\` normalised
       to `/`, case-insensitive. Literal paths go through `Test-InTerritory`. Place it in
       `scripts/enforcement-pack.ps1` unless T018's review shows `scripts/scope-lib.ps1` is the
       right shared home, in which case stop and request a Territory amendment rather than
       editing it.
-- [ ] T020 [US4] Parameterise the pattern of `Get-ConformingRecord` (default unchanged) so the
+- [x] T020 [US4] Parameterise the pattern of `Get-ConformingRecord` (default unchanged) so the
       Surface Exception approval line reuses its validation (plan D6). Every `AMEND-*` fixture
       must still pass byte-for-byte: this is the guard that the refactor changed nothing.
-- [ ] T021 [US1] [US3] [US4] Add `Invoke-LevelSurfaceCheck` and call it from the `NNN-*`
+- [x] T021 [US1] [US3] [US4] Add `Invoke-LevelSurfaceCheck` and call it from the `NNN-*`
       dispatch after the Structure check: read the level with `Get-DeliveryLevel`; skip Lite and
       Critical; read the surfaces with `Get-CriticalSurfaces` (phase 2); apply the verdict table
       of data-model.md; name the feature, level, path, glob and the three ways forward on failure
       (contract section 3). A Critical feature is never failed. Update the file's `.DESCRIPTION`
       block with the new member.
-- [ ] T022 [US1] Add `LEVEL-001` through `LEVEL-007` to `tests/enforcement/rules.json`, then run
+- [x] T022 [US1] Add `LEVEL-001` through `LEVEL-007` to `tests/enforcement/rules.json`, then run
       `pwsh -File tests/enforcement/Run-Tests.ps1`: all LEVEL and all pre-existing cases pass,
       and the coverage test reports no rule without both directions (SC-006).
-- [ ] T023 [US1] Run `pwsh -File scripts/enforcement-pack.ps1` and
+- [x] T023 [US1] Run `pwsh -File scripts/enforcement-pack.ps1` and
       `pwsh -File scripts/ritual-checks.ps1` on this branch. This feature's own record declares
       no surfaces, so the only change is the one `not armed` line. Record it in `notes.md`.
 

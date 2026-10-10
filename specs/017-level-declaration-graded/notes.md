@@ -147,3 +147,66 @@ Dispositions:
   reader treats it as lawful and not a problem, which breaks no requirement. Duplicates
   collapse silently and the doctor's line wording differs from contract section 4's schematic.
   Amending those sentences needs the owner's approval line; until then this file is the record.
+
+## Phase 3
+
+Written 2026-10-11. Implemented, not yet committed when this section was first written.
+
+**T017, against the parent commit (4f75682).** All 24 new cases were run before any code changed.
+23 failed for the right reason: the script printed none of the new `LevelSurface` lines and
+exited 0 where the fixture expects 1 (inspected for `LEVEL-001/pass`, `fail-micro`,
+`LEVEL-004/fail` and `fail-near-miss`, `LEVEL-003/fail-unreadable`). The one that already
+passed is `LEVEL-001/pass-critical`, a guard: the same Territory on a Critical feature adds no
+`LevelSurface` failure, and the parent had no `LevelSurface` check at all. After the change all
+24 pass and the coverage test reports 59 of 63 `enforcement-pack` sites fixtured.
+
+**Rule ids and shape.** `LEVEL-001`..`LEVEL-007` as in `tasks.md`; the doctor's two are `VK-029`
+and `VK-030` (phase 2). `LEVEL-003` has `siteCount` 2 (a malformed list, and an unreadable
+record), sharing one anchor. The roll-up `LevelSurface: graded ...` is declared a not-a-rule in
+`emission-idioms.json` with a written reason, the counterpart of the AmendmentAuthority line.
+
+**Decisions made in the implementation (none changes an approved document).**
+- *Intersection.* A literal Territory path is tested with the kit's own `Test-InTerritory`. Two
+  patterns are compared by literal directory prefix, either nesting in the other. A pattern with
+  no literal prefix intersects everything. It over-reports by design (research R1).
+- *Phase 2 review F6, handled here.* Both sides are read through one normaliser: a backslash is
+  a slash and a leading `./` is dropped. `fail-case-and-slash` pins case folding and the
+  backslash. A leading `./` on a surface is normalised too, so it can no longer arm the floor and
+  never match. This was decided here, as the F6 note asked.
+- *Territory source.* Standard: the union of every `## Phase N` block in `tasks.md`. Micro: the
+  global block in `spec.md`. A missing file, no block, an empty block, or a near-miss marker
+  (no colon) is UNGRADED by name. Invalid entries (absolute, `..`) are not compared; the scope
+  check and the Micro lane already fail them.
+- *Exceptions.* Two lines in `spec.md`, the approval on the next non-blank line. The approval is
+  validated by `Get-ConformingRecord`, now parameterised on its pattern (default unchanged: every
+  `AMEND-*` case passes). The date ceiling is the author's own day of HEAD, not the runner's
+  clock, for the reason 014 H6 gives. A placeholder reason is rejected. An exception counts only
+  when it names the entry exactly (case-insensitive, normalised); it does not cover a different
+  path, and the exception is then reported stale.
+- *When it runs.* On `NNN-*` branches whose level reads Standard or Micro. Critical is never
+  failed (FR-011). Lite, an unfilled or invalid level, and a missing spec return silently: the
+  Structure check owns those findings.
+- *Where it sits.* In `scripts/enforcement-pack.ps1` right after the Structure check. The helpers
+  stay in that file; `scripts/scope-lib.ps1` is untouched, so no Territory amendment was needed
+  (T019's condition did not arise).
+
+**Existing expectations changed.** The one informational line `LevelSurface: not armed` now
+prints on every `NNN-*` run whose spec reads Standard or Micro and whose project declares no
+surfaces, so 80 existing `enforcement-pack` expectations gained it. It was placed by a written
+rule, with each case's level read from its own recipe rather than from the script's output:
+directly after the header line, with the branch and level named. No expectation was otherwise
+touched. This is the "exactly one new informational line" SC-004 allows.
+
+**Two departures from the task wording, stated plainly.**
+- `LEVEL-001/pass-critical` exits 1 (named `pass` for the rule, not the run): the Critical lane's
+  own check fails for the missing second-model review, and the case pins that `LevelSurface`
+  adds nothing to it.
+- `LEVEL-004/fail` exits 1 because the Structure check separately fails the missing `tasks.md`;
+  the UNGRADED line is the finding under test.
+
+**Evidence status.** Targeted runs on the working tree: `LEVEL-` 24 cases pass (81 tests);
+every existing `enforcement-pack` rule's cases pass; `ritual-checks` RESULT OK. A full harness
+run on a clean checkout of the phase 3 commit is still to come. The earlier full run "on phase 2"
+that finished mid-phase 3 is NOT evidence for either phase: it ran while this phase's files
+changed under it and reported 7 failures, all of them this phase's work in progress. Phase 2's
+own result comes from a separate run on a clean checkout of `4f75682`.

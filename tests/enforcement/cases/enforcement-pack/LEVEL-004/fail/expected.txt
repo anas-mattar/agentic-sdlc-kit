@@ -1,0 +1,5 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 3 changed file(s)
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+UNGRADED: LevelSurface: no readable Territory for 001-thing (Standard): tasks.md does not exist yet — the surface floor could not be checked, which is not the same as passing it
+enforcement-pack: FAIL (1 issue(s)):
+  - Structure: specs/001-thing/tasks.md is missing (every NNN-* branch requires spec.md, plan.md, and tasks.md — or spec.md alone when declared Micro; CLAUDE.md Feature Structure)

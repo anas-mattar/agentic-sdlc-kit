@@ -23,6 +23,18 @@
                          cannot split the bound), and no '**Gate Batching**'
                          declaration (one phase — nothing to batch). Every failure names
                          the promotion remediation (constitution X, Micro lane).
+      - LevelSurface     (NNN-* branches declared Standard or Micro; feature 017, constitution X
+                         Level declaration): the machine floor under the written claim of the
+                         delivery level. The project names its critical surfaces, path globs, in
+                         the 'criticalSurfaces' array of kit-adoption.json; a Territory entry
+                         that reaches one fails, unless the spec carries an approved Surface
+                         Exception for that exact path. Territory is read from tasks.md (the
+                         union of every phase) or, for Micro, from spec.md, and compared by
+                         literal prefix, which over-reports by design. A Critical feature is
+                         never failed here. A project that declares nothing sees ONE
+                         informational line and no change of verdict. Every way the check
+                         cannot grade - an unusable or unreadable record, a Territory it cannot
+                         read - adds an UNGRADED line instead of passing.
       - LiteAndAbuse     (fix/*, chore/* branches): no changed file matches a prohibited
                          category (dependency manifest, auth, schema/migration, contracts,
                          domain invariants); migrations are always prohibited on this lane
@@ -613,6 +625,209 @@ function Invoke-MicroLaneCheck {
     }
 }
 
+# --- Level surface floor (feature 017; constitution X, Level declaration) ---
+# The delivery level selects how much rigour a feature gets, and until this check nothing graded
+# it: a Standard feature that rewrote authentication was green by construction. This is the
+# machine floor under the written claim. A project names its critical surfaces (path globs) in
+# kit-adoption.json; a Standard or Micro feature whose Territory reaches one fails, unless the
+# spec carries an approved Surface Exception for that exact path. A Critical feature is never
+# failed here. A project that declares nothing sees ONE informational line and no change of
+# verdict, so updating the kit cannot turn an adopted project red.
+#
+# Every way this check can fail to grade is NAMED, never passed (spec FR-012, the GAP-027 lesson):
+# an unusable or unreadable record, and a Territory it cannot read, each add an UNGRADED line.
+
+$script:SurfaceExceptionPattern = '^\*\*Surface Exception\*\*:\s*`([^`]+)`\s*(?:[—–]|-{1,2})\s*(\S.*)$'
+$script:ExceptionApprovalPattern = '^\*\*Exception approved by\*\*:\s*(.+?)\s*,\s*(\d{4}-\d{2}-\d{2})\s*\.?\s*$'
+
+# One reading of a path for both sides of the comparison: backslash is a slash (a Territory
+# written on Windows must match the same on a Linux runner) and a leading './' is nothing.
+# Case is not folded here, the matchers below are case-insensitive by design (scope-lib).
+function ConvertTo-LevelPath {
+    param([string]$Path)
+    $p = ("$Path".Trim() -replace '\\', '/')
+    while ($p.StartsWith('./')) { $p = $p.Substring(2) }
+    return $p
+}
+
+function Test-LevelPathIsPattern {
+    param([string]$Path)
+    return ($Path.EndsWith('/') -or $Path.IndexOfAny([char[]]@('*', '?')) -ge 0)
+}
+
+# The literal directory prefix of a pattern: everything up to the last '/' before its first
+# wildcard. '' for a pattern with no literal prefix, which therefore intersects everything.
+function Get-LevelPathPrefix {
+    param([string]$Path)
+    if ($Path.EndsWith('/')) { return $Path }
+    $w = $Path.IndexOfAny([char[]]@('*', '?'))
+    if ($w -lt 0) { return $Path }
+    $head = $Path.Substring(0, $w)
+    $slash = $head.LastIndexOf('/')
+    if ($slash -lt 0) { return '' }
+    return $head.Substring(0, $slash + 1)
+}
+
+# Do two path patterns overlap (research R1)? A literal path is tested with the kit's own
+# matcher. Two patterns are compared by literal prefix, which is CONSERVATIVE on purpose: it
+# over-reports (src/**/*.md against src/auth/*.ps1) and never under-reports, because a false
+# positive costs one written exception and a false negative costs the whole point.
+function Test-LevelPathsIntersect {
+    param([string]$A, [string]$B)
+    $a = ConvertTo-LevelPath $A
+    $b = ConvertTo-LevelPath $B
+    if (-not (Test-LevelPathIsPattern $a)) { return (Test-InTerritory -Path $a -Globs @($b)) }
+    if (-not (Test-LevelPathIsPattern $b)) { return (Test-InTerritory -Path $b -Globs @($a)) }
+    $pa = Get-LevelPathPrefix $a
+    $pb = Get-LevelPathPrefix $b
+    return ($pa.StartsWith($pb, [StringComparison]::OrdinalIgnoreCase) -or $pb.StartsWith($pa, [StringComparison]::OrdinalIgnoreCase))
+}
+
+# The feature's whole declared Territory as one list. Standard: the union of every phase's
+# block in tasks.md. Micro: the one feature-global block in spec.md. Read from the working
+# tree, comment-stripped, through scope-lib's Get-Territory and nothing else, so this check and
+# the scope check cannot disagree about what a declaration looks like.
+# Returns @{ Readable; Entries; Why }; not Readable names why, and the caller says UNGRADED.
+function Get-FeatureTerritory {
+    param([string]$Dir, [string]$Level)
+    $r = @{ Readable = $false; Entries = @(); Why = '' }
+    $entries = @()
+    $found = $false
+    if ($Level -match '^Micro\b') {
+        $t = Get-Territory -TasksLines (Get-VisiblePlanLines -PlanPath (Join-Path $Dir 'spec.md')) -Global
+        if ($t.NearMiss.Count -gt 0) { $r.Why = 'a **Territory** marker has no colon, so the block cannot be read (keep the marker and its colon on one line)'; return $r }
+        $found = $t.Found
+        $entries = @($t.Entries)
+        if (-not $found) { $r.Why = 'spec.md declares no **Territory** block'; return $r }
+    } else {
+        $tasksPath = Join-Path $Dir 'tasks.md'
+        if (-not (Test-Path -LiteralPath $tasksPath)) { $r.Why = 'tasks.md does not exist yet'; return $r }
+        $lines = @(Get-VisiblePlanLines -PlanPath $tasksPath)
+        $phases = @($lines | ForEach-Object { if ($_ -match '^##\s+Phase\s+(\d+)\b') { [int]$matches[1] } } | Sort-Object -Unique)
+        if ($phases.Count -eq 0) { $r.Why = 'tasks.md has no "## Phase N" heading'; return $r }
+        foreach ($n in $phases) {
+            $t = Get-Territory -TasksLines $lines -PhaseNumber $n
+            if ($t.NearMiss.Count -gt 0) { $r.Why = 'a **Territory** marker has no colon, so the block cannot be read (keep the marker and its colon on one line)'; return $r }
+            if ($t.Found) { $found = $true; $entries += @($t.Entries) }
+        }
+        if (-not $found) { $r.Why = 'no phase in tasks.md declares a **Territory** block'; return $r }
+    }
+    if ($entries.Count -eq 0) { $r.Why = 'the **Territory** block lists no entries'; return $r }
+    $r.Readable = $true
+    $r.Entries = @($entries)
+    return $r
+}
+
+# Surface Exceptions as the spec writes them: a backticked path and a reason, then, on the next
+# non-blank line, the approval. Approval is validated by Get-ConformingRecord, the amendment
+# check's own function. The author's own day is the ceiling for the date, as it is there (H6):
+# the runner's clock would make the same record green locally and red in CI.
+function Get-SurfaceExceptions {
+    param([string]$SpecPath)
+    $day = "$(git log -1 --date=format:%Y-%m-%d --format=%ad HEAD 2>$null)".Trim()
+    if (-not $day) { $day = (Get-Date).ToString('yyyy-MM-dd') }
+    $lines = @(Get-VisiblePlanLines -PlanPath $SpecPath)
+    $out = @()
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        if ($lines[$i] -notmatch $script:SurfaceExceptionPattern) { continue }
+        $path = ConvertTo-LevelPath $matches[1]
+        $reason = $matches[2].Trim()
+        $approver = $null
+        $approvedOn = ''
+        $why = ''
+        if ($reason -match '^[\[<].*[\]>]$') {
+            $why = "the reason '$reason' is a placeholder, not a reason"
+        } else {
+            $j = $i + 1
+            while ($j -lt $lines.Count -and $lines[$j] -match '^\s*$') { $j++ }
+            if ($j -ge $lines.Count -or $lines[$j] -notmatch '^\*\*Exception approved by\*\*') {
+                $why = 'no **Exception approved by** line directly beneath it'
+            } else {
+                $rec = Get-ConformingRecord -AddedLines @($lines[$j]) -CommitDay $day -Pattern $script:ExceptionApprovalPattern
+                if ($rec.Name) {
+                    $approver = $rec.Name
+                    if ($lines[$j] -match $script:ExceptionApprovalPattern) { $approvedOn = $matches[2] }
+                } elseif ($rec.Malformed.Count -gt 0) {
+                    $why = ($rec.Malformed -join '; ')
+                } else {
+                    $why = 'the approval line is not in the shape **Exception approved by**: <name>, <YYYY-MM-DD>'
+                }
+            }
+        }
+        $out += @{ Path = $path; Reason = $reason; Approver = $approver; ApprovedOn = $approvedOn; Why = $why }
+    }
+    return $out
+}
+
+function Invoke-LevelSurfaceCheck {
+    param([string]$Branch)
+    if ($Branch -notmatch '^\d{3}-') { return }
+    $dir = "specs/$Branch"
+    $specPath = Join-Path $dir 'spec.md'
+    if (-not (Test-Path -LiteralPath $specPath)) { return }          # the Structure check owns a missing spec
+    $level = Get-DeliveryLevel -SpecPath $specPath
+    # Critical is never failed here (FR-011); Lite has no spec; an unfilled or invalid level is
+    # the Structure check's finding, and guessing a level for it would grade a decoy.
+    if ($level -notmatch '^(Micro|Standard)\b') { return }
+    $levelName = $matches[1]
+
+    $surfaces = Get-CriticalSurfaces -Root $Root
+    if ($surfaces.State -in @('absent', 'empty')) {
+        Write-Host "LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so $Branch ($levelName) was not checked against any (adoption/updating.md)"
+        return
+    }
+    if ($surfaces.State -eq 'unreadable') {
+        $script:ungraded += "LevelSurface: criticalSurfaces in kit-adoption.json is unusable: the record exists but cannot be read, so whether a floor was declared is unknown — $Branch ($levelName) was not checked against a critical surface, which is not the same as passing it"
+        return
+    }
+    if ($surfaces.State -eq 'malformed') {
+        $script:ungraded += "LevelSurface: criticalSurfaces in kit-adoption.json is unusable: $($surfaces.Why) — $Branch ($levelName) was not checked against a critical surface, which is not the same as passing it"
+        return
+    }
+
+    $territory = Get-FeatureTerritory -Dir $dir -Level $levelName
+    if (-not $territory.Readable) {
+        $script:ungraded += "LevelSurface: no readable Territory for $Branch ($levelName): $($territory.Why) — the surface floor could not be checked, which is not the same as passing it"
+        return
+    }
+
+    $exceptions = @(Get-SurfaceExceptions -SpecPath $specPath)
+    $reached = 0
+    $excepted = 0
+    $reachedPaths = @{}
+    foreach ($entry in $territory.Entries) {
+        $hit = $null
+        foreach ($glob in $surfaces.Globs) {
+            if (Test-LevelPathsIntersect -A $entry -B $glob) { $hit = $glob; break }
+        }
+        if (-not $hit) { continue }
+        $reached++
+        $key = (ConvertTo-LevelPath $entry).ToLowerInvariant()
+        $reachedPaths[$key] = $true
+        $named = @($exceptions | Where-Object { (ConvertTo-LevelPath $_.Path) -ieq (ConvertTo-LevelPath $entry) })
+        $good = @($named | Where-Object { $_.Approver } | Select-Object -First 1)
+        if ($good.Count -gt 0) {
+            $excepted++
+            $g = $good[0]
+            Write-Host "LevelSurface: exception live for '$entry' in $dir/spec.md — approved by $($g.Approver), $($g.ApprovedOn): $($g.Reason)"
+            continue
+        }
+        $script:failures += "LevelSurface: $Branch is declared $levelName but its Territory reaches critical surface '$hit' via '$entry' — a $levelName feature may not touch a critical surface unannounced (constitution X, Level declaration). Promote it to Critical, narrow the Territory so it no longer reaches the surface, or record a Surface Exception in $dir/spec.md: '**Surface Exception**: ``$entry`` — <reason>' with '**Exception approved by**: <name>, <YYYY-MM-DD>' on the next line"
+        foreach ($bad in $named) {
+            $script:failures += "LevelSurface: exception not counted for '$entry' in $dir/spec.md — $($bad.Why); the path is graded as if it had no exception"
+        }
+    }
+    # An exception that suppresses nothing is reported and never failed (FR-010): the Territory
+    # narrowed, or the path was never on a surface. Left in a spec it would read as protection.
+    foreach ($ex in $exceptions) {
+        if ($reachedPaths.ContainsKey((ConvertTo-LevelPath $ex.Path).ToLowerInvariant())) { continue }
+        Write-Host "LevelSurface: exception stale for '$($ex.Path)' in $dir/spec.md — it names no Territory entry that reaches a critical surface, so it suppresses nothing and can be removed"
+    }
+    $n = @($territory.Entries).Count
+    $noun = if ($n -eq 1) { 'entry' } else { 'entries' }
+    Write-Host "LevelSurface: graded $Branch ($levelName) — $n Territory $noun against $(@($surfaces.Globs).Count) critical surface(s): $reached reached, $excepted excepted"
+}
+
 # --- Review-provenance check (006 FR-006: DoD gate 5, reviewer separation) ---
 # Inspects only AI-review files ADDED in the branch's diff vs base (--diff-filter=A), so
 # reviews shipped before the verification pack — and every adopted project's history —
@@ -1038,11 +1253,16 @@ function Test-StatusOnlyChange {
 }
 
 # D6: an unfilled or impossible record is no record.
+# -Pattern defaults to the amendment record's shape. Feature 017 passes the Surface Exception
+# approval's own pattern so that "what is a well-formed approver" has ONE definition: a second
+# copy of this validation (placeholder names, real dates, not later than the commit) is exactly
+# how two graders of one rule drift. Every AMEND-* fixture is the guard that the default is
+# unchanged.
 function Get-ConformingRecord {
-    param([string[]]$AddedLines, [string]$CommitDay)
+    param([string[]]$AddedLines, [string]$CommitDay, [string]$Pattern = $script:AmendmentRecordPattern)
     $result = @{ Name = $null; Malformed = @() }
     foreach ($line in $AddedLines) {
-        if ($line -notmatch $script:AmendmentRecordPattern) { continue }
+        if ($line -notmatch $Pattern) { continue }
         $name = $matches[1].Trim()
         $dateText = $matches[2]
         if (-not $name -or $name -match '^\{\{.*\}\}$' -or $name -match '^TODO\(' -or
@@ -1255,6 +1475,7 @@ if ($Branch -in @('main', 'master')) {
     Write-Host "enforcement-pack: '$Branch' is the trunk, not a feature/fix/chore/docs branch — no scripted checks apply"
 } elseif ($Branch -match '^\d{3}-') {
     Invoke-StructureCheck -Branch $Branch
+    Invoke-LevelSurfaceCheck -Branch $Branch
     Invoke-MicroLaneCheck -Branch $Branch -Base $diffBase
     Invoke-CriticalEvidenceCheck -Branch $Branch
     Invoke-GateBatchingCheck -Branch $Branch

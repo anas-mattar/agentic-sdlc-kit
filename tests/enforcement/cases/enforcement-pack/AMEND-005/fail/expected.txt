@@ -1,3 +1,4 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
 enforcement-pack: FAIL (1 issue(s)):
   - AmendmentAuthority: cannot grade '001-thing' — parent commit <SHA> of <SHA> is not readable in this clone, so whether it predates the check is unknown; treating it as pre-boundary would skip a commit on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' (constitution I, Amendment authority)

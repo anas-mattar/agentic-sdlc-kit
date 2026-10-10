@@ -1,4 +1,5 @@
 enforcement-pack: branch '001-thing', diff base '', 0 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
 WARNING: enforcement-pack: no integration branch to diff against, so nothing on '001-thing' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout).
 UNGRADED: ReviewProvenance: no diff base, so no review file on '001-thing' was inspected - the machine half of DoD gate 5 formed no opinion. Fetch the full history ('fetch-depth: 0' on actions/checkout)
 UNGRADED: PhaseSizeWarning: no diff base, so no commit on '001-thing' was measured against the phase-size guideline
