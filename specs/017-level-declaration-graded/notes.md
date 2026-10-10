@@ -210,3 +210,48 @@ run on a clean checkout of the phase 3 commit is still to come. The earlier full
 that finished mid-phase 3 is NOT evidence for either phase: it ran while this phase's files
 changed under it and reported 7 failures, all of them this phase's work in progress. Phase 2's
 own result comes from a separate run on a clean checkout of `4f75682`.
+
+### Review and remediation — phase 3
+
+Fresh-context AI review: `ai-code-review-phase-3.md`, verdict CHANGES REQUESTED on one Major, now
+fixed. The reviewer ran every existing `enforcement-pack` rule prefix and `LEVEL-` (0 failed in
+each), confirmed the 80 edited expectations each gained exactly one line and lost none, and tried
+exceptions, Territory forms, phase headings and level spellings without finding another way past
+the check.
+
+- **F1 (Major, fail-open): fixed.** `Get-LevelPathPrefix` returned a pattern ending in `/` whole
+  before looking for a wildcard, so a surface such as `**/auth/` was compared as the literal
+  string it ends with, and a Territory of `src/**` came out clean ("0 reached", exit 0) against a
+  surface it can plainly reach. Reproduced first: `LEVEL-001/fail-wildcard-surface` failed on
+  the unfixed script and passes now. The wildcard test now comes first.
+  *Evidence beyond the fixtures.* A property check over 33 patterns (1,089 ordered pairs, a
+  universe of 60 concrete paths, "really intersect" defined by the kit's own matcher): the
+  unfixed code under-reported 62 pairs (`src/` vs `**/auth/`, `src/auth/` vs `*/auth/`, ...), the
+  fixed code reports 0, and over-reports 160 pairs, which is the stated, allowed direction.
+  That property check is not a harness case; it is recorded here and could become one.
+- **F2 (Minor): fixed.** New fixtures: `LEVEL-001` `fail-wildcard-surface`,
+  `fail-wildcard-mid-surface` (a guard; it passed before the fix by accident of the prefix test),
+  `fail-surface-dot-slash` (a surface written `./src\auth\`; phase 2 F6, correct before but
+  unpinned), `fail-second-phase` (the union across phases); `LEVEL-005` `pass-micro` (an exception
+  in a mini-spec); `LEVEL-007` `fail-todo-reason`.
+- **F3 (Minor): half fixed, half yours.** A reason that is `TODO`, `TBD`, `FIXME` or `XXX` is now a
+  placeholder and the exception does not count. That an *approver* named `TODO` is accepted is
+  inherited from `Get-ConformingRecord`, which rejects only `TODO(`; the amendment check shares
+  that function, so tightening it changes what feature 014 accepts. Left as is, for the owner.
+- **F4 (Minor): fixed.** The message names the canonical level (`Standard`, `Micro`), not the
+  spec's own spelling.
+- **F5 (Minor): fixed.** The live-exception line says "approval recorded by", because only the
+  shape of the approval line is verified, not that the person agreed (constitution I).
+- **F6, F7, F8 (Notes): accepted.** An exception inside a code fence counts, and a bulleted one is
+  not recognised (both safe directions); a same-day approval fails locally until committed (the
+  HEAD author-date ceiling, as in the amendment check); `?` in a surface is a wildcard for the
+  intersection test and a literal for the kit's matcher, consistent with `scope-lib`.
+
+### Evidence status
+
+- Phase 2, full harness on a clean, isolated checkout of `4f75682`: **923 passed, 0 failed,
+  0 skipped**, exit 0. (The baseline before any phase 1 edit was 899; the difference is the 24 new
+  doctor cases, so every pre-existing test still passes.) An earlier "full" run on the live
+  working tree is not evidence and is not cited: it ran while phase 3's files changed under it.
+- Phase 3: targeted runs on the working tree only so far (`LEVEL-` 30 cases, 93 tests, 0 failed).
+  A full run on a clean checkout of the remediation commit follows.

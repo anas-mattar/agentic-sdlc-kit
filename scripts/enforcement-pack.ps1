@@ -659,7 +659,11 @@ function Test-LevelPathIsPattern {
 # wildcard. '' for a pattern with no literal prefix, which therefore intersects everything.
 function Get-LevelPathPrefix {
     param([string]$Path)
-    if ($Path.EndsWith('/')) { return $Path }
+    # The wildcard test comes FIRST. A pattern that ends in '/' is a subtree, but it may also
+    # hold a wildcard ('**/auth/', 'src/*/auth/'), and returning it whole as a literal prefix
+    # compared the string '**/auth/' against 'src/' and called the two disjoint: a Territory of
+    # 'src/**' came out clean against a surface it can plainly reach (phase 3 review F1, a
+    # fail-open). Only a pattern with no wildcard at all is its own prefix.
     $w = $Path.IndexOfAny([char[]]@('*', '?'))
     if ($w -lt 0) { return $Path }
     $head = $Path.Substring(0, $w)
@@ -735,7 +739,7 @@ function Get-SurfaceExceptions {
         $approver = $null
         $approvedOn = ''
         $why = ''
-        if ($reason -match '^[\[<].*[\]>]$') {
+        if ($reason -match '^[\[<].*[\]>]$' -or $reason -match '^(TODO|TBD|FIXME|XXX)\b') {
             $why = "the reason '$reason' is a placeholder, not a reason"
         } else {
             $j = $i + 1
@@ -769,7 +773,9 @@ function Invoke-LevelSurfaceCheck {
     # Critical is never failed here (FR-011); Lite has no spec; an unfilled or invalid level is
     # the Structure check's finding, and guessing a level for it would grade a decoy.
     if ($level -notmatch '^(Micro|Standard)\b') { return }
-    $levelName = $matches[1]
+    # Canonical spelling: the level matches case-insensitively, and a message that echoed the
+    # spec's own 'standard' would read as a different level than the one every other check names.
+    $levelName = if ($matches[1] -ieq 'Micro') { 'Micro' } else { 'Standard' }
 
     $surfaces = Get-CriticalSurfaces -Root $Root
     if ($surfaces.State -in @('absent', 'empty')) {
@@ -809,7 +815,7 @@ function Invoke-LevelSurfaceCheck {
         if ($good.Count -gt 0) {
             $excepted++
             $g = $good[0]
-            Write-Host "LevelSurface: exception live for '$entry' in $dir/spec.md — approved by $($g.Approver), $($g.ApprovedOn): $($g.Reason)"
+            Write-Host "LevelSurface: exception live for '$entry' in $dir/spec.md — approval recorded by $($g.Approver), $($g.ApprovedOn): $($g.Reason)"
             continue
         }
         $script:failures += "LevelSurface: $Branch is declared $levelName but its Territory reaches critical surface '$hit' via '$entry' — a $levelName feature may not touch a critical surface unannounced (constitution X, Level declaration). Promote it to Critical, narrow the Territory so it no longer reaches the surface, or record a Surface Exception in $dir/spec.md: '**Surface Exception**: ``$entry`` — <reason>' with '**Exception approved by**: <name>, <YYYY-MM-DD>' on the next line"

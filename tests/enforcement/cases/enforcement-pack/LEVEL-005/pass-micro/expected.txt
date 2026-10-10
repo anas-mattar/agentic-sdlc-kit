@@ -1,5 +1,5 @@
-enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+enforcement-pack: branch '001-thing', diff base '<SHA>', 2 changed file(s)
 LevelSurface: exception live for 'src/auth/login.ps1' in specs/001-thing/spec.md — approval recorded by ada, 2026-01-01: documentation-only rename, no behaviour
-LevelSurface: graded 001-thing (Standard) — 1 Territory entry against 1 critical surface(s): 1 reached, 1 excepted
+LevelSurface: graded 001-thing (Micro) — 1 Territory entry against 1 critical surface(s): 1 reached, 1 excepted
 AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
 enforcement-pack: OK
