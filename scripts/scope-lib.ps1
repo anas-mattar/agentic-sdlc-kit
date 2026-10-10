@@ -176,13 +176,15 @@ function Get-RepoTrunkCandidates {
 #   Base      the merge-base sha, or $null when none resolved
 #   Trunk     the candidate it resolved against, or $null
 #   Tried     every candidate asked about, in order, for a caller's message
-#   Existing  the candidates that exist in the repository at all
+#   Existing  the candidates that exist in the repository, in order, up to and including the one it
+#             resolved against; when NO base resolved, every candidate that exists at all
 #
 # Existing is returned separately because two different things look alike from outside. "No trunk":
 # none of the candidates exists, so the repository cannot be compared with anything. "No merge base":
 # a trunk exists and this ref shares no history with it. The scope check reports both as one message
 # and may keep doing so; the territory check names them differently, because they send the owner to
-# different places (feature 018, research R3).
+# different places (feature 018, research R3). It reads Existing ONLY when Base is $null: on success
+# the list stops at the candidate that resolved, so it is not a census of the repository's refs.
 function Get-RepoMergeBase {
     param([Parameter(Mandatory)][string]$RepoPath, [Parameter(Mandatory)][string]$Ref, [string[]]$Candidates)
     if (-not $Candidates -or $Candidates.Count -eq 0) { $Candidates = Get-RepoTrunkCandidates }

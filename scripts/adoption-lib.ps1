@@ -7,7 +7,8 @@
 
 .DESCRIPTION
     Dot-sourced by scripts/enforcement-pack.ps1 (which enforces) and scripts/verify-kit.ps1
-    (which reports). Feature 012 established this pattern with scripts/scope-lib.ps1, for the
+    (which reports) for the developer and surface readers, and by scripts/scope-check-repos.ps1
+    for Get-CodeRepos (and, from feature 018 phase 3, scripts/territory-check.ps1). Feature 012 established this pattern with scripts/scope-lib.ps1, for the
     same reason: two graders of one rule drift, and a comment claiming they agree is not a
     mechanism.
 
@@ -236,11 +237,16 @@ function Get-CriticalSurfaces {
     return @{ State = 'valid'; Armed = $true; Globs = @($usable); Declared = $true; Why = "$($usable.Count) $noun declared in kit-adoption.json"; Problems = $problems }
 }
 
-# The nested code repositories a project declares (feature 012; shared by feature 018). One reader,
-# read by every script that has to walk them: scripts/scope-check-repos.ps1 grades their commits and
-# scripts/territory-check.ps1 compares their branches. It used to live inside the scope check, and a
-# second script that needed it would have carried a second interpretation of the record, which is
-# what 013 paid for. The scope check now calls this and prints exactly what it printed before.
+# The nested code repositories a project declares (feature 012; shared by feature 018). The reader
+# the scripts that WALK those repositories share: scripts/scope-check-repos.ps1 grades their commits
+# today, and scripts/territory-check.ps1 will compare their branches (feature 018, phase 3). It used
+# to live inside the scope check, and a second script that needed it would have carried a second
+# interpretation of the record, which is what 013 paid for. The scope check now calls this and
+# prints exactly what it printed before.
+#
+# It is NOT the only place the key is read: scripts/verify-kit.ps1 validates codeRepos for the
+# doctor with its own checks (feature 012 phase 2). The two are about different questions (what to
+# walk, and what to report as a finding), and this function does not replace that one.
 #
 # The messages are RETURNED, not printed, because each caller speaks in its own voice: the scope
 # check prefixes them with its own name, the territory check prints them as warnings. The text is

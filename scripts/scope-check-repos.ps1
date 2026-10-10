@@ -61,7 +61,7 @@ $Root = (Resolve-Path $Root).Path
 $explicitCommit = $PSBoundParameters.ContainsKey('Commit')
 
 . (Join-Path $PSScriptRoot 'scope-lib.ps1')   # shared territory parsing / matching (D6)
-. (Join-Path $PSScriptRoot 'adoption-lib.ps1')   # the one reader of codeRepos (feature 018 extracted it from here)
+. (Join-Path $PSScriptRoot 'adoption-lib.ps1')   # the shared reader of codeRepos (feature 018 extracted it from here)
 
 $name = 'scope-repos'   # matches the ritual-checks member name (build-digests -> 'digests' precedent)
 

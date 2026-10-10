@@ -72,3 +72,75 @@ character codes (915, 199, 246) showed it, and the library string was confirmed 
 dash (U+2014). With the encoding set to UTF-8, as `scripts/enforcement-pack.ps1` does, the differences
 were zero. The lesson is recorded because the same code page is why the owner's console shows `ΓÇö` in
 this kit's output.
+
+### Review and remediation — phase 1
+
+Fresh-context AI review: `ai-code-review-phase-1.md`, verdict APPROVE WITH FOLLOW-UPS, no Blocker, no
+Major. The reviewer compared `Get-CodeRepos` with the original `Get-DeclaredRepos` over 30 record
+shapes (a UTF-8 BOM, CRLF, 5,000 entries, `CodeRepos` in another case, duplicate keys, a trailing comma,
+comments, null/empty/array/string roots, a directory named `kit-adoption.json`, invalid UTF-8, 5,000-deep
+nesting), under `$ErrorActionPreference = 'Stop'`: no difference in repositories or printed bytes, and
+nothing threw. It compared `Get-RepoMergeBase` with the original inline loop on 9 real repository
+situations (`-BaseRef`, an orphan trunk, no candidates, a missing ref): identical. It confirmed the
+code-repository CI template copies nothing and runs `scope-check-repos.ps1` from a full governance
+checkout, so the library is always present. It deleted one message line in a throwaway worktree and both
+the case and the exactness test failed, so `anchorFile` cannot pass vacuously. Coverage went from 210 of
+221 sites to 207 of 218, and `scope-check-repos.ps1` from 31 of 32 to 28 of 29: the three sites left the
+numerator and the denominator together, so the figure is not flattered.
+
+- **F1 (Minor): fixed.** Three comments overclaimed ("the one reader", and that the territory check
+  already reads it). `scripts/verify-kit.ps1` still validates `codeRepos` itself for the doctor
+  (feature 012 phase 2), and `scripts/territory-check.ps1` calls the library only from phase 3. The
+  comments now say what is true, and that this function does not replace the doctor's check.
+- **F2 (Minor): fixed.** The coverage sweep could not see code that moved into a library: a fourth
+  warning added to `adoption-lib.ps1` passed every test. `emission-idioms.json` now declares the library
+  and its accumulator, and a new test counts the library's emission lines against the sites the rules
+  that anchor on it declare. Shown to bite: a fourth unowned warning added temporarily fails it with
+  "4 emission line(s) match its accumulator, but the rules that anchor on it declare 3", and the file
+  was restored. `REPOS-` is now 158 tests, all passing.
+- **F3 (doc drift): fixed.** The `function` field of `REPOS-002/003/004` and the
+  `scope-check-repos.ps1` idiom note no longer name a function and a site that moved.
+- **F4 (Minor): fixed.** The `Existing` contract now says what it returns: on success the candidates up
+  to and including the one that resolved, and when no base resolved, every candidate that exists. Phase 3
+  reads it only in the second case.
+- **F7 (doc drift): fixed.** The `adoption-lib.ps1` header lists its consumers.
+- **F8 (Minor): fixed.** The T005 table the task asked for, below. The sentence that the owner's console
+  shows `ΓÇö` for the same reason is an inference I did not measure, and is withdrawn as a claim; the
+  character codes (915, 199, 246) establish the mojibake in my comparison only.
+- **F9 (accepted).** The `anchorFile` design is sound; its limits (block-comment lines, here-strings, two
+  messages on one line, an unvalidated field) are theoretical.
+
+**Carried to the owner's D5 conversation (task T016), not changed here:**
+
+- **F5.** `Get-CodeRepos` reads the record with `Test-Path` and `Get-Content -Path`, which interpret
+  wildcards, as the original did. A governance root whose path contains `[1]` therefore reads an
+  existing record as absent, with `Unusable` false and no warning. Harmless to the scope check as it
+  stands (it grades nothing for a project it believes has no code repositories, and says so), but phase 3
+  would turn it into `CLEAN`. The fix is `-LiteralPath`, a behaviour change for the scope check, so it is
+  the owner's call and belongs with D5.
+- **F6.** `Unusable` is false for a null, string or number root, for falsy entries dropped silently (an
+  empty string, `0`, `false`, `null`) and for numeric entries, which are accepted as directory names.
+  All of this matches the original. D5 should say whether any of it is "present but unusable".
+
+### T005: what `Get-CodeRepos` returns, per shape
+
+| Record | Repos | Warnings | Unusable |
+|---|---|---|---|
+| no file | none | 0 | false |
+| `{}` | none | 0 | false |
+| unparseable | none | 1 | true |
+| root array | none | 0 | false |
+| `codeRepos: null` | none | 0 | false |
+| a string | none | 1 | true |
+| a number | none | 1 | true |
+| an object | none | 1 | true |
+| `[]` | none | 0 | false |
+| `["api"]` | api | 0 | false |
+| `["api", "web"]` | api, web | 0 | false |
+| dots, underscores, hyphens | both kept | 0 | false |
+| a path, a backslash, `..`, `.`, a drive, a space | none | 1 each | true |
+| a mix of good and bad | api, web | 2 | true |
+| nulls and booleans among entries | api | 0 | false |
+| a duplicate | api, api | 0 | false |
+
+Each row is identical to what the original function returned and printed.

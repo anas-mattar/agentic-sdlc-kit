@@ -186,6 +186,36 @@ Describe 'rule inventory integrity' {
         $ambiguous.Count | Should -Be 0
     }
 
+    It 'every emission line of a declared library belongs to a rule that anchors on it' {
+        # Feature 018, phase 1 review F2. A rule may anchor on a message a shared LIBRARY emits
+        # ('anchorFile'), and the library has no grading-script entry, so the sweep that counts a
+        # script's emission sites cannot see it. A fourth message added to the library passed every
+        # test and belonged to no rule. This counts the library's own emission lines, by the
+        # accumulator declared for it in emission-idioms.json, against the sites the rules that
+        # anchor on that file declare. Neither more nor fewer: more is an unowned message, fewer is
+        # a rule whose message was removed or merged.
+        $unowned = @()
+        foreach ($lib in @($script:Idioms.libraries)) {
+            if (-not $lib) { continue }
+            $lines = @([IO.File]::ReadAllLines((Join-Path $script:ScriptsDir $lib.file)) | Where-Object { $_ -notmatch '^\s*#' })
+            $found = 0
+            foreach ($l in $lines) {
+                foreach ($acc in @($lib.accumulators)) { if ($l -match $acc) { $found++; break } }
+            }
+            $declared = 0
+            foreach ($rule in $script:Inventory.rules) {
+                if ($rule.PSObject.Properties.Name -contains 'anchorFile' -and $rule.anchorFile -eq $lib.file) {
+                    $declared += if ($rule.PSObject.Properties.Name -contains 'siteCount' -and $rule.siteCount) { [int]$rule.siteCount } else { 1 }
+                }
+            }
+            if ($found -ne $declared) {
+                $unowned += "$($lib.file): $found emission line(s) match its accumulator, but the rules that anchor on it declare $declared"
+            }
+        }
+        if ($unowned.Count -gt 0) { throw ($unowned -join "`n") }
+        $unowned.Count | Should -Be 0
+    }
+
     It 'every inventoried rule has a passing and a failing case, or a written exemption' {
         # FR-002, and FR-004's one way out. An exemption is not a TODO: it is a claim that a
         # faithful fixture cannot be built, it carries the reason in the inventory, and the

@@ -853,7 +853,7 @@
     {
       "id": "REPOS-002",
       "script": "scope-check-repos.ps1",
-      "function": "Get-DeclaredRepos",
+      "function": "Get-CodeRepos (called by Get-DeclaredRepos)",
       "summary": "kit-adoption.json is not valid JSON",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; adoption/updating.md (the record’s shape)",
       "emitAnchor": "WARN kit-adoption.json is not valid JSON",
@@ -863,7 +863,7 @@
     {
       "id": "REPOS-003",
       "script": "scope-check-repos.ps1",
-      "function": "Get-DeclaredRepos",
+      "function": "Get-CodeRepos (called by Get-DeclaredRepos)",
       "summary": "codeRepos is present but is not an array",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; adoption/updating.md",
       "emitAnchor": "WARN kit-adoption.json codeRepos is not an array",
@@ -873,7 +873,7 @@
     {
       "id": "REPOS-004",
       "script": "scope-check-repos.ps1",
-      "function": "Get-DeclaredRepos",
+      "function": "Get-CodeRepos (called by Get-DeclaredRepos)",
       "summary": "a codeRepos entry is a path, a traversal or a drive prefix rather than a plain directory name",
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F7",
       "emitAnchor": "WARN ignoring codeRepos entry",
