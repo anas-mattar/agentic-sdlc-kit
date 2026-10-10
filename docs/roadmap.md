@@ -85,6 +85,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Spec-directory single source (`CLAUDE.md`'s Feature Structure summarises and points at `docs/sdlc/branch-strategy.md` for the authoritative file set, rather than asserting an exhaustive list the kit's own shipped features contradict) | GAP-021 | P2 | idea | — | — |
 | Level declaration graded (a **Level Rationale** block in `spec.md` answering the four Critical triggers explicitly, plus criticalSurfaces path globs in the adoption record and a `scripts/enforcement-pack.ps1` check that fails a sub-Critical level whose Territory intersects them — the missing Standard-to-Critical trigger, built the way feature 012 taught a check to read the code repos) | GAP-023 | P1 | idea | — | — |
 | Enforcement assurance (a fixture-based test harness over every enforcement script: real temporary git repositories rather than mocks, expectations written by hand rather than through the scripts' own helpers, and a passing **and** a failing fixture per rule with that coverage itself machine-graded; the verdict vocabulary standardised, including a distinct state for a run that graded nothing; proven by closing the three recorded fail-opens as its first fixtures) | GAP-025, GAP-026, GAP-027 | P1 | shipped | anas.m | `specs/015-enforcement-assurance/` |
+| Multi-line code spans (the shared code-span function carries span state across the lines of a paragraph, proved on both consumers: the digest generator harvests a marker after a wrapped span, the amendment check keeps its per-line reading; a digest marker skipped inside an open comment now fails the run by file and line, DIGEST-020) | GAP-028 | P1 | shipped | anas.m | `specs/016-multiline-code-spans/` |
 
 ## Decisions log *(authored)*
 
@@ -387,3 +388,15 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   those projects, not a kit gap, and it is the owner's call.
 - 2026-09-26 **GAP-029 recorded from feature 015's phase 6 review**, and not folded into 015. Phase 6's Territory reaches the harness and `scripts/enforcement-pack.ps1`, not `scripts/territory-check.ps1`, so the phase recorded the script's four unassertable refusals and exempted them with a written reason rather than editing a script outside its Territory. The review then showed a fifth exemption was false — `Write-Warning` is not terminating — and the fixture built in its place exposed the `CLEAN`-over-a-skipped-comparison defect, which this row carries too. Owner's call (2026-09-26): a row now, a feature later.
 - 2026-09-26 **GAP-030 recorded from feature 015's phase 6 review**, rounds 4 and 5, and not folded into 015. The defect and the incomplete `-BaseRef` hint live in `scripts/scope-check-repos.ps1` and `scripts/ritual-checks.ps1`, outside phase 6's Territory, so the phase disclosed them to adopters instead of editing them. Owner's call (2026-09-26): a row now. The same commit removes a stray backspace byte (0x08) from `specs/014-amendment-authority/notes.md`, where a literal backslash-b was meant.
+- 2026-10-10 Feature 016 shipped; GAP-028 closed. A code span that wraps within a paragraph no
+  longer leaves its `<!--` armed: `Convert-CodeSpanMarkers` in `scripts/markdown-lib.ps1` pairs spans
+  across the lines of a paragraph, and the digest generator (`scripts/build-digests.ps1`) harvests
+  the marker that follows. The amendment check deliberately keeps its per-line reading, so a
+  swallowed or hidden approver record behaves as it did (fail-closed, no new fail-open). "GAP-025
+  closed" now holds for the multi-line shape too, with one exception recorded in the feature: an
+  unpaired `<!--` in prose still opens a comment in the kit's reading where a renderer shows plain
+  text. That disagreement is not fixed. It is made loud instead: a digest marker skipped inside an
+  open comment fails the run (`skipped digest marker: <path>:<line>`, DIGEST-020), and the new
+  gap for the owner is drafted in the feature's `notes.md` (T026). Measured on the three adopted
+  projects: three scripts and the updating note flow down, no surgical file, every digest
+  byte-identical, every verdict unchanged.
