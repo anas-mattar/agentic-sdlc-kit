@@ -1929,6 +1929,88 @@
       "law": "feature 018 plan D2, D3; docs/sdlc/team-workflow.md rule 5",
       "emitAnchor": "was NOT fully compared (",
       "notes": "Added in feature 018 phase 2 (GAP-029 governance half). Eight cases over skipped-claim recipes: fail and pass (text), fail-overlap (the overlap and the ungraded line together, exit 2), fail-stale (a stale overlap beside a skipped claim, exit 0), fail-two and fail-two-json (two skipped claims), fail-json and pass-json (CLEAN false with UNGRADED listing the entry, against CLEAN true and UNGRADED empty). The per-entry 'UNGRADED: ' line and the JSON emitter are accumulator patterns, owned by this rule's verdict."
+    },
+    {
+      "id": "TERR-014",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "two features that touch the same file in a declared code repository overlap, and the file is reported with its repository prefix",
+      "law": "feature 018 spec FR-001, FR-002, FR-004, FR-006, FR-007; plan D4, D6; docs/sdlc/team-workflow.md rule 5",
+      "emitAnchor": "Write-Host \"  $_\"",
+      "notes": "Added in feature 018 phase 3. The anchor is the line that prints each shared file under an OVERLAP header, which TERR-003 owns; it is the site where a code-repository path (api/src/Orders.cs) reaches the reader, so the overlap itself is pinned here. Twelve cases, in nested independent repositories with origin 'self' and governance branches that never share a file: fail and fail-json (one overlap), fail-two-repos, pass-same-path-two-repos (the prefix keeps a shared relative path apart), fail-rename (a rename counts at both paths), fail-own-uncommitted and pass-uncommitted-other-branch (a working-tree edit counts only when the repository is checked out on the branch under check), pass-stale (reclaimable, exit 0), fail-code-only-liveness (a feature stale in governance and live in code is live), fail-overlap-and-ungraded (an overlap beside a repository not compared: both printed, exit 2), and pass and pass-json (the CLEAN line naming what was compared)."
+    },
+    {
+      "id": "TERR-015",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a declared code repository that is not present is ungraded by name, never skipped into CLEAN",
+      "law": "feature 018 spec FR-008, FR-009; plan D2, D4",
+      "emitAnchor": "'not-present'",
+      "notes": "Added in feature 018 phase 3. fail and fail-json differ from pass in one thing: the nested repository is absent (a governance-only checkout). The verdict is UNGRADED, exit 0, with no CLEAN anywhere in the output."
+    },
+    {
+      "id": "TERR-016",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a declared directory that is not the root of a repository of its own is ungraded, because git would answer for the governance history instead",
+      "law": "feature 018 spec FR-009; feature 012 (the same test the scope check applies)",
+      "emitAnchor": "'not-a-repository'",
+      "notes": "Added in feature 018 phase 3. Both directions carry a governance-tracked api/README.md; the passing one also has a repository of its own at api, the failing one has only the tracked directory. The test is copied from scripts/scope-check-repos.ps1 rather than shared, because that script was outside this phase's Territory; it is recorded in notes.md as a follow-up."
+    },
+    {
+      "id": "TERR-017",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a code repository with no resolvable trunk is ungraded and the candidates tried are named",
+      "law": "feature 018 spec FR-005, FR-009; plan D4",
+      "emitAnchor": "'no-trunk'",
+      "notes": "Added in feature 018 phase 3. Both directions have no origin, deliberately: git fetch (2.48 and later) creates origin/HEAD, which in a fixture whose remote is itself names the feature branch, and a candidate that resolves to the branch under check is not a trunk. The failing repository's only branch is the feature branch."
+    },
+    {
+      "id": "TERR-018",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a code repository whose remote cannot be fetched is ungraded, not compared from a stale local view",
+      "law": "feature 018 spec FR-009; plan D4 (research R2)",
+      "emitAnchor": "'fetch-failed'",
+      "notes": "Added in feature 018 phase 3. The failing repository's origin points at a path that does not exist."
+    },
+    {
+      "id": "TERR-019",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "another feature's branch that cannot be compared in a code repository is ungraded, naming the repository and the feature",
+      "law": "feature 018 spec FR-009; plan D4 (research R3)",
+      "emitAnchor": "'branch-uncomparable'",
+      "siteCount": 2,
+      "notes": "Added in feature 018 phase 3. Two sites record the cause: the branch under check and another feature's branch. The fail case exercises the second: the tip commit of 012-other is truncated, so the ref still exists and resolves by name and reading it fails (the unreadable-commit state feature 015 added). fail-own-branch exercises the first, by truncating the tip of the branch under check. Both directions have no origin so the corrupt object is not fetched through."
+    },
+    {
+      "id": "TERR-020",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a codeRepos declaration that is present and cannot be read in full is ungraded by name, in the scope check's own words",
+      "law": "feature 018 spec FR-003, FR-013 (as amended, plan D5); research R6",
+      "emitAnchor": "'declaration-unusable'",
+      "notes": "Added in feature 018 phase 3. The failing recipe declares codeRepos as a string. The reader is Get-CodeRepos in scripts/adoption-lib.ps1, the scope check's own; its message is carried in the entry's detail, with the WARN prefix removed."
+    },
+    {
+      "id": "TERR-021",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a code repository with no origin is compared against its local branches only, and the output says so on its own line",
+      "law": "feature 018 spec Assumptions (the remote of a code repository); plan D4 (research R2)",
+      "emitAnchor": "local branches only",
+      "notes": "Added in feature 018 phase 3. A note, not an ungraded entry: nothing was skipped, the limit of what was compared is stated. The run still ends CLEAN when nothing overlaps, and the note precedes the verdict. The fail direction is the condition present (no origin); both exit 0."
+    },
+    {
+      "id": "TERR-022",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a project that declares no code repositories sees the original CLEAN text, byte for byte, and the code repository is not read",
+      "law": "feature 018 spec FR-013; plan D7",
+      "emitAnchor": "open feature branch$comparedNote",
+      "notes": "Added in feature 018 phase 3, sharing the CLEAN verdict site with TERR-002. pass (no codeRepos key) and pass-empty (an empty array) run over a layout in which api exists and WOULD overlap, and print the original line: that is what proves it is not read. fail declares api over the same layout and the overlap appears."
     }
   ]
 }

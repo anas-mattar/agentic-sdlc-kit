@@ -1,0 +1,3 @@
+compared api: local branches only
+UNGRADED: api: cannot compare 012-other (no merge base with main)
+UNGRADED — '011-thing' was NOT fully compared (1 comparison(s) not made, listed above), so this is not a clean result.

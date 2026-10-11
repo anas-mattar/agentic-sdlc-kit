@@ -1,0 +1,2 @@
+UNGRADED: codeRepos: declaration unusable — kit-adoption.json codeRepos is not an array — ignoring it (shape: adoption/updating.md)
+UNGRADED — '011-thing' was NOT fully compared (1 comparison(s) not made, listed above), so this is not a clean result.

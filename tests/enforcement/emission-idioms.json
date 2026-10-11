@@ -187,12 +187,15 @@
         "Write-Host\\s+['\"](no remote|CLEAN —|OVERLAP with|UNGRADED: |UNGRADED —|Overlap is sequenced|Only stale claims)",
         "ConvertTo-Json -Compress",
         "Write-Error\\s",
-        "Write-Warning\\s"
+        "Write-Warning\\s",
+        "Write-Host\\s+\"  \\$_\"",
+        "Add-Ungraded\\s+[\\$']",
+        "\\$notes\\s*\\+="
       ],
       "notRules": [
         {
-          "anchor": "UNGRADED: $($u.repo): cannot compare",
-          "reason": "The per-entry printer of the ungraded accumulator (feature 018 phase 2). The condition is TERR-013, which owns the verdict line; this line only lists the entries the accumulator already holds, as the FAIL pair does in enforcement-pack."
+          "anchor": "UNGRADED: $($u.repo): $what",
+          "reason": "The per-entry printer of the ungraded accumulator (feature 018 phases 2 and 3). The conditions are TERR-013 (a skipped claim, which owns the verdict line) and TERR-015 to TERR-020 (one rule per cause, each owning the Add-Ungraded call that records it); this line only lists the entries the accumulator already holds, as the FAIL pair does in enforcement-pack."
         }
       ],
       "note": "Resolved in T034, and the answer to the question this entry used to ask is: it emits no FAIL rule at all, because it is not a gate. ritual-checks.ps1 runs six members (seven in an adopted project) and this is not one of them; its exit 2 asks two owners to agree a merge order rather than refusing a commit, which is team-workflow rule 5 working as designed. Twelve sites: five prose verdicts, two JSON emitters, four Write-Error diagnostics and one Write-Warning. The last five are counted and left UNCOVERED on purpose. Write-Error under ErrorActionPreference='Stop' throws before the 'exit 1' beneath it, and what reaches the reader is a PowerShell error record — the host's text, with the kit's absolute script path, a line number, a caret rule and ANSI colour in it. Measured, not assumed. No hand-written expectation can pin that, it differs between hosts and versions, and it is the one place in the kit where SC-008 cannot be met: a reader cannot name the rule from the report because the report is not the rule's. Every other grading script writes its own message and chooses its own exit code."

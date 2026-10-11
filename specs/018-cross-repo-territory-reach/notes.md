@@ -186,3 +186,74 @@ line). The `fail*` cases therefore fail today for the reason the rule names, and
 - **F6.** Reading recorded: "`UNGRADED` is always present" in the contract means on every run that
   compares. The `no remote` state is deliberately untouched (plan D3; `TERR-006/007` `fail` directions), so
   its JSON still has no `UNGRADED`. Phase 3 must not change it as a side effect.
+
+## Phase 3: the reach
+
+### T015: the fixtures against the phase 2 tip
+
+Run before `scripts/territory-check.ps1` was touched in this phase (`-Case territory-check/`, the 24 new
+cases). Every `fail*` case failed on output: nothing reads a code repository, so the script printed
+`CLEAN` over each overlap and over each cause. Seven `fail*` cases and `TERR-014/pass-stale` exited as
+expected and failed on text only. `TERR-022/pass` and `pass-empty` (no `codeRepos` / an empty one) and
+`TERR-014/pass-json` already passed. **The task's expectation "the `pass*` cases already pass" held only
+for those three.** Every other `pass` prints the new `CLEAN ... (compared governance and api against 1
+open claim(s))` text, which the phase 2 script cannot print, so those fail today for the reason the
+feature adds. That is the contract's text, not a fixture defect.
+
+### T016: plan D5
+
+Decided before this phase: the amendment to spec FR-013 and US3 scenario 2 is approved (commit
+`e686026`, "Amendment approved by: anas.m, 2026-10-11"; plan D5 carries the same line). Implemented as
+amended: an absent or empty `codeRepos` is unchanged, a present but unusable one is UNGRADED by name.
+
+### Decisions taken while implementing (each inside the plan; recorded because a reviewer may differ)
+
+- **`not-a-repository` is a copy, not a share.** `scripts/scope-check-repos.ps1` tests that a declared
+  directory is the root of its own repository (`rev-parse --show-toplevel` against the path). Sharing it
+  means editing that script, which is outside this phase's Territory, so the territory check carries the
+  same five lines with a comment. This is the duplication feature 013 paid for; the follow-up is to move
+  it into `scripts/scope-lib.ps1` next to `Get-RepoMergeBase` and call it from both.
+- **The branch under check reads both refs.** Plan D4 says `origin/<branch>` falling back to a local head.
+  For the branch under check the check reads both when both exist and unions them: a developer's unpushed
+  commits are in the local head and a colleague's pushed ones in the remote-tracking ref, and either alone
+  would miss one. Other features keep D4's order.
+- **`TERR-021`'s note is not an ungraded entry.** Spec Assumptions: a repository with no `origin` "is
+  compared against its local branches only, and the output says so". The task's `fail` wording for
+  `TERR-021` ("UNGRADED ... no CLEAN anywhere") reads as a template for the other six, and plan Risks says
+  only a failed fetch makes the run ungraded. Implemented as a `compared <repo>: local branches only`
+  line before the verdict; the run can still end `CLEAN`. If the owner wants the stronger reading it is a
+  one-line change and a changed expectation in `TERR-019`, `TERR-021` and `TERR-017`.
+- **`origin/HEAD` is not a trunk in a fixture whose remote is itself.** `git fetch` (2.48 and later)
+  creates `refs/remotes/origin/HEAD`, and for `origin: self` it names the checked-out feature branch, so a
+  repository whose only branch is the feature branch still "has" the trunk candidate `origin/HEAD`. In a
+  real clone `origin/HEAD` names the remote's default branch. `TERR-017` therefore has no origin in either
+  direction. Not a defect in the check; a limit of the self-origin fixture.
+- **The corrupt-ref cases have no origin either**, so the truncated commit is not carried through a fetch,
+  which would make the repository `fetch-failed` instead of `branch-uncomparable`.
+- **`fail-code-only-liveness`** uses a governance commit 450 hours old and a code commit 2 hours old. A
+  governance branch with zero commits ahead of the trunk cannot be built (a recipe commit is always a
+  commit), so "claimed, no work yet" is reached only by the pre-existing governance path.
+
+### T023: a throwaway layout built by hand, outside the harness
+
+Two features, `api` as a code repository with its own `origin` (itself), `kit-adoption.json` declaring it,
+run from the governance root on `011-thing`:
+
+| State | Printed | Exit |
+|---|---|---|
+| both features edit `api/src/Orders.cs` | `OVERLAP with 012-other [live]:` / `api/src/Orders.cs` and the sequencing guidance | 2 |
+| the other feature drops its edit | `CLEAN - '011-thing' shares no files ... (compared governance and api against 1 open claim(s)).` | 0 |
+| `api` renamed to `api-moved` | `UNGRADED: api: not present in this checkout`, then the `UNGRADED -` verdict | 0 |
+| `api` removed | the same | 0 |
+| `api` rebuilt, `origin` a path that does not exist, `-Json` | `{"BRANCH":"011-thing","CLEAN":false,"OVERLAPS":[],"UNGRADED":[{"repo":"api","feature":null,"cause":"fetch-failed","detail":"git fetch origin failed in the repository"}]}` | 0 |
+| `api` with no `origin` | `compared api: local branches only`, then `CLEAN ... (compared governance and api against 1 open claim(s))` | 0 |
+
+(The em dash prints as a hyphen in this console; the harness pins the real character.)
+
+### Carried forward
+
+- **Phase 1 review F5 is live in this phase.** `Get-CodeRepos` reads the record with `Test-Path` and
+  `Get-Content -Path`, which interpret wildcards. A governance root whose path contains `[` or `]` reads an
+  existing record as absent, with `Unusable` false: the territory check then declares no code
+  repositories and prints the original `CLEAN`. The fix is `-LiteralPath` in `scripts/adoption-lib.ps1`,
+  outside this phase's Territory and a behaviour change for the scope check, so it is the owner's call.

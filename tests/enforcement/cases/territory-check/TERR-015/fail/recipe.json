@@ -1,0 +1,46 @@
+{
+  "description": "api is declared and there is no such directory (a governance-only checkout). UNGRADED, naming api and the cause; exit 0 and no CLEAN anywhere.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"api\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011",
+      "hoursAgo": 3,
+      "write": {
+        "specs/011-thing/spec.md": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "spec: 012",
+      "hoursAgo": 2.0,
+      "write": {
+        "specs/012-other/spec.md": "other\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self"
+}
