@@ -168,7 +168,8 @@ Plan D7 chose `docs/sdlc/review-process.md`. It is the document a reviewer reads
 "Check:" list is where a reviewer is told what to look for in a diff, so the sentence is a new item there: block
 structure of every document the diff touches, a `digest:` marker sits on its own line **after** a table or a
 list, never inside one, and `scripts/doc-lint.ps1` now fails a severed table or list. A digest marker of 103
-characters follows it. (FR-009's open question, which document owns the sentence, is thereby resolved.)
+characters of marker text (120 as a whole comment line) follows it; the generator's 120-character cap measures
+the text after `digest: `, and that is the count used in these notes. (FR-009's open question, which document owns the sentence, is thereby resolved.)
 
 ### T014: the flow-down note
 
@@ -176,7 +177,7 @@ characters follows it. (FR-009's open question, which document owns the sentence
 the findings with the fix for each), that a finding fails an adopted project's run (decided at spec approval),
 which verbatim files flow down (`scripts/doc-lint.ps1` and `scripts/markdown-lib.ps1` together, the review
 process document, `adoption/updating.md`), what does not change (the OK line, every other check, every exit
-code), the measurement, and what to do. Two digest markers of 114 and 111 characters. The note's own table was
+code), the measurement, and what to do. Two digest markers of 114 and 111 characters of marker text (131 and 128 as whole comment lines). The note's own table was
 first drafted with the delimiter row written as a code span containing pipes, which GitHub would split into
 cells: the new check would have flagged the note that announces it, so the row is described in words.
 
@@ -229,3 +230,15 @@ using.
 
 1211 is phase 2's count: this phase changed documents and digests only, so it added no case. Phase counts across
 the feature: 1147 (the parent) to 1179 (phase 1) to 1193 (its remediation) to 1211 (phase 2) to 1211.
+
+### Phase 3 review remediation (review: `ai-code-review-phase-3.md`, APPROVE with follow-ups)
+
+Fixed in documents only: F1 (the trailing newline `docs/roadmap.md` lost in the phase 3 commit, restored), F2
+(the flow-down note now says what a half-applied update does: a new `doc-lint.ps1` beside an old
+`markdown-lib.ps1` stops with an unrecognized-function error until the other file arrives; the reverse is
+harmless), F3 (the marker lengths are stated as characters of marker text, the generator's count, with the
+whole-line figures beside them) and F4 (the decisions-log entry lists every accepted limit from the phase 1 and
+phase 2 reviews, and the flow-down note says how the one that can fail an adopter, a dash-only row after a gap or
+header-less pipe prose reported as `severed-delimiter`, looks and what to do). No script, fixture or digest
+changed, so the full harness was not re-run; `ritual-checks.ps1` is `RESULT OK` and `build-digests.ps1` leaves no
+content change (three digests that only gained CRLF were restored).

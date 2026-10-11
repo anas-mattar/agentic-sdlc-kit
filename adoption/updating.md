@@ -789,7 +789,10 @@ no structure finding.
 `scripts/doc-lint.ps1`, `scripts/markdown-lib.ps1` (`doc-lint.ps1` now dot-sources it, so the two must
 arrive together; `update-kit.ps1` copies every `scripts/*.ps1`), `docs/sdlc/review-process.md` (the AI
 review checklist gains a block-structure item) and this document. Expect the review digest to gain one line
-and the adoption digest two; run `scripts/build-digests.ps1`.
+and the adoption digest two; run `scripts/build-digests.ps1`. A half-applied update is the one way this goes
+wrong: `markdown-lib.ps1` is not new to you, but its structure reader is, so a new `doc-lint.ps1` beside an
+old `markdown-lib.ps1` stops with an unrecognized-function error and `doc-lint.ps1` and `ritual-checks.ps1`
+stay red until the other file arrives. An old `doc-lint.ps1` beside a new library is harmless.
 
 **What does NOT change.** The path, slot and manifest checks and their output, every exit code, and the
 `doc-lint: OK` line. The check is **not a Markdown renderer**: it grades the four rules above and nothing
@@ -807,8 +810,11 @@ so: no real adopter document was flagged, so the fixes in the table above are pr
 by an adopter's case.
 
 **What to do about it.** Take the update. If `doc-lint.ps1` now names a file and line, apply the fix in the
-table; the most likely cause is a `digest:` marker or a blank line inside a table. A wrapper that treated a
-`doc-lint.ps1` pass as covering layout should stop doing so for anything the four rules do not name.
+table; the most likely cause is a `digest:` marker or a blank line inside a table. One report may look
+wrong: a row of only dashes directly after a blank or comment line, or prose that starts with a pipe and has
+no header above it, is read as a delimiter row and reported as `severed-delimiter`; give it a header row, or
+write it without the leading pipe. A wrapper that treated a `doc-lint.ps1` pass as covering layout should
+stop doing so for anything the four rules do not name.
 
 <!-- digest: doc-lint now fails a table or list severed by a comment or blank line, and a ragged table row; fix it where named. -->
 <!-- digest: A doc-lint structure finding fails an adopted project too: put a digest marker after a block, never inside one. -->

@@ -465,7 +465,11 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   no verdict moved, `ritual-checks` `RESULT OK` throughout. **Open by decision**, on the record: this is not a
   renderer and grades four rules only (GitHub-flavoured, silent where renderers differ); the phase 1 and phase 2
   reviews' accepted limits stand (an unclosed comment, or an empty one written without its dashes, hides the rest of its document; a double
-  backslash before a pipe is read as an escaped backslash and then a boundary; a comment between lists of different type is still reported, a
-  comment indented one to three spaces is not remembered); no real adopter document was flagged, so the fixes are
+  backslash before a pipe is read as an escaped backslash and then a boundary, so a delimiter row holding one
+  is accepted where GitHub would not; two tables with no blank line between them are one table, as on GitHub,
+  so differing column counts give several ragged-row reports; a row of only dashes after a gap, or pipe prose
+  with no header, is reported as a severed delimiter and the rest of that run is not graded; a comment between
+  lists of different type is still reported; and, silent by design, a comment indented one to three spaces is
+  not remembered and a tab continuation or lazy text resets a list); no real adopter document was flagged, so the fixes are
   proved by fixtures rather than by an adopter's case. "Shipped" and "closed" here mean built, reviewed and
   measured: the human review at merge is still to come.
