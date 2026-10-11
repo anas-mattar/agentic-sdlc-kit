@@ -266,8 +266,8 @@ function Get-FencedLineMap {
 # A table starts at a header row directly followed by a delimiter row (|---|---|) and runs while
 # lines start with a pipe after at most three spaces of indent; four spaces is a code block. A run
 # of pipe lines with no delimiter row is prose and is never examined. Cells are counted as the
-# renderer splits them: one leading and one trailing pipe dropped, an escaped pipe not a boundary,
-# every other pipe a boundary (a pipe inside a code span included, as on GitHub). Fenced lines are
+# renderer splits them: one leading and one trailing pipe dropped, a backslash escaping the character
+# after it (so \| is not a boundary and \\| is an escaped backslash and then one), every other pipe a boundary (a pipe inside a code span included, as on GitHub). Fenced lines are
 # skipped (Get-FencedLineMap); a comment block that spans lines is one gap, not several.
 #
 # Findings are objects with Line (1-based), Rule and Detail:
@@ -276,7 +276,7 @@ function Get-FencedLineMap {
 #   ragged-row         a row, or a delimiter row, whose cell count differs from its header's
 function Get-StructureCellCount {
     param([string]$Row)
-    $t = $Row.Trim().Replace('\|', '')
+    $t = [regex]::Replace($Row.Trim(), '\\.', '')
     if ($t.StartsWith('|')) { $t = $t.Substring(1) }
     if ($t.EndsWith('|')) { $t = $t.Substring(0, $t.Length - 1) }
     return ($t.Length - $t.Replace('|', '').Length) + 1
@@ -285,7 +285,7 @@ function Get-StructureCellCount {
 function Test-StructureDelimiterRow {
     param([string]$Row)
     if ($Row -notmatch '^ {0,3}\|') { return $false }
-    $t = $Row.Trim().Replace('\|', '')
+    $t = [regex]::Replace($Row.Trim(), '\\.', '')
     if ($t.StartsWith('|')) { $t = $t.Substring(1) }
     if ($t.EndsWith('|')) { $t = $t.Substring(0, $t.Length - 1) }
     foreach ($cell in $t.Split('|')) {
@@ -301,8 +301,9 @@ function Get-StructureFindings {
     $fenced = Get-FencedLineMap -Lines $Lines
 
     # What each line is, for the walk below: fence, comment (a comment-only line, or any line of a
-    # comment block that spans lines), blank, row (starts with a pipe, at most three spaces of
-    # indent), or other. A comment span opened on a line that has more text after the close is text.
+    # block that spans lines), blank, row (starts with a pipe, at most three spaces of indent), or
+    # other. A line that starts with a comment opener is an HTML block that ends at the line holding
+    # the closer, whatever text follows it, and ends a table as a comment-only line does.
     $kind = New-Object 'string[]' $Lines.Count
     $inComment = $false
     for ($i = 0; $i -lt $Lines.Count; $i++) {
@@ -316,9 +317,9 @@ function Get-StructureFindings {
         }
         if ($trim -eq '') { $kind[$i] = 'blank'; continue }
         if ($trim.StartsWith('<!--')) {
-            if ($trim -match '^(<!--.*?-->\s*)+$') { $kind[$i] = 'comment'; continue }
-            if (-not $trim.Contains('-->')) { $kind[$i] = 'comment'; $inComment = $true; continue }
-            $kind[$i] = 'other'; continue
+            $kind[$i] = 'comment'
+            if (-not $trim.Substring(4).Contains('-->')) { $inComment = $true }
+            continue
         }
         $kind[$i] = if ($l -match '^ {0,3}\|') { 'row' } else { 'other' }
     }
@@ -330,8 +331,11 @@ function Get-StructureFindings {
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         switch ($kind[$i]) {
             'row' {
-                $isDelim = Test-StructureDelimiterRow $Lines[$i]
-                $startsTable = (-not $isDelim) -and ($i + 1 -lt $Lines.Count) -and
+                # Inside a live table (no gap since the last row) every row is a body row, a row of
+                # dashes included: only after a gap or outside a table can a header or a delimiter start.
+                $live = $inTable -and (-not $gap)
+                $isDelim = (-not $live) -and (Test-StructureDelimiterRow $Lines[$i])
+                $startsTable = (-not $live) -and (-not $isDelim) -and ($i + 1 -lt $Lines.Count) -and
                     ($kind[$i + 1] -eq 'row') -and (Test-StructureDelimiterRow $Lines[$i + 1])
                 if ($startsTable) {
                     $cols = Get-StructureCellCount $Lines[$i]

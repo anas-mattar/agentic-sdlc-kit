@@ -71,3 +71,30 @@ Run on this working tree after the repair (the isolated-checkout run of the fina
 
 Every pre-existing case is unchanged: the difference between the two full runs is exactly the 32 new
 assertions.
+
+### Phase 1 review remediation (review: `ai-code-review-phase-1.md`, REQUEST CHANGES)
+
+F1 (blocking), F2, F3 and F4 fixed; F5 to F7 left as recorded.
+
+- **F1.** Inside a live table (no gap since the last row) every row is a body row, a row of dashes included:
+  only after a gap, or outside a table, can a header or a delimiter start. `| - | - |` as the first body row
+  was reported as `severed-delimiter`, which would have failed an adopter's CI on a valid table, and a body row
+  followed by a dash-only row reset the header's cell count. New fixtures: `pass-placeholder-row`,
+  `pass-placeholder-single-column`, `fail-placeholder-ragged` (a three-cell dash row under a two-cell header is
+  a ragged row, line 9).
+- **F2.** The `doc-lint.ps1` note in `emission-idioms.json` now says five idioms and three accumulators and
+  names `$structure`.
+- **F3.** A line that *starts* with a comment opener is an HTML block that ends at the line holding the closer,
+  whatever follows it, so it ends a table like a comment-only line (`fail-comment-with-text`). A backslash now
+  escapes the next character, so an escaped backslash followed by a pipe leaves the pipe as a boundary
+  (`pass-escaped-backslash`); the old count removed only the two-character sequence for an escaped pipe.
+- **F4.** `pass-eof` cannot fail on its own (the line reader hides a missing final newline), so the same
+  severed table is added with no trailing newline (`fail-eof`) and with CRLF endings (`fail-crlf`), putting both
+  conditions in the failing direction too. These two pass on the pre-fix scanner by design: they are
+  regression cover, not new behaviour.
+
+Run on the pre-fix scanner (the library file stashed), the five behaviour fixtures fail (`-Case DOC-010/<name>`:
+two failed assertions each, one for `fail-placeholder-ragged`, whose exit code was already 1), and `fail-eof`
+and `fail-crlf` pass. With the fix, `-Case DOC-` is 117 passed, 0 failed (103 plus 14 = 7 cases x 2), and the full harness on this
+working tree is **1193 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` (1179 plus the same 14), with
+`doc-lint.ps1` still 11 of 11 sites fixtured.
