@@ -37,7 +37,7 @@ Never invent a new UI layout when visual references exist.
 
 ## Feature Structure
 
-Branch `NNN-name` maps to directory `specs/NNN-name/` — always, with exactly these names:
+Branch `NNN-name` maps to directory `specs/NNN-name/` — always. The core documents, with exactly these names:
 
 ```text
 specs/NNN-name/
@@ -50,8 +50,14 @@ specs/NNN-name/
 └── research.md      # optional
 ```
 
-This structure is law even when tooling is absent. If the `/speckit.*` commands are
-unavailable (kit partially installed), do NOT invent a different layout: create this exact
+That list is the core, not the whole set. `docs/sdlc/branch-strategy.md` ("Spec Directory
+Contents") is the authoritative file set: it also holds `notes.md`, `quickstart.md`,
+`checklists/`, and the per-feature AI review, human review and rollback files from
+`specs/_templates/`. Create whatever the lane requires; never decline a file because this
+summary omits it.
+
+The layout is law even when tooling is absent. If the `/speckit.*` commands are
+unavailable (kit partially installed), do NOT invent a different layout: create the core
 structure manually from the templates in `.specify/templates/`, and report the incomplete
 install so the user can finish it (see `adoption/`, step 0).
 
