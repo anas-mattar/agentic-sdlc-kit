@@ -70,11 +70,33 @@ reported by position instead of as a generic non-string entry.
 
 | Measurement | Parent | Phase 1 |
 |---|---|---|
-| `-Case VK-` | n/a | 185 passed, 0 failed |
+| `-Case VK-` | 167 passed | 185 passed, 0 failed |
+| `-Case CRIT-` | 75 passed | 79 passed, 0 failed |
+| `-Case CLAIM-` | 67 passed | 67 passed, 0 failed (untouched) |
 | Full harness | 1211 passed | **1233 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
 | Coverage, `verify-kit.ps1` | 34 of 35 | 36 of 37 site(s) fixtured (the two new sites) |
 | Coverage, whole | 218 of 230 | 220 of 232 (exemptions unchanged) |
 
 The difference between the two full runs is exactly the 22 new assertions (4 + 3 + 2 + 2 = 11 cases,
 each with an exit code and an output assertion). Every pre-existing case is unchanged. Run on this working tree;
-the isolated-checkout run of the final commit is T020.
+the isolated-checkout run of the final commit is phase 4's T020 (the phase 1 review also ran the full harness on an
+isolated checkout of `743f148`: 1233 passed).
+
+### Deviation acknowledgement (owner)
+
+T001 asked for three saved doctor transcripts; phase 1 proves byte-identity at the reader instead (the reason is
+under T001 above). The phase 1 reviewer found the deviation justified. It is a departure from approved `tasks.md`
+wording, so it is listed here for the owner to acknowledge when certifying the phase 1 gate.
+
+### Remediation of the phase 1 review (F1, F2, F5)
+
+- **F1** (`adoption-lib.ps1`): the kept entry of a duplicate is now found through the same
+  `OrdinalIgnoreCase` dictionary that detects the duplicate, so a denial in a later copy is never lost when `-ieq`
+  and the ordinal comparer disagree (U+1E9B against U+1E60 now reads as one denied person; before, the assignment
+  threw and the denial was dropped).
+- **F2** (`adoption-lib.ps1`): `"name": ["a"]` is read as an unusable name, not as `a`; new fixture
+  `VK-017/fail-name-is-array`, which fails on the phase 1 reader (2 failed there) and passes now.
+- **F5**: this note's T020 reference, the missing `-Case CRIT-`/`-Case CLAIM-` counts and the header comment's
+  `Count` entry are corrected; the deviation is listed above for the owner to acknowledge (not yet acknowledged).
+- **Result**: full harness 1235 passed, 0 failed (1233 + the two assertions of the new fixture); `-Case VK-` 187.
+- **Not changed**: F3 and F4 (nits, harmless) and F6 (carried into the phase 4 guidance).

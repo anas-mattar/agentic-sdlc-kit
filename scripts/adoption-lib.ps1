@@ -34,8 +34,8 @@
 #
 # Returns:
 #   Mode      'solo' | 'team'
-#   Count     usable developers after trimming, dropping non-strings/blanks, and collapsing
-#             duplicates case-insensitively
+#   Count     usable developers after trimming, dropping blank or non-string entries and objects
+#             with no usable name, and collapsing duplicates case-insensitively across both forms
 #   Why       one clause naming the reason, for the caller's message
 #   Declared  whether the record declares the field at all, so no caller needs its own notion
 #             of "is this declared" — a second such notion had grown in the doctor
@@ -127,7 +127,10 @@ function Get-DeveloperMode {
         }
         if ($e -isnot [PSCustomObject]) { $generic++; continue }
         $props = @($e.PSObject.Properties.Name)
-        $name = if ($props -contains 'name') { $e.name } else { $null }
+        # An assignment inside the if, not the if as an expression: an expression unrolls a one-element
+        # array to its element, and "name": ["a"] would read as the name "a" (021 phase 1 review, F2).
+        $name = $null
+        if ($props -contains 'name') { $name = $e.name }
         if ($name -isnot [string] -or [string]::IsNullOrWhiteSpace($name)) {
             $entryProblems.Add(@{ Message = "kit-adoption.json developers entry $pos is an object with no usable name"; Fix = 'give it a non-empty "name", or remove it — an entry with no name is dropped before the count is taken, which can silently move the project from team back to solo' })
             continue
@@ -170,20 +173,19 @@ function Get-DeveloperMode {
     # ONE comparer for detecting duplicates and for naming them. Two comparers that disagree
     # would dereference an empty group (013 phase 4 re-review, N6).
     foreach ($ep in $entryProblems) { $problems.Add($ep) }
-    $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    # The kept entry is found through the SAME comparer, never a second one: `-ieq` and OrdinalIgnoreCase
+    # disagree on a few characters, and a lookup that finds nothing dropped the denial (review F1).
+    $seen = [System.Collections.Generic.Dictionary[string, object]]::new([StringComparer]::OrdinalIgnoreCase)
     $unique = [System.Collections.Generic.List[string]]::new()
     $rosterOut = [System.Collections.Generic.List[object]]::new()
     $firstDupe = $null
     foreach ($d in $parsed) {
         $n = $d.Name
-        if ($seen.Add($n)) { $unique.Add($n); $rosterOut.Add($d) }
+        if (-not $seen.ContainsKey($n)) { $seen[$n] = $d; $unique.Add($n); $rosterOut.Add($d) }
         else {
             if (-not $firstDupe) { $firstDupe = $n }
             # the same person written twice: a denial in any copy denies the person
-            if (-not $d.CanApproveCritical) {
-                $kept = $rosterOut | Where-Object { $_.Name -ieq $n } | Select-Object -First 1
-                $kept.CanApproveCritical = $false
-            }
+            if (-not $d.CanApproveCritical) { $seen[$n].CanApproveCritical = $false }
         }
     }
     if ($firstDupe) {
