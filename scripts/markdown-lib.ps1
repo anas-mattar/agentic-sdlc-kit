@@ -29,7 +29,10 @@
     business; 016's phase 2 is scoped to make build-digests report a marker it passes over
     inside one.
 
-    Three of these functions were enforcement-pack.ps1's. They live here because the next
+    Feature 020 added the structure reader (Get-StructureFindings): how a table renders, as against how it
+    is written, so a comment or blank line inside one is found instead of silently ending it (GAP-015).
+
+    Three of the first functions here were enforcement-pack.ps1's. They live here because the next
     script to read a Markdown document should not be the fourth to learn it. Same reason
     scripts/scope-lib.ps1 exists for the two scope graders: one implementation cannot drift
     from itself.
@@ -251,4 +254,151 @@ function Get-FencedLineMap {
         }
     }
     return $map
+}
+
+# The structure a document's blocks render with, as opposed to how they are written (GAP-015).
+# Nothing in the kit renders Markdown, so an HTML comment line or a blank line placed INSIDE a
+# table (a 'digest:' marker is a comment line) ends the table at that line: the rows after it
+# become a stray paragraph of pipes, and every check stays green. This reads one document's lines
+# and returns what GitHub would render differently from what was written. It is NOT a renderer: it
+# knows three things about tables and nothing else.
+#
+# A table starts at a header row directly followed by a delimiter row (|---|---|) and runs while
+# lines start with a pipe after at most three spaces of indent; four spaces is a code block. A run
+# of pipe lines with no delimiter row is prose and is never examined. Cells are counted as the
+# renderer splits them: one leading and one trailing pipe dropped, a backslash escaping the character
+# after it (so \| is not a boundary and \\| is an escaped backslash and then one), every other pipe a boundary (a pipe inside a code span included, as on GitHub). Fenced lines are
+# skipped (Get-FencedLineMap); a comment block that spans lines is one gap, not several.
+#
+# Findings are objects with Line (1-based), Rule and Detail:
+#   severed-row        a row after a blank or comment line, inside what was a table
+#   severed-delimiter  a delimiter row that is not directly under a header row
+#   ragged-row         a row, or a delimiter row, whose cell count differs from its header's
+#   severed-list       a list item that opens a new list because a comment line at column zero ended the
+#                      list above it. A blank line between items is legal (a loose list) and never a finding.
+function Get-StructureCellCount {
+    param([string]$Row)
+    $t = [regex]::Replace($Row.Trim(), '\\.', '')
+    if ($t.StartsWith('|')) { $t = $t.Substring(1) }
+    if ($t.EndsWith('|')) { $t = $t.Substring(0, $t.Length - 1) }
+    return ($t.Length - $t.Replace('|', '').Length) + 1
+}
+
+function Test-StructureDelimiterRow {
+    param([string]$Row)
+    if ($Row -notmatch '^ {0,3}\|') { return $false }
+    $t = [regex]::Replace($Row.Trim(), '\\.', '')
+    if ($t.StartsWith('|')) { $t = $t.Substring(1) }
+    if ($t.EndsWith('|')) { $t = $t.Substring(0, $t.Length - 1) }
+    foreach ($cell in $t.Split('|')) {
+        if ($cell -notmatch '^\s*:?-+:?\s*$') { return $false }
+    }
+    return $true
+}
+
+function Get-StructureFindings {
+    param([string[]]$Lines)
+    $findings = @()
+    if ($null -eq $Lines -or $Lines.Count -eq 0) { return $findings }
+    $fenced = Get-FencedLineMap -Lines $Lines
+
+    # What each line is, for the walk below: fence, comment (a comment-only line, or any line of a
+    # block that spans lines), blank, row (starts with a pipe, at most three spaces of indent), or
+    # other. A line that starts with a comment opener is an HTML block that ends at the line holding
+    # the closer, whatever text follows it, and ends a table as a comment-only line does.
+    $kind = New-Object 'string[]' $Lines.Count
+    $inComment = $false
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        $l = $Lines[$i]
+        if ($fenced[$i]) { $kind[$i] = 'fence'; $inComment = $false; continue }
+        $trim = $l.Trim()
+        if ($inComment) {
+            $kind[$i] = 'comment'
+            if ($trim.Contains('-->')) { $inComment = $false }
+            continue
+        }
+        if ($trim -eq '') { $kind[$i] = 'blank'; continue }
+        if ($trim.StartsWith('<!--')) {
+            $kind[$i] = 'comment'
+            if (-not $trim.Substring(4).Contains('-->')) { $inComment = $true }
+            continue
+        }
+        $kind[$i] = if ($l -match '^ {0,3}\|') { 'row' } else { 'other' }
+    }
+
+    $inTable = $false      # inside a table, or inside the rows a gap left orphaned
+    $gap = $false          # a blank or comment line since the last row
+    $orphaned = $false     # a severed-row finding was made for this run of rows
+    $cols = 0
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        switch ($kind[$i]) {
+            'row' {
+                # Inside a live table (no gap since the last row) every row is a body row, a row of
+                # dashes included: only after a gap or outside a table can a header or a delimiter start.
+                $live = $inTable -and (-not $gap)
+                $isDelim = (-not $live) -and (Test-StructureDelimiterRow $Lines[$i])
+                $startsTable = (-not $live) -and (-not $isDelim) -and ($i + 1 -lt $Lines.Count) -and
+                    ($kind[$i + 1] -eq 'row') -and (Test-StructureDelimiterRow $Lines[$i + 1])
+                if ($startsTable) {
+                    $cols = Get-StructureCellCount $Lines[$i]
+                    $dcols = Get-StructureCellCount $Lines[$i + 1]
+                    if ($dcols -ne $cols) {
+                        $findings += [pscustomobject]@{ Line = $i + 2; Rule = 'ragged-row'
+                            Detail = "delimiter row has $dcols cell(s), its header has $cols, so this is not a table" }
+                        $inTable = $false
+                    } else { $inTable = $true }
+                    $gap = $false; $orphaned = $false
+                    $i++   # the delimiter row is consumed with its header
+                } elseif ($isDelim) {
+                    $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'severed-delimiter'
+                        Detail = 'this delimiter row is not directly under a header row, so no table starts here' }
+                    $inTable = $false; $gap = $false
+                } elseif ($inTable -and $gap) {
+                    if (-not $orphaned) {
+                        $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'severed-row'
+                            Detail = 'this row is cut off from its table by a blank or comment line above it' }
+                    }
+                    $orphaned = $true; $gap = $false
+                } elseif ($inTable -and -not $orphaned) {
+                    $n = Get-StructureCellCount $Lines[$i]
+                    if ($n -ne $cols) {
+                        $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'ragged-row'
+                            Detail = "row has $n cell(s), its header has $cols" }
+                    }
+                }
+            }
+            { $_ -in 'blank', 'comment' } { if ($inTable) { $gap = $true } }
+            default { $inTable = $false; $gap = $false; $orphaned = $false }
+        }
+    }
+
+    # Lists, narrowly: a list item is a line starting, after at most three spaces, with a bullet or a
+    # number and . or ), then whitespace; a thematic break written with spaces (* * *, - - -) is not one.
+    # A comment line at column zero is an HTML block and ends whatever list is open; if the next thing
+    # that is not blank or a comment is another list item, that item starts a new list. Indented lines
+    # continue the open item, a comment indented into an item is part of it, and any other text at
+    # column zero ends the list.
+    $inList = $false
+    $commentAt = -1
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        $l = $Lines[$i]
+        if ($kind[$i] -eq 'fence') { $inList = $false; $commentAt = -1; continue }
+        if ($kind[$i] -eq 'blank') { continue }
+        if ($kind[$i] -eq 'comment') {
+            if ($l.StartsWith('<!--') -and $inList -and $commentAt -lt 0) { $commentAt = $i }
+            continue
+        }
+        $isItem = ($l -match '^ {0,3}([-*+]|\d{1,9}[.)])(\s+|$)') -and ($l -notmatch '^ {0,3}([-*_])(\s*\1){2,}\s*$')
+        if ($isItem) {
+            if ($inList -and $commentAt -ge 0) {
+                $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'severed-list'
+                    Detail = 'this item starts a new list: a comment line at column zero above it ended the list it belongs to' }
+            }
+            $inList = $true; $commentAt = -1
+            continue
+        }
+        if ($inList -and ($l -match '^\s{2,}\S')) { continue }
+        $inList = $false; $commentAt = -1
+    }
+    return $findings
 }

@@ -129,6 +129,16 @@ Complete `specs/_templates/ai-code-review-template.md`. Check:
 - Migrations
 - Unrelated changes
 - Rollback safety
+- Block structure of every document the diff touches: a `digest:` marker, like any comment,
+  sits on its own line **after** a table or a list, never inside one. A comment or blank
+  line inside a table ends it at that line, and a comment at column zero between two list
+  items starts a new list, so the rest renders as stray text while every other check stays
+  green. `scripts/doc-lint.ps1` now fails a severed table, a delimiter row with no header,
+  a row whose cell count differs from its header's, and a list split by a comment line,
+  naming the file and line. It is not a markdown renderer and grades only those rules, so
+  a document whose layout matters more than that is still read, not trusted.
+
+<!-- digest: A digest marker goes after a table or list, never inside one; doc-lint fails a table or list it severs. -->
 
 ## Human Review
 

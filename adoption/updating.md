@@ -761,6 +761,64 @@ Skipping the edit breaks nothing: the old list stays as wrong as it was, and the
 
 <!-- digest: CLAUDE.md Feature Structure now points at branch-strategy for the full spec-directory set; edit your copy by hand. -->
 
+### Flow-down note: the 2026-10-11 rendered-structure lint (kit feature 020 — no constitution amendment)
+
+**What was wrong.** Nothing in the kit renders Markdown, so a layout mistake that changes what a reader sees
+was invisible to every check. A comment line (a `digest:` marker is one) or a blank line placed between two
+rows of a table ends the table at that line, and the rows after it render as a stray line of pipes; a comment
+at column zero between two items of a list starts a new list. Both left `doc-lint.ps1`, the digest check and
+the whole ritual chain green. The kit had one such table of its own in `docs/roadmap.md`: GAP-025 onward in
+the inventory rendered as plain text until feature 020 repaired it.
+
+**What it does now.** `scripts/doc-lint.ps1` reads the block structure of the documents it already scans
+(`CLAUDE.md`, `AGENTS.md`, `README.md`, the constitution, and everything under `docs/`, `adoption/`,
+`modules/` and `specs/_templates/`) and fails the run, naming the file and line, on:
+
+| Finding | What it means | The fix |
+|---|---|---|
+| `severed-row` | a table row after a blank or comment line is cut off from its table | move the comment or blank line out of the table; a `digest:` marker goes **after** the table |
+| `severed-delimiter` | a delimiter row (the row of dashes) that is not directly under a header row, so no table starts | put it directly under the header |
+| `ragged-row` | a row, or the delimiter row, whose cell count differs from its header's | add or remove the cell; write a literal pipe as `\|` (an unescaped pipe in a code span is still a cell boundary on GitHub) |
+| `severed-list` | a list item after a comment line at column zero starts a new list | put the comment after the list, or indent it into the item; a blank line between items is fine |
+
+A finding **fails the run in an adopted project too**, as every other `doc-lint.ps1` rule does: the owner
+decided there would be no information-only release. The `doc-lint: OK` line is unchanged and now also means
+no structure finding.
+
+**What flows down.** Verbatim files only, nothing surgical and nothing in your constitution:
+`scripts/doc-lint.ps1`, `scripts/markdown-lib.ps1` (`doc-lint.ps1` now dot-sources it, so the two must
+arrive together; `update-kit.ps1` copies every `scripts/*.ps1`), `docs/sdlc/review-process.md` (the AI
+review checklist gains a block-structure item) and this document. Expect the review digest to gain one line
+and the adoption digest two; run `scripts/build-digests.ps1`. A half-applied update is the one way this goes
+wrong: `markdown-lib.ps1` is not new to you, but its structure reader is, so a new `doc-lint.ps1` beside an
+old `markdown-lib.ps1` stops with an unrecognized-function error and `doc-lint.ps1` and `ritual-checks.ps1`
+stay red until the other file arrives. An old `doc-lint.ps1` beside a new library is harmless.
+
+**What does NOT change.** The path, slot and manifest checks and their output, every exit code, and the
+`doc-lint: OK` line. The check is **not a Markdown renderer**: it grades the four rules above and nothing
+more, GitHub-flavoured rendering is its reference, and where renderers disagree it stays silent. A comment that
+is never closed hides the rest of its document from the structure check, as it does from a renderer.
+
+**What was measured** (SC-004). Each of FitForge, FlowBoard and ExpenseTracker was cloned from its local
+directory (nothing in place touched, no network), the kit before this feature was applied with
+`update-kit.ps1`, then the kit as it stands, and `doc-lint.ps1` and `ritual-checks.ps1` were run in the
+installed state and after each application. The documents scanned were 38, 42 and 54. **No verdict moved and
+no finding was reported**: `doc-lint.ps1` was `OK` and `ritual-checks.ps1` was `RESULT OK` in every
+state of every project. The check was shown to be live in the same clones by adding a severed table row and a
+severed list to a roadmap there, which it named by line (the change was discarded). Not exercised, and said
+so: no real adopter document was flagged, so the fixes in the table above are proved by the kit's fixtures, not
+by an adopter's case.
+
+**What to do about it.** Take the update. If `doc-lint.ps1` now names a file and line, apply the fix in the
+table; the most likely cause is a `digest:` marker or a blank line inside a table. One report may look
+wrong: a line made only of pipes and dashes (for example a placeholder row of dashes) that sits directly after
+a blank line, a comment or plain text, with no header row above it, is read as a delimiter row and reported as
+`severed-delimiter`; give it a header row, or write it without the leading pipe. Ordinary prose that starts with
+a pipe is not reported. A wrapper that treated a `doc-lint.ps1` pass as covering layout should
+stop doing so for anything the four rules do not name.
+
+<!-- digest: doc-lint now fails a table or list severed by a comment or blank line, and a ragged table row; fix it where named. -->
+<!-- digest: A doc-lint structure finding fails an adopted project too: put a digest marker after a block, never inside one. -->
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
