@@ -66,16 +66,16 @@ No existing verdict moves.
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T007 Fixtures first, next free `CRIT-T` ids: `fail` a Reviewer who is not on the roster, `fail` a Reviewer
+- [x] T007 Fixtures first, next free `CRIT-T` ids: `fail` a Reviewer who is not on the roster, `fail` a Reviewer
       whose entry sets `canApproveCritical` to `false`, `fail` one whose flag is a non-boolean; `pass` a Reviewer
       on the roster and permitted, a Reviewer on a string-only roster (permitted by default), and a case in the
       solo arm showing it is untouched. Expectations by hand; run them on the parent commit.
-- [ ] T008 Edit `Invoke-CriticalTeamEvidence` in `scripts/enforcement-pack.ps1` (plan D6): after the existing
+- [x] T008 Edit `Invoke-CriticalTeamEvidence` in `scripts/enforcement-pack.ps1` (plan D6): after the existing
       reviewer-is-not-owner check, fail a Reviewer not on `Roster` and a Reviewer whose entry is not permitted,
       two messages naming the reviewer and the roster; do not grade a placeholder or empty Reviewer twice. Rewrite
       the block comment that says the roster is "counted and nothing more" to state what membership now proves
       and does not (plan D9).
-- [ ] T009 Run `-Case CRIT-`, the full harness and `ritual-checks.ps1`; nothing pre-existing moves.
+- [x] T009 Run `-Case CRIT-`, the full harness and `ritual-checks.ps1`; nothing pre-existing moves.
 
 ---
 

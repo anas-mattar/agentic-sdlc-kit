@@ -104,3 +104,38 @@ wording, so it is listed here for the owner to acknowledge when certifying the p
   which fails on the phase 1 reader (1 assertion) and passes now; the deviation heading above no longer reads as a
   recorded acknowledgement.
 - **Not changed**: F3 and F4 (nits, harmless) and F6 (carried into the phase 4 guidance).
+
+## Phase 2: the Critical reviewer
+
+### T007: the fixtures, shown failing on the parent
+
+Two new rules, nine new cases, expectations written by hand before the script was touched:
+
+| Rule | Variants |
+|---|---|
+| `CRIT-T08` (the Reviewer is not on the roster) | `fail` (linus, roster ada and grace), `pass` (string roster, on it), `pass-case-differs` (`GRACE`), `pass-object-roster`, `pass-solo-arm` (one developer, a human review naming a stranger, never read) |
+| `CRIT-T09` (the Reviewer's entry does not permit Critical) | `fail` (`canApproveCritical: false`), `fail-flag-not-boolean` (`"no"`), `pass` (`true`), `pass-denied-other-person` (the denied developer is the Owner) |
+
+Against the phase 1 script every `fail` fails (wrong exit code and output) and every `pass` passes, as it should:
+those are the states the parent already accepted. The inventory and anchor tests fail there too, since the two rules
+name emission sites the parent does not have. One expectation of mine was wrong and is corrected in the fixture, not
+the script: `pass-solo-arm` counted seven changed files, and the roster file sits in the base commit, so six.
+
+### T008: the check
+
+`Invoke-CriticalTeamEvidence` takes the roster from `Get-DeveloperMode` (the caller passes `$mode.Roster`) and, after
+the reviewer-is-not-owner check, grades a Reviewer who is neither empty nor a placeholder: not on the roster fails
+with one message naming the reviewer and the roster; on it with a denied entry fails with a second. The match is
+`OrdinalIgnoreCase`, the comparer the reader deduplicates with. The solo arm is untouched. The block comment that said
+the roster is counted and never compared now says what membership proves and what it does not (plan D9).
+
+### T009: results
+
+| Measurement | Phase 1 (after round 2) | Phase 2 |
+|---|---|---|
+| `-Case CRIT-` | 79 passed | 97 passed, 0 failed |
+| Full harness | 1237 passed | **1255 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
+| Coverage, `enforcement-pack.ps1` | 65 of 70 | 67 of 72 site(s) fixtured (the two new sites; exemptions unchanged) |
+
+The difference is exactly the 18 new assertions (9 cases, each with an exit code and an output assertion). Every
+pre-existing case is unchanged. Run on this working tree; the isolated-checkout run of the final commit is T020.

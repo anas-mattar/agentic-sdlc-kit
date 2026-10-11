@@ -653,6 +653,24 @@
       "notes": "Matched inside the provenance slice, not the whole file: an attestation quoted in an unrelated comment used to satisfy it."
     },
     {
+      "id": "CRIT-T08",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the human reviewer of a Critical feature is not on the developer roster",
+      "law": "docs/sdlc/critical-delivery.md item 5; specs/021-developer-roster FR-006",
+      "emitAnchor": "who is not on the developer roster in kit-adoption.json",
+      "notes": "Exact, case-insensitive membership (plan D3): it catches a stranger or a typo and does not prove identity (D9). A placeholder or empty Reviewer is failed by CRIT-T04/T05 and not graded again. The solo arm never reads the human review, and a pass case shows it."
+    },
+    {
+      "id": "CRIT-T09",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the human reviewer's roster entry does not permit approving a Critical feature",
+      "law": "docs/sdlc/critical-delivery.md item 5; specs/021-developer-roster FR-006",
+      "emitAnchor": "does not permit approving Critical features",
+      "notes": "canApproveCritical false, or any non-boolean value (read as not permitted, plan D2). A denial binds only the person who reviews: a denied Owner is not graded here."
+    },
+    {
       "id": "BATCH-001",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-GateBatchingCheck",
