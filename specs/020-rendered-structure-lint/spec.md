@@ -2,7 +2,8 @@
 
 **Feature Branch**: `020-rendered-structure-lint`
 **Created**: 2026-10-11
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-11
+**Status**: Approved (anas.m, 2026-10-11)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "Block-structure check in doc-lint: tables and list blocks uninterrupted; table rows with uniform cell counts, escaped pipes not counted; not a markdown renderer (GAP-015)"
@@ -150,9 +151,9 @@ document in the three clones the new check flags.
 - **FR-010**: `adoption/updating.md` MUST carry a flow-down note: what the check reads, what it newly fails,
   what to do, and the measured result on clones of the three adopted projects, including every document flagged.
 - **FR-011**: The check MUST NOT claim to render markdown. Its guidance and output MUST say it grades the
-  structure rules above and nothing more. [NEEDS CLARIFICATION: in an adopted project, does a finding fail the
-  run or print as information for one release? Failing matches every other `doc-lint.ps1` rule and keeps the
-  verdict honest; information avoids breaking an adopter's CI on an update. Owner's call.]
+  structure rules above and nothing more. In an adopted project a
+  finding fails the run, as every other `doc-lint.ps1` rule does and with no information-only release
+  (decided by the owner, anas.m, 2026-10-11); the flow-down note says so plainly.
 
 ### Key Entities
 
