@@ -95,6 +95,7 @@ unchanged. Present and unusable is ungraded by name, with the scope check's warn
 tightens spec FR-013 and US3 scenario 2 by one case; either the owner approves an amendment to those
 sentences, or the plan is changed to implement them as written and record the gap. The plan recommends
 the former.
+**Decided**: the amendment is approved (spec FR-013 and US3 scenario 2 amended). **Amendment approved by**: anas.m, 2026-10-11.
 
 **D6 — Liveness across repositories (R4).** A feature's status uses its latest commit in any
 repository it has a branch in; "claimed, no work yet" means no commits in any of them.

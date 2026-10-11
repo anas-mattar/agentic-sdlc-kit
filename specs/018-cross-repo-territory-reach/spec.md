@@ -120,8 +120,8 @@ updating must not turn an adopted project red or change a verdict it did not ask
 
 1. **Given** no `codeRepos` in the adoption record, **When** the check runs, **Then** the output and
    exit code are those the existing fixtures assert.
-2. **Given** an empty or malformed `codeRepos`, **Then** the check says so in the same words the
-   scope check uses and compares the governance repository alone; it does not guess.
+2. **Given** an absent or empty `codeRepos`, **Then** the check compares the governance repository alone and its output is unchanged. **Given** a present but unusable `codeRepos` (not an array, or an entry that is not a plain directory name), **Then** the check says so in the same words the scope check uses and the run is UNGRADED, naming the declaration; it does not guess and does not end on `CLEAN`.
+   **Amendment approved by**: anas.m, 2026-10-11.
 
 ---
 
@@ -202,8 +202,9 @@ not expect.
   made, and each overlap MUST carry its repository.
 - **FR-012**: A clean, fully compared run MUST say which repositories it compared and how many open
   claims it compared them against.
-- **FR-013**: A project that declares no usable `codeRepos` MUST see its existing output and exit
-  codes unchanged, except where FR-008 applies to the governance comparison (see Assumptions).
+- **FR-013**: A project whose `codeRepos` is absent or empty MUST see its existing output and exit
+  codes unchanged, except where FR-008 applies to the governance comparison (see Assumptions). A project whose `codeRepos` is present but unusable MUST see an UNGRADED run, by name (US3 scenario 2).
+  **Amendment approved by**: anas.m, 2026-10-11.
 - **FR-014**: `docs/sdlc/team-workflow.md` section 5 MUST describe the extended reach, the ungraded
   verdict and its causes.
 - **FR-015**: Every rule above MUST be proved by the enforcement harness (feature 015) with a passing
