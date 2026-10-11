@@ -215,3 +215,17 @@ Digests regenerated (`build-digests.ps1`): the adoption digest gains two lines a
 flow-down note says; three other digests changed only in line endings and were restored so the commit holds
 content changes alone. The GAP-015 roadmap row reads `shipped` with its spec link unbracketed, and the
 decisions-log entry states what stays open by decision.
+
+### T017: the isolated-checkout run
+
+A detached worktree of the phase 3 commit `427a538`, in a scratch directory, never the working tree anyone is
+using.
+
+| Measurement | Result |
+|---|---|
+| `ritual-checks.ps1 -Branch 020-rendered-structure-lint` | doc-lint, enforcement-pack, scope-check, digests, roadmap-claims OK; scope-repos and verify-kit `n/a` (the kit is a single repository and unadopted); `RESULT OK`. `-Branch` is needed because a detached checkout has no branch name, as in the 018 run. |
+| `Run-Tests.ps1`, full | **1211 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
+| Coverage | `doc-lint.ps1` 11 of 11 site(s) fixtured; 218 of 230 overall, 7 exempt, 5 declared not a rule |
+
+1211 is phase 2's count: this phase changed documents and digests only, so it added no case. Phase counts across
+the feature: 1147 (the parent) to 1179 (phase 1) to 1193 (its remediation) to 1211 (phase 2) to 1211.

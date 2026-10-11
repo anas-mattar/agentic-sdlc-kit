@@ -117,7 +117,7 @@ prove with a measurement that no finding is a false positive, and close the road
 - [x] T016 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for GAP-015
       to `shipped` with its spec link unbracketed, and add the decisions-log entry, stating what stays open
       by decision (including FR-005 if T009 dropped it).
-- [ ] T017 Run `pwsh -File scripts/ritual-checks.ps1`, and the full
+- [x] T017 Run `pwsh -File scripts/ritual-checks.ps1`, and the full
       `pwsh -File tests/enforcement/Run-Tests.ps1` on an isolated checkout of the final commit. Every member
       OK. Then stop and ask the owner to run the gate.
 
