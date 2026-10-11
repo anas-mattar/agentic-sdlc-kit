@@ -2,7 +2,8 @@
 
 **Feature Branch**: `019-spec-directory-single-source`
 **Created**: 2026-10-11
-**Status**: Draft <!-- Draft → Approved (owner) before the phase begins — constitution I, Micro arm -->
+**Amendment approved by**: anas.m, 2026-10-11
+**Status**: Approved (anas.m, 2026-10-11) <!-- Draft → Approved (owner) before the phase begins — constitution I, Micro arm -->
 **Delivery Level**: Micro
 **Gate Certification**: user-run
 
@@ -38,11 +39,11 @@ flow-down note says what to change in theirs.
 
 ## Eligibility checklist *(all boxes MUST be checkable — one unchecked box means this is not a Micro feature)*
 
-- [ ] No schema change or migration
-- [ ] No new packages or dependencies
-- [ ] No architecture change
-- [ ] No domain-invariant surface (constitution V)
-- [ ] No UI with visual references (`screenshots/`)
+- [x] No schema change or migration
+- [x] No new packages or dependencies
+- [x] No architecture change
+- [x] No domain-invariant surface (constitution V)
+- [x] No UI with visual references (`screenshots/`)
 
 **Territory**:
 
