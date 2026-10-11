@@ -164,3 +164,93 @@ Concentrated in F1: shipping as is risks failing an adopter's CI on a valid plac
 (SC-004) is the only net that would catch it. Fix it now while the scanner is small. F3 blind spots are silent (false negative) and
 cheap. Nothing here changes the previously recorded kit result: the kit itself is clean and the roadmap repair is correct. Merge only
 after F1 is fixed and re-reviewed, and the owner has run the gate.
+
+---
+
+# Round 2 — review of the remediation commit `05adc97` (parent `ef336c7`)
+
+## Reviewer Provenance (Round 2)
+
+- **Reviewer**: fresh-context agent — claude-sonnet-5-5 (new session, no memory of round 1 or of the implementation)
+- **Implementer**: claude-sonnet-5-5 (separate session that produced `05adc97`)
+- **Inputs provided**: `git show 05adc97`; round 1 above (F1-F7); spec.md, plan.md (D2, D3), tasks.md Phase 1, notes.md
+  ("Phase 1 review remediation"); the scripts and fixtures at `05adc97`; about 55 throwaway documents run against
+  `Get-StructureFindings` / `Get-StructureCellCount` / `Test-StructureDelimiterRow` from a scratch directory, dot-sourced
+  under `Set-StrictMode -Version Latest` and `$ErrorActionPreference='Stop'`; the pre-fix library (`git show ef336c7:...`)
+  run side by side.
+- **Attestation**: This reviewer did not produce the diff under review.
+
+## Verdict (Round 2)
+
+**APPROVE** (F1-F4 are fixed; five new low-severity or informational notes, none blocking). Certification is the owner's;
+nothing here claims the gate passed.
+
+## Evidence (Round 2)
+
+| Area | Evidence |
+|---|---|
+| F1 | `\| - \| - \|`, `\| --- \| --- \|` (identical to a delimiter) and `\| :-: \| :-: \|` as the first body row: no finding. A dash-only row mid-table followed by a 3-cell row: `ragged-row` at the right line, judged against the original header (`$cols` not reset). Single-column header / `\|---\|` / `\| - \|`: quiet. A comment after a dash-only row inside a live table: `severed-row` at the right line. A new header+delimiter after a gap still starts a table (quiet when it conforms; ragged judged against the new header). Orphan run after a gap containing a dash row: no crash, no extra finding. |
+| F3 comment | `<!--` alone, `<!-` (not an opener), one-line inputs, `$null` and empty input: no exception under StrictMode (`Substring(4)` is safe because `StartsWith('<!--')` guarantees length of at least 4). A comment with trailing text now ends a table (`5:severed-row`), as does `<!-- x --> <!-- y`. A comment inside a fence or inline in a row: silent. A closed multi-line comment followed by a table: finding reported normally. |
+| F3 backslash | A cell followed by two backslashes and a pipe counts as an escaped backslash then a boundary (2 cells in a two-column row); three backslashes before a pipe count 1; a single escaped pipe 1; a trailing backslash, or an escaped pipe before the end pipe, 2; a code span holding an escaped pipe 2, holding an escaped backslash then a pipe 3. Consistent with "a backslash escapes the next character". See N2 for what I could not verify. |
+| F4 | Recipe strings are written verbatim by `Write-FixtureFile` (string form used as is; arrays joined with LF). `fail-eof` has no final `\n`; `fail-crlf` holds `\r\n` throughout. Run against the pre-fix library directly: both give the same `severed-row`, so they pass pre-fix by design, as notes.md says. The five behaviour fixtures differ pre-fix (comment-with-text: no finding; placeholder-row and single-column: `severed-delimiter`; placeholder-ragged: `severed-delimiter` instead of `ragged-row`; escaped-backslash: `ragged-row`). |
+| New fixtures | Read all seven flow.md bodies. Each fail differs from its pass by one condition; line numbers right (comment-with-text 11, crlf 11, eof 11, placeholder-ragged 9); expectations match the script wording. |
+| emission-idioms note | Accurate under the file's own counting (three accumulators `$manifestErrors`, `$broken`, `$structure`, plus two inline conditions = five). See N5 for the residue. |
+| Line endings | The stored blob is LF (`i/lf`); the working tree is CRLF only through `core.autocrlf=true`. The library diff is 15 insertions and 11 deletions: no whole-file churn. `git status` clean. |
+| Territory / scope | `scope-check: PASS phase 1 commit 05adc97 (25 file(s))`; touched paths are `scripts/markdown-lib.ps1`, the spec dir and `tests/**`. `ritual-checks`: RESULT OK. |
+| Re-run by me | `Run-Tests.ps1 -Case DOC-`: **117 passed, 0 failed** (matches the notes). `pwsh -NoProfile -File scripts/ritual-checks.ps1`: RESULT OK. **Not re-run**: the full harness (instructed not to), so "1193 passed" and "11 of 11 sites" are the implementer's record, consistent with 1179 + 14. |
+| F5-F7 | Not silently dropped: notes.md says "F5 to F7 left as recorded", and they are recorded in this file, now committed with the remediation. notes.md alone does not say what each one is; acceptable. |
+
+## New findings (Round 2), ranked
+
+### N1 — `<!-->` and `<!--->` are read as unclosed and swallow the rest of the document — LOW (false negative only)
+
+`$trim.Substring(4).Contains('-->')` skips the opener's own dashes. CommonMark's HTML-block end condition 2 is tested on the
+line from its start, so `<!-->` and `<!--->` are one-line blocks there. Here they open a comment that runs to the next `-->`
+or the end of the file, hiding every later finding. Reproduction: lines `<!-->`, `| a | b |`, `|---|---|`, `| 1 | 2 |`, an empty
+line, `| 3 | 4 |` give no finding; GitHub ends the block on line 1 and the table is severed at line 6. The ordinary unclosed
+`<!-- start` also swallows to the end, which matches CommonMark (an HTML block runs to the end of the document) but is not written
+down in notes.md or the scanner comment.
+*Action: optional; test `$trim.Contains('-->')` on the whole trimmed line, or record both as accepted blind spots.*
+
+### N2 — "reads as GitHub does" for `\\|` is not evidenced — LOW (renderer-dependent, D2)
+
+No renderer was available to me (no cmark-gfm, markdown-it, node or python), so I could not check the claim. My recollection is
+that cmark-gfm's cell scanner takes a backslash-escaped character as one unit (which supports the new rule) and that other
+renderers use a "previous character was a backslash" toggle, under which `\\|` is still an escaped pipe; both are unverified.
+Plan D2 says where renderers disagree the rule stays silent; the change swaps one renderer-dependent choice for the opposite and
+pins it with `pass-escaped-backslash`. Effect is limited to a row containing `\\|`; none in the kit.
+*Action: owner decides; keep and record evidence (a cmark-gfm run), or make a count that depends on `\\|` silent.*
+
+### N3 — `Test-StructureDelimiterRow` accepts rows that GFM would not take as delimiters — LOW
+
+Because every backslash pair is deleted first, `|:-\-|---|`, `|---\\|---|` and `|---\|---|` return True (GFM: a delimiter cell
+holding a backslash is not a valid marker). A header above such a row is then treated as a table and graded for cell count
+(`| \- | --- |` alone is correctly False). The `\|` case is old behaviour; the `\\` case is new with this commit. A hand-made
+near-delimiter is needed to trigger it.
+*Action: optional; return False when a backslash survives in a candidate delimiter row.*
+
+### N4 — adjacent tables with no blank line between them — INFO (consistent with GFM, not a regression)
+
+The second header and delimiter are now body rows, as in GFM, where the two tables render as one. Same column count: quiet
+(also quiet before the fix). Different count: `| a | b |`, `|---|---|`, `| 1 | 2 |`, `| c | d | e |`, `|---|---|---|`,
+`| 3 | 4 | 5 |` gives `ragged-row` at lines 4, 5 and 6: noisy, but it is a broken table. `pass-adjacent` has a blank line between its
+tables, so the no-gap case has no fixture. No crash.
+
+### N5 — smaller notes — INFO
+
+- A dash-only row directly after a gap is reported as `severed-delimiter` (not `severed-row`) and resets the table, so the rest of
+  that orphan run is not graded. Sensible; F1 left it unchanged (`live` is false after a gap). Likewise `Some text` followed by
+  `| - | - |` is a `severed-delimiter` (FR-003's bare delimiter; GFM treats it as paragraph text): a possible adopter false positive
+  for header-less pipe prose, pre-existing from `ef336c7`, not from this commit.
+- `fail-crlf` and `fail-eof` go through doc-lint's `ReadAllLines`, which removes line terminators, so they guard the end-to-end
+  path and not the scanner's own `\r` tolerance (I checked that directly: lines ending in `\r` give the same finding).
+- emission-idioms note: the pattern list has six entries; the sixth (`doc-lint: (manifest|OK)`) is argued for later in the same note,
+  so "Five idioms" follows the note's older convention. The prose still says the site count went "to 10" and never states 11.
+- The commit subject's "as GitHub does" rests on N2.
+
+## Residual risk
+
+Small. I could not build a false positive from an ordinary table, and the blocking class from round 1 is closed: a table with a
+placeholder body row now passes. Remaining false-positive shapes need a header-less `| - |`-style prose row (N5) or a hand-made
+backslash delimiter (N3); the other blind spots are silent. The owner's gate and the isolated-checkout run (T017) remain the
+certification path; the full-harness figure is the implementer's, not mine.
