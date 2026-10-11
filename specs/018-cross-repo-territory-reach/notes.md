@@ -298,3 +298,21 @@ Review: `ai-code-review-phase-3.md` (APPROVE WITH FOLLOW-UPS; no Blocker, no Maj
 - **F6.** The shared repository-root test (`Test-IsRepoRoot` in `scope-lib.ps1`, both scripts calling it) is
   not in `tasks.md`; adding a task or widening phase 4's Territory is an amendment to an approved document, so
   it is left for the owner. It remains the follow-up recorded under "Decisions taken while implementing".
+
+### Round 2 review remediation (R2-F1 to R2-F3)
+
+Review: the "Round 2" section of `ai-code-review-phase-3.md` (APPROVE WITH FOLLOW-UPS; no Blocker, no Major).
+
+- **R2-F1: fixed, without a harness fixture.** The de-duplication of the declaration was case-sensitive, so
+  `["api","API"]` compared one repository twice on a case-insensitive filesystem. Identity is now read from
+  git's canonical git directory (`rev-parse --absolute-git-dir`), so the same repository under two spellings
+  is one comparison. Verified by hand on this Windows host (`api` and `API` over one repository printed the
+  overlap file once). There is **no fixture**: on a case-sensitive filesystem `API` is a different, absent
+  directory and the case would print a different verdict on the ubuntu CI leg, so the fixture would be
+  platform-dependent. That is a coverage gap, stated here rather than hidden.
+- **R2-F2: fixed.** The `orphan` recipe knob throws when it names a branch that already exists
+  (`Harness.Tests.ps1` pins it), instead of being silently ignored.
+- **R2-F3: corrected.** F8 above left more undone than it listed. Not covered by any fixture: an own branch
+  that exists only as `origin/<branch>`; a claim that has no branch in a declared code repository (it is
+  skipped as "no work there" in several cases but never asserted on its own); the case-variant duplicate
+  (R2-F1); and the three read failures after a successful merge base (F3).

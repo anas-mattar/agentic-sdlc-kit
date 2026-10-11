@@ -172,6 +172,20 @@ Describe 'nested fixture repositories' {
         } finally { Remove-FixtureRepo -Path $root }
     }
 
+    It 'refuses an orphan commit on a branch that already exists instead of ignoring it' {
+        # The knob applies only where a branch is first named; ignoring it later would give a case that
+        # passes for the wrong reason (feature 018 phase 3 review, R2-F2).
+        $recipe = [pscustomobject]@{
+            commits = @(
+                [pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } }
+                [pscustomobject]@{ branch = 'main'; message = 'again'; orphan = $true; write = [pscustomobject]@{ 'b.txt' = "b`n" } }
+            )
+        }
+        $root = $null
+        { $root = New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*already exists*"
+        if ($root) { Remove-FixtureRepo -Path $root }
+    }
+
     It 'refuses a nested recipe that asks to be shallow instead of ignoring it' {
         # A shallow clone lands at a fresh temporary path, so honouring it here would return a
         # repository that is not nested at all - and the case would still go green. T046's rule:

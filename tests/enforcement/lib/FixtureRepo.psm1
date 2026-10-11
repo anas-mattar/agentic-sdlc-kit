@@ -148,6 +148,11 @@ function New-FixtureRepo {
         # symbolic-ref, not rev-parse: an unborn HEAD (the repository before its first commit)
         # has no revision to parse, and that is exactly the state the first commit runs in.
         $current = ((Invoke-FixtureGit -RepoPath $root -Arguments @('symbolic-ref', '--short', 'HEAD')) -join '').Trim()
+        if ($commit.PSObject.Properties.Name -contains 'orphan' -and $commit.orphan -and $seenBranches -contains $branch) {
+            # Refused rather than ignored: an orphan knob that silently did nothing would give a case that
+            # passes for the wrong reason (feature 018 phase 3 review, R2-F2).
+            throw "fixture 'orphan' names branch '$branch', which already exists. It applies only to the commit that first names a branch."
+        }
         if ($branch -ne $current) {
             if ($seenBranches -contains $branch) {
                 Invoke-FixtureGit -RepoPath $root -Arguments @('checkout', '--quiet', $branch) | Out-Null

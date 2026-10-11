@@ -162,6 +162,7 @@ if ($declared.Unusable) {
 }
 $codeReady = @()
 $declaredNames = @($declared.Repos | Select-Object -Unique)   # a repeated entry is one repository, not two comparisons
+$seenGitDirs = @()
 foreach ($name in $declaredNames) {
     $path = Join-Path $repoRoot $name
     if (-not (Test-Path -LiteralPath $path -PathType Container)) {
@@ -179,6 +180,11 @@ foreach ($name in $declaredNames) {
     if (-not $isOwnRepo) {
         Add-Ungraded $name $null 'not-a-repository' 'the directory is not the root of a git repository of its own'; continue
     }
+    # The same repository spelled two ways (api and API on a case-insensitive filesystem) is one comparison:
+    # git reports its canonical git directory, so identity is read from that and not from the declared name.
+    $gitDir = "$(git -C $path rev-parse --absolute-git-dir 2>$null)".Trim()
+    if ($gitDir -and $seenGitDirs -ccontains $gitDir) { continue }
+    $seenGitDirs += $gitDir
     git -C $path remote get-url origin *> $null
     if ($LASTEXITCODE -eq 0) {
         git -C $path fetch origin --prune *> $null

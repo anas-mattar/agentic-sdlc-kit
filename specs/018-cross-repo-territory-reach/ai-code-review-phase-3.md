@@ -209,3 +209,89 @@ could still surprise an owner: a duplicated declaration (F1), a stale local bran
 unrelated-history message printed for a corrupt ref (F3), and a `-Json` consumer that cannot see the local-only limit
 (F4). None changes an exit code or turns an overlap into `CLEAN`. F2 and F4 deserve the owner's eye before phase 4 writes
 the guidance, because the guidance will describe both.
+
+---
+
+## Round 2: review of remediation commit cea5092
+
+**Reviewer**: fresh-context agent — claude-sonnet-5-5
+**Date**: 2026-10-11
+**Scope reviewed**: `git show cea5092` (parent `554e6e2`): `scripts/territory-check.ps1` (header, F1, F3 wording),
+`tests/enforcement/lib/FixtureRepo.psm1` (`orphan` knob), `tests/enforcement/rules.json` (TERR-014, TERR-019 notes),
+`TERR-017/fail` recipe, `TERR-019/fail` and `fail-own-branch` expectations, the new fixtures (TERR-014 `pass-rename`,
+`fail-local-only`, `fail-non-ascii`, `fail-duplicate-declaration`, `fail-overlap-and-ungraded-json`; TERR-019
+`fail-orphan`), `notes.md` ("Phase 3 review remediation"), `tasks.md` ticks.
+
+### Reviewer Provenance
+
+- **Reviewer**: fresh-context agent — claude-sonnet-5-5
+- **Implementer**: claude-sonnet-5-5 (the implementing session)
+- **Inputs provided**: the round 1 review above; commit `cea5092` in full; the whole current
+  `scripts/territory-check.ps1`; the `FixtureRepo.psm1` diff and the `New-FixtureRepo` body; every new or changed
+  fixture (recipe diffed against its counterpart, expected output, command); `rules.json` notes; `notes.md`; `CLAUDE.md`;
+  `tasks.md` Phase 3 (Territory: `scripts/territory-check.ps1`, `tests/**`). Read and run access; throwaway fixtures
+  built under the OS temp directory through `New-FixtureRepo`. One scratch copy of the script (without the
+  `core.quotepath` flag) was briefly written to `scripts/` to run it and deleted at once; the working tree was clean
+  afterwards apart from this file. Nothing committed.
+- **Attestation**: This reviewer did not produce the diff under review.
+
+### Per-finding status
+
+| # | Status | Evidence |
+|---|---|---|
+| F1 duplicate declaration | **Truly fixed** (one residual, R2-F1) | `$declaredNames = @($declared.Repos \| Select-Object -Unique)` feeds the loop and the CLEAN note. Built `fail-duplicate-declaration` (`["api","api"]`) in a temp repo: text prints `api/src/Orders.cs` once, `-Json` `files` has one entry, `UNGRADED` empty. The recipe differs from `TERR-014/fail` only in the `codeRepos` line. Order is first-seen (stable). |
+| F2 local-head fallback resurrects a deleted remote branch | **Carried, justified, honestly recorded** | It is plan D4 as written, so changing it is an owner decision; notes.md states the scenario and both options. Not changed, not described as fixed. |
+| F3 "no merge base" for a corrupt ref; no orphan fixture | **Truly fixed** | Detail now reads `no merge base with main: unrelated history or an unreadable ref` (git cannot tell them apart; saying so is the honest option offered in round 1). TERR-019 `fail` and `fail-own-branch` expectations match it exactly. `fail-orphan` verified (below). The three later arms are reworded and stated as untestable in notes.md. |
+| F4 `-Json` lacks the local-only limit | **Carried, justified, honestly recorded** | Adding a field changes `contracts/territory-check-output.md`, an approved document; notes.md says so and gives the two options. Unchanged: `$notes` is still text-only. |
+| F5 undocumented unequal uncommitted-edit rule | **Truly fixed** | Header paragraph states the code-repository rule (counts when checked out on the branch under check, even when `-Branch` names a branch governance is not on) and that the union of local head and remote-tracking ref over-reports, never misses. Matches `Get-OwnCodeTouched` and the governance `$checkingCurrent` rule. Comment only. |
+| F6 `not-a-repository` copy | **Carried, justified, honestly recorded** | The fix needs `scope-lib.ps1` and `scope-check-repos.ps1` (outside Territory) and a task in `tasks.md` (an approved document). notes.md records the follow-up and why it is left to the owner. It is still not in `tasks.md`; that amendment is the owner's. |
+| F7 notes overstate wildcard F5 | **Truly fixed** | notes.md "Carried forward" rewritten: exit-1 crash at `Push-Location`, pre-existing, not a false CLEAN; `-LiteralPath` stays the owner's call. Consistent with round 1's reproduction. |
+| F8 fixture pairs / missing cases | **Partly fixed** | Added and verified: `pass-rename`, `fail-local-only`, `fail-non-ascii`, `fail-overlap-and-ungraded-json`. TERR-017 tightened (below). Not added and honestly listed: own branch existing only as `origin/<branch>`. Not added and NOT listed in notes.md: a claim with no branch in a declared code repository asserted explicitly (R2-F3). |
+| F9 tasks ticks | **Truly fixed** | The `tasks.md` diff is exactly twelve `[ ]` to `[x]` flips, T012-T023, ticks only. The "T016 satisfied by e686026" remark is in notes.md rather than on the line; acceptable. |
+
+Nothing besides F2, F4 and F6 is passed off as carried. Those three are each outside this phase's Territory or an
+amendment of an approved document (plan D4, the contract, tasks.md), and each records its options.
+
+### Verifications run
+
+| Question | Result |
+|---|---|
+| Duplicate fix prints once and counts once | Yes, text and `-Json` (F1 row). An ungraded duplicate would count once too, since the dedup precedes `Add-Ungraded`. |
+| `fail-orphan` is a real orphan and fails for the right reason | Built through `New-FixtureRepo`: `git merge-base main 012-other` exits 1; `git log --graph` shows `012-other`'s commit as a rootless line; `ls-tree 012-other` lists only `src/Other.cs` (index emptied by the `git rm -rf`). The script output equals `expected.txt`: the `no merge base ... unrelated history` UNGRADED entry, no CLEAN, exit 0. The only differences from `TERR-019/fail` are `"orphan": true` and no `truncateCommit`, so the orphan alone is the cause. |
+| `orphan` knob cannot change an existing recipe | The new branch executes only when `commit.orphan` is present and true on the commit that first names a new branch. `grep` finds the key only in `fail-orphan/recipe.json` and the module. For every other recipe the else arm is the old `checkout -b` verbatim and `$seenBranches += $branch` still runs after both arms. No regression possible. |
+| TERR-017 `fail` vs `pass` | They differ in `defaultBranch` (`011-thing` vs `main`), the absent `main` commits, and the base `Other.cs` written on the feature branch instead of `main`: the condition (no `main`) and its necessary scaffolding, not a second condition. Both feature branches now exist in both. Caveat: the script returns `no-trunk` before any claim is read, so `012-other` in `fail` is never compared; the tightening is real but proves nothing more about the verdict. |
+| TERR-019 expectations vs new wording | Both changed expectations are the exact new string; the case run passes. |
+| `fail-non-ascii` exercises `core.quotepath` | Shipped script: prints `api/Café.cs`, equal to `expected.txt`. With `-c core.quotepath=off` stripped from a scratch copy (44 characters, three sites): output is `api/"src/Caf\303\251.cs"`, exit 2, so the fixture fails without the flag. (Both sides quote identically, so the comparison itself still matches; the fixture catches the printed form, which is the claim it makes.) |
+| `fail-local-only` goes through the local fallback | Differs from `fail` only by removing `"origin": "self"` on `api`. With no `origin` there is no `refs/remotes/origin/012-other`, and the overlap plus the `compared api: local branches only` note appear, so the claim was read through `refs/heads/012-other`. |
+| Wording collisions | `emission-idioms.json` untouched; the `rules.json` anchors (`'branch-uncomparable'` siteCount 2, the shared-file printer) unchanged, and no anchor or idiom pattern contains `no merge base`, `unrelated history` or `diff failed`. Enforcement-pack coverage passes. |
+| Territory of `cea5092` | `scripts/territory-check.ps1` and `tests/**` as required, plus the feature's own `notes.md`, `tasks.md` ticks and this review file, the same documentation set phases 1 and 2 committed; `scripts/ritual-checks.ps1` scope-check OK. |
+| Suites | `pwsh -NoProfile -File tests/enforcement/Run-Tests.ps1 -Case territory-check/`: 156 passed, 0 failed, 0 skipped. `pwsh -NoProfile -File scripts/ritual-checks.ps1`: `RESULT OK` (doc-lint, enforcement-pack, scope-check, digests, roadmap-claims OK; scope-repos and verify-kit n/a). The whole harness was not run. |
+
+### New findings
+
+**R2-F1 — MINOR — The F1 dedup is case-sensitive, so `["api","API"]` still compares one directory twice on a
+case-insensitive filesystem.** `scripts/territory-check.ps1`, the `$declaredNames` line (`Select-Object -Unique`).
+`Get-CodeRepos` keeps `api` and `API` as two entries (verified with a scratch record: `Repos = ["api","API"]`; `api/` and
+`./api` are rejected with warnings). On Windows or macOS both resolve to one directory, so the overlap prints
+`api/src/Orders.cs` and `API/src/Orders.cs` and the ungraded count doubles: the F1 symptom for a differently-cased
+spelling. A rarer input than an exact repeat. *Fix: de-duplicate on the resolved top-level path (already computed for the
+`isOwnRepo` test) rather than on the spelling, so a case-sensitive filesystem with two genuinely distinct `api` and `API`
+repositories is not collapsed; or record the limit in notes.md.*
+
+**R2-F2 — NIT — The `orphan` knob has no guard.** `tests/enforcement/lib/FixtureRepo.psm1`, the `orphan` branch. Setting
+`"orphan": true` on a commit whose branch already exists is ignored without error; the comment says "the commit that
+first names a branch" but nothing enforces it. *Fix: throw when `orphan` is set and the branch is already seen, as
+`shallow` on a nested repository is already refused loudly.*
+
+**R2-F3 — NIT — notes.md under-lists what F8 left undone.** "Not added" names only the `origin/<branch>`-only own branch.
+Round 1 also listed a claim with no branch in a declared code repository, asserted; that is still unasserted and not
+mentioned. *Fix: one sentence in notes.md, or one fixture.*
+
+### Updated verdict
+
+**APPROVE WITH FOLLOW-UPS (no Blocker, no Major).** F1, F3, F5, F7, F9 are truly fixed; F8 is partly fixed, the remainder
+small and mostly honestly stated; F2, F4, F6 are rightly carried to the owner and recorded as such. No regression found:
+the `orphan` knob is inert for every existing recipe, the wording changes collide with no anchor or idiom, and Territory is
+held. R2-F1..F3 are Minor or Nit and none changes an exit code or turns an overlap into `CLEAN`. F2 and F4 still need the
+owner's decision before phase 4 writes the guidance. This review does not claim the gate passed; certification is the
+owner's.
