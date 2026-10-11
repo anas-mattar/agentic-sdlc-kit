@@ -316,3 +316,57 @@ Review: the "Round 2" section of `ai-code-review-phase-3.md` (APPROVE WITH FOLLO
   that exists only as `origin/<branch>`; a claim that has no branch in a declared code repository (it is
   skipped as "no work there" in several cases but never asserted on its own); the case-variant duplicate
   (R2-F1); and the three read failures after a successful merge base (F3).
+
+## Phase 4: guidance, flow-down and bookkeeping
+
+### T026: the measurement on clones of the three adopted projects
+
+Method. Each project (FitForge, FlowBoard, ExpenseTracker) was cloned `--no-hardlinks` from its local
+directory, and so were its two code repositories, beside the governance clone; the clone's `origin` is the
+project on disk (read-only, no network), so the real projects were never touched and the clones' claim
+ledger holds no feature the real remote might. Three states per clone: **installed** (what the project has
+today, kit 0.7.0), **kit main** (`2221879`, the parent of this feature, applied with `update-kit.ps1`, digests
+regenerated, committed) and **kit HEAD** (`7992bb4` plus the working tree, applied on top the same way). The
+territory check ran in each state on a feature branch, with the code repositories present and then renamed
+away; `ritual-checks.ps1` ran in each state. The kit-main to kit-head step is this feature's delta; the
+installed to kit-main step is features 015 to 017 and is not this feature's.
+
+A first pass applied kit HEAD straight to the installed state, which folds all of that in, and was discarded
+for the delta. A second pass had a script defect (`git checkout -f` threw away the uncommitted kit-head apply
+before the checks ran, so its "new" state still held the old script), and was also discarded. Both are
+recorded because the second one looked like a clean result: it printed `CLEAN` for a project that now says
+`UNGRADED`, and only the missing `compared …` clause gave it away.
+
+| Project / checkout | Code repos | Installed | Kit main | Kit HEAD (this feature) |
+|---|---|---|---|---|
+| ExpenseTracker `003-expense-entry` | present or absent | `CLEAN` | `CLEAN` | `CLEAN`, same text (no `codeRepos` on this branch) |
+| ExpenseTracker `main`, `-Branch 003-expense-entry` | present | `CLEAN` | `CLEAN` | `CLEAN (compared governance and expense-tracker-api, expense-tracker-web against 0 open claim(s))` |
+| ExpenseTracker `main`, `-Branch 003-expense-entry` | absent | `CLEAN` | `CLEAN` | **`UNGRADED`**, 2 entries `not present in this checkout` |
+| FitForge `002-identity-member-profile` | present | `CLEAN` | `CLEAN` | `CLEAN (compared … fitforge-api, fitforge-web against 0 open claim(s))` |
+| FitForge `002-identity-member-profile` | absent | `CLEAN` | `CLEAN` | **`UNGRADED`**, 2 entries |
+| FlowBoard `main`, `-Branch 099-measure` (a throwaway) | present | `CLEAN` | `CLEAN` | `CLEAN (compared … flowboard-api, flowboard-web against 0 open claim(s))` |
+| FlowBoard `main`, `-Branch 099-measure` | absent | `CLEAN` | `CLEAN` | **`UNGRADED`**, 2 entries |
+
+Exit codes: `0` in every cell. `ritual-checks.ps1`, kit main to kit HEAD: ExpenseTracker `RESULT OK` to `RESULT
+OK` on both checkouts; FlowBoard `RESULT OK` to `RESULT OK`; FitForge `RESULT FAIL (2 of 7)` to the same
+two members (`enforcement-pack`, `scope-check`), both already failing with the kit before this feature
+(installed: `enforcement-pack` alone). No member moved because of this feature.
+
+**The verdict that moved, as a finding and not rounded.** SC-004 allows a verdict to change "where the check
+was previously reporting `CLEAN` over a comparison it had skipped". What moved is that case in a wider
+sense: a project that declares code repositories, run where they are absent, now says `UNGRADED` where it said
+`CLEAN` without looking in them. No claim was skipped, because there were no open claims in any clone; the
+check was blind to a declared repository. The sentence of SC-004 reads naturally either way, but the owner
+should know the move is wider than "a skipped claim", and the flow-down note says so (governance-only CI).
+
+**Not exercised.** No clone had another open feature branch, so no real overlap was reported; the overlap,
+and every cause, are proved by the harness's fixtures. The clones' claim ledger was the local project on disk,
+not the project's GitHub remote. `-Json` was captured in the controlled pass but not tabulated.
+
+**A doc-lint result from the first pass.** Applying kit HEAD straight to the installed 0.7.0 state, `doc-lint`
+failed in the adopted project on three unresolved paths: two were this phase's own examples in
+`docs/sdlc/team-workflow.md` (fixed: the section now uses `<repo>/<path>`), and one was
+`adoption/updating.md:255`, the feature 012 reference to `.github/workflows/code-repo-scope-check.yml.template`,
+a surgical file `update-kit.ps1` does not copy. In the controlled pass that file was present in the clone and
+`doc-lint` passed, so the cause (the order of the two applies, or the 0.7.0 starting point) is not
+established. It is not this feature's text, and it is recorded rather than changed here.

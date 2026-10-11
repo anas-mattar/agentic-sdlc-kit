@@ -106,22 +106,58 @@ pwsh -File scripts/territory-check.ps1
 ```
 
 It fetches, diffs the current branch and every open remote `NNN-*` branch against
-`main`, and reports overlapping files per branch. Exit codes: `0` clean, `2` live
-overlap found, `1` execution error — so an agent can run it as a pre-phase check. Stale
+`main`, and reports overlapping files per branch. Where `kit-adoption.json` declares
+`codeRepos` (a nested multi-repo project), it reads each declared code repository too,
+as a sibling working tree: the branch carrying the same name there, diffed against that
+repository's own trunk (`main` or `master`, `origin/` forms first). Two features whose specs/ directories never meet but who both edit the same controller file
+in a code repository are caught here, and the file is listed with its repository prefix,
+<repo>/<path>, so it can be pasted into a Territory block unchanged. A feature's status comes from its latest commit
+in **any** repository it has a branch in, so a stale spec beside a live controller is
+live. Exit codes: `0` no live overlap, `2` live overlap found, `1` execution error. Stale
 claims (no commits for two weeks) are flagged as reclaimable rather than treated as live
-conflicts; freshly claimed branches with no work yet are noted, not errors. The manual
-equivalent (kept as the fallback):
+conflicts; freshly claimed branches with no work yet are noted, not errors.
+
+**Read the verdict word, not only the exit code.** A comparison the check could not make
+is listed as `UNGRADED: <repository>: <cause>`, the run ends on an `UNGRADED` line
+instead of `CLEAN`, and the exit code is still `0`: it changes the verdict, not the exit
+code, as in the other kit checks. An overlap keeps exit `2` and the ungraded lines print
+beside it. In `-Json`, `CLEAN` is `false` whenever anything was not compared and
+`UNGRADED` lists each entry (`repo`, `feature`, `cause`, `detail`). The causes, and what to
+do about each:
+
+| `UNGRADED` line | Meaning | Action |
+|---|---|---|
+| `<repo>: not present in this checkout` | declared in `codeRepos`, no such directory (a governance-only clone) | clone it beside the governance work, or run the check where it exists |
+| `<repo>: not a repository of its own` | the directory exists but is not the root of its own git repository | make it the clone, or fix `codeRepos` |
+| `<repo>: no resolvable trunk (tried …)` | none of `origin/main`, `main`, `origin/master`, `master`, `origin/HEAD` exists in it | fetch it, or create the trunk branch |
+| `<repo>: fetch failed` | `git fetch origin` failed there; the stale local view is not passed off as current | fix the remote or credentials and re-run |
+| `<repo>: cannot compare <feature> (…)` | that feature's branch there has no merge base with the trunk, or an unreadable ref | look at that branch; it may be an orphan or damaged |
+| `governance: cannot compare <feature> (…)` | an open claim with no remote-tracking ref in this clone | `git fetch origin` with the full refspec, then re-run |
+| `codeRepos: declaration unusable — …` | the record's `codeRepos` is present and cannot be read in full (not an array, or an entry that is a path) | fix `kit-adoption.json`; `scripts/verify-kit.ps1` explains the shape |
+
+A code repository with no `origin` is compared against its local branches only, and the
+output says so (`compared <repo>: local branches only`); that note is not an ungraded
+entry, and it appears in the text form only, not in `-Json`, so a `-Json` consumer should
+not read `CLEAN: true` as a comparison against other developers' pushed work. A project
+with no `codeRepos` (or an empty one) sees the original output unchanged.
+
+**Limits.** The check sees pushed work, plus local branches where a repository has no
+`origin`: another developer's unpushed commits are invisible to any git-based check, which
+is why a clean run names what it compared. A local branch that the remote no longer has
+still counts as that feature's work in a repository, so a finished feature whose
+governance branch is still open can keep reporting a live overlap until the stale local
+branch is deleted. The manual equivalent (kept as the fallback):
 
 ```bash
 git fetch origin
-git diff --stat main...origin/<other-open-branch>   # per open feature branch
+git diff --stat main...origin/<other-open-branch>   # per open feature branch, in each repository
 ```
 
 Overlap is not forbidden — it is **sequenced**: the owners agree on merge order, and the
 later feature rebases after the earlier one lands. Discovering overlap at merge time is a
 process failure; record the agreed order in both features' `plan.md`.
 
-<!-- digest: Run territory-check.ps1 before each phase; overlap is sequenced by agreed merge order, never discovered at merge time. -->
+<!-- digest: Run territory-check.ps1 before each phase, code repos too; UNGRADED is not clean; overlap is sequenced, never forbidden. -->
 
 ## 6. Rebase before gate
 

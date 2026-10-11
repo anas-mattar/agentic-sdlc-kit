@@ -634,6 +634,93 @@ sitting if you want the floor armed.
 
 <!-- digest: Level declaration: re-express constitution 0.8.0, declare criticalSurfaces to arm the floor, then run build-digests. -->
 
+### Flow-down note: the 2026-10-11 cross-repo territory reach (kit feature 018 — no constitution amendment)
+
+**What the pre-phase check did before.** `scripts/territory-check.ps1` compared the governance
+repository alone. In a nested multi-repo project two feature branches touch their own `specs/`
+directories and little else it could see, so the code that actually collided sat in repositories it
+never opened and it said `CLEAN`. Separately, an open claim it could not compare (no remote-tracking
+ref for it in your clone) was skipped with a warning and the run still ended on `CLEAN`. Both are
+the species of defect feature 015 closed in the ritual members: a clean word over a comparison that
+was not made (GAP-018, and the governance half of GAP-029).
+
+**What it does now.** Where `kit-adoption.json` declares `codeRepos`, each declared code repository is
+read as a sibling working tree: the branch carrying the same name there, diffed against that
+repository's own trunk, with the same trunk order and the same reader of `codeRepos` the scope check
+uses. A shared file is reported with its repository prefix (`<repo>/<path>`), so it pastes into a
+Territory block unchanged, and a feature's status is judged from its latest commit in any repository
+it has a branch in. Every comparison it cannot make is listed as `UNGRADED: <repository>: <cause>` and
+the run ends `UNGRADED`, never `CLEAN`. The causes and what to do about each are in
+`docs/sdlc/team-workflow.md` section 5.
+
+**What flows down.** Verbatim files only, nothing surgical and nothing in your constitution:
+`scripts/territory-check.ps1`; the two libraries it now dot-sources, `scripts/adoption-lib.ps1` and
+`scripts/scope-lib.ps1` (either may arrive as `never installed -> copied` if your project predates the
+scope check's reach); `scripts/scope-check-repos.ps1`, which now calls the shared readers and prints
+exactly what it printed before; and `docs/sdlc/team-workflow.md`.
+
+**What you will newly see.** Three things, none of them a new failure:
+
+1. **`UNGRADED` where `CLEAN` used to cover a skipped comparison.** An open claim with no
+   remote-tracking ref in your clone (any single-branch fetch refspec) now prints
+   `UNGRADED: governance: cannot compare <feature> (…)` and a closing `UNGRADED — … was NOT fully
+   compared` line. This is the only change for a project that declares no `codeRepos`; with every claim
+   compared, the original `CLEAN` line is byte for byte what it was.
+2. **A reach into the code repositories, if you declare them.** An overlap there is reported like any
+   other. A clean run names what it compared (`compared governance and <repo>… against N open
+   claim(s)`). A code repository the run cannot read says why: not present in this checkout, not a
+   repository of its own, no resolvable trunk, a fetch that failed, another feature's branch it cannot
+   compare, or a `codeRepos` entry that cannot be read. A code repository with no `origin` is compared
+   against its local branches only and says so on its own line.
+3. **`-Json`.** `UNGRADED` is always present (empty when everything was compared) and `CLEAN` is `false`
+   whenever anything was not compared. `BRANCH`, `CLEAN` and `OVERLAPS` keep their meanings. The
+   `no remote` state is untouched and its JSON has no `UNGRADED`.
+
+**What does NOT change.** Every exit code: `0` no live overlap, `2` live overlap, `1` execution error.
+`UNGRADED` is a verdict and never an exit code, so an ungraded run exits `0` and an overlap keeps `2`
+with the ungraded lines printed beside it. The parameters, the refusal of a non-numbered branch, the
+`no remote — nothing to check against` line and the four terminating refusals (still open, GAP-029)
+are as they were.
+
+**What was measured** (SC-004). Each of FitForge, FlowBoard and ExpenseTracker was cloned (nothing in
+place touched; the clone's `origin` is the project on disk, so no network and no open claim from
+elsewhere), the kit before this feature was applied, then the kit as it stands, and the territory check
+and `ritual-checks.ps1` were run in each state, with the code repositories cloned beside the governance
+clone and then with them absent. The delta is this feature's alone. **Exit codes: none moved, in any run.**
+**Verdicts: one kind moved.** With the code repositories present, `CLEAN` stayed `CLEAN` and gained only
+the `compared governance and <repo>, <repo> against 0 open claim(s)` clause, in all three projects. With
+them absent, every project that declares `codeRepos` went from `CLEAN` to `UNGRADED` (two entries, one
+per declared repository, `not present in this checkout`): the old check said `CLEAN` without having looked
+in those repositories at all. That is the intended change, and it is the governance-only-CI case in the
+section above. A feature branch whose working tree carries no `codeRepos` (ExpenseTracker's
+`003-expense-entry`, cut before the declaration reached the trunk) printed the original line, unchanged.
+`ritual-checks.ps1` moved no member: FlowBoard and ExpenseTracker stayed `RESULT OK`, and FitForge stayed
+at the same two failing members (`enforcement-pack` and `scope-check`) it had with the kit before this
+feature; neither is this feature's. Not exercised, and said so: no clone had another open feature, so
+no real overlap was reported; the overlap itself is proved by the kit's fixtures.
+
+**What to do about it.** Read the verdict word, not only the exit code: a wrapper that treats exit `0`
+as clean must now also treat a line beginning `UNGRADED` as not clean. Two situations will make a
+healthy project print `UNGRADED` every time, and neither is a defect:
+
+- **Governance-only CI.** A pipeline that checks out the governance repository alone has no code
+  repositories to read, so a project that declares them gets `<repo>: not present in this checkout`.
+  Run the check where the code repositories are, or leave it to the pre-phase habit on a developer's
+  workspace. It is a pre-phase check, not a gate.
+- **A feature branch cut before `codeRepos` was declared.** The declaration is read from the checked-out
+  working tree, so such a branch has none and the reach does not apply to it until it takes the
+  declaration from the trunk.
+
+**Limits, stated rather than hidden.** The check sees pushed work, plus local branches where a
+repository has no `origin`; another developer's unpushed commits are invisible to any git-based check,
+which is why a clean run names what it compared. A local branch that the remote no longer has still
+counts as that feature's work in a repository, so a finished feature whose governance branch is still
+open can keep reporting a live overlap until the stale local branch is deleted. The "local branches
+only" note is in the text form, not in `-Json`.
+
+<!-- digest: territory-check now reads declared code repos and ends UNGRADED, not CLEAN, on a comparison it could not make. -->
+<!-- digest: UNGRADED from territory-check exits 0: read the verdict word; governance-only CI will always print it for code repos. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

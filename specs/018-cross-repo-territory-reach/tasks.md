@@ -187,21 +187,21 @@ close the roadmap row. No script changes.
 - `docs/digests/**`
 - `kit-manifest.json`
 
-- [ ] T024 [P] [US4] Update `docs/sdlc/team-workflow.md` section 5: the check also reads the declared code
+- [x] T024 [P] [US4] Update `docs/sdlc/team-workflow.md` section 5: the check also reads the declared code
       repositories; what an overlap there looks like (paths prefixed with the repository); what each
       ungraded cause means and the action for it; that a malformed `codeRepos` is ungraded; that it sees
       pushed work only. Keep the digest marker for the section, within 120 characters.
-- [ ] T025 [P] Add a flow-down note to `adoption/updating.md`: which files flow down (the territory check,
+- [x] T025 [P] Add a flow-down note to `adoption/updating.md`: which files flow down (the territory check,
       the two libraries, the scope check, the team-workflow document), that nothing surgical changes,
       what an owner will see change (`UNGRADED` where `CLEAN` used to cover a skipped comparison, the
       JSON `CLEAN` field, the `TERR-012` shape), and the measurement.
-- [ ] T026 Measure on clones of the three adopted projects, never touching the real ones: dry-run
+- [x] T026 Measure on clones of the three adopted projects, never touching the real ones: dry-run
       `scripts/update-kit.ps1`, apply the files it names, run the old and the new `territory-check.ps1`
       on a feature branch of each (and, where a project declares code repositories, against those), and
       compare verdicts and exit codes; run `ritual-checks.ps1` before and after, and regenerate the
       digests. A verdict that moved is a finding to report, not to round. Record the table in
       `notes.md`.
-- [ ] T027 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for
+- [x] T027 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for
       GAP-018 to `shipped` with its spec link unbracketed, add a status sentence to the GAP-029 row (the
       governance half closed; the four terminating-write refusal paths still open), and add the
       decisions-log entry, stating what stays open by decision.
