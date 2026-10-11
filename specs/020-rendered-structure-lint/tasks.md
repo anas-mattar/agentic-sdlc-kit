@@ -103,18 +103,18 @@ prove with a measurement that no finding is a false positive, and close the road
 - `docs/digests/**`
 - `kit-manifest.json`
 
-- [ ] T013 [P] Add the marker sentence to `docs/sdlc/review-process.md` (plan D7): a `digest:` marker goes on
+- [x] T013 [P] Add the marker sentence to `docs/sdlc/review-process.md` (plan D7): a `digest:` marker goes on
       its own line after a block, never inside a table or list, and the check enforces it. Keep any digest
       marker within 120 characters.
-- [ ] T014 [P] Add a flow-down note to `adoption/updating.md`: what the check reads and does not (it is not a
+- [x] T014 [P] Add a flow-down note to `adoption/updating.md`: what the check reads and does not (it is not a
       renderer), the findings and the one-line fix for each, that a finding fails an adopted project's run
       (decided, FR-011), which files flow down (`scripts/markdown-lib.ps1`, `scripts/doc-lint.ps1`, and the
       review-process document), and the measurement.
-- [ ] T015 Measure on clones of the three adopted projects, never touching the real ones: apply the update,
+- [x] T015 Measure on clones of the three adopted projects, never touching the real ones: apply the update,
       run old and new `doc-lint.ps1`, list every document flagged with a true-or-false-positive verdict, and
       run `ritual-checks.ps1` before and after. A false positive is a rule bug and returns to phase 1 or 2.
       Record the table in `notes.md`.
-- [ ] T016 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for GAP-015
+- [x] T016 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for GAP-015
       to `shipped` with its spec link unbracketed, and add the decisions-log entry, stating what stays open
       by decision (including FR-005 if T009 dropped it).
 - [ ] T017 Run `pwsh -File scripts/ritual-checks.ps1`, and the full

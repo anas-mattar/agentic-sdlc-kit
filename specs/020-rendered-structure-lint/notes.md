@@ -159,3 +159,59 @@ note now mention lists.
 
 Every pre-existing case is unchanged: the full-run difference is exactly the 18 new assertions. Run on this
 working tree; the isolated-checkout run of the final commit is T017.
+
+## Phase 3: guidance, flow-down and bookkeeping
+
+### T013: the marker sentence
+
+Plan D7 chose `docs/sdlc/review-process.md`. It is the document a reviewer reads, and the AI review's
+"Check:" list is where a reviewer is told what to look for in a diff, so the sentence is a new item there: block
+structure of every document the diff touches, a `digest:` marker sits on its own line **after** a table or a
+list, never inside one, and `scripts/doc-lint.ps1` now fails a severed table or list. A digest marker of 103
+characters follows it. (FR-009's open question, which document owns the sentence, is thereby resolved.)
+
+### T014: the flow-down note
+
+`adoption/updating.md`, before section 3: what was wrong, what the check reads and fails (a four-row table of
+the findings with the fix for each), that a finding fails an adopted project's run (decided at spec approval),
+which verbatim files flow down (`scripts/doc-lint.ps1` and `scripts/markdown-lib.ps1` together, the review
+process document, `adoption/updating.md`), what does not change (the OK line, every other check, every exit
+code), the measurement, and what to do. Two digest markers of 114 and 111 characters. The note's own table was
+first drafted with the delimiter row written as a code span containing pipes, which GitHub would split into
+cells: the new check would have flagged the note that announces it, so the row is described in words.
+
+### T015: the measurement on clones
+
+Method. Each of FitForge, FlowBoard and ExpenseTracker was cloned `--no-hardlinks` from its local directory
+(nothing in place touched, no network) into a scratch directory. Three states per clone: **installed** (what
+the project has today), **kit main** (`c292d62`, this feature's parent on `main`, applied with
+`update-kit.ps1`, digests regenerated, committed) and **kit HEAD** (`67dc753` plus the working tree, applied on
+top the same way). `doc-lint.ps1` and `ritual-checks.ps1` ran in every state. The kit-main to kit-HEAD step is
+this feature's delta. No pass was discarded.
+
+| Project | Documents scanned | `doc-lint.ps1` installed / kit main / kit HEAD | `ritual-checks.ps1` installed / kit main / kit HEAD | Structure findings |
+|---|---|---|---|---|
+| ExpenseTracker | 38 | OK / OK / OK | `RESULT OK` x3 | **0** |
+| FitForge | 42 | OK / OK / OK | `RESULT OK` x3 | **0** |
+| FlowBoard | 54 | OK / OK / OK | `RESULT OK` x3 | **0** |
+
+No verdict moved and no finding was reported. Every ritual member was OK or `n/a` in every state, the
+`scope-check`, `scope-repos` ones being `n/a` as in an unbranched clone. To show the quiet result is not a dead
+scanner, the kit-HEAD clone of FlowBoard had a severed table row and a split list appended to its roadmap: the
+check named `docs/roadmap.md:91 severed-row` and `:95 severed-list`, and the change was discarded (`git
+checkout`). The scanned counts equal the prototype's from phase 2 (38, 42, 54), which was run on the same
+documents, so the two measurements cover the same set.
+
+Not exercised: no real adopter document was flagged. The fixes in the flow-down note's table are proved by the
+kit's fixtures, not by an adopter case. That the three projects are clean is a statement about their documents
+today, not a guarantee about their next edit.
+
+The `update-kit.ps1` dry run (named in T015) was not taken separately: the controlled pass applies directly, as
+the 018 measurement's did, and the apply's own report was not retained. Recorded rather than claimed.
+
+### T016: bookkeeping
+
+Digests regenerated (`build-digests.ps1`): the adoption digest gains two lines and the review digest one, as the
+flow-down note says; three other digests changed only in line endings and were restored so the commit holds
+content changes alone. The GAP-015 roadmap row reads `shipped` with its spec link unbracketed, and the
+decisions-log entry states what stays open by decision.

@@ -77,7 +77,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Law digests (generated per-pack summaries kept in sync by CI; full doc read only when acting on that area) | GAP-014 | P3 | shipped | anas.m | `specs/010-law-digests/` |
 | Roadmap-claim visibility check (ritual-checks asserts every specs/NNN-* reachable on a remote branch has a non-idea row on main — or status flips move to a main-side docs commit at claim time) | GAP-017 | P1 | shipped | anas.m | `specs/011-roadmap-claim-check/` |
 | Code-repo scope-check reach (governance-side `scope-check-repos.ps1` reads the nested code repos as sibling working trees and grades their phase commits against repo-prefixed Territory, resolved as of each code commit; `codeRepos` in the adoption record; code-repo CI template) | GAP-016 | P1 | shipped | anas.m | `specs/012-cross-repo-scope-check/` |
-| Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | in progress | anas.m | `[specs/020-rendered-structure-lint/]` |
+| Rendered-structure lint (block-structure check in doc-lint: tables and list blocks uninterrupted; table rows have uniform cell counts, escaped pipes not counted — not a markdown renderer) | GAP-015 | P2 | shipped | anas.m | `specs/020-rendered-structure-lint/` |
 | Critical independence signal (the adoption record states the project's developers; the Critical evidence check requires the solo substitute only when the project is solo, and an equally machine-checked independence artifact when it is not — absent record defaults to strict, so no existing adoption changes behaviour) | GAP-020 | P1 | shipped | anas.m | `specs/013-critical-independence-signal/` |
 | Amendment authority (constitution clause first: any change to an approved `spec.md`, `plan.md`, `tasks.md` or contract records who approved it, and an implementing agent may not approve its own; then an `enforcement-pack.ps1` check that grades it) | GAP-019 | P1 | shipped | anas.m | `specs/014-amendment-authority/` |
 | Cross-repo territory reach (`territory-check.ps1` reads the declared code repositories as sibling working trees and reports overlap across them, the way feature 012 extended the scope check) | GAP-018 | P2 | shipped | anas.m | `specs/018-cross-repo-territory-reach/` |
@@ -454,3 +454,18 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   in `scripts/adoption-lib.ps1`, outside this feature's Territory (the territory check itself stops earlier,
   at `Push-Location`, on such a root). "Shipped" and "closed" here mean
   built, reviewed and measured: the owner's gate and the human review at merge are still to come.
+
+- 2026-10-11 Feature 020 shipped; GAP-015 closed. `doc-lint.ps1` now reads the block structure of the documents it
+  scans, because nothing in the kit renders Markdown and a comment or blank line inside a table, or a comment at
+  column zero inside a list, silently changes what a reader sees. It fails a severed table row, a delimiter row
+  with no header, a ragged row and a list split by a comment, naming the file and line, in the kit and in adopted
+  projects alike (the owner's decision at spec approval, FR-011: no information-only release). The kit's own
+  case, a blank line inside the inventory table of this file that had hidden GAP-025 onward, was repaired in
+  phase 1. Measured on clones of FitForge, FlowBoard and ExpenseTracker (38, 42 and 54 documents): no finding,
+  no verdict moved, `ritual-checks` `RESULT OK` throughout. **Open by decision**, on the record: this is not a
+  renderer and grades four rules only (GitHub-flavoured, silent where renderers differ); the phase 1 and phase 2
+  reviews' accepted limits stand (an unclosed comment, or an empty one written without its dashes, hides the rest of its document; a double
+  backslash before a pipe is read as an escaped backslash and then a boundary; a comment between lists of different type is still reported, a
+  comment indented one to three spaces is not remembered); no real adopter document was flagged, so the fixes are
+  proved by fixtures rather than by an adopter's case. "Shipped" and "closed" here mean built, reviewed and
+  measured: the human review at merge is still to come.
