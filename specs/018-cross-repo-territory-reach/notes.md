@@ -144,3 +144,29 @@ numerator and the denominator together, so the figure is not flattered.
 | a duplicate | api, api | 0 | false |
 
 Each row is identical to what the original function returned and printed.
+
+## Phase 2: the ungraded verdict
+
+### T007: `TERR-013` against the unchanged script
+
+Run on the phase 1 tip before `scripts/territory-check.ps1` was touched (`-Case TERR-013`, 5 cases):
+`pass` passed. `fail`, `fail-json` and `pass-json` failed on output (the script printed `CLEAN`, or
+the JSON without `UNGRADED`). `fail-overlap` exited 2 as expected but failed on output (no ungraded
+line). The `fail*` cases therefore fail today for the reason the rule names, and `pass` already passes.
+(`pass-json` fails today only because the JSON gains the always-present `UNGRADED` field.)
+
+### T009: changed expectations, with the old text
+
+- **`TERR-012/fail`** (the departure D3 names). Old: `WARNING: Skipping origin/012-other: cannot compare
+  with main.` then `CLEAN — '011-thing' shares no files with any open feature branch.` New: the same
+  warning, then `UNGRADED: governance: cannot compare 012-other (no remote-tracking ref origin/012-other)`,
+  then `UNGRADED — '011-thing' was NOT fully compared (1 comparison(s) not made, listed above), so this is
+  not a clean result.` Exit code unchanged (0). The recipe is unchanged; its description and the rule's
+  summary and notes say why.
+- **`TERR-006/pass` and `TERR-007/pass`** (not named in the task; found by the run). Old JSON:
+  `{"BRANCH":"011-thing","CLEAN":false,"OVERLAPS":[...]}`. New: the same with `,"UNGRADED":[]` appended.
+  The contract makes `UNGRADED` always present in `-Json`, so this is the additive field, not a change of
+  verdict. The `fail` directions of both (the `no remote` state) are untouched, as D3 requires.
+- Output order when an overlap and an ungraded entry coexist: overlap blocks, then the ungraded lines,
+  then the sequencing guidance (pinned by `TERR-013/fail-overlap`). The contract fixes the anchors, not
+  this order.

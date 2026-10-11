@@ -1916,10 +1916,19 @@
       "id": "TERR-012",
       "script": "territory-check.ps1",
       "function": "(top level)",
-      "summary": "a branch that cannot be compared is skipped out loud, not dropped from the comparison",
+      "summary": "a branch that cannot be compared is skipped out loud, and the run ends UNGRADED rather than CLEAN",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
       "emitAnchor": "Skipping origin/${other}: cannot compare with ",
-      "notes": "Exempted in phase 6 on a false reason - that Write-Warning is terminating under ErrorActionPreference = Stop, which it is not (measured by the phase 6 review, F3: the warning prints and the loop continues). The line is reachable in any clone whose origin fetch refspec is narrower than the ledger, so it has a fixture pair instead, built with the recipe's 'originFetch' knob. Both directions exit 0 and print CLEAN; what differs is whether the run admits a branch it skipped. That CLEAN is itself a finding - a skipped comparison should not be able to end on CLEAN - and it is recorded with the other territory-check findings for the roadmap GAP row, not changed here: scripts/territory-check.ps1 is outside phase 6's Territory."
+      "notes": "Exempted in phase 6 on a false reason - that Write-Warning is terminating under ErrorActionPreference = Stop, which it is not (measured by the phase 6 review, F3: the warning prints and the loop continues). The line is reachable in any clone whose origin fetch refspec is narrower than the ledger, so it has a fixture pair instead, built with the recipe's 'originFetch' knob. Both directions exit 0 and print CLEAN; what differs is whether the run admits a branch it skipped. That CLEAN is itself a finding - a skipped comparison should not be able to end on CLEAN - and it is recorded with the other territory-check findings for the roadmap GAP row, not changed here: scripts/territory-check.ps1 is outside phase 6's Territory. CHANGED in feature 018 phase 2 (D3): the fail direction now ends on the UNGRADED verdict where it ended on CLEAN; the pass direction is untouched. The old expectation is recorded in specs/018-cross-repo-territory-reach/notes.md."
+    },
+    {
+      "id": "TERR-013",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a run that did not compare everything says so and is not CLEAN: UNGRADED when nothing overlaps, beside the overlap when something does",
+      "law": "feature 018 plan D2, D3; docs/sdlc/team-workflow.md rule 5",
+      "emitAnchor": "was NOT fully compared (",
+      "notes": "Added in feature 018 phase 2 (GAP-029 governance half). Five cases over one skipped-claim recipe: fail and pass (text), fail-overlap (the overlap and the ungraded line together, exit 2), fail-json and pass-json (CLEAN false with UNGRADED listing the entry, against CLEAN true and UNGRADED empty). The per-entry 'UNGRADED: ' line and the JSON emitter are accumulator patterns, owned by this rule's verdict."
     }
   ]
 }

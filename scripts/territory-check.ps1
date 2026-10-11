@@ -74,11 +74,16 @@ foreach ($line in (git ls-remote --heads origin 2>$null)) {
 }
 
 $overlaps = @()
+$ungraded = @()   # comparisons not made: a skipped comparison must never read as CLEAN
 $liveOverlap = $false
 $nowEpoch = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 foreach ($other in $openBranches) {
     $commitCount = [int](git rev-list --count "$BaseBranch..origin/$other" 2>$null)
-    if ($LASTEXITCODE -ne 0) { Write-Warning "Skipping origin/${other}: cannot compare with $BaseBranch."; continue }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Skipping origin/${other}: cannot compare with $BaseBranch."
+        $ungraded += [PSCustomObject]@{ repo = 'governance'; feature = $other; cause = 'claim-skipped'; detail = "no remote-tracking ref origin/$other" }
+        continue
+    }
 
     if ($commitCount -eq 0) {
         $status = 'claimed, no work yet'   # freshly claimed — no plan.md is fine (never an error)
@@ -97,17 +102,26 @@ foreach ($other in $openBranches) {
 }
 
 # --- Report -----------------------------------------------------------------------------
+# One word for the run: OVERLAP, else UNGRADED, else CLEAN. Ungraded lines print beside an
+# overlap, never instead of it; an ungraded run with no overlap still exits 0.
 if ($Json) {
-    [PSCustomObject]@{ BRANCH = $Branch; CLEAN = (-not $liveOverlap); OVERLAPS = $overlaps } |
+    [PSCustomObject]@{ BRANCH = $Branch; CLEAN = (-not $liveOverlap -and $ungraded.Count -eq 0); OVERLAPS = $overlaps; UNGRADED = $ungraded } |
         ConvertTo-Json -Compress -Depth 4
 } else {
+    foreach ($o in $overlaps) {
+        Write-Host "OVERLAP with $($o.branch) [$($o.status)]:"
+        $o.files | ForEach-Object { Write-Host "  $_" }
+    }
+    foreach ($u in $ungraded) {
+        Write-Host "UNGRADED: $($u.repo): cannot compare $($u.feature) ($($u.detail))"
+    }
     if ($overlaps.Count -eq 0) {
-        Write-Host "CLEAN — '$Branch' shares no files with any open feature branch."
-    } else {
-        foreach ($o in $overlaps) {
-            Write-Host "OVERLAP with $($o.branch) [$($o.status)]:"
-            $o.files | ForEach-Object { Write-Host "  $_" }
+        if ($ungraded.Count -gt 0) {
+            Write-Host "UNGRADED — '$Branch' was NOT fully compared ($($ungraded.Count) comparison(s) not made, listed above), so this is not a clean result."
+        } else {
+            Write-Host "CLEAN — '$Branch' shares no files with any open feature branch."
         }
+    } else {
         if ($liveOverlap) {
             Write-Host ''
             Write-Host 'Overlap is sequenced, not forbidden (docs/sdlc/team-workflow.md, rule 5):'

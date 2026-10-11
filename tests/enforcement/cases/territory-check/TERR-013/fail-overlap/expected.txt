@@ -1,0 +1,7 @@
+WARNING: Skipping origin/012-other: cannot compare with main.
+OVERLAP with 013-third [live]:
+  src/shared.txt
+UNGRADED: governance: cannot compare 012-other (no remote-tracking ref origin/012-other)
+
+Overlap is sequenced, not forbidden (docs/sdlc/team-workflow.md, rule 5):
+agree merge order with the other owner NOW and record it in BOTH features' plan.md.

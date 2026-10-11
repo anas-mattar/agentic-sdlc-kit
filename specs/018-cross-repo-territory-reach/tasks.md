@@ -72,7 +72,7 @@ take; the four terminating-write refusal paths are not touched.
 - `scripts/territory-check.ps1`
 - `tests/**`
 
-- [ ] T006 [P] [US2] Write the fixtures for `TERR-013` under
+- [x] T006 [P] [US2] Write the fixtures for `TERR-013` under
       `tests/enforcement/cases/territory-check/TERR-013/`: `fail` (an open claim with no remote-tracking
       ref, the `originFetch` shape `TERR-012` uses, and no overlap: the verdict is UNGRADED, exit 0,
       and the line names the governance repository and the feature); `pass` (every claim compared, no
@@ -80,21 +80,21 @@ take; the four terminating-write refusal paths are not touched.
       the overlap block and the ungraded line both printed); `fail-json` and `pass-json` (the `-Json`
       form: `CLEAN` false and `UNGRADED` listing the entry, against `CLEAN` true and `UNGRADED` empty).
       Expectations are hand-written from the contract.
-- [ ] T007 [US2] Run T006 against the current script and record in `notes.md`: the `fail*` cases must
+- [x] T007 [US2] Run T006 against the current script and record in `notes.md`: the `fail*` cases must
       fail today (the script prints `CLEAN` over the skipped claim), `pass` must already pass.
-- [ ] T008 [US2] In `scripts/territory-check.ps1`, add an ungraded accumulator. The comparison it already
+- [x] T008 [US2] In `scripts/territory-check.ps1`, add an ungraded accumulator. The comparison it already
       skips with `Write-Warning` also adds an entry (`governance`, the feature, cause `claim-skipped`),
       and the warning stays. Compose the verdict as plan D2: an overlap keeps exit 2 and the ungraded
       lines are printed beside it; otherwise any entry makes the run `UNGRADED` and exit 0; otherwise
       `CLEAN` with its existing text. `-Json` keeps `BRANCH`, `CLEAN` and `OVERLAPS`, makes `CLEAN` false
       whenever anything was not compared, and gains `UNGRADED`. The `no remote` state is untouched.
-- [ ] T009 [US2] Update the `TERR-012` expectation: the run now ends on the ungraded verdict where it
+- [x] T009 [US2] Update the `TERR-012` expectation: the run now ends on the ungraded verdict where it
       ended on `CLEAN`, and the case's `rules.json` summary and notes say why. This is a changed
       expectation, and it is recorded in `notes.md` as the departure it is, with the old text.
-- [ ] T010 [US2] Register the new line shapes as accumulator patterns in
+- [x] T010 [US2] Register the new line shapes as accumulator patterns in
       `tests/enforcement/emission-idioms.json` for this script, and add `TERR-013` (and the changed
       `TERR-012`) to `tests/enforcement/rules.json` with summary, law, emit anchor and notes.
-- [ ] T011 [US2] Run `-Case TERR-` and `pwsh -File scripts/ritual-checks.ps1`: every case passes and the
+- [x] T011 [US2] Run `-Case TERR-` and `pwsh -File scripts/ritual-checks.ps1`: every case passes and the
       coverage test reports no rule without both directions.
 
 ---

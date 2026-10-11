@@ -1,2 +1,3 @@
 WARNING: Skipping origin/012-other: cannot compare with main.
-CLEAN — '011-thing' shares no files with any open feature branch.
+UNGRADED: governance: cannot compare 012-other (no remote-tracking ref origin/012-other)
+UNGRADED — '011-thing' was NOT fully compared (1 comparison(s) not made, listed above), so this is not a clean result.
