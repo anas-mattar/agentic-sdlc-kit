@@ -102,6 +102,7 @@
       "accumulators": [
         "\\$manifestErrors\\s*\\+=",
         "\\$broken\\s*\\+=",
+        "\\$structure\\s*\\+=",
         "Write-Host\\s+['\"]doc-lint: (manifest|OK)",
         "Write-Host\\s+\"ERROR: kit incomplete",
         "Write-Host\\s+\"\\$\\{level\\}:"
@@ -115,6 +116,10 @@
         {
           "anchor": "ERROR: $($broken.Count) referenced path(s) do not resolve:",
           "reason": "The header of the broken-reference block. Each unresolved path listed beneath it is the rule; the header only counts them."
+        },
+        {
+          "anchor": "ERROR: $($structure.Count) structure finding(s)",
+          "reason": "The header of the block structure findings. The findings under it are the rule (DOC-010); the header is the count."
         },
         {
           "anchor": "doc-lint: FAIL ($errCount issue(s)",

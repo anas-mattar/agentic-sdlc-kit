@@ -25,6 +25,12 @@
     a deletable file inside a verbatim doc re-breaks the adopted project's doc-lint on
     every update (GAP-007, first observed in the 005 flow-down).
 
+    It also reads each document's block structure (GAP-015, feature 020), because nothing in the
+    kit renders Markdown and a comment or blank line placed inside a table silently ends it: a
+    table severed by one, a delimiter row with no header, and a row whose cell count differs from
+    its header's each fail the run, named by file and line. It is not a renderer and grades only
+    those rules. Get-StructureFindings in scripts/markdown-lib.ps1 says exactly what it reads.
+
     Unfilled {{SLOT}}s and TODO(...) markers are counted and reported as information.
     Pass -FailOnSlots to make them errors — adopting projects should turn this on once
     the constitution is ratified.
@@ -41,6 +47,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path $Root).Path
+. (Join-Path $PSScriptRoot 'markdown-lib.ps1')
 
 # --- Kit integrity: a partial install (dot-directories skipped during copy) makes the
 # agent lose the /speckit.* commands and improvise its own structure. Fail fast.
@@ -197,13 +204,18 @@ function Get-PathRefs {
 }
 
 $broken = @()
+$structure = @()
 $slotCount = 0
 
 foreach ($file in $docFiles) {
     $relFile = [IO.Path]::GetRelativePath($Root, $file) -replace '\\', '/'
     $docDir = Split-Path -Parent $file
     $lineNo = 0
-    foreach ($line in [IO.File]::ReadAllLines($file)) {
+    $docLines = [IO.File]::ReadAllLines($file)
+    foreach ($f in (Get-StructureFindings -Lines $docLines)) {
+        $structure += [pscustomobject]@{ File = $relFile; Line = $f.Line; Rule = $f.Rule; Detail = $f.Detail }
+    }
+    foreach ($line in $docLines) {
         $lineNo++
         $slotCount += [regex]::Matches($line, '\{\{[A-Z_]+\}\}|TODO\(').Count
         foreach ($ref in Get-PathRefs $line) {
@@ -248,11 +260,16 @@ if ($broken.Count -gt 0) {
     foreach ($b in $broken) { Write-Host ("  {0}:{1}  {2}" -f $b.File, $b.Line, $b.Ref) }
 }
 
-if ($missingKit.Count -gt 0 -or $manifestErrors.Count -gt 0 -or $broken.Count -gt 0 -or ($FailOnSlots -and $slotCount -gt 0)) {
+if ($structure.Count -gt 0) {
+    Write-Host "ERROR: $($structure.Count) structure finding(s) - a block that renders differently from how it is written:"
+    foreach ($s in $structure) { Write-Host ("  {0}:{1}  {2}: {3}" -f $s.File, $s.Line, $s.Rule, $s.Detail) }
+}
+
+if ($missingKit.Count -gt 0 -or $manifestErrors.Count -gt 0 -or $broken.Count -gt 0 -or $structure.Count -gt 0 -or ($FailOnSlots -and $slotCount -gt 0)) {
     # A verdict line in the shared vocabulary. Until feature 015 phase 5 this script was the
     # only member that exited 1 having printed no verdict word at all: the ERROR: blocks above
     # are the detail, and a reader looking for the answer found the last line was a detail too.
-    $errCount = $missingKit.Count + $manifestErrors.Count + $broken.Count +
+    $errCount = $missingKit.Count + $manifestErrors.Count + $broken.Count + $structure.Count +
         (($FailOnSlots -and $slotCount -gt 0) ? $slotCount : 0)
     Write-Host "doc-lint: FAIL ($errCount issue(s) — see the ERROR block(s) above)"
     exit 1

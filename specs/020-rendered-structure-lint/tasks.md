@@ -33,12 +33,12 @@ arms on a green kit.
 - `tests/**`
 - `docs/roadmap.md`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the counts from
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the counts from
       `pwsh -File tests/enforcement/Run-Tests.ps1 -Case DOC-` and the full run, and the output of
       `doc-lint.ps1`. Run the table scanner as a throwaway prototype over the 37 scanned documents (not
       committed) and record that it reports exactly one finding, the roadmap's inventory table, so the
       rule is armed with its expected result known.
-- [ ] T002 Write the fixtures first, `DOC-010` onward, in `tests/enforcement/cases/doc-lint/`: a severed
+- [x] T002 Write the fixtures first, `DOC-010` onward, in `tests/enforcement/cases/doc-lint/`: a severed
       row (comment line), a severed row (blank line), a severed delimiter, a ragged row (extra cell and
       missing cell), each as a `fail`; and as `pass` the same document differing only in the condition
       (rows contiguous; delimiter directly under its header; equal counts), a `\|` not counted, two adjacent
@@ -46,20 +46,20 @@ arms on a green kit.
       indented four spaces, a table at end of file with no trailing blank line, a marker comment after a
       table, and one CRLF document. Expectations by hand. Run them on the parent commit and record that
       each `fail` fails there for the stated reason and each `pass` passes.
-- [ ] T003 Add the `DOC-010` onward entries to `tests/enforcement/rules.json` (anchors, law, summary) and the
+- [x] T003 Add the `DOC-010` onward entries to `tests/enforcement/rules.json` (anchors, law, summary) and the
       new accumulator to the `doc-lint.ps1` entry of `tests/enforcement/emission-idioms.json`, so the
       coverage test sees every new site.
-- [ ] T004 Add `Get-StructureFindings` to `scripts/markdown-lib.ps1` (plan D1–D3): given a document's lines
+- [x] T004 Add `Get-StructureFindings` to `scripts/markdown-lib.ps1` (plan D1–D3): given a document's lines
       it returns findings (`Line`, `Rule`, `Detail`), skipping fenced code through `Get-FencedLineMap` and
       multi-line comment blocks as a unit. Update the file's header.
-- [ ] T005 Edit `scripts/doc-lint.ps1`: dot-source the library, call the function per scanned document, print
+- [x] T005 Edit `scripts/doc-lint.ps1`: dot-source the library, call the function per scanned document, print
       each finding under an `ERROR:` block as `<file>:<line>  <rule>: <why>`, and count findings into the
       existing issue total and `FAIL` roll-up. The path, slot and manifest checks and their output are
       untouched; update the header's list of what the script grades.
-- [ ] T006 Repair `docs/roadmap.md`: remove the blank line inside the inventory table so it is one table
+- [x] T006 Repair `docs/roadmap.md`: remove the blank line inside the inventory table so it is one table
       (plan D8). Confirm no other document is flagged; if one is and the rule is right, repair it and say so
       in `notes.md`.
-- [ ] T007 Run `-Case DOC-` and the full harness: every pre-existing case unchanged, every new fixture as
+- [x] T007 Run `-Case DOC-` and the full harness: every pre-existing case unchanged, every new fixture as
       written, coverage reports each new site fixtured. Run `pwsh -File scripts/ritual-checks.ps1`.
 
 ---

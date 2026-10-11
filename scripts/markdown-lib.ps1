@@ -29,7 +29,10 @@
     business; 016's phase 2 is scoped to make build-digests report a marker it passes over
     inside one.
 
-    Three of these functions were enforcement-pack.ps1's. They live here because the next
+    Feature 020 added the structure reader (Get-StructureFindings): how a table renders, as against how it
+    is written, so a comment or blank line inside one is found instead of silently ending it (GAP-015).
+
+    Three of the first functions here were enforcement-pack.ps1's. They live here because the next
     script to read a Markdown document should not be the fourth to learn it. Same reason
     scripts/scope-lib.ps1 exists for the two scope graders: one implementation cannot drift
     from itself.
@@ -251,4 +254,116 @@ function Get-FencedLineMap {
         }
     }
     return $map
+}
+
+# The structure a document's blocks render with, as opposed to how they are written (GAP-015).
+# Nothing in the kit renders Markdown, so an HTML comment line or a blank line placed INSIDE a
+# table (a 'digest:' marker is a comment line) ends the table at that line: the rows after it
+# become a stray paragraph of pipes, and every check stays green. This reads one document's lines
+# and returns what GitHub would render differently from what was written. It is NOT a renderer: it
+# knows three things about tables and nothing else.
+#
+# A table starts at a header row directly followed by a delimiter row (|---|---|) and runs while
+# lines start with a pipe after at most three spaces of indent; four spaces is a code block. A run
+# of pipe lines with no delimiter row is prose and is never examined. Cells are counted as the
+# renderer splits them: one leading and one trailing pipe dropped, an escaped pipe not a boundary,
+# every other pipe a boundary (a pipe inside a code span included, as on GitHub). Fenced lines are
+# skipped (Get-FencedLineMap); a comment block that spans lines is one gap, not several.
+#
+# Findings are objects with Line (1-based), Rule and Detail:
+#   severed-row        a row after a blank or comment line, inside what was a table
+#   severed-delimiter  a delimiter row that is not directly under a header row
+#   ragged-row         a row, or a delimiter row, whose cell count differs from its header's
+function Get-StructureCellCount {
+    param([string]$Row)
+    $t = $Row.Trim().Replace('\|', '')
+    if ($t.StartsWith('|')) { $t = $t.Substring(1) }
+    if ($t.EndsWith('|')) { $t = $t.Substring(0, $t.Length - 1) }
+    return ($t.Length - $t.Replace('|', '').Length) + 1
+}
+
+function Test-StructureDelimiterRow {
+    param([string]$Row)
+    if ($Row -notmatch '^ {0,3}\|') { return $false }
+    $t = $Row.Trim().Replace('\|', '')
+    if ($t.StartsWith('|')) { $t = $t.Substring(1) }
+    if ($t.EndsWith('|')) { $t = $t.Substring(0, $t.Length - 1) }
+    foreach ($cell in $t.Split('|')) {
+        if ($cell -notmatch '^\s*:?-+:?\s*$') { return $false }
+    }
+    return $true
+}
+
+function Get-StructureFindings {
+    param([string[]]$Lines)
+    $findings = @()
+    if ($null -eq $Lines -or $Lines.Count -eq 0) { return $findings }
+    $fenced = Get-FencedLineMap -Lines $Lines
+
+    # What each line is, for the walk below: fence, comment (a comment-only line, or any line of a
+    # comment block that spans lines), blank, row (starts with a pipe, at most three spaces of
+    # indent), or other. A comment span opened on a line that has more text after the close is text.
+    $kind = New-Object 'string[]' $Lines.Count
+    $inComment = $false
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        $l = $Lines[$i]
+        if ($fenced[$i]) { $kind[$i] = 'fence'; $inComment = $false; continue }
+        $trim = $l.Trim()
+        if ($inComment) {
+            $kind[$i] = 'comment'
+            if ($trim.Contains('-->')) { $inComment = $false }
+            continue
+        }
+        if ($trim -eq '') { $kind[$i] = 'blank'; continue }
+        if ($trim.StartsWith('<!--')) {
+            if ($trim -match '^(<!--.*?-->\s*)+$') { $kind[$i] = 'comment'; continue }
+            if (-not $trim.Contains('-->')) { $kind[$i] = 'comment'; $inComment = $true; continue }
+            $kind[$i] = 'other'; continue
+        }
+        $kind[$i] = if ($l -match '^ {0,3}\|') { 'row' } else { 'other' }
+    }
+
+    $inTable = $false      # inside a table, or inside the rows a gap left orphaned
+    $gap = $false          # a blank or comment line since the last row
+    $orphaned = $false     # a severed-row finding was made for this run of rows
+    $cols = 0
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        switch ($kind[$i]) {
+            'row' {
+                $isDelim = Test-StructureDelimiterRow $Lines[$i]
+                $startsTable = (-not $isDelim) -and ($i + 1 -lt $Lines.Count) -and
+                    ($kind[$i + 1] -eq 'row') -and (Test-StructureDelimiterRow $Lines[$i + 1])
+                if ($startsTable) {
+                    $cols = Get-StructureCellCount $Lines[$i]
+                    $dcols = Get-StructureCellCount $Lines[$i + 1]
+                    if ($dcols -ne $cols) {
+                        $findings += [pscustomobject]@{ Line = $i + 2; Rule = 'ragged-row'
+                            Detail = "delimiter row has $dcols cell(s), its header has $cols, so this is not a table" }
+                        $inTable = $false
+                    } else { $inTable = $true }
+                    $gap = $false; $orphaned = $false
+                    $i++   # the delimiter row is consumed with its header
+                } elseif ($isDelim) {
+                    $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'severed-delimiter'
+                        Detail = 'this delimiter row is not directly under a header row, so no table starts here' }
+                    $inTable = $false; $gap = $false
+                } elseif ($inTable -and $gap) {
+                    if (-not $orphaned) {
+                        $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'severed-row'
+                            Detail = 'this row is cut off from its table by a blank or comment line above it' }
+                    }
+                    $orphaned = $true; $gap = $false
+                } elseif ($inTable -and -not $orphaned) {
+                    $n = Get-StructureCellCount $Lines[$i]
+                    if ($n -ne $cols) {
+                        $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'ragged-row'
+                            Detail = "row has $n cell(s), its header has $cols" }
+                    }
+                }
+            }
+            { $_ -in 'blank', 'comment' } { if ($inTable) { $gap = $true } }
+            default { $inTable = $false; $gap = $false; $orphaned = $false }
+        }
+    }
+    return $findings
 }
