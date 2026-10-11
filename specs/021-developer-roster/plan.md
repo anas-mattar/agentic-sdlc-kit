@@ -4,6 +4,7 @@
 **Input**: Feature specification (approved; FR-007 decided) + decisions D1–D10 below
 **Gate Batching**: none
 **Gate Certification**: user-run
+**Amendment approved by**: anas.m, 2026-10-11
 
 ## Summary
 
@@ -93,7 +94,9 @@ existing fixture's expectation stays byte-identical, and nearly every roadmap-cl
 printed for a no-roster project changes the OK line of each of them. The plan implements **silence** for a
 no-roster project (the OK line is unchanged and already states exactly what was graded: "claim(s) visible with
 non-idea rows"), because byte-identity is the stronger, testable guarantee and the OK line makes no claim about
-Owners it did not check. This needs the owner's ruling on the two sentences (Needs the owner, 1).
+Owners it did not check. The owner ruled for silence and approved the amendment of the three sentences (spec US2 scenario 3, FR-005,
+FR-007).
+**Decided**: silence. **Amendment approved by**: anas.m, 2026-10-11.
 
 **D6 — Reading two, the Critical reviewer (FR-006).** In `Invoke-CriticalTeamEvidence`, after the existing
 reviewer-is-not-owner check, the Reviewer must appear in `Roster` and its entry must not be non-permitted. Two
@@ -207,14 +210,14 @@ verbatim, so `kit-manifest.json` needs no entry.
 
 ## Needs the owner
 
-1. **D5, the inconsistency in the approved spec.** US2 scenario 3, FR-005 and FR-007 say the check "says so" when
+1. **Decided (anas.m, 2026-10-11).** D5, the inconsistency in the approved spec. US2 scenario 3, FR-005 and FR-007 say the check "says so" when
    no roster is declared; SC-001 requires every existing fixture's expectation to stay byte-identical. The plan
    implements silence and asks the owner to approve an amendment of those three sentences to "grades nothing and
    does not claim the Owners were checked" (recommended), or to direct that the OK line gains a note for every
    no-roster project and the existing `CLAIM-*` expectations change.
 2. **The checked branch's own claim**, exempt from the Owner and WIP readings as it is from visibility (D4, D7).
-   Say if it should be graded when its row already exists.
-3. **The plan's approval**, then `tasks.md`.
+   Say if it should be graded when its row already exists. **Approved as written with the plan (anas.m, 2026-10-11).**
+3. **The plan's approval** (given, anas.m, 2026-10-11), then `tasks.md`.
 
 ## Complexity Tracking
 

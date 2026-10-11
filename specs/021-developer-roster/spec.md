@@ -75,7 +75,9 @@ fixture with the Owner on the roster passes; a project with no roster passes eit
 2. **Given** a declared roster and a row Owner not on it, **When** it runs, **Then** it fails naming the claim,
    the Owner, and the declared names.
 3. **Given** no declared roster (absent, empty or unusable), **When** it runs, **Then** it grades nothing about
-   Owners and says so; it does not fail and does not claim the Owners were checked.
+   Owners and its output is exactly what it was before this feature; it does not fail and does not claim the
+   Owners were checked (its OK line already says what it graded: claims visible with non-idea rows).
+   **Amendment approved by**: anas.m, 2026-10-11.
 
 ---
 
@@ -179,15 +181,18 @@ before and after, with none moved or each moved verdict explained.
   and two entries naming the same person MUST count once.
 - **FR-005**: When a roster is declared and usable, `scripts/roadmap-claim-check.ps1` MUST fail a claim on `origin`
   whose non-`idea` roadmap row names an Owner not on the roster, naming the claim, the Owner and the declared names.
-  With no usable roster it MUST grade no Owner and say so in its output.
+  With no usable roster it MUST grade no Owner and print nothing new: its output is byte-identical to what it was
+  before this feature (SC-001), and the existing OK line makes no claim about Owners.
+  **Amendment approved by**: anas.m, 2026-10-11.
 - **FR-006**: In the team arm, the Critical evidence check MUST fail a Reviewer who is not on the roster and a
   Reviewer whose entry sets `canApproveCritical` to `false`, in addition to the existing Reviewer-is-not-Owner check.
   The solo arm MUST be unchanged.
 - **FR-007**: `scripts/roadmap-claim-check.ps1` MUST count, per Owner, the non-stale claims on `origin` and fail an
   Owner whose count exceeds the cap `docs/sdlc/team-workflow.md` states (more than two); an Owner at two MUST be
   noted, never failed; a stale claim (no commits for two weeks) MUST NOT be counted. The count is graded **only where
-  a roster is declared and usable**; a project with none keeps its CI as it is, and the output says the count was
-  not graded (decided by the owner, anas.m, 2026-10-11).
+  a roster is declared and usable**; a project with none keeps its CI as it is, and its output is byte-identical to what it was before
+  this feature, so it does not say the count was not graded (decided by the owner, anas.m, 2026-10-11).
+  **Amendment approved by**: anas.m, 2026-10-11.
 - **FR-008**: `scripts/verify-kit.ps1` MUST report, by entry position and cause, every malformed roster entry, an
   unknown `repos` name and a duplicate, and MUST state the mode and roster it read, the way it states the mode today.
 - **FR-009**: Every new rule MUST have a passing and a failing fixture in the enforcement harness, anchored in
