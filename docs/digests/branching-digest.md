@@ -24,7 +24,7 @@
 - A remote NNN-* branch IS the claim — check remote branches before picking, never the roadmap alone. (`docs/sdlc/team-workflow.md`)
 - WIP limit: one active feature each; pipelining: one awaiting-review + one active, territory disjoint or sequenced. (`docs/sdlc/team-workflow.md`)
 - Cross-review: the human reviewer of a feature must not be its owner. (`docs/sdlc/team-workflow.md`)
-- Run territory-check.ps1 before each phase; overlap is sequenced by agreed merge order, never discovered at merge time. (`docs/sdlc/team-workflow.md`)
+- Run territory-check.ps1 before each phase, code repos too; UNGRADED is not clean; overlap is sequenced, never forbidden. (`docs/sdlc/team-workflow.md`)
 - Rebase on main before the final phase's gate, and after any teammate's merge touching your territory. (`docs/sdlc/team-workflow.md`)
 - Governance changes ride alone on a docs/ branch with team-lead approval — never inside a feature branch. (`docs/sdlc/team-workflow.md`)
 - A merge that turns main red is reverted immediately via the fix/ lane — no debugging on a red main. (`docs/sdlc/team-workflow.md`)

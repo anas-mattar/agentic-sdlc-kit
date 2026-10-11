@@ -1,0 +1,47 @@
+{
+  "description": "api exists as a plain directory the governance repository tracks, not a repository of its own: git would answer for the governance history, so it is ungraded by name.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"api\"]",
+          "}"
+        ],
+        "api/README.md": "a directory the governance repository tracks\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011",
+      "hoursAgo": 3,
+      "write": {
+        "specs/011-thing/spec.md": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "spec: 012",
+      "hoursAgo": 2.0,
+      "write": {
+        "specs/012-other/spec.md": "other\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self"
+}

@@ -1,0 +1,5 @@
+WARNING: Skipping origin/012-other: cannot compare with main.
+WARNING: Skipping origin/013-third: cannot compare with main.
+UNGRADED: governance: cannot compare 012-other (no remote-tracking ref origin/012-other)
+UNGRADED: governance: cannot compare 013-third (no remote-tracking ref origin/013-third)
+UNGRADED — '011-thing' was NOT fully compared (2 comparison(s) not made, listed above), so this is not a clean result.

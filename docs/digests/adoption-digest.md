@@ -18,6 +18,8 @@
 - UNGRADED changes the verdict and never the exit code; nothing in CI behaves differently. (`adoption/updating.md`)
 - A skipped digest marker now fails the run by file and line: delete it or close the comment above it. (`adoption/updating.md`)
 - Level declaration: re-express constitution 0.8.0, declare criticalSurfaces to arm the floor, then run build-digests. (`adoption/updating.md`)
+- territory-check now reads declared code repos and ends UNGRADED, not CLEAN, on a comparison it could not make. (`adoption/updating.md`)
+- UNGRADED from territory-check exits 0: read the verdict word; governance-only CI will always print it for code repos. (`adoption/updating.md`)
 - Surgical files carry project-filled content: re-apply by hand only what applies — an ordinary governance edit. (`adoption/updating.md`)
 - verify-kit.ps1 is the adoption doctor: read-only, runs at init end, update end, and in adopted-project CI. (`adoption/updating.md`)
 - kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. (`adoption/updating.md`)

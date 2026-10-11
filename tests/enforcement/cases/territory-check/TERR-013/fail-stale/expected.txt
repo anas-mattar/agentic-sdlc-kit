@@ -1,0 +1,7 @@
+WARNING: Skipping origin/012-other: cannot compare with main.
+OVERLAP with 013-third [stale — reclaimable]:
+  src/shared.txt
+UNGRADED: governance: cannot compare 012-other (no remote-tracking ref origin/012-other)
+UNGRADED — '011-thing' was NOT fully compared (1 comparison(s) not made, listed above), so this is not a clean result.
+
+Only stale claims overlap — consider adopting them per team-workflow rule 3.

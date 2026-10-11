@@ -1,0 +1,2 @@
+compared api: local branches only
+CLEAN — '011-thing' shares no files with any open feature branch (compared governance and api against 1 open claim(s)).

@@ -1,5 +1,5 @@
 {
-  "description": "An open feature branch the ledger lists but this clone has no remote-tracking ref for: origin's fetch refspec covers main only. The comparison cannot be made, and the check says which branch it skipped instead of dropping it and reporting CLEAN over a comparison it never ran. Differs from the pass direction in the refspec, and in nothing else (plan D10).",
+  "description": "An open feature branch the ledger lists but this clone has no remote-tracking ref for: origin's fetch refspec covers main only. The comparison cannot be made, and the check says which branch it skipped instead of dropping it and reporting CLEAN over a comparison it never ran. The ending changed in feature 018 phase 2: it was CLEAN, it is now UNGRADED. Differs from the pass direction in the refspec, and in nothing else (plan D10).",
   "defaultBranch": "main",
   "commits": [
     {

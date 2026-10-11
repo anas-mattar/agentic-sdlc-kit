@@ -1,0 +1,2 @@
+WARNING: Skipping origin/012-other: cannot compare with main.
+{"BRANCH":"011-thing","CLEAN":false,"OVERLAPS":[],"UNGRADED":[{"repo":"governance","feature":"012-other","cause":"claim-skipped","detail":"no remote-tracking ref origin/012-other"}]}

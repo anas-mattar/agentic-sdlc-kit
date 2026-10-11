@@ -50,6 +50,9 @@
     - "rename" maps old path -> new path and stages it with 'git mv', so git records R and not
       an add plus a delete. A rule that treats a rename differently from a delete needs the
       real thing to be tested at all.
+    - "orphan": true on the commit that first names a branch creates it with NO parent and an empty
+      tree (git checkout --orphan), so it shares no history with any other branch: the genuine
+      no-merge-base state, which a corrupt object only imitates (feature 018 phase 3 review, F3).
     - "merge" makes the commit a MERGE of the named branch into this one, with two parents and
       no content of its own. It is the one commit a recipe cannot describe with files, and the
       rule that skips merge commits (a merge authored nothing) had no fixture without it.
@@ -145,11 +148,23 @@ function New-FixtureRepo {
         # symbolic-ref, not rev-parse: an unborn HEAD (the repository before its first commit)
         # has no revision to parse, and that is exactly the state the first commit runs in.
         $current = ((Invoke-FixtureGit -RepoPath $root -Arguments @('symbolic-ref', '--short', 'HEAD')) -join '').Trim()
+        if ($commit.PSObject.Properties.Name -contains 'orphan' -and $commit.orphan -and $seenBranches -contains $branch) {
+            # Refused rather than ignored: an orphan knob that silently did nothing would give a case that
+            # passes for the wrong reason (feature 018 phase 3 review, R2-F2).
+            throw "fixture 'orphan' names branch '$branch', which already exists. It applies only to the commit that first names a branch."
+        }
         if ($branch -ne $current) {
             if ($seenBranches -contains $branch) {
                 Invoke-FixtureGit -RepoPath $root -Arguments @('checkout', '--quiet', $branch) | Out-Null
             } else {
-                Invoke-FixtureGit -RepoPath $root -Arguments @('checkout', '--quiet', '-b', $branch) | Out-Null
+                if ($commit.PSObject.Properties.Name -contains 'orphan' -and $commit.orphan) {
+                    # A branch with NO history in common with any other: the real no-merge-base state.
+                    # The index still holds the previous tree, so it is emptied before the commit's own files.
+                    Invoke-FixtureGit -RepoPath $root -Arguments @('checkout', '--quiet', '--orphan', $branch) | Out-Null
+                    Invoke-FixtureGit -RepoPath $root -Arguments @('rm', '-rf', '--quiet', '--ignore-unmatch', '.') | Out-Null
+                } else {
+                    Invoke-FixtureGit -RepoPath $root -Arguments @('checkout', '--quiet', '-b', $branch) | Out-Null
+                }
                 $seenBranches += $branch
             }
         }
