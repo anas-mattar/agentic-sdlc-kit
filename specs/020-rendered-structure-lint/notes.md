@@ -238,7 +238,13 @@ Fixed in documents only: F1 (the trailing newline `docs/roadmap.md` lost in the 
 `markdown-lib.ps1` stops with an unrecognized-function error until the other file arrives; the reverse is
 harmless), F3 (the marker lengths are stated as characters of marker text, the generator's count, with the
 whole-line figures beside them) and F4 (the decisions-log entry lists every accepted limit from the phase 1 and
-phase 2 reviews, and the flow-down note says how the one that can fail an adopter, a dash-only row after a gap or
-header-less pipe prose reported as `severed-delimiter`, looks and what to do). No script, fixture or digest
+phase 2 reviews, and the flow-down note says how the one that can fail an adopter, a row of only dashes with no header
+row above it, after a gap or directly under plain text, reported as `severed-delimiter`, looks and what to do). No script, fixture or digest
 changed, so the full harness was not re-run; `ritual-checks.ps1` is `RESULT OK` and `build-digests.ps1` leaves no
 content change (three digests that only gained CRLF were restored).
+
+Round 2 of that review (`ai-code-review-phase-3.md`, APPROVE with one follow-up) found the F4 wording over-general:
+**R2-1.** Ordinary prose that starts with a pipe is not reported, and a row of only dashes is also reported
+directly under plain text, not only after a blank line or a comment (phase 1's N5 case). The flow-down note, the
+decisions-log entry and the paragraph above now say it that way: a line made only of pipes and dashes, with no
+header row above it, is read as a delimiter row. Documents only again; nothing executable changed.

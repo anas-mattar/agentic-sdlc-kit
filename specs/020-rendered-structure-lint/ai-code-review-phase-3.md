@@ -113,3 +113,83 @@ implementer's isolated-checkout record) and the clone measurement.
 Low. The risk sits in (1) the half-applied update failure mode of F2 (loud, fixed by finishing the update), (2) the N5 header-less-pipe-prose
 false-positive class carried from phase 1 and not mentioned to adopters (F4), and (3) the unreviewed-by-me clone measurement. Fix F1 and
 F2 in a docs-only follow-up commit before the owner's gate; the human review at merge is still to come.
+
+
+# Round 2 — review of the remediation commit `7dd11b7` (parent `7fbf8a7`)
+
+## Reviewer Provenance (Round 2)
+
+- **Reviewer**: fresh-context agent — claude-sonnet-5-5
+- **Implementer**: claude-sonnet-5-5 (separate session that produced `7dd11b7`)
+- **Inputs provided**: `git show 7dd11b7`, spec.md, plan.md, tasks.md Phase 3, notes.md ("Phase 3 review remediation"), the Round 1 findings above, the phase 1 and 2 reviews, scripts at the branch tip and at `c292d62`
+- **Attestation**: This reviewer did not produce the diff under review.
+
+## Verdict (Round 2)
+
+**APPROVE with one follow-up.** F1, F2 and F3 are fixed and true. F4's list of accepted limits is accurate item by item, but the new
+flow-down sentence (and the roadmap phrase and the notes.md paragraph that echo it) over-generalizes the header-less pipe case and is
+incomplete about where a dash-only row is read as a delimiter (new finding R2-1, MINOR, documents only). Nothing executable changed.
+Certification is the owner's; nothing here claims the gate passed.
+
+## Evidence (Round 2)
+
+| Check | Result |
+|---|---|
+| F1 newline | `docs/roadmap.md` ends `...to come.` plus exactly one `\n` (`od -c`); index and worktree both LF (`git ls-files --eol`). The file diff is 7 insertions, 3 deletions: no whole-file churn. `adoption/updating.md` is `w/crlf` in the worktree only (autocrlf, `i/lf`); numstat 9/3, so no churn. |
+| F2 half-applied | Built a throwaway full tree from `git archive HEAD` and swapped in `c292d62:scripts/markdown-lib.ps1`. The new doc-lint dies with `The term 'Get-StructureFindings' is not recognized...`, exit 1; `ritual-checks` prints `doc-lint FAIL` and `RESULT FAIL (3 of 6 member(s) failed)`. The sentence "stops with an unrecognized-function error and doc-lint.ps1 and ritual-checks.ps1 stay red" is TRUE. |
+| F2 reverse | `c292d62:scripts/doc-lint.ps1` has zero references to `markdown-lib` (grep count 0), so it never loads the library. Old doc-lint beside the new library ran `doc-lint: OK`, exit 0. "Harmless" is therefore TRIVIALLY true: the old script cannot see the library at all (R2-2). |
+| "not new to you" | True for adopters: `scripts/markdown-lib.ps1` predates feature 020 (it exists in `c292d62` without `Get-StructureFindings`; its history runs through the 016 commits), and `kit-manifest.json` line 40 classes `scripts/*.ps1` as `verbatim`, so `update-kit.ps1` replaces it. |
+| 2b dash-only row after a blank line | `text / (blank) / \|---\|---\|` gives `3 severed-delimiter`. Reproduced. Header row added above it: no finding. Written without pipes (`--- ---`, `- -`): no finding. Both suggested fixes clear it. |
+| 2b dash-only row after a comment line | `text / <!-- c --> / \|---\|---\|` gives `3 severed-delimiter`. Reproduced. |
+| 2b "prose that starts with a pipe and has no header above it" | OVER-GENERALIZED. `Some text / \| a \| b \|` and a lone `\| just a note \| more words \|` give no finding. Only a delimiter-shaped pipe line (every cell dashes) fires: `Some text / \| - \| - \|` gives `2 severed-delimiter`; `text / (blank) / \| --- \|` gives `3 severed-delimiter`. See R2-1. |
+| F3 counts | Recounted from the files with CRLF stripped. review-process.md (line 148, the block-structure marker): 103 chars of marker text, 120 as a whole line. updating.md lines 819 and 820: 114 / 131 and 111 / 128. All match notes.md. `build-digests.ps1` defines `MaxDigestLineLength = 120 chars of marker content` (lines 41, 62), so all three are inside the cap, and the notes.md statement that the cap measures the text after `digest: ` is accurate. |
+| Roadmap structure | `Get-StructureFindings` over `docs/roadmap.md`: 0 findings (the inventory table is one table; the entry follows a blank line, so the list rule is met). Also 0 for `adoption/updating.md` and `docs/sdlc/review-process.md`. Precedent wording kept: "built, reviewed and measured: the human review at merge is still to come." |
+| Nothing executable changed | `git show 7dd11b7 --stat`: only `adoption/updating.md`, `docs/roadmap.md`, `ai-code-review-phase-3.md`, `notes.md`. No script, fixture, rules file, digest, manifest or `tasks.md`. |
+| Digests | `build-digests.ps1 -Check`: `digests: OK (5 digest(s) fresh, 91 marker(s))`; `git status` clean afterwards, so no CRLF-only digest churn. |
+| Scope and ritual | `scope-check.ps1`: `PASS phase 3 commit 7dd11b7 (4 file(s))`. `ritual-checks.ps1`: doc-lint OK, enforcement-pack OK, scope-check OK, scope-repos n/a, digests OK, roadmap-claims OK, verify-kit n/a, `RESULT OK`. |
+| Tests | `Run-Tests.ps1 -Case DOC-`: 135 passed, 0 failed. Full harness NOT re-run (no executable changed, so the notes.md claim holds). |
+
+F4, limit by limit (roadmap entry):
+
+| Limit stated | Verdict |
+|---|---|
+| An unclosed comment, or an empty one without its dashes, hides the rest of its document | Accurate (phase 1 N1: `<!-->`, `<!--->`, plain `<!-- start`). |
+| A double backslash before a pipe is an escaped backslash then a boundary; a delimiter row holding one is accepted where GitHub would not | Accurate for `\\` (N2, N3). N3 also covers a single `\-` or `\|` in a delimiter, which the clause does not name; narrow, not wrong. |
+| Two tables with no blank line are one table; differing counts give several ragged-row reports | Accurate: repro gives `4, 5, 6 ragged-row` (N4). |
+| A row of only dashes after a gap, or pipe prose with no header, is reported as a severed delimiter; the rest of that run is not graded | First half and "rest not graded" accurate (N5; repro `x / blank / \|---\|---\| / \| a \| b \| c \|` reports only line 3). "pipe prose with no header" over-generalizes (R2-1). |
+| A comment between lists of different type is still reported | Accurate (phase 2 F1). |
+| Silent by design: an indented comment is not remembered; a tab continuation or lazy text resets a list | Accurate (phase 2 F2a, F2b). The one-space continuation variant is not named; immaterial. |
+| Anything from the phase 1 and 2 reviews still omitted? | No. |
+
+## New findings (Round 2), ranked
+
+### R2-1 — The new "what to do" sentence over-generalizes the header-less pipe case — MINOR (documents only)
+
+`adoption/updating.md` now says: "a row of only dashes directly after a blank or comment line, or prose that starts with a pipe and
+has no header above it, is read as a delimiter row and reported as `severed-delimiter`". Two problems:
+
+1. Ordinary prose that starts with a pipe is NOT reported. Repro: `Some text` then `| a | b |` gives no finding; a lone
+   `| just a note | more words |` gives no finding. Only a pipe line whose cells are all dashes (optionally with colons) fires, for
+   example `| - | - |` or `| --- |`. A reader may strip pipes from prose that was never at risk, or wrongly conclude that a failing run must be
+   this case. The roadmap clause ("pipe prose with no header") and the notes.md paragraph ("header-less pipe prose reported as
+   `severed-delimiter`") repeat the wording; phase 1 N5 was precise ("a bare `| - | - |` row").
+2. The sentence names only "after a blank or comment line", but the dash-only row also fires directly under an ordinary text line
+   (`Some text` then `| - | - |` gives `2 severed-delimiter`). That is the actual N5 case and the likeliest adopter form, and the sentence
+   does not cover it.
+
+The suggested fixes work (verified), so no adopter is stuck; the harm is imprecision in a sentence meant to tell adopters what to look for.
+*Action: reword to "a pipe row made only of dashes (for example `| - | - |`) that is not directly under a header row of the same width, after
+a blank or comment line or under plain text, is reported as `severed-delimiter`; give it a header row, or write it without pipes", and change the
+roadmap clause and the notes.md sentence from "pipe prose" to "a dash-only pipe row". Documents only; not blocking.*
+
+### R2-2 — "Harmless" in the reverse direction is trivially true — INFO
+
+The old `doc-lint.ps1` never dot-sources `markdown-lib.ps1`, so "an old `doc-lint.ps1` beside a new library is harmless" holds because the
+old script ignores the library, not because of anything about the library. True and safe as written; "never loads it" would be more
+exact. No action required.
+
+## Residual risk
+
+Low. (1) R2-1 imprecision in the flow-down note (documents only, and any fix the note names clears the finding). (2) The T015 clone
+measurement and the T017 isolated-checkout full-harness count (1211) still rest on the implementer's record; I re-ran neither and did not
+run the full harness. (3) The human review at merge is still to come; certification is the owner's.

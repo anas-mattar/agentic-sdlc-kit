@@ -811,9 +811,10 @@ by an adopter's case.
 
 **What to do about it.** Take the update. If `doc-lint.ps1` now names a file and line, apply the fix in the
 table; the most likely cause is a `digest:` marker or a blank line inside a table. One report may look
-wrong: a row of only dashes directly after a blank or comment line, or prose that starts with a pipe and has
-no header above it, is read as a delimiter row and reported as `severed-delimiter`; give it a header row, or
-write it without the leading pipe. A wrapper that treated a `doc-lint.ps1` pass as covering layout should
+wrong: a line made only of pipes and dashes (for example a placeholder row of dashes) that sits directly after
+a blank line, a comment or plain text, with no header row above it, is read as a delimiter row and reported as
+`severed-delimiter`; give it a header row, or write it without the leading pipe. Ordinary prose that starts with
+a pipe is not reported. A wrapper that treated a `doc-lint.ps1` pass as covering layout should
 stop doing so for anything the four rules do not name.
 
 <!-- digest: doc-lint now fails a table or list severed by a comment or blank line, and a ragged table row; fix it where named. -->

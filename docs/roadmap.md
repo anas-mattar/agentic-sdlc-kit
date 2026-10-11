@@ -467,8 +467,9 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   reviews' accepted limits stand (an unclosed comment, or an empty one written without its dashes, hides the rest of its document; a double
   backslash before a pipe is read as an escaped backslash and then a boundary, so a delimiter row holding one
   is accepted where GitHub would not; two tables with no blank line between them are one table, as on GitHub,
-  so differing column counts give several ragged-row reports; a row of only dashes after a gap, or pipe prose
-  with no header, is reported as a severed delimiter and the rest of that run is not graded; a comment between
+  so differing column counts give several ragged-row reports; a row of only dashes with no header row above it
+  (after a gap or directly under plain text) is reported as a severed delimiter and the rest of that run is not
+  graded, while ordinary pipe prose is not reported; a comment between
   lists of different type is still reported; and, silent by design, a comment indented one to three spaces is
   not remembered and a tab continuation or lazy text resets a list); no real adopter document was flagged, so the fixes are
   proved by fixtures rather than by an adopter's case. "Shipped" and "closed" here mean built, reviewed and
