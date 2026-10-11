@@ -732,6 +732,35 @@ test is a copy of the scope check's, so the two can drift until the shared test 
 <!-- digest: territory-check now reads declared code repos and ends UNGRADED, not CLEAN, on a comparison it could not make. -->
 <!-- digest: UNGRADED from territory-check exits 0: read the verdict word; governance-only CI will always print it for code repos. -->
 
+### Flow-down note: the 2026-10-11 spec-directory single source (kit feature 019 — no constitution amendment)
+
+**What was wrong.** `CLAUDE.md` ("Feature Structure") called its seven-entry list "exactly these names",
+while `docs/sdlc/branch-strategy.md` ("Spec Directory Contents") lists the full set, including `notes.md`,
+the per-feature AI review and human review files and `rollback.md`. An agent reading `CLAUDE.md` alone
+could decline to create a file the lane requires (a Critical feature's rollback plan has no path in the
+short list). Two documents each read as law, and the shorter one was the one always loaded.
+
+**What changed.** `CLAUDE.md` now says its list is the core, names `docs/sdlc/branch-strategy.md` as the
+authoritative file set, and keeps the branch-to-directory mapping, the three core documents, the fallback
+for a partly installed kit and the Micro exception. Nothing in the kit's behaviour changed: no script,
+check or fixture, and the `## Feature Structure` heading that the enforcement laws cite is the same.
+
+**What flows down.** `CLAUDE.md` is a surgical file: `scripts/update-kit.ps1` reports it and never
+overwrites your copy, which carries your slot fills. Nothing else flows down. Make the edit by hand in
+your `CLAUDE.md`, in the "Feature Structure" section:
+
+1. Change "always, with exactly these names:" to "always. The core documents, with exactly these names:".
+2. After the file tree, add the paragraph "That list is the core, not the whole set. `docs/sdlc/branch-strategy.md`
+   ("Spec Directory Contents") is the authoritative file set: it also holds `notes.md`, `quickstart.md`,
+   `checklists/`, and the per-feature AI review, human review and rollback files from `specs/_templates/`.
+   Create whatever the lane requires; never decline a file because this summary omits it."
+3. In the next paragraph, change "create this exact structure manually" to "create the core structure manually"
+   and "This structure is law" to "The layout is law".
+
+Skipping the edit breaks nothing: the old list stays as wrong as it was, and the doctor does not check it.
+
+<!-- digest: CLAUDE.md Feature Structure now points at branch-strategy for the full spec-directory set; edit your copy by hand. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
