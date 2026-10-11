@@ -98,3 +98,64 @@ two failed assertions each, one for `fail-placeholder-ragged`, whose exit code w
 and `fail-crlf` pass. With the fix, `-Case DOC-` is 117 passed, 0 failed (103 plus 14 = 7 cases x 2), and the full harness on this
 working tree is **1193 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` (1179 plus the same 14), with
 `doc-lint.ps1` still 11 of 11 sites fixtured.
+
+## Phase 2: the list rule
+
+### T008: the measurement
+
+A throwaway prototype of the rule (a scratchpad script, not committed): a list item is a line starting, after at
+most three spaces, with `-`, `*`, `+` or a number and `.` or `)`, then whitespace; a column-zero comment while a
+list is open, followed by another list item before any other text, is a candidate. Run over the same document
+set `doc-lint.ps1` scans, in the kit and in clones of the three adopted projects (cloned `--no-hardlinks` into a
+scratch directory; the real projects were not touched).
+
+| Tree | Documents scanned | Candidate findings |
+|---|---|---|
+| The kit | 37 | **0** |
+| ExpenseTracker clone | 38 | **0** |
+| FitForge clone | 42 | **0** |
+| FlowBoard clone | 54 | **0** |
+
+To show a quiet result is not a dead scanner, the same prototype was run on a synthetic document holding an
+unordered and an ordered list each split by a column-zero comment, a loose list, and a comment indented into an
+item: it reported exactly the two split lists and nothing else.
+
+### T009: the decision
+
+No finding in 171 documents, so no false positive and, equally, nothing to repair. Plan D4 says to ship the rule
+only if the measurement reports nothing that is not a genuinely severed list; it reported nothing at all, so the
+rule ships. It guards a defect that none of the four trees currently has, which is the honest reading: it is
+the same preventive rule as the table check was for ragged rows (0 of 17 tables ragged). One refinement the
+measurement did not need but the review of phase 1 taught: a thematic break (`* * *`, `- - -`) is not a list
+item, so it is excluded.
+
+### T010: the fixtures, shown against the parent
+
+Nine variants added to `DOC-010` (same site, same rule): `fail-list` and `fail-list-ordered-blank` as the failing
+pair, and `pass-list-loose`, `pass-list-comment-after`, `pass-list-comment-indented`, `pass-list-paren`,
+`pass-list-fenced`, `pass-list-thematic`, `pass-list-two-lists` as the legal near-misses. Run before the rule
+existed, each `fail` fails (it expects a finding the scanner did not yet make) and all seven `pass` variants
+pass. (`-Case DOC-010/fail-list` also selects `fail-list-ordered-blank`, as the filter is a substring, so it
+reported 4 failed assertions: 2 per fail variant.)
+
+### T011: the rule
+
+`Get-StructureFindings` gains a second loop (plan D4): a list item opens a list; a comment line starting at
+column zero while a list is open is remembered; the next list item before any other text is a `severed-list`
+finding, named by that item. Blank lines, indented continuation lines and a comment indented into an item
+never end a list; any other text at column zero does; fenced lines reset it; a thematic break written with
+spaces is excluded from the item test. The finding is reported through the same `$structure` accumulator and
+the same `ERROR:` block, so `doc-lint.ps1` is untouched in this phase, and `rules.json`'s `DOC-010` summary and
+note now mention lists.
+
+### T012: results
+
+| Measurement | Phase 1 (after remediation) | Phase 2 |
+|---|---|---|
+| `-Case DOC-` | 117 passed | 135 passed (+18 = 9 cases x 2) |
+| Full harness | 1193 passed | **1211 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
+| Coverage, `doc-lint.ps1` | 11 of 11 | 11 of 11 (no new site: one accumulator) |
+| `doc-lint.ps1` on the kit | OK | OK, no list finding (matches the measurement: 0) |
+
+Every pre-existing case is unchanged: the full-run difference is exactly the 18 new assertions. Run on this
+working tree; the isolated-checkout run of the final commit is T017.

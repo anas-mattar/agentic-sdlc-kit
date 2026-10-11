@@ -75,18 +75,18 @@ shipped and the decision is recorded.
 - `scripts/markdown-lib.ps1`
 - `tests/**`
 
-- [ ] T008 Measure the list rule as a throwaway prototype over the 37 scanned documents and over the three
+- [x] T008 Measure the list rule as a throwaway prototype over the 37 scanned documents and over the three
       adopted-project clones (never the real projects): every finding, and for each whether it is a list that
       genuinely renders split. Record the table in `notes.md`.
-- [ ] T009 Decide from T008 and record it in `notes.md`: any finding that is not a genuinely severed list
+- [x] T009 Decide from T008 and record it in `notes.md`: any finding that is not a genuinely severed list
       means the rule is not shipped (plan D4); FR-005 is then recorded as unmet by decision, T010–T012 are
       not done, and the owner is told before the phase closes.
-- [ ] T010 Fixtures first, as T002: `fail` a comment line between two items; `pass` the same list with a
+- [x] T010 Fixtures first, as T002: `fail` a comment line between two items; `pass` the same list with a
       blank line between items, a loose list, a comment indented into an item, a numbered list with `)`, a
       list inside a fence. Run them on the parent commit.
-- [ ] T011 Add the list rule to `Get-StructureFindings` (plan D4), with its `rules.json` entry and
+- [x] T011 Add the list rule to `Get-StructureFindings` (plan D4), with its `rules.json` entry and
       accumulator if the first does not already cover it.
-- [ ] T012 Run `-Case DOC-`, the full harness and `ritual-checks.ps1`; nothing pre-existing moves.
+- [x] T012 Run `-Case DOC-`, the full harness and `ritual-checks.ps1`; nothing pre-existing moves.
 
 ---
 

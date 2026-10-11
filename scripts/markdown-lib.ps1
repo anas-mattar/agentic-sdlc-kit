@@ -274,6 +274,8 @@ function Get-FencedLineMap {
 #   severed-row        a row after a blank or comment line, inside what was a table
 #   severed-delimiter  a delimiter row that is not directly under a header row
 #   ragged-row         a row, or a delimiter row, whose cell count differs from its header's
+#   severed-list       a list item that opens a new list because a comment line at column zero ended the
+#                      list above it. A blank line between items is legal (a loose list) and never a finding.
 function Get-StructureCellCount {
     param([string]$Row)
     $t = [regex]::Replace($Row.Trim(), '\\.', '')
@@ -368,6 +370,35 @@ function Get-StructureFindings {
             { $_ -in 'blank', 'comment' } { if ($inTable) { $gap = $true } }
             default { $inTable = $false; $gap = $false; $orphaned = $false }
         }
+    }
+
+    # Lists, narrowly: a list item is a line starting, after at most three spaces, with a bullet or a
+    # number and . or ), then whitespace; a thematic break written with spaces (* * *, - - -) is not one.
+    # A comment line at column zero is an HTML block and ends whatever list is open; if the next thing
+    # that is not blank or a comment is another list item, that item starts a new list. Indented lines
+    # continue the open item, a comment indented into an item is part of it, and any other text at
+    # column zero ends the list.
+    $inList = $false
+    $commentAt = -1
+    for ($i = 0; $i -lt $Lines.Count; $i++) {
+        $l = $Lines[$i]
+        if ($kind[$i] -eq 'fence') { $inList = $false; $commentAt = -1; continue }
+        if ($kind[$i] -eq 'blank') { continue }
+        if ($kind[$i] -eq 'comment') {
+            if ($l.StartsWith('<!--') -and $inList -and $commentAt -lt 0) { $commentAt = $i }
+            continue
+        }
+        $isItem = ($l -match '^ {0,3}([-*+]|\d{1,9}[.)])(\s+|$)') -and ($l -notmatch '^ {0,3}([-*_])(\s*\1){2,}\s*$')
+        if ($isItem) {
+            if ($inList -and $commentAt -ge 0) {
+                $findings += [pscustomobject]@{ Line = $i + 1; Rule = 'severed-list'
+                    Detail = 'this item starts a new list: a comment line at column zero above it ended the list it belongs to' }
+            }
+            $inList = $true; $commentAt = -1
+            continue
+        }
+        if ($inList -and ($l -match '^\s{2,}\S')) { continue }
+        $inList = $false; $commentAt = -1
     }
     return $findings
 }
