@@ -82,7 +82,7 @@ each with an exit code and an output assertion). Every pre-existing case is unch
 the isolated-checkout run of the final commit is phase 4's T020 (the phase 1 review also ran the full harness on an
 isolated checkout of `743f148`: 1233 passed).
 
-### Deviation acknowledgement (owner)
+### Deviation for owner acknowledgement
 
 T001 asked for three saved doctor transcripts; phase 1 proves byte-identity at the reader instead (the reason is
 under T001 above). The phase 1 reviewer found the deviation justified. It is a departure from approved `tasks.md`
@@ -98,5 +98,9 @@ wording, so it is listed here for the owner to acknowledge when certifying the p
   `VK-017/fail-name-is-array`, which fails on the phase 1 reader (2 failed there) and passes now.
 - **F5**: this note's T020 reference, the missing `-Case CRIT-`/`-Case CLAIM-` counts and the header comment's
   `Count` entry are corrected; the deviation is listed above for the owner to acknowledge (not yet acknowledged).
-- **Result**: full harness 1235 passed, 0 failed (1233 + the two assertions of the new fixture); `-Case VK-` 187.
+- **Result**: full harness 1235 passed, 0 failed (1233 + the two assertions of the new fixture); `-Case VK-` 187. After round 2: 1237 passed, 0 failed.
+- **Round 2 (R2-1, R2-2)**: the F1 fix has its own fixture, `VK-017/fail-duplicate-denial-kept` (U+1E9B then
+  U+1E60 with `canApproveCritical: false` on the second copy; the roster line must name the person as not permitted),
+  which fails on the phase 1 reader (1 assertion) and passes now; the deviation heading above no longer reads as a
+  recorded acknowledgement.
 - **Not changed**: F3 and F4 (nits, harmless) and F6 (carried into the phase 4 guidance).
