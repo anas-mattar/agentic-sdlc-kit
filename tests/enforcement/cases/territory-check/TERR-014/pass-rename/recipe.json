@@ -1,0 +1,90 @@
+{
+  "description": "The other feature renames src/Old.cs to src/New.cs; this one edits src/Other.cs. Both paths of the rename are touched and neither is shared. CLEAN.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"api\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011",
+      "hoursAgo": 3,
+      "write": {
+        "specs/011-thing/spec.md": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "spec: 012",
+      "hoursAgo": 2.0,
+      "write": {
+        "specs/012-other/spec.md": "other\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self",
+  "nestedRepos": {
+    "api": {
+      "description": "",
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "hoursAgo": 500,
+          "write": {
+            "src/Orders.cs": "base\n",
+            "src/Old.cs": "base\n",
+            "src/Other.cs": "base\n"
+          }
+        },
+        {
+          "branch": "011-thing",
+          "message": "phase 1: mine",
+          "hoursAgo": 3,
+          "write": {
+            "src/Other.cs": "mine\n"
+          }
+        },
+        {
+          "branch": "main",
+          "message": "back to main",
+          "hoursAgo": 480,
+          "write": {
+            "docs/n.md": "n\n"
+          }
+        },
+        {
+          "branch": "012-other",
+          "message": "phase 1: theirs",
+          "hoursAgo": 2.0,
+          "rename": {
+            "src/Old.cs": "src/New.cs"
+          }
+        }
+      ],
+      "checkout": "011-thing",
+      "origin": "self"
+    }
+  }
+}

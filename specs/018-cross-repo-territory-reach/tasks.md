@@ -110,7 +110,7 @@ made is named.
 - `scripts/territory-check.ps1`
 - `tests/**`
 
-- [ ] T012 [P] [US1] Write the fixtures for `TERR-014` (the overlap itself) under
+- [x] T012 [P] [US1] Write the fixtures for `TERR-014` (the overlap itself) under
       `tests/enforcement/cases/territory-check/TERR-014/`, using nested independent repositories with
       `origin: self`: `fail` (two features commit the same file in one code repository while their
       governance branches look disjoint: exit 2, the file listed as `<repo>/<path>`); `pass` (different
@@ -122,7 +122,7 @@ made is named.
       different branch with uncommitted edits: not attributed to this feature); `pass-stale` (the other
       claim is past the stale window: reported reclaimable, exit 0); `fail-code-only-liveness` (the other
       feature has no governance commits but live code commits: a live overlap, not "claimed, no work").
-- [ ] T013 [P] [US2] Write the fixtures for the causes, one rule each with a `pass` (the cause absent,
+- [x] T013 [P] [US2] Write the fixtures for the causes, one rule each with a `pass` (the cause absent,
       `CLEAN`) and a `fail` (the cause present, UNGRADED naming repository and cause, exit 0, no `CLEAN`
       anywhere in the output): `TERR-015` repository not present; `TERR-016` present but not a
       repository of its own; `TERR-017` no resolvable trunk (the candidates named); `TERR-018` fetch
@@ -130,44 +130,44 @@ made is named.
       `codeRepos`; `TERR-021` a code repository with no `origin`, compared against local branches only
       and saying so. Add to `TERR-014`'s family a `fail-overlap-and-ungraded` (an overlap found while one
       repository was not compared: exit 2, both printed).
-- [ ] T014 [P] [US3] Write the fixtures that pin "no change" under `TERR-022`: `pass` (no `codeRepos` in
+- [x] T014 [P] [US3] Write the fixtures that pin "no change" under `TERR-022`: `pass` (no `codeRepos` in
       the record: the original `CLEAN` text, byte for byte); `pass-empty` (`"codeRepos": []`: the same);
       `fail` (a declared repository that is compared: the new text appears). Every pre-existing `TERR-*`
       case, unmodified except `TERR-012`, is the larger guard.
-- [ ] T015 Run T012–T014 against the phase 2 tip and record in `notes.md`: the `fail*` cases must fail
+- [x] T015 Run T012–T014 against the phase 2 tip and record in `notes.md`: the `fail*` cases must fail
       (the script does not read code repositories), the `pass*` and no-change cases must already pass.
-- [ ] T016 Before any code: confirm the owner has decided plan D5. If the amendment to spec FR-013 and US3
+- [x] T016 Before any code: confirm the owner has decided plan D5. If the amendment to spec FR-013 and US3
       scenario 2 is not approved, stop and ask; do not implement either reading by default.
-- [ ] T017 In `scripts/territory-check.ps1`, dot-source `scripts/adoption-lib.ps1` and
+- [x] T017 In `scripts/territory-check.ps1`, dot-source `scripts/adoption-lib.ps1` and
       `scripts/scope-lib.ps1`, read the declaration with `Get-CodeRepos`, print its warnings in the scope
       check's own words, and make an unusable declaration an ungraded entry (`declaration-unusable`).
       With no usable repositories the code path is skipped entirely, so the existing output is
       unchanged.
-- [ ] T018 [US2] Per declared repository, in order, each failure an ungraded entry naming the repository
+- [x] T018 [US2] Per declared repository, in order, each failure an ungraded entry naming the repository
       and the cause: the directory exists (`not-present`); it is the root of a repository of its own
       (`not-a-repository`, the check `scripts/scope-check-repos.ps1` uses); if it has an `origin`, fetch
       it (`fetch-failed`), and if it has none, note "compared against local branches only"; a trunk
       resolves through `Get-RepoMergeBase` (`no-trunk`, the candidates named).
-- [ ] T019 [US1] Compute touched sets in each repository for the branch under check and for every open
+- [x] T019 [US1] Compute touched sets in each repository for the branch under check and for every open
       claim from the governance ledger: the ref is `origin/<branch>` falling back to a local head; no ref
       means no work there; a ref whose merge base or diff cannot be had is ungraded
       (`branch-uncomparable`, the feature and repository named). Reads use `core.quotepath=off`, renames
       count at both paths, and tracked uncommitted changes count only when the repository's current
       branch is the branch under check (research R7). The existing governance read is left exactly as it
       is.
-- [ ] T020 [US1] Judge each claim's status from its latest commit in any repository it has a branch in
+- [x] T020 [US1] Judge each claim's status from its latest commit in any repository it has a branch in
       (research R4), assemble each overlap with governance paths as today and code paths prefixed by the
       repository directory name, and fold the code repositories into the existing per-claim loop so a
       claim is reported once.
-- [ ] T021 [US1] [US2] Print per the contract: the new `UNGRADED:` lines and the verdict line; a `CLEAN`
+- [x] T021 [US1] [US2] Print per the contract: the new `UNGRADED:` lines and the verdict line; a `CLEAN`
       line that names the repositories compared and the open claims in a project that declares code
       repositories (and the unchanged line in one that does not); `-Json` with prefixed `files`, `CLEAN`
       false when anything was not compared, and the `UNGRADED` list. Exit codes as plan D2.
-- [ ] T022 Register the new line shapes in `tests/enforcement/emission-idioms.json` and add `TERR-014`
+- [x] T022 Register the new line shapes in `tests/enforcement/emission-idioms.json` and add `TERR-014`
       through `TERR-022` to `tests/enforcement/rules.json`, then run `-Case TERR-`, `-Case REPOS-` and
       `pwsh -File scripts/ritual-checks.ps1`. Everything passes, the coverage test reports no rule
       without both directions (SC-006), and every pre-existing case is unchanged except `TERR-012`.
-- [ ] T023 Build one throwaway nested layout by hand outside the harness, following `quickstart.md`
+- [x] T023 Build one throwaway nested layout by hand outside the harness, following `quickstart.md`
       (two features, one code repository, a shared file), and run the script end to end, then remove the
       repository, rename it, and break its remote in turn. Record what each run printed in `notes.md`.
 

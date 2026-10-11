@@ -252,8 +252,49 @@ run from the governance root on `011-thing`:
 
 ### Carried forward
 
-- **Phase 1 review F5 is live in this phase.** `Get-CodeRepos` reads the record with `Test-Path` and
-  `Get-Content -Path`, which interpret wildcards. A governance root whose path contains `[` or `]` reads an
-  existing record as absent, with `Unusable` false: the territory check then declares no code
-  repositories and prints the original `CLEAN`. The fix is `-LiteralPath` in `scripts/adoption-lib.ps1`,
-  outside this phase's Territory and a behaviour change for the scope check, so it is the owner's call.
+- **Phase 1 review F5 is not reachable through this script** (corrected after the phase 3 review, F7;
+  this note first said it was live). `Get-CodeRepos` reads the record with `Test-Path` and `Get-Content
+  -Path`, which interpret wildcards, so a governance root containing `[` or `]` would read an existing
+  record as absent. But the territory check never gets there: `Push-Location $repoRoot` treats the same
+  characters as a wildcard and the script dies at that line with exit 1 and a PowerShell error, as it did
+  before this feature. That is loud, not a false `CLEAN`. The `-LiteralPath` fix in
+  `scripts/adoption-lib.ps1` still matters for the scope check; it is outside this phase's Territory and
+  remains the owner's call.
+
+### Phase 3 review remediation (F1–F9)
+
+Review: `ai-code-review-phase-3.md` (APPROVE WITH FOLLOW-UPS; no Blocker, no Major).
+
+- **F1: fixed.** A repeated `codeRepos` entry is one repository (`Select-Object -Unique`), for the
+  comparison, the ungraded count and the `CLEAN` note. `TERR-014/fail-duplicate-declaration`.
+- **F3: fixed.** The detail for a ref whose merge base cannot be had now says what git cannot
+  distinguish: `no merge base with main: unrelated history or an unreadable ref`. The three later failures
+  each have their own wording (`diff against the merge base failed`, `commit count against the merge base
+  failed`, `last commit unreadable`); they are not reachable by any fixture, since a ref that passes
+  `merge-base` and then fails those reads would need an object corrupted between two reads, and are stated
+  here as untested. The genuine no-shared-history case now has a fixture: a new recipe knob `orphan`
+  (`checkout --orphan`) in `tests/enforcement/lib/FixtureRepo.psm1`, used by `TERR-019/fail-orphan`.
+  `TERR-019/fail` and `fail-own-branch` changed their expected detail text to match; the old text was
+  `(no merge base with main)`.
+- **F5: documented.** The script header says a code repository's uncommitted edits count when it is checked
+  out on the branch under check even if `-Branch` names a branch the governance repository is not on, and
+  that the union of the local head and the remote-tracking ref can over-report, never miss.
+- **F7: corrected** (the note above).
+- **F8: partly fixed.** `TERR-017/fail` now keeps both feature branches and differs from `pass` only in
+  having no `main`. Added `TERR-014/pass-rename`, `fail-local-only` (the local-head fallback),
+  `fail-non-ascii` and `fail-overlap-and-ungraded-json`. Not added: an own branch that exists only as
+  `origin/<branch>` (the fixture builder always leaves a local head; it would need another knob).
+- **F9: fixed.** T012–T023 ticked; T016 is satisfied by `e686026`.
+
+**Carried to the owner, not changed here:**
+
+- **F2.** For a repository with a successfully fetched `origin`, the fallback to a local head can bring back
+  a claim whose remote branch was deleted (a merged or abandoned feature whose governance branch is still
+  open), and report it live. It is plan D4 as written. Options: keep D4 and say so in the phase 4 guidance,
+  or restrict the fallback to repositories with no `origin` (a changed expectation plus a fixture pair).
+- **F4.** `-Json` does not carry the "local branches only" limit; `CLEAN: true` there reads as the stronger
+  claim. Fixing it adds a field to the contract, which is an approved document, so it needs the owner:
+  an additive `NOTES` array in the JSON and a fixture, or a recorded decision that the limit is text-only.
+- **F6.** The shared repository-root test (`Test-IsRepoRoot` in `scope-lib.ps1`, both scripts calling it) is
+  not in `tasks.md`; adding a task or widening phase 4's Territory is an amendment to an approved document, so
+  it is left for the owner. It remains the follow-up recorded under "Decisions taken while implementing".

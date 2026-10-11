@@ -1,5 +1,5 @@
 {
-  "description": "api has no origin and its only branch is the feature branch, so none of the trunk candidates exists. UNGRADED, naming the candidates tried.",
+  "description": "api has no origin and no trunk: both feature branches exist, no main or master, so none of the trunk candidates exists. UNGRADED, naming the candidates tried.",
   "defaultBranch": "main",
   "commits": [
     {
@@ -53,7 +53,16 @@
           "message": "phase 1: mine",
           "hoursAgo": 3,
           "write": {
-            "src/Orders.cs": "mine\n"
+            "src/Orders.cs": "mine\n",
+            "src/Other.cs": "base\n"
+          }
+        },
+        {
+          "branch": "012-other",
+          "message": "phase 1: theirs",
+          "hoursAgo": 2,
+          "write": {
+            "src/Other.cs": "theirs\n"
           }
         }
       ],

@@ -17,6 +17,12 @@
     merge base with that repository's own trunk. Its files are reported prefixed with the
     repository directory name, so a path can be pasted into a Territory block unchanged. A
     feature's status is judged from its latest commit in ANY repository it has a branch in.
+    Tracked uncommitted changes count in a code repository only when that repository is checked
+    out on the branch under check (any other checkout's edits belong to another feature); this
+    holds even when -Branch names a branch the governance repository is not on, where the
+    governance half reads committed work only. The branch under check is read from its local head
+    and its remote-tracking ref together, so a stale remote-tracking ref can over-report a file
+    the developer has since dropped, never miss one.
 
     Exit codes: 0 no live overlap · 2 live overlap found · 1 execution error. A comparison
     that could not be made (a claim with no remote-tracking ref; a declared code repository
@@ -116,15 +122,15 @@ function Test-CodeRef {
 function Read-CodeRef {
     param([string]$Path, [string]$Ref)
     $mb = Get-RepoMergeBase -RepoPath $Path -Ref $Ref
-    if (-not $mb.Base) { return @{ Ok = $false; Why = "no merge base with $(@($mb.Existing) -join ', ')" } }
+    if (-not $mb.Base) { return @{ Ok = $false; Why = "no merge base with $(@($mb.Existing) -join ', '): unrelated history or an unreadable ref" } }
     $files = @(git -C $Path -c core.quotepath=off diff --no-renames --name-only $mb.Base $Ref -- 2>$null)
-    if ($LASTEXITCODE -ne 0) { return @{ Ok = $false; Why = 'diff failed' } }
+    if ($LASTEXITCODE -ne 0) { return @{ Ok = $false; Why = 'diff against the merge base failed' } }
     $count = [int](git -C $Path rev-list --count "$($mb.Base)..$Ref" 2>$null)
-    if ($LASTEXITCODE -ne 0) { return @{ Ok = $false; Why = 'diff failed' } }
+    if ($LASTEXITCODE -ne 0) { return @{ Ok = $false; Why = 'commit count against the merge base failed' } }
     $epoch = 0L
     if ($count -gt 0) {
         $epoch = [long](git -C $Path log -1 --format=%ct $Ref 2>$null)
-        if ($LASTEXITCODE -ne 0) { return @{ Ok = $false; Why = 'diff failed' } }
+        if ($LASTEXITCODE -ne 0) { return @{ Ok = $false; Why = 'last commit unreadable' } }
     }
     return @{ Ok = $true; Files = $files; Count = $count; Epoch = $epoch }
 }
@@ -155,7 +161,8 @@ if ($declared.Unusable) {
     Add-Ungraded 'codeRepos' $null 'declaration-unusable' ((@($declared.Warnings) | ForEach-Object { $_ -replace '^WARN ', '' }) -join '; ')
 }
 $codeReady = @()
-foreach ($name in $declared.Repos) {
+$declaredNames = @($declared.Repos | Select-Object -Unique)   # a repeated entry is one repository, not two comparisons
+foreach ($name in $declaredNames) {
     $path = Join-Path $repoRoot $name
     if (-not (Test-Path -LiteralPath $path -PathType Container)) {
         Add-Ungraded $name $null 'not-present' 'the declared directory does not exist'; continue
@@ -269,7 +276,7 @@ if ($Json) {
         } elseif ($overlaps.Count -eq 0) {
             # A project declaring no code repositories keeps its original text byte for byte; one that
             # declares some says what it compared, so a clean run cannot be read as broader than it was.
-            $comparedNote = if (@($declared.Repos).Count -gt 0) { " (compared governance and $(@($declared.Repos) -join ', ') against $($openBranches.Count) open claim(s))" } else { '' }
+            $comparedNote = if ($declaredNames.Count -gt 0) { " (compared governance and $($declaredNames -join ', ') against $($openBranches.Count) open claim(s))" } else { '' }
             Write-Host "CLEAN — '$Branch' shares no files with any open feature branch$comparedNote."
         }
         if ($overlaps.Count -gt 0) {
