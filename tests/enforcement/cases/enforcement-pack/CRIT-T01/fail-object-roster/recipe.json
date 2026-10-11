@@ -1,0 +1,60 @@
+{
+  "description": "The same Critical feature with a roster written as two objects: before the roster an object entry was dropped, the count fell to zero and the project was solo; now two usable developers select the team arm and the missing human review is the failure.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "write": {
+        "README.md": "fixture kit\n"
+      },
+      "branch": "main",
+      "message": "init"
+    },
+    {
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Critical",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [{ \"name\": \"ada\" }, { \"name\": \"grace\" }]\n}\n"
+      },
+      "branch": "001-thing",
+      "message": "spec: 001 thing"
+    },
+    {
+      "write": {
+        "src/thing.ps1": "Write-Host 'thing'\n"
+      },
+      "branch": "001-thing",
+      "message": "phase 1: the thing"
+    }
+  ],
+  "checkout": "001-thing"
+}

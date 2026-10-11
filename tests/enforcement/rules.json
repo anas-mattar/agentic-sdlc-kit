@@ -1380,6 +1380,24 @@
       "notes": "Absence is NOT a finding — an adoption predating feature 013 declares nothing and is treated as solo, the stricter arm — so the fail direction is the field’s absence and the line simply does not appear."
     },
     {
+      "id": "VK-031",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the roster has an object entry, so the doctor states the roster it read and who may not approve a Critical feature",
+      "law": "feature 021 spec FR-008; GAP-024",
+      "emitAnchor": "roster read from kit-adoption.json",
+      "notes": "Printed only when at least one usable entry is an object, so a project that writes strings only sees exactly the output it saw before the roster existed (SC-001); that string-only record is the pass direction. The line is what lets an owner confirm the doctor read the roster they meant, including a developer a flag has denied."
+    },
+    {
+      "id": "VK-032",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a developer's repos names a repository codeRepos does not declare",
+      "law": "feature 021 spec FR-008, FR-012",
+      "emitAnchor": "Add-Finding WARN 'record' $problem.Message $problem.Fix",
+      "notes": "A WARN, never a FAIL: repos is recorded and read by no check, so an unknown name cannot make an adoption wrong, only misleading. The same loop prints the FAIL problems (VK-017); the severity travels with the problem so the doctor never decides it itself."
+    },
+    {
       "id": "VK-019",
       "script": "verify-kit.ps1",
       "function": "dimension 4 record",

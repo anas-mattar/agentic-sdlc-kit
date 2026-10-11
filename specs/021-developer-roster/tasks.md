@@ -31,27 +31,27 @@ No existing verdict moves.
 - `scripts/verify-kit.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, the counts from
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, the counts from
       `Run-Tests.ps1 -Case VK-`, `-Case CRIT-` and `-Case CLAIM-`, and the doctor's exact output on three throwaway
       records (no `developers`; a string-only roster of two; a string-only roster of one), so "byte-identical"
       is measured against saved text.
-- [ ] T002 Write the fixtures first: for each roster shape a doctor case and, where the arm changes, an
+- [x] T002 Write the fixtures first: for each roster shape a doctor case and, where the arm changes, an
       enforcement-pack case. `fail`/`pass` pairs for: an object entry with no usable `name` (dropped, reported);
       `repos` that is not an array; a `repos` name `codeRepos` does not declare; `canApproveCritical` that is not a
       boolean (reported, read as not permitted); the same person as a string and an object (one developer);
       and as `pass` a string-only roster, an object roster, a mixed roster, an object with only `name`, an
       absent roster. Expectations by hand. Run them on the parent commit and record that each `fail` fails there
       for the stated reason.
-- [ ] T003 Add the rules to `tests/enforcement/rules.json` (next free ids; anchors, law, summary) and any new
+- [x] T003 Add the rules to `tests/enforcement/rules.json` (next free ids; anchors, law, summary) and any new
       accumulator to `tests/enforcement/emission-idioms.json`, so the coverage test sees every new site.
-- [ ] T004 Extend `Get-DeveloperMode` in `scripts/adoption-lib.ps1` (plan D1–D3): accept the object form,
+- [x] T004 Extend `Get-DeveloperMode` in `scripts/adoption-lib.ps1` (plan D1–D3): accept the object form,
       return `Roster` (`Name`, `Repos`, `CanApproveCritical`), deduplicate across both forms, keep `Mode`, `Count`,
       `Declared`, `Why` and `Problems` identical for a string-only or absent record, add the new `Problems` for the
       cases in plan D2. Update the file's header.
-- [ ] T005 Edit `scripts/verify-kit.ps1` (plan D10): report each malformed entry by position and cause and each
+- [x] T005 Edit `scripts/verify-kit.ps1` (plan D10): report each malformed entry by position and cause and each
       unknown `repos` name; state the roster read only when at least one entry is an object, so a string-only
       project's doctor output is byte-identical.
-- [ ] T006 Run `-Case VK-`, `-Case CRIT-`, `-Case CLAIM-`, the full harness and `ritual-checks.ps1`: every
+- [x] T006 Run `-Case VK-`, `-Case CRIT-`, `-Case CLAIM-`, the full harness and `ritual-checks.ps1`: every
       pre-existing case unchanged, every new fixture as written, coverage reports each new site fixtured. Re-run
       the doctor on T001's three records and diff against the saved output: no byte differs.
 

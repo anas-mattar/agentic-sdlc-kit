@@ -39,7 +39,15 @@
 #   Why       one clause naming the reason, for the caller's message
 #   Declared  whether the record declares the field at all, so no caller needs its own notion
 #             of "is this declared" — a second such notion had grown in the doctor
-#   Problems  zero or more @{ Message; Fix } the doctor reports. The check ignores them, and
+#   Roster    the usable developers, deduplicated case-insensitively, in the order the record writes
+#             them: @{ Name; Repos; CanApproveCritical; Form }. A string entry is a developer with no
+#             repos who may approve Critical; an object entry is { name, repos?, canApproveCritical? }
+#             (feature 021). Where one person is written twice and any copy denies Critical approval,
+#             the person is denied: the stricter reading wins, as every degenerate input does here
+#   HasObjectEntries  whether any usable entry was written as an object, so the doctor says what it read
+#             for a roster that uses the new form and prints exactly what it always printed for strings
+#   Problems  zero or more @{ Message; Fix } (and Severity = 'warn' for the one that is a warning)
+#             the doctor reports. The check ignores them, and
 #             the reason is narrower than it first looks: a problem never makes a record
 #             produce a LAXER mode than it would without the malformation. It does NOT mean
 #             every problem lands on solo — ["ada","grace"," "] is malformed and is team.
@@ -51,7 +59,7 @@ function Get-DeveloperMode {
     $problems = [System.Collections.Generic.List[object]]::new()
     $recordPath = Join-Path $Root 'kit-adoption.json'
     if (-not (Test-Path -LiteralPath $recordPath)) {
-        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'no kit-adoption.json'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'no kit-adoption.json'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
     }
 
     # Inside the try: 'unreadable' is one of the degenerate records FR-003 names, and a read
@@ -65,7 +73,7 @@ function Get-DeveloperMode {
         # settings is not self-contained (013 phase 5 review, NEW-E).
         $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw -ErrorAction Stop)"
     } catch {
-        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json could not be read'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json could not be read'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
     }
 
     # The root must be a JSON OBJECT, judged from the TEXT. Testing the parsed value is not
@@ -75,15 +83,15 @@ function Get-DeveloperMode {
     # opens, so this test cannot be fooled by a brace inside a string.
     if ($rawRecord.TrimStart([char]0xFEFF, ' ', "`t", "`r", "`n") -notmatch '^\{') {
         $problems.Add(@{ Message = 'kit-adoption.json is not a JSON object at its root'; Fix = 'the record is a single JSON object; a root array is ignored entirely and the project falls back to the solo evidence rule' })
-        return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'kit-adoption.json is not a JSON object at its root'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'kit-adoption.json is not a JSON object at its root'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
     }
     try {
         $record = $rawRecord | ConvertFrom-Json
     } catch {
-        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json does not parse'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json does not parse'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
     }
     if ($record -isnot [PSCustomObject]) {
-        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json is not a JSON object'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'kit-adoption.json is not a JSON object'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
     }
 
     if ($null -eq $record.developers) {
@@ -92,32 +100,91 @@ function Get-DeveloperMode {
         # supported default for every adoption predating this feature and must stay silent.
         if ($rawRecord -match '(?m)"developers"\s*:') {
             $problems.Add(@{ Message = 'kit-adoption.json developers is null'; Fix = 'name the project''s developers, or remove the key — an explicit null is treated as solo, the same as an empty array' })
-            return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'developers in kit-adoption.json is null'; Problems = $problems }
+            return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'developers in kit-adoption.json is null'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
         }
-        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'no developers declared in kit-adoption.json'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $false; Why = 'no developers declared in kit-adoption.json'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
     }
     if ($record.developers -isnot [Array]) {
         $problems.Add(@{ Message = 'kit-adoption.json developers is not an array'; Fix = 'declare it as a JSON array of names, e.g. ["ada", "grace"] — a non-array is ignored and the project is treated as solo (adoption/updating.md)' })
-        return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'developers in kit-adoption.json is not an array'; Problems = $problems }
+        return @{ Mode = 'solo'; Count = 0; Declared = $true; Why = 'developers in kit-adoption.json is not an array'; Problems = $problems; Roster = @(); HasObjectEntries = $false }
     }
 
     $entries = @($record.developers)
-    $named = @($entries |
-        Where-Object { $_ -is [string] -and -not [string]::IsNullOrWhiteSpace($_) } |
-        ForEach-Object { $_.Trim() })
+    # Read each entry once, in order: a string is a developer as before; an object is a developer when it
+    # has a usable name. Anything else (a blank string, a number, an array, null) is the generic
+    # "blank or non-string entry" the doctor has always reported.
+    $generic = 0
+    $hasObject = $false
+    $parsed = [System.Collections.Generic.List[object]]::new()
+    $entryProblems = [System.Collections.Generic.List[object]]::new()
+    $declaredRepos = $null
+    for ($pos = 1; $pos -le $entries.Count; $pos++) {
+        $e = $entries[$pos - 1]
+        if ($e -is [string]) {
+            if ([string]::IsNullOrWhiteSpace($e)) { $generic++ }
+            else { $parsed.Add(@{ Name = $e.Trim(); Repos = @(); CanApproveCritical = $true; Form = 'string' }) }
+            continue
+        }
+        if ($e -isnot [PSCustomObject]) { $generic++; continue }
+        $props = @($e.PSObject.Properties.Name)
+        $name = if ($props -contains 'name') { $e.name } else { $null }
+        if ($name -isnot [string] -or [string]::IsNullOrWhiteSpace($name)) {
+            $entryProblems.Add(@{ Message = "kit-adoption.json developers entry $pos is an object with no usable name"; Fix = 'give it a non-empty "name", or remove it — an entry with no name is dropped before the count is taken, which can silently move the project from team back to solo' })
+            continue
+        }
+        $name = $name.Trim()
+        $repos = @()
+        if ($props -contains 'repos') {
+            $r = $e.repos
+            $bad = ($r -isnot [Array]) -or (@($r | Where-Object { $_ -isnot [string] -or [string]::IsNullOrWhiteSpace($_) }).Count -gt 0)
+            if ($bad) {
+                $entryProblems.Add(@{ Message = "kit-adoption.json developers entry $pos ('$name') has a repos that is not an array of names"; Fix = 'write repos as an array of code repository names, for example ["api", "web"] — until then it is read as no repos' })
+            } else {
+                $repos = @($r | ForEach-Object { $_.Trim() })
+                if ($null -eq $declaredRepos) { $declaredRepos = @((Get-CodeRepos -Root $Root).Repos) }
+                foreach ($rn in $repos) {
+                    if ($declaredRepos -notcontains $rn) {
+                        $entryProblems.Add(@{ Severity = 'warn'; Message = "kit-adoption.json developers entry $pos ('$name') names repository '$rn' in repos, which codeRepos does not declare"; Fix = 'declare it in codeRepos or correct the name — repos is recorded and read by no check' })
+                    }
+                }
+            }
+        }
+        $permitted = $true
+        if ($props -contains 'canApproveCritical') {
+            if ($e.canApproveCritical -is [bool]) { $permitted = $e.canApproveCritical }
+            else {
+                $permitted = $false
+                $entryProblems.Add(@{ Message = "kit-adoption.json developers entry $pos ('$name') has a canApproveCritical that is not true or false"; Fix = 'write the JSON value true or false — until it is a boolean the developer is read as NOT permitted to approve Critical features' })
+            }
+        }
+        $hasObject = $true
+        $parsed.Add(@{ Name = $name; Repos = $repos; CanApproveCritical = $permitted; Form = 'object' })
+    }
+    $named = @($parsed | ForEach-Object { $_.Name })
     if ($entries.Count -eq 0) {
         $problems.Add(@{ Message = 'kit-adoption.json developers is empty'; Fix = 'name the project''s developers, or remove the field — an empty array is indistinguishable from an unfinished edit and is treated as solo' })
-    } elseif ($named.Count -ne $entries.Count) {
+    } elseif ($generic -gt 0) {
         $problems.Add(@{ Message = 'kit-adoption.json developers contains a blank or non-string entry'; Fix = 'every entry is a non-empty name; blanks and non-strings are dropped before the count is taken, which can silently move the project from team back to solo' })
     }
 
     # ONE comparer for detecting duplicates and for naming them. Two comparers that disagree
     # would dereference an empty group (013 phase 4 re-review, N6).
+    foreach ($ep in $entryProblems) { $problems.Add($ep) }
     $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     $unique = [System.Collections.Generic.List[string]]::new()
+    $rosterOut = [System.Collections.Generic.List[object]]::new()
     $firstDupe = $null
-    foreach ($n in $named) {
-        if ($seen.Add($n)) { $unique.Add($n) } elseif (-not $firstDupe) { $firstDupe = $n }
+    foreach ($d in $parsed) {
+        $n = $d.Name
+        if ($seen.Add($n)) { $unique.Add($n); $rosterOut.Add($d) }
+        else {
+            if (-not $firstDupe) { $firstDupe = $n }
+            # the same person written twice: a denial in any copy denies the person
+            if (-not $d.CanApproveCritical) {
+                $kept = $rosterOut | Where-Object { $_.Name -ieq $n } | Select-Object -First 1
+                $kept.CanApproveCritical = $false
+            }
+        }
     }
     if ($firstDupe) {
         $problems.Add(@{ Message = "kit-adoption.json developers lists '$firstDupe' more than once (case-insensitively)"; Fix = 'one entry per person — duplicates are collapsed before the count is taken, so the extra entry changes nothing except how the record reads' })
@@ -131,6 +198,8 @@ function Get-DeveloperMode {
         Declared = $true
         Why      = "$($unique.Count) $noun declared in kit-adoption.json"
         Problems = $problems
+        Roster   = @($rosterOut)
+        HasObjectEntries = $hasObject
     }
 }
 
