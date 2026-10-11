@@ -170,3 +170,19 @@ line). The `fail*` cases therefore fail today for the reason the rule names, and
 - Output order when an overlap and an ungraded entry coexist: overlap blocks, then the ungraded lines,
   then the sequencing guidance (pinned by `TERR-013/fail-overlap`). The contract fixes the anchors, not
   this order.
+
+### Phase 2 review remediation (F1–F6)
+
+- **F1.** The verdict now branches on `$liveOverlap`, not on whether any overlap exists. A run with a
+  stale-only overlap and an ungraded entry prints the overlap block, the `UNGRADED:` line, the `UNGRADED —`
+  verdict, then the stale hint (exit 0). Reading of D2 adopted: `OVERLAP` as the verdict means a live
+  overlap; the owner may overrule it. Pinned by `TERR-013/fail-stale`.
+- **F2.** The entry's detail is now chosen by `git rev-parse --verify origin/<feature>`: the missing ref
+  keeps `no remote-tracking ref origin/<feature>`; any other failure says `cannot compare with <base>`.
+  Only the missing-ref cause has a fixture.
+- **F3.** `TERR-013/fail-two` and `fail-two-json`: two skipped claims, the count `2` and the order pinned.
+- **F4/F5.** The `TERR-012` rule notes no longer say both directions print CLEAN; the script's
+  `.DESCRIPTION` states the ungraded outcome and the `-Json` shape.
+- **F6.** Reading recorded: "`UNGRADED` is always present" in the contract means on every run that
+  compares. The `no remote` state is deliberately untouched (plan D3; `TERR-006/007` `fail` directions), so
+  its JSON still has no `UNGRADED`. Phase 3 must not change it as a side effect.

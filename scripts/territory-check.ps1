@@ -12,7 +12,10 @@
     claim lives in git, not in plan.md prose); for the branch under check, tracked
     uncommitted changes are included too.
 
-    Exit codes: 0 clean (no live overlap) · 2 live overlap found · 1 execution error.
+    Exit codes: 0 no live overlap · 2 live overlap found · 1 execution error. A comparison
+    that could not be made (a claim with no remote-tracking ref) is listed as UNGRADED: the
+    run then ends UNGRADED, never CLEAN, still exit 0 unless a live overlap exists. With
+    -Json, CLEAN is false whenever anything was not compared and UNGRADED lists the entries.
     Overlaps with stale claims (no commits for -StaleDays) are reported as reclaimable
     per team-workflow rule 3 and do not by themselves cause exit 2.
 
@@ -81,7 +84,9 @@ foreach ($other in $openBranches) {
     $commitCount = [int](git rev-list --count "$BaseBranch..origin/$other" 2>$null)
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "Skipping origin/${other}: cannot compare with $BaseBranch."
-        $ungraded += [PSCustomObject]@{ repo = 'governance'; feature = $other; cause = 'claim-skipped'; detail = "no remote-tracking ref origin/$other" }
+        git rev-parse --verify --quiet "origin/$other" 2>$null | Out-Null
+        $why = if ($LASTEXITCODE -ne 0) { "no remote-tracking ref origin/$other" } else { "cannot compare with $BaseBranch" }
+        $ungraded += [PSCustomObject]@{ repo = 'governance'; feature = $other; cause = 'claim-skipped'; detail = $why }
         continue
     }
 
@@ -115,18 +120,17 @@ if ($Json) {
     foreach ($u in $ungraded) {
         Write-Host "UNGRADED: $($u.repo): cannot compare $($u.feature) ($($u.detail))"
     }
-    if ($overlaps.Count -eq 0) {
+    if ($liveOverlap) {
+        Write-Host ''
+        Write-Host 'Overlap is sequenced, not forbidden (docs/sdlc/team-workflow.md, rule 5):'
+        Write-Host 'agree merge order with the other owner NOW and record it in BOTH features'' plan.md.'
+    } else {
         if ($ungraded.Count -gt 0) {
             Write-Host "UNGRADED — '$Branch' was NOT fully compared ($($ungraded.Count) comparison(s) not made, listed above), so this is not a clean result."
-        } else {
+        } elseif ($overlaps.Count -eq 0) {
             Write-Host "CLEAN — '$Branch' shares no files with any open feature branch."
         }
-    } else {
-        if ($liveOverlap) {
-            Write-Host ''
-            Write-Host 'Overlap is sequenced, not forbidden (docs/sdlc/team-workflow.md, rule 5):'
-            Write-Host 'agree merge order with the other owner NOW and record it in BOTH features'' plan.md.'
-        } else {
+        if ($overlaps.Count -gt 0) {
             Write-Host ''
             Write-Host 'Only stale claims overlap — consider adopting them per team-workflow rule 3.'
         }

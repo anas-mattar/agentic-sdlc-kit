@@ -1,0 +1,15 @@
+{
+  "description": "Two claims (012-other, 013-third) with no remote-tracking ref: origin's fetch refspec covers main only. Both are listed in the ledger's order and the verdict counts two (review F3).",
+  "defaultBranch": "main",
+  "commits": [
+    { "branch": "main", "message": "init", "hoursAgo": 500, "write": { "README.md": "fixture kit\n" } },
+    { "branch": "011-thing", "message": "phase 1: the thing", "hoursAgo": 2, "write": { "src/shared.txt": "mine\n" } },
+    { "branch": "main", "message": "back to main", "hoursAgo": 480, "write": { "docs/note.md": "note\n" } },
+    { "branch": "012-other", "message": "phase 1: the other thing", "hoursAgo": 2, "write": { "src/other.txt": "other\n" } },
+    { "branch": "main", "message": "back to main again", "hoursAgo": 470, "write": { "docs/note2.md": "note\n" } },
+    { "branch": "013-third", "message": "phase 1: the third thing", "hoursAgo": 2, "write": { "src/third.txt": "third\n" } }
+  ],
+  "checkout": "011-thing",
+  "origin": "self",
+  "originFetch": "main"
+}
