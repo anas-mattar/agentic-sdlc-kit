@@ -252,3 +252,44 @@ blocks. This review does not claim the owner's gate passed; certification is the
 ### Residual risk (Round 2)
 
 The F1 limit is now documented, not audible: a branch without the trunk's `codeRepos` still prints `CLEAN` with no signal, and only the missing `compared ...` clause shows it. The remaining owner decisions are unchanged: SC-004 wording (F6(e)), the shared `not-a-repository` test as a task or GAP row (F7(1)), the local-head fallback, and the text-only `local branches only` note. The full enforcement harness result (1147 passed) is the implementer's record, not re-run here. This review does not claim the gate passed.
+
+---
+
+## Round 3 — remediation commit `83aab0d` (parent `466f99c`)
+
+### Reviewer Provenance (Round 3)
+
+- **Reviewer**: fresh-context agent — claude-sonnet-5-5 (a new session, not the round 1 or round 2 reviewer's context)
+- **Implementer**: claude-sonnet-5-5 (the implementing session)
+- **Inputs provided**: `git show 83aab0d` (stat and full diff of `adoption/updating.md`, `docs/sdlc/team-workflow.md`, and this
+  review file); the Round 2 section above (N1, N2, the `origin/HEAD` nit); `scripts/territory-check.ps1`;
+  `Get-RepoTrunkCandidates` in `scripts/scope-lib.ps1`; the T026 section of `notes.md`; the phase 4 Territory in `tasks.md`;
+  `pwsh -NoProfile -File scripts/ritual-checks.ps1`. Nothing was modified except appending this section; nothing was committed.
+- **Attestation**: This reviewer did not produce the diff under review.
+
+### Verdict (Round 3)
+
+**APPROVE.** N1, N2 and the `origin/HEAD` nit are fixed as claimed, in documents only, with no new inaccuracy of substance. This
+review does not claim the owner's gate passed; certification is the owner's.
+
+### Evidence (Round 3)
+
+| Area | Evidence |
+|---|---|
+| N1 | The `governance: cannot compare` row now reads "an open claim with no remote-tracking ref in this clone (usually a single-branch fetch refspec)"; the shallow-clone cause and "deepen a shallow clone" are gone. `territory-check.ps1` (lines 211-216): the `no remote-tracking ref origin/<feature>` detail is produced when `origin/<feature>` does not resolve, which is the single-branch refspec case. Both actions (set `remote.origin.fetch` and fetch; `git fetch origin <feature>:refs/remotes/origin/<feature>`) were verified in Round 2 and the script is unchanged. The `cannot compare with <base>` variant still exists in code but is not named in the row; the `(…)` placeholder covers it. Acceptable. |
+| N2(a) | `updating.md` now says the first pass folded in other features' changes (kit before 018 versus now) and the second "had a script defect that reverted the update before the checks ran". `notes.md` lines 341-342 say the same (first pass folded everything in; second had a script defect, `git checkout -f` threw away the uncommitted apply). Each pass has its correct reason. |
+| N2(b) | "Beside a `kit-adoption.json` that is not valid JSON": matches `adoption-lib.ps1` ("is not valid JSON") and the Round 2 re-run (invalid JSON prints UNGRADED; a missing file prints CLEAN). |
+| `origin/HEAD` nit | The note now says "`origin/` forms first, except `origin/HEAD`, tried last". `Get-RepoTrunkCandidates` returns `origin/main, main, origin/master, master, origin/HEAD`; this matches. Wording is a little clumsy but not wrong. |
+| Checks | `ritual-checks.ps1`: doc-lint OK, enforcement-pack OK, scope-check OK (`scope-check.ps1`: `PASS phase 4 commit 83aab0d (3 file(s))`), scope-repos n/a, digests OK (5 fresh, 87 markers), roadmap-claims OK, `RESULT OK`. No `docs/digests` file or digest marker line touched. |
+| Territory / other files | `git show 83aab0d --stat`: exactly `adoption/updating.md`, `docs/sdlc/team-workflow.md` (both in the phase 4 Territory) and this review file (feature's own folder, as in earlier rounds). No script, test, fixture, `spec.md`, `plan.md`, `tasks.md` or `notes.md` change. Working tree otherwise only the untracked `.claude/settings.local.json`. |
+| Open owner items | Round 2 "Residual risk" is unchanged and still honest: SC-004 wording (F6(e)), the shared `not-a-repository` test (F7(1)), the local-head fallback, the text-only `local branches only` note, and the F1 limit (CLEAN without a `compared` clause) remain stated as owner decisions in `notes.md`, the roadmap decisions log and `updating.md`; this commit did not touch or dropped any of them. |
+
+### New findings (Round 3)
+
+None of Blocker, Major or Minor severity.
+
+**N3 — NIT (optional)** — the new trunk-note sentence in `team-workflow.md` section 5 is one long line (over 120 columns) and slightly awkward ("`origin/` forms first, except `origin/HEAD`, tried last"). Cosmetic; doc-lint passes. No action required.
+
+### Residual risk (Round 3)
+
+Unchanged from Round 2. The harness result (1147 passed) is the implementer's record and was not re-run here. The owner's gate and the human review at merge are still to come; this review does not claim the gate passed.
