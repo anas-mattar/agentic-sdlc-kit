@@ -331,6 +331,13 @@ territory check ran in each state on a feature branch, with the code repositorie
 away; `ritual-checks.ps1` ran in each state. The kit-main to kit-head step is this feature's delta; the
 installed to kit-main step is features 015 to 017 and is not this feature's.
 
+Branch shapes. FlowBoard has no open feature, so its runs checked a throwaway name (`099-measure`, created in
+the clone) with `-Branch` from `main`; ExpenseTracker ran once on `003-expense-entry` (whose tree carries no
+`codeRepos`) and once with `-Branch 003-expense-entry` from `main` (whose tree does); FitForge ran on
+`002-identity-member-profile`. FitForge's `scope-check` passed with the installed 0.7.0 scripts and failed
+once kit main (features 015-017) was applied; that is not this feature's delta and was not traced further.
+The `update-kit.ps1` dry run was taken in the discarded first pass only; the controlled pass applied directly.
+
 A first pass applied kit HEAD straight to the installed state, which folds all of that in, and was discarded
 for the delta. A second pass had a script defect (`git checkout -f` threw away the uncommitted kit-head apply
 before the checks ran, so its "new" state still held the old script), and was also discarded. Both are
@@ -370,3 +377,13 @@ failed in the adopted project on three unresolved paths: two were this phase's o
 a surgical file `update-kit.ps1` does not copy. In the controlled pass that file was present in the clone and
 `doc-lint` passed, so the cause (the order of the two applies, or the 0.7.0 starting point) is not
 established. It is not this feature's text, and it is recorded rather than changed here.
+
+## Phase 4 review remediation (F1-F8)
+
+Fixed in documents only: F1 (the "branch cut before `codeRepos`" case reworded as a limit that prints `CLEAN`, in
+`adoption/updating.md` and in section 5), F2 (unchanged output only on a fully compared run), F3 (invalid JSON in the
+cause table), F4 (the refspec action and the base-cannot-diff variant), F5 (`<repo>/<path>` in code spans, re-wrap),
+F6(a)-(d) (branch shapes, discarded passes, FitForge scope-check, dry-run), F7(2) (two fixture-less behaviours), F8
+(wording, trunk note, roadmap newline, GAP-029 caveat). Left for the owner: F6(e) whether to amend SC-004, and F7(1)
+whether the shared `not-a-repository` test becomes a task or a GAP row. An audible note for F1 is a script change
+and belongs to a follow-up. T028 ticked on the isolated-checkout harness (1147 passed) and `ritual-checks` OK.

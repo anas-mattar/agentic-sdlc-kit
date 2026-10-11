@@ -109,11 +109,12 @@ It fetches, diffs the current branch and every open remote `NNN-*` branch agains
 `main`, and reports overlapping files per branch. Where `kit-adoption.json` declares
 `codeRepos` (a nested multi-repo project), it reads each declared code repository too,
 as a sibling working tree: the branch carrying the same name there, diffed against that
-repository's own trunk (`main` or `master`, `origin/` forms first). Two features whose specs/ directories never meet but who both edit the same controller file
+repository's own trunk (`main`, `master` or `origin/HEAD`, `origin/` forms first). Two
+features whose `specs/` directories never meet but who both edit the same controller file
 in a code repository are caught here, and the file is listed with its repository prefix,
-<repo>/<path>, so it can be pasted into a Territory block unchanged. A feature's status comes from its latest commit
-in **any** repository it has a branch in, so a stale spec beside a live controller is
-live. Exit codes: `0` no live overlap, `2` live overlap found, `1` execution error. Stale
+`<repo>/<path>`, so it can be pasted into a Territory block unchanged. A feature's status
+comes from its latest commit in **any** repository it has a branch in, so a stale spec
+beside a live controller is live. Exit codes: `0` no live overlap, `2` live overlap found, `1` execution error. Stale
 claims (no commits for two weeks) are flagged as reclaimable rather than treated as live
 conflicts; freshly claimed branches with no work yet are noted, not errors.
 
@@ -132,17 +133,22 @@ do about each:
 | `<repo>: no resolvable trunk (tried …)` | none of `origin/main`, `main`, `origin/master`, `master`, `origin/HEAD` exists in it | fetch it, or create the trunk branch |
 | `<repo>: fetch failed` | `git fetch origin` failed there; the stale local view is not passed off as current | fix the remote or credentials and re-run |
 | `<repo>: cannot compare <feature> (…)` | that feature's branch there has no merge base with the trunk, or an unreadable ref | look at that branch; it may be an orphan or damaged |
-| `governance: cannot compare <feature> (…)` | an open claim with no remote-tracking ref in this clone | `git fetch origin` with the full refspec, then re-run |
-| `codeRepos: declaration unusable — …` | the record's `codeRepos` is present and cannot be read in full (not an array, or an entry that is a path) | fix `kit-adoption.json`; `scripts/verify-kit.ps1` explains the shape |
+| `governance: cannot compare <feature> (…)` | an open claim with no remote-tracking ref in this clone (usually a single-branch fetch refspec), or a branch that cannot be diffed against `main` (usually a shallow clone) | set `remote.origin.fetch` to `+refs/heads/*:refs/remotes/origin/*` and fetch, or `git fetch origin <feature>:refs/remotes/origin/<feature>` for one claim; deepen a shallow clone |
+| `codeRepos: declaration unusable — …` | the record's `codeRepos` cannot be read in full: `kit-adoption.json` is not valid JSON, `codeRepos` is not an array, or an entry is a path | fix `kit-adoption.json`; `scripts/verify-kit.ps1` explains the shape. A bad entry skips only that entry; invalid JSON skips all code repositories |
 
 A code repository with no `origin` is compared against its local branches only, and the
 output says so (`compared <repo>: local branches only`); that note is not an ungraded
 entry, and it appears in the text form only, not in `-Json`, so a `-Json` consumer should
-not read `CLEAN: true` as a comparison against other developers' pushed work. A project
-with no `codeRepos` (or an empty one) sees the original output unchanged.
+not read `CLEAN: true` as a comparison against other developers' pushed work. On a fully
+compared run, a project with no `codeRepos` (or an empty one) sees the original output
+unchanged.
 
-**Limits.** The check sees pushed work, plus local branches where a repository has no
-`origin`: another developer's unpushed commits are invisible to any git-based check, which
+**Limits.** The check reads `codeRepos` from the working tree you run it in. A branch cut
+before the declaration reached the trunk has none, gets the governance-only run and the
+original `CLEAN` line, which does not say the code repositories were skipped; take the
+trunk's declaration (rebase or merge) before relying on a clean result. `-Branch X` run from
+another checkout reads that checkout's record. The check sees pushed work, plus a local
+branch wherever a repository has no `origin` or `origin` has no ref for that feature: another developer's unpushed commits are invisible to any git-based check, which
 is why a clean run names what it compared. A local branch that the remote no longer has
 still counts as that feature's work in a repository, so a finished feature whose
 governance branch is still open can keep reporting a live overlap until the stale local

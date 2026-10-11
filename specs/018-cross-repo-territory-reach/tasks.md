@@ -205,7 +205,7 @@ close the roadmap row. No script changes.
       GAP-018 to `shipped` with its spec link unbracketed, add a status sentence to the GAP-029 row (the
       governance half closed; the four terminating-write refusal paths still open), and add the
       decisions-log entry, stating what stays open by decision.
-- [ ] T028 Run `pwsh -File scripts/ritual-checks.ps1`, and the full
+- [x] T028 Run `pwsh -File scripts/ritual-checks.ps1`, and the full
       `pwsh -File tests/enforcement/Run-Tests.ps1` on an isolated checkout of the final commit. Every
       member OK. Then stop and ask the owner to run the gate.
 
