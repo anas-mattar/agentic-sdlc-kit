@@ -2,7 +2,8 @@
 
 **Feature Branch**: `021-developer-roster`
 **Created**: 2026-10-11
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-11
+**Status**: Approved (anas.m, 2026-10-11)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "Load-bearing developer roster: the adoption record's developers become objects (name, repos, canApproveCritical), keeping string entries legal and 013's absent-record-defaults-to-strict rule, read three ways: a feature's Owner is in the roster, a Critical feature's reviewer is in the roster and is neither the Owner nor unpermitted, and at most one active claim per Owner (GAP-024, GAP-004)"
@@ -184,10 +185,9 @@ before and after, with none moved or each moved verdict explained.
   The solo arm MUST be unchanged.
 - **FR-007**: `scripts/roadmap-claim-check.ps1` MUST count, per Owner, the non-stale claims on `origin` and fail an
   Owner whose count exceeds the cap `docs/sdlc/team-workflow.md` states (more than two); an Owner at two MUST be
-  noted, never failed; a stale claim (no commits for two weeks) MUST NOT be counted. [NEEDS CLARIFICATION: is the
-  count graded in a project with no declared roster? Failing there changes every solo adopter's CI for the first
-  time; grading only where a roster is declared leaves solo projects as they are. Recommendation: grade only
-  where a roster is declared. Owner's call.]
+  noted, never failed; a stale claim (no commits for two weeks) MUST NOT be counted. The count is graded **only where
+  a roster is declared and usable**; a project with none keeps its CI as it is, and the output says the count was
+  not graded (decided by the owner, anas.m, 2026-10-11).
 - **FR-008**: `scripts/verify-kit.ps1` MUST report, by entry position and cause, every malformed roster entry, an
   unknown `repos` name and a duplicate, and MUST state the mode and roster it read, the way it states the mode today.
 - **FR-009**: Every new rule MUST have a passing and a failing fixture in the enforcement harness, anchored in
@@ -199,9 +199,9 @@ before and after, with none moved or each moved verdict explained.
 - **FR-011**: The change MUST be measured on clones of FitForge, FlowBoard and ExpenseTracker, never the real
   projects; a verdict that moves is a finding, not a rounding error.
 - **FR-012**: The `repos` field MUST be validated and recorded but is read by no check in this feature; matching
-  developers to features by repository is the assignment authority the roadmap row deliberately excludes. [NEEDS
-  CLARIFICATION: should a `repos` entry that does not cover a feature's Territory repositories be a note? The row
-  says no; recorded here so it is a decision, not an omission.]
+  developers to features by repository is the assignment authority the roadmap row deliberately excludes. A `repos` entry
+  that does not cover a feature's Territory repositories is therefore not even a note; this stands as written at
+  the owner's approval of the spec (anas.m, 2026-10-11).
 
 ### Key Entities
 
