@@ -7,6 +7,7 @@ description: "Task list for feature 020 — rendered-structure lint"
 
 **Input**: `specs/020-rendered-structure-lint/spec.md`, `plan.md` (decisions D1–D8)
 **Prerequisites**: spec.md and plan.md approved; no new dependency, no new file outside fixtures.
+**Amendment approved by**: anas.m, 2026-10-11
 
 **Tests**: every rule ships with a passing and a failing harness fixture in the same phase as the
 behaviour, expectations written by hand (feature 015). New fixtures are run against the parent commit
