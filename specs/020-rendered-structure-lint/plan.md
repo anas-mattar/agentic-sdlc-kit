@@ -4,6 +4,7 @@
 **Input**: Feature specification (approved, FR-011 decided) + decisions D1–D8 below
 **Gate Batching**: none
 **Gate Certification**: user-run
+**Amendment approved by**: anas.m, 2026-10-11
 
 ## Summary
 
