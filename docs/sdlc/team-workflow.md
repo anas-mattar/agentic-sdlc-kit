@@ -109,7 +109,7 @@ It fetches, diffs the current branch and every open remote `NNN-*` branch agains
 `main`, and reports overlapping files per branch. Where `kit-adoption.json` declares
 `codeRepos` (a nested multi-repo project), it reads each declared code repository too,
 as a sibling working tree: the branch carrying the same name there, diffed against that
-repository's own trunk (`main`, `master` or `origin/HEAD`, `origin/` forms first). Two
+repository's own trunk (`main`, `master` or `origin/HEAD`, `origin/` forms first, except `origin/HEAD`, tried last). Two
 features whose `specs/` directories never meet but who both edit the same controller file
 in a code repository are caught here, and the file is listed with its repository prefix,
 `<repo>/<path>`, so it can be pasted into a Territory block unchanged. A feature's status
@@ -133,7 +133,7 @@ do about each:
 | `<repo>: no resolvable trunk (tried …)` | none of `origin/main`, `main`, `origin/master`, `master`, `origin/HEAD` exists in it | fetch it, or create the trunk branch |
 | `<repo>: fetch failed` | `git fetch origin` failed there; the stale local view is not passed off as current | fix the remote or credentials and re-run |
 | `<repo>: cannot compare <feature> (…)` | that feature's branch there has no merge base with the trunk, or an unreadable ref | look at that branch; it may be an orphan or damaged |
-| `governance: cannot compare <feature> (…)` | an open claim with no remote-tracking ref in this clone (usually a single-branch fetch refspec), or a branch that cannot be diffed against `main` (usually a shallow clone) | set `remote.origin.fetch` to `+refs/heads/*:refs/remotes/origin/*` and fetch, or `git fetch origin <feature>:refs/remotes/origin/<feature>` for one claim; deepen a shallow clone |
+| `governance: cannot compare <feature> (…)` | an open claim with no remote-tracking ref in this clone (usually a single-branch fetch refspec) | set `remote.origin.fetch` to `+refs/heads/*:refs/remotes/origin/*` and fetch, or `git fetch origin <feature>:refs/remotes/origin/<feature>` for one claim |
 | `codeRepos: declaration unusable — …` | the record's `codeRepos` cannot be read in full: `kit-adoption.json` is not valid JSON, `codeRepos` is not an array, or an entry is a path | fix `kit-adoption.json`; `scripts/verify-kit.ps1` explains the shape. A bad entry skips only that entry; invalid JSON skips all code repositories |
 
 A code repository with no `origin` is compared against its local branches only, and the

@@ -664,7 +664,7 @@ exactly what it printed before; and `docs/sdlc/team-workflow.md`.
 1. **`UNGRADED` where `CLEAN` used to cover a skipped comparison.** An open claim with no
    remote-tracking ref in your clone (any single-branch fetch refspec) now prints
    `UNGRADED: governance: cannot compare <feature> (…)` and a closing `UNGRADED — … was NOT fully
-   compared` line. Beside an unreadable `kit-adoption.json`, this is the only change for a project that
+   compared` line. Beside a `kit-adoption.json` that is not valid JSON, this is the only change for a project that
    declares no `codeRepos`; with every claim compared, the original `CLEAN` line is byte for byte
    what it was.
 2. **A reach into the code repositories, if you declare them.** An overlap there is reported like any
@@ -688,9 +688,9 @@ place touched; FlowBoard has no open feature, so a throwaway branch name was che
 was one ExpenseTracker run; the clone's `origin` is the project on disk, so no network and no open claim from
 elsewhere), the kit before this feature was applied, then the kit as it stands, and the territory check
 and `ritual-checks.ps1` were run in each state, with the code repositories cloned beside the governance
-clone and then with them absent. Two earlier passes were discarded because they folded in other features' changes
-(the kit before 018 versus the kit now, then a checkout that reverted the update), so the delta is
-this feature's alone. **Exit codes: none moved, in any run.**
+clone and then with them absent. Two earlier passes were discarded: the first folded in other features' changes
+(the kit before 018 versus the kit now), the second had a script defect that reverted the update before
+the checks ran. The delta is this feature's alone. **Exit codes: none moved, in any run.**
 **Verdicts: one kind moved.** With the code repositories present, `CLEAN` stayed `CLEAN` and gained only
 the `compared governance and <repo>, <repo> against 0 open claim(s)` clause, in all three projects. With
 them absent, each of the three projects, all of which declare `codeRepos`, went from `CLEAN` to `UNGRADED` (two entries, one

@@ -199,3 +199,56 @@ accuracy gains in the table an owner uses when the output is unexpected. Everyth
 remaining decisions are the ones the phase 3 review left open and the decisions log records (the local-head fallback, the
 `-Json` note, the shared `not-a-repository` test), plus whether SC-004's wording should be amended to the reading the notes
 report. This review does not claim the gate passed; certification is the owner's.
+
+---
+
+## Round 2 — remediation commit `466f99c` (parent `ddc11fd`)
+
+### Reviewer Provenance (Round 2)
+
+- **Reviewer**: fresh-context agent — claude-sonnet-5-5 (a new session, not the round 1 reviewer's context)
+- **Implementer**: claude-sonnet-5-5 (the implementing session)
+- **Inputs provided**: `git show 466f99c` (stat and full diff of `adoption/updating.md`, `docs/sdlc/team-workflow.md`,
+  `docs/roadmap.md`, `notes.md`, `tasks.md`); this review's round 1 findings F1-F8; the current
+  `scripts/territory-check.ps1`; the recorded measurement material (`measure.ps1`, `measure2.ps1`, `measure2/rows.json`) from
+  the implementing session's scratchpad; read and run access to throwaway repositories under the reviewer's scratchpad (a bare
+  origin, a governance clone, a depth-1 clone). Nothing in the repository was modified except appending this section; nothing
+  was committed.
+- **Attestation**: This reviewer did not produce the diff under review.
+
+### Verdict (Round 2)
+
+**APPROVE.** F1-F8 are fixed as claimed, in documents only; the two items deliberately left to the owner (F6(e), F7(1)) are
+stated as open, not dropped. No Blocker or Major remains. Two new, small inaccuracies were found (N1 Minor, N2 Nit); neither
+blocks. This review does not claim the owner's gate passed; certification is the owner's.
+
+### Evidence (Round 2)
+
+| Area | Evidence |
+|---|---|
+| F1 (CLEAN over unread code) | `updating.md` now moves the case out of the "print UNGRADED" list ("One situation will make a healthy project print UNGRADED every time") and states it as a limit that prints `CLEAN` and "does not say the code repositories were skipped"; section 5 **Limits** says the same and that `-Branch X` reads the running checkout's record. Matches the code: `Get-CodeRepos -Root $repoRoot` reads the working tree; with nothing declared `$comparedNote = ''` and the original line prints. Re-ran: a branch with no `kit-adoption.json` prints `CLEAN - '011-a' shares no files ...` with no `compared` clause. `notes.md` stays honest that an audible warning is a script change for a follow-up. |
+| F2 | "On a fully compared run, a project with no `codeRepos` (or an empty one) sees the original output unchanged": true. Item 1 of "What you will newly see" adds "Beside an unreadable `kit-adoption.json`" (wording: N2). |
+| F3 | Row now names "not valid JSON" and "a bad entry skips only that entry; invalid JSON skips all code repositories". Re-ran invalid JSON in a project with no `codeRepos`: `UNGRADED: codeRepos: declaration unusable - kit-adoption.json is not valid JSON - no code repositories read ...`, closing UNGRADED line, exit 0. Bad-entry behaviour was verified in round 1. |
+| F4 | Refspec action verified in a throwaway: with `remote.origin.fetch` narrowed to `main`, a claim prints `UNGRADED: governance: cannot compare 012-b (no remote-tracking ref origin/012-b)`; after `git fetch origin 012-b:refs/remotes/origin/012-b` the next run (which does `fetch --prune`) is `CLEAN`, so the ref survives prune; after restoring `+refs/heads/*:refs/remotes/origin/*` and fetching, also `CLEAN`. Both actions work. The second-variant clause is not supported as worded (N1). |
+| F5 | `<repo>/<path>` and `specs/` are now in code spans. Re-wrap is partial: one line in section 5 is 117 columns and the Limits line still runs long; some updating.md and roadmap lines are long too. Cosmetic. |
+| F6 (a)-(d) | (a) `updating.md` and `notes.md` now name the branch shapes (FlowBoard throwaway `099-measure` from `main`; ExpenseTracker once on `003-expense-entry`, once `-Branch` from `main`; FitForge `002-identity-member-profile`): matches `measure2.ps1`. "each of the three projects" is supported by `rows.json`: kit-head code-repos-absent is `UNGRADED` in all three. (b) discarded passes now stated in `updating.md` (wording: N2). (c) FitForge `ritual-checks` in `rows.json`: installed `enforcement-pack FAIL, scope-check OK` (1 of 7); kit-main and kit-head both `enforcement-pack FAIL, scope-check FAIL` (2 of 7). So "scope-check passing with the installed 0.7.0 scripts and failing once the kit before 018 was applied" and "the same two failing members at kit main and HEAD" are both exactly right. (d) "dry run taken in the discarded first pass only": `measure.ps1` runs `update-kit.ps1 -DryRun`, `measure2.ps1` does not. True. |
+| F6(e), F7(1) left open | Commit message, `notes.md` ("Left for the owner: F6(e) ... F7(1) ..."), the roadmap decisions-log ("needs a task") and `updating.md` ("can drift until the shared test is built") all say so. Not silently dropped. Still the owner's. |
+| F7(2) | Roadmap entry and `updating.md` Limits now list the two fixture-less behaviours (own branch existing only as `origin/<branch>`; a claim with no branch in a declared code repository). |
+| F8 | (a) "a local branch wherever a repository has no `origin` or `origin` has no ref for that feature" matches the script (candidates `refs/remotes/origin/$other`, then `refs/heads/$other`, independent of `origin`). (b) trunk note "`main`, `master` or `origin/HEAD`, `origin/` forms first": right set; "origin/ forms first" is not quite true of `origin/HEAD` (actual order `origin/main, main, origin/master, master, origin/HEAD`; the table row lists it exactly). Nit. (c) the roadmap trailing newline is restored. (d) long lines remain, cosmetic. (e) GAP-029 now carries "Built, reviewed and measured; the owner's gate and the human review at merge are still to come." |
+| Digests / doc-lint / checks | `git show 466f99c --stat`: no `docs/digests` file touched and no `<!-- digest: -->` line changed, so digests are as in round 1 (markers 106 and 118 characters, limit 120). `pwsh -NoProfile -File scripts/ritual-checks.ps1`: doc-lint OK, enforcement-pack OK, scope-check OK (`PASS phase 4 commit 466f99c (6 file(s))`), digests `OK (5 digest(s) fresh, 87 marker(s))`, roadmap-claims OK, `RESULT OK`. |
+| Territory / tasks.md | The commit touches `adoption/updating.md`, `docs/sdlc/team-workflow.md`, `docs/roadmap.md` (Territory), plus the feature's own `notes.md`, `tasks.md` and this review file, the same set earlier phases committed; scope-check PASS. No script, test, fixture, `spec.md`, `plan.md` or `contracts/` change. The `tasks.md` diff is one line: `[ ] T028` to `[x] T028`. |
+| T028 tick | Requires `ritual-checks` (re-run by me: `RESULT OK`) and the full harness on an isolated checkout of the final commit. The notes record the isolated harness as "1147 passed". **I did not re-run the harness and cannot confirm that figure**; I accepted it as recorded in the implementing session. The tick is not a claim of gate success. |
+
+### New findings (Round 2)
+
+**N1 — MINOR — `governance: cannot compare` row: the "branch that cannot be diffed against `main` (usually a shallow clone) ... deepen a shallow clone" clause is unsupported.**
+`docs/sdlc/team-workflow.md`, cause table. The `cannot compare with main` detail arises only when `git rev-list --count main..origin/<feature>` fails while `origin/<feature>` exists, i.e. the base ref is unresolvable; but the own-branch diff against the same base runs earlier and exits 1 (a refusal, not an ungraded line), so this variant is effectively unreachable in a normal run. In a `--depth 1 --no-single-branch` clone the `rev-list` succeeds and the run printed `CLEAN`, not this variant; a plain `--depth 1` clone (single-branch refspec) prints the first variant, which the refspec action fixes and deepening does not. So "usually a shallow clone / deepen" is a guess presented as cause and action. (Separately, in a shallow clone a missing merge base makes the diff fail silently and the claim compares as empty: existing behaviour, outside this phase, and not addressed either way in the guidance.)
+*Action: author, optional before merge. Drop "(usually a shallow clone)" and "deepen a shallow clone", or say only that the base branch cannot be resolved.*
+
+**N2 — NIT — Two wording slips in `adoption/updating.md`.**
+(a) "Two earlier passes were discarded because they folded in other features' changes (the kit before 018 versus the kit now, then a checkout that reverted the update)": `notes.md` says the first pass folded in other features' changes (installed to HEAD) and the second had a script defect (`git checkout -f` threw away the uncommitted apply). The sentence gives the first reason for both. (b) "Beside an unreadable `kit-adoption.json`": the case is a record that is not valid JSON (a missing file is not ungraded and prints `CLEAN`); "invalid JSON" is the precise word.
+*Action: author, wording only.*
+
+### Residual risk (Round 2)
+
+The F1 limit is now documented, not audible: a branch without the trunk's `codeRepos` still prints `CLEAN` with no signal, and only the missing `compared ...` clause shows it. The remaining owner decisions are unchanged: SC-004 wording (F6(e)), the shared `not-a-repository` test as a task or GAP row (F7(1)), the local-head fallback, and the text-only `local branches only` note. The full enforcement harness result (1147 passed) is the implementer's record, not re-run here. This review does not claim the gate passed.
