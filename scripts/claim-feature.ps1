@@ -68,21 +68,29 @@ function Get-NextFreeNumber {
     return $highest + 1
 }
 
+# A refusal: the claim cannot be made, so it says why on the error stream and exits 1. Not
+# Write-Error: under ErrorActionPreference = Stop that THROWS, the 'exit 1' beneath it never runs, and
+# the reader gets a PowerShell error record and an exit code that is whatever the launcher or the last
+# git call left behind, not the script's (feature 023, GAP-031; the same function as territory-check.ps1).
+function Stop-Refused {
+    param([Parameter(Mandatory)][string]$Message)
+    [Console]::Error.WriteLine($Message)
+    exit 1
+}
+
 $repoRoot = git rev-parse --show-toplevel 2>$null
-if ($LASTEXITCODE -ne 0) { Write-Error 'Not inside a git repository.'; exit 1 }
+if ($LASTEXITCODE -ne 0) { Stop-Refused 'Not inside a git repository.' }
 Push-Location $repoRoot
 try {
 
 # --- 1. Preflight (mirrors CLAUDE.md workflow step 1) ---------------------------------
 $dirty = git status --porcelain
 if ($dirty) {
-    Write-Error "Working tree is not clean — commit or stash before claiming a feature.`n$($dirty -join "`n")"
-    exit 1
+    Stop-Refused "Working tree is not clean — commit or stash before claiming a feature.`n$($dirty -join "`n")"
 }
 $currentBranch = git branch --show-current
 if ($currentBranch -ne 'main') {
-    Write-Error "Claims start from main (currently on '$currentBranch'). Checkout main first."
-    exit 1
+    Stop-Refused "Claims start from main (currently on '$currentBranch'). Checkout main first."
 }
 
 # --- 2. Sync with the ledger -----------------------------------------------------------
@@ -93,7 +101,7 @@ if ($LASTEXITCODE -eq 0) { $hasRemote = $true }
 $remoteHeads = @()
 if ($hasRemote) {
     git fetch origin --prune 2>$null | Out-Null
-    if ($LASTEXITCODE -ne 0) { Write-Error 'git fetch origin failed — cannot claim against an unreachable ledger.'; exit 1 }
+    if ($LASTEXITCODE -ne 0) { Stop-Refused 'git fetch origin failed — cannot claim against an unreachable ledger.' }
     $remoteHeads = Get-RemoteFeatureHeads
 } else {
     Write-Warning 'No origin remote configured — allocating from the LOCAL ledger only. This claim is NOT team-visible.'
@@ -105,11 +113,10 @@ Write-Info "Allocating feature number $('{0:000}' -f $number) (next free across 
 
 $createScript = Join-Path $repoRoot '.specify/scripts/powershell/create-new-feature.ps1'
 if (-not (Test-Path $createScript)) {
-    Write-Error "Stock script not found: $createScript — partial kit install? Run scripts/doc-lint.ps1."
-    exit 1
+    Stop-Refused "Stock script not found: $createScript — partial kit install? Run scripts/doc-lint.ps1."
 }
 $createOut = & $createScript -Json -Number $number -ShortName $ShortName ($FeatureDescription -join ' ')
-if ($LASTEXITCODE -ne 0) { Write-Error "create-new-feature.ps1 failed:`n$createOut"; exit 1 }
+if ($LASTEXITCODE -ne 0) { Stop-Refused "create-new-feature.ps1 failed:`n$createOut" }
 $created = $createOut | ConvertFrom-Json
 $branch = $created.BRANCH_NAME
 $renumberedFrom = $null
@@ -132,8 +139,7 @@ if ($hasRemote -and -not $NoPush) {
         Write-Warning "Number $numPrefix was claimed concurrently ($($rivals -join ', ')) — renumbering."
         if ($pushOk) { git push origin --delete $branch 2>$null | Out-Null }
         if ($attempt -eq $MaxAttempts) {
-            Write-Error "Lost the allocation race $MaxAttempts times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation)."
-            exit 1
+            Stop-Refused "Lost the allocation race $MaxAttempts times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation)."
         }
         git fetch origin --prune 2>$null | Out-Null
         $remoteHeads = Get-RemoteFeatureHeads

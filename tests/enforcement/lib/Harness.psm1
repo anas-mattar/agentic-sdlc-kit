@@ -28,7 +28,7 @@
     NORMALISATION. Raw output carries values that legitimately differ per run — the temporary
     repository path and commit shas. Those, and only those, are replaced before comparison:
 
-      <ROOT>   the fixture repository path, in any slash direction
+      <ROOT>   the fixture repository path, in any slash direction, and the path under it with slashes
       <SHA>    a 7-to-40 character hex run that git produced
       <DATE>   an ISO-8601 instant with a time on it — git's %cI, which scope-check-repos.ps1
                quotes back in its anti-retroactivity message
@@ -63,6 +63,13 @@ function ConvertTo-NormalisedOutput {
     foreach ($variant in ($variants | Select-Object -Unique | Sort-Object Length -Descending)) {
         $text = $text.Replace($variant, '<ROOT>')
     }
+
+    # The rest of a path under the repository, in one spelling. A script that joins a path with
+    # Join-Path prints the platform's separator, so 'specs/001-x/spec.md' under the repository comes
+    # out with backslashes on Windows and slashes on Linux; replacing only the repository prefix left
+    # such a line unpinnable on one platform or the other (feature 023, claim-feature.ps1). Only the
+    # run of path characters that follows a <ROOT>, up to whitespace or a quote, is touched.
+    $text = [regex]::Replace($text, '<ROOT>[^\s''"`]*', { param($m) $m.Value.Replace([string][char]92, '/') })
 
     # Instants, before shas: an ISO-8601 timestamp is the other value a run cannot repeat.
     # Anchored on the 'T' and a time, so a plain calendar date stays exactly as written.

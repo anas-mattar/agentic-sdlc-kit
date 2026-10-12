@@ -1,0 +1,5 @@
+WARNING: No origin remote configured — allocating from the LOCAL ledger only. This claim is NOT team-visible.
+Allocating feature number 001 (next free across local + remote + specs/).
+CLAIMED LOCALLY: 001-probe (not pushed — not team-visible)
+SPEC_FILE: <ROOT>/specs/001-probe/spec.md
+NEXT: flip the roadmap row for 001-probe (Status, Owner, Spec `specs/001-probe/`) in a main-side docs commit — ritual-checks fails while a claim's row still reads 'idea' (GAP-017).

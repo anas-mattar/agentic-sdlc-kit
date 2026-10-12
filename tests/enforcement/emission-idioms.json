@@ -215,6 +215,28 @@
         "Write-Host\\s+\\(?['\"](=== )?ritual-checks: "
       ],
       "note": "Resolved in T035. The answer to the question this entry used to ask — whether 'a member failed' is one rule or none — is five: the member announcement, the per-member verdict, the doctor's n/a line, and the two run verdicts. What made them testable is that the members are resolved under -Root ($scriptsDir = Join-Path $Root 'scripts'), not under the wrapper's own directory, so a fixture supplies STUB members and the cases assert the aggregation rather than re-running six checks that have hundreds of cases of their own. Deliberately OUT: the blank separator and the '$out | ForEach-Object { Write-Host $_ }' echo, which re-prints a member's output verbatim and decides nothing."
+    },
+    {
+      "script": "claim-feature.ps1",
+      "accumulators": [
+        "Stop-Refused\\s+['\"]",
+        "Write-Warning\\s"
+      ],
+      "notRules": [
+        {
+          "anchor": "No origin remote configured",
+          "reason": "An informational warning on the success path of a claim made with no origin. It is not a failure condition: the claim is made, locally, and exits 0. It is asserted verbatim, as part of the whole output, by the CLF-001 pass case, which differs from its fail case only in being a repository."
+        },
+        {
+          "anchor": "Push skipped (-NoPush)",
+          "reason": "An informational warning on the success path of a claim made with -NoPush. Not a failure condition: the claim is made locally and exits 0. Asserted verbatim, as part of the whole output, by the CLF-004 pass-nopush case."
+        },
+        {
+          "anchor": "was claimed concurrently",
+          "reason": "The per-attempt warning printed when a rival claim with the same number is seen on origin, before the script renumbers and tries again. It sits in the same path as CLF-007 (lost the race three times), which the fixture model cannot reach, and is covered by that rule's written exemption (feature 023 plan D2)."
+        }
+      ],
+      "note": "Added in feature 023 (GAP-031), when the script entered the coverage sweep. Its seven refusals were Write-Error calls, which under ErrorActionPreference = 'Stop' throw before the exit 1 beneath them; they are now Stop-Refused calls and each is fixtured, except the lost-race one (CLF-007, exempt with a written reason)."
     }
   ]
 }

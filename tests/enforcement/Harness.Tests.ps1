@@ -262,6 +262,19 @@ Describe 'output normalisation' {
         $out.Trim() | Should -Be 'approved 2026-09-10 by the owner'
     }
 
+    It 'writes a path under the repository with forward slashes, whatever separator the script printed' {
+        $repo = 'C:/fixtures/kit-fixture-abc123'
+        foreach ($printed in 'C:/fixtures/kit-fixture-abc123/specs/001-x/spec.md', 'C:\fixtures\kit-fixture-abc123\specs\001-x\spec.md', 'C:\fixtures\kit-fixture-abc123/specs\001-x/spec.md') {
+            $out = ConvertTo-NormalisedOutput -Text "SPEC_FILE: $printed" -RepoPath $repo
+            $out.Trim() | Should -Be 'SPEC_FILE: <ROOT>/specs/001-x/spec.md'
+        }
+    }
+
+    It 'leaves a backslash that is not part of a path under the repository alone' {
+        $out = ConvertTo-NormalisedOutput -Text 'a\b under C:/fixtures/kit-fixture-abc123 then x\y' -RepoPath 'C:/fixtures/kit-fixture-abc123'
+        $out.Trim() | Should -Be 'a\b under <ROOT> then x\y'
+    }
+
     It 'still replaces the sha inside a line that also carries an instant' {
         $out = ConvertTo-NormalisedOutput -Text 'commit 8a0291b at 2026-09-19T14:03:11+02:00' -RepoPath 'no-such-path'
         $out.Trim() | Should -Be 'commit <SHA> at <DATE>'
