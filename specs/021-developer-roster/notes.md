@@ -146,6 +146,19 @@ Certified by the owner (anas.m), 2026-10-12: the phase 2 gate was run and the ow
 (user-confirmed, not agent-claimed). Phase commit `6fe88b6`; scope-check PASS on it; AI review
 `ai-code-review-phase-2.md` (`76482e6`), approve with follow-ups. Human review is not yet recorded.
 
+### Phase 2 review F2: three edge cases covered by reading only
+
+`ai-code-review-phase-2.md` F2 (minor, optional action) names three Critical-reviewer cases with no fixture of their own. Decision by the owner
+(anas.m, 2026-10-12): **no fixtures added; recorded here as covered by reading only**, which is the review's second option.
+
+- A placeholder or empty Reviewer in team mode with a usable roster: the guard `$reviewer -and $reviewer -notmatch $placeholder` keeps it from being graded a
+  second time, since the placeholder loop above already fails it. Rests on that one condition.
+- A Reviewer equal to the Owner and absent from the roster: two failures are expected (the Owner check, then the roster check).
+- A denial written in a second duplicate spelling (phase 1 round 2, R2-1): the reader merges duplicates so any denying copy denies; this check is its first
+  consumer.
+
+The reviewer read the code for each and found it behaves as intended. If one of these ever changes, it has no fixture to fail, so a change to that block
+should add the fixture first.
 ## Phase 3: the claim ledger
 
 ### T010: the fixtures, shown failing on the parent
