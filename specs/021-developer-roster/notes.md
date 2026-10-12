@@ -247,3 +247,68 @@ because they pin behaviour that was already right.
 | `ritual-checks.ps1` | RESULT OK | RESULT OK |
 
 The difference of 18 is exactly the nine new cases (an exit-code and an output assertion each). No pre-existing case changed.
+
+## Phase 4: guidance, flow-down and bookkeeping
+
+### T015 to T017: the documents
+
+- `docs/sdlc/critical-delivery.md` item 5: the team arm now says the Reviewer must be on the roster and permitted, what the
+  roster holds (names or objects, mixed; a missing `canApproveCritical` permits, a non-boolean denies; `repos` read by
+  nothing), that names match exactly and case-insensitively, and the plan D9 sentence: membership catches a stranger, a
+  typo, an undeclared name and a person the record says may not judge, and does not prove identity. One digest marker added
+  (within 120 characters).
+- `docs/sdlc/team-workflow.md`: a subsection after the pipelining text, "What the machine counts, and what it cannot see":
+  the roster shapes, the Owner reading (one roster name per cell; a claim is bound to its row by its name as a whole word,
+  preferring the row that holds `specs/<claim>/`; disagreeing rows are UNGRADED), the WIP counter (what it counts, the
+  14-day stale rule, more than two fails, exactly two is a note, an unreadable date is UNGRADED), what only a human can see (a
+  pull request being open, territory disjointness, identity), and that all of it is graded only where a roster is declared.
+  Two digest markers.
+- `adoption/updating.md`: a flow-down note for the roster (what was wrong, what it does, a table of the three newly failing
+  conditions with their fixes, what flows down, what an owner may newly see, what does not change, what was measured, what to
+  do) with two digest markers after the table. `adoption/greenfield.md`: the two places that describe `developers` now say
+  it is the roster and that names must be written as the Owner cells and Reviewer lines write them.
+- The update note is the honest place for two things the spec did not foresee: a **one-name** roster is a roster, so a solo
+  project that declared `["me"]` and spells its Owners differently would go red on the first run; and `build-digests.ps1` must be
+  run after the update, as after every update that moves a marker.
+
+### T018: the measurement (SC-003, FR-011)
+
+Method: for each project, `git clone` from its local directory into the scratchpad (never the real project), nested code
+repositories cloned in beside it and excluded from the outer status as the real project does; `verify-kit.ps1`,
+`enforcement-pack.ps1`, `roadmap-claim-check.ps1` and `ritual-checks.ps1` run in the installed state (S0); the kit as of
+`85b944f`, the parent of this feature, applied with `update-kit.ps1` and committed in the clone (S1); `build-digests.ps1` run
+and committed; the kit as it stands applied (S2); digests rebuilt. Each state is also recorded as applied, before the digests are rebuilt.
+Nothing was pushed and the clones' `origin` is the real directory.
+
+| Project | Roster | Verdicts S0, S1 and S2 (rebuilt) | Differences in output S1 to S2 |
+|---|---|---|---|
+| FitForge | `anas.m`, `ahmad` (strings) | `verify-kit` OK, `enforcement-pack` OK, `roadmap-claims` OK (1 claim), `ritual-checks` `RESULT OK`, all three states | `.kit-version` commit; `enforcement-pack` changed files 19 to 22; digest markers 90 to 93; **`roadmap-claims` OK line gains `, Owners and claim counts graded against the declared roster`** |
+| FlowBoard | none | the same members OK (`roadmap-claims`: no claims on `origin`) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 70 |
+| ExpenseTracker | none | the same members OK (1 claim) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 70 |
+
+**No verdict moved in any project.** What moved: `ritual-checks.ps1` is `RESULT FAIL` **as applied**, in S1 and S2 alike
+and in all three projects, because the `digests` member reports the stale digests until `build-digests.ps1` is run. That is
+the existing flow-down step, it fails identically after the kit as it stood before this feature (S1), and it is `RESULT OK`
+after the rebuild, so it is not a verdict this feature moves; the update note tells the adopter to run it. Between the installed state and S1 the
+output differs in every project (the changes of features 018 to 020), listed here only so it is not attributed to 021.
+
+Liveness, FitForge's clone, S2: the claim `002-identity-member-profile` has Owner `anas.m` on its row. Writing the Owner as
+`Anas M.` made `roadmap-claim-check.ps1` print `claim '002-identity-member-profile' is owned by 'Anas M.', who is not on the
+developer roster in kit-adoption.json (anas.m, ahmad) ...` and exit 1 (finding count 1 of 1); the edit was discarded with
+`git checkout` and the clone was clean. Not exercised, and said so: no adopted project has a Critical feature, two claims for one
+Owner or a claim whose tip date cannot be read.
+
+**Observation for the owner (SC-001 against FR-005 and FR-006).** SC-001 says every verdict a string-only roster produced before
+is byte-identical after. Read literally that is not true of a **team** project with a string roster whose Reviewer or roadmap
+Owner is not on it: the phase 2 and 3 checks fail it, which is the point of FR-005 and FR-006. What is byte-identical is the
+reader's mode and count, the doctor's output for a record of names, every existing fixture, and any project with no roster or
+whose names already match. The measurement found no such project among the three. The update note says so in its "What an
+owner may newly see" paragraph rather than claiming byte-identity for every roster.
+
+### T019: digests and the roadmap
+
+`scripts/build-digests.ps1` regenerated (5 digests, 96 markers). The roadmap row for the developer roster is `shipped`, Owner
+`anas.m`, spec link `specs/021-developer-roster/` unbracketed; the decisions-log entry states what stays open by decision:
+membership is not identity, `repos` is read by nothing, assignment authority (GAP-024 b and c) is out, and the row's old wording
+("at most one active claim per Owner") is corrected to the shipped rule (more than two fails, two is a note). The inventory rows
+carry no closed marker in the kit's precedent, so none was added.

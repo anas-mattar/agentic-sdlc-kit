@@ -129,20 +129,20 @@ the roadmap row. No script changes.
 - `docs/digests/**`
 - `kit-manifest.json`
 
-- [ ] T015 [P] Update `docs/sdlc/critical-delivery.md` item 5: the team arm now also requires the Reviewer on
+- [x] T015 [P] Update `docs/sdlc/critical-delivery.md` item 5: the team arm now also requires the Reviewer on
       the roster and permitted; the roster shapes; and the plan D9 sentence, that membership catches a stranger or
       a name the project did not declare and does not prove identity. Keep digest markers within 120 characters.
-- [ ] T016 [P] Update `docs/sdlc/team-workflow.md`: the roster shapes, the Owner reading, the WIP counter (what
+- [x] T016 [P] Update `docs/sdlc/team-workflow.md`: the roster shapes, the Owner reading, the WIP counter (what
       it counts, the stale and the pipelining cases, what only a human can see: a pull request being open), and
       that all of it is graded only where a roster is declared.
-- [ ] T017 [P] Add a flow-down note to `adoption/updating.md`, and update `adoption/greenfield.md` where it
+- [x] T017 [P] Add a flow-down note to `adoption/updating.md`, and update `adoption/greenfield.md` where it
       describes the `developers` field: what flows down, what an owner may newly see, what to do, the
       measurement, and that a string-only roster is unchanged.
-- [ ] T018 Measure on clones of the three adopted projects, never touching the real ones: apply the update,
+- [x] T018 Measure on clones of the three adopted projects, never touching the real ones: apply the update,
       run the old and new checks (`verify-kit.ps1`, `enforcement-pack.ps1`, `roadmap-claim-check.ps1`,
       `ritual-checks.ps1`) in each state, list every verdict that moved with its cause. A moved verdict is a
       finding, not a rounding error. Record the table in `notes.md`.
-- [ ] T019 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for the
+- [x] T019 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for the
       developer roster to `shipped` with its spec link unbracketed, and add the decisions-log entry, stating what
       stays open by decision (membership is not identity; `repos` is read by nothing; assignment authority is out).
 - [ ] T020 Run `pwsh -File scripts/ritual-checks.ps1`, and the full

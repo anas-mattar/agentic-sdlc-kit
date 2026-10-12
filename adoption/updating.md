@@ -819,6 +819,81 @@ stop doing so for anything the four rules do not name.
 
 <!-- digest: doc-lint now fails a table or list severed by a comment or blank line, and a ragged table row; fix it where named. -->
 <!-- digest: A doc-lint structure finding fails an adopted project too: put a digest marker after a block, never inside one. -->
+### Flow-down note: the 2026-10-12 load-bearing developer roster (kit feature 021 — no constitution amendment)
+
+**What was wrong.** The `developers` array in `kit-adoption.json` was only ever counted: it chose the Critical lane's
+evidence arm and nothing else read it. The Reviewer named in a Critical feature's human review, and the Owner of a
+roadmap row, were free text that the kit compared with each other, never with the people the project had declared; and
+the one-active-feature rule in `docs/sdlc/team-workflow.md` was prose with no counter (GAP-024, GAP-004).
+
+**What it does now.** `scripts/adoption-lib.ps1` (the one reader of the record) returns the declared **roster**, and three
+checks read it. Each entry of `developers` is still a name, and may now also be an object
+`{ "name": "grace", "repos": ["api"], "canApproveCritical": false }`; the forms mix, only `name` is required, a missing
+`canApproveCritical` means permitted, and a value that is not a boolean is read as not permitted. `repos` is validated and
+recorded and **read by no check**. Names compare after trimming, exactly and case-insensitively.
+
+| Check | Newly fails when | The fix |
+|---|---|---|
+| Critical evidence, team arm (`scripts/enforcement-pack.ps1`) | the human review's Reviewer is not on the roster, or its entry says `canApproveCritical: false` | write the Reviewer exactly as the roster does (`Grace Hopper` does not match `grace`), add the person, or choose a permitted Reviewer |
+| Roadmap Owner (`scripts/roadmap-claim-check.ps1`) | a claim on `origin` has a non-`idea` row whose Owner cell is not a roster name | the Owner cell carries one roster name and nothing else (`ada, grace`, `**ada**`, `@ada` and `TBD` are strangers); or add the person |
+| WIP counter (the same script) | one Owner holds more than two claims whose Status is `specified` or `in progress` and whose branch tip has a commit in the last 14 days | finish or release a claim, or let a stale one lapse |
+
+Not a failure: exactly two active claims for an Owner is **noted** (lawful only under the pipelining conditions, which a
+human confirms); a blank or `—` Owner and the branch being checked are not graded; and where the machine cannot read what it
+needs the verdict is `UNGRADED` with the reason: a tip commit the clone does not have, or a claim named by rows with
+different Owners. `scripts/ritual-checks.ps1` already lifts that word. `scripts/verify-kit.ps1` reports each malformed
+entry by position and cause and prints the roster it read, only when an entry is an object, so the doctor's output for a
+record of names is unchanged.
+
+**All of the Owner and WIP reading is graded only where a roster is declared** (a non-empty `developers` after blank and
+non-string entries are dropped): a project that declares none gets byte-identical output and verdicts, with no new line. The
+Critical reading applies in the team arm only, as before; the solo arm is untouched and never reads the human review.
+
+**What membership proves.** It catches a stranger, a typo, a name the project did not declare and a developer the record
+says may not judge. It does **not** prove the person is who the name says, that the review was independent, or that a pull
+request is open: those stay a human's to judge (`docs/sdlc/team-workflow.md`, "What the machine counts, and what it cannot
+see"). Assignment authority, matching developers to repositories, is deliberately not built.
+
+**What flows down.** Verbatim files only, nothing surgical and nothing in your constitution: `scripts/adoption-lib.ps1`,
+`scripts/verify-kit.ps1`, `scripts/enforcement-pack.ps1`, `scripts/roadmap-claim-check.ps1`, `scripts/ritual-checks.ps1`,
+`docs/sdlc/critical-delivery.md`, `docs/sdlc/team-workflow.md`, `adoption/greenfield.md` and this document. Run
+`scripts/build-digests.ps1` after the update, as after every update that moves a digest marker: until you do, the digests
+member of `ritual-checks.ps1` reports the affected digests as stale. No script is new and no file needs a manifest
+entry.
+
+**What an owner may newly see.** On a project that declares **two or more** developers: a Critical feature whose Reviewer is
+spelled differently from the roster, a roadmap Owner cell that is not exactly a roster name, and a third active claim
+for one Owner. On a project that declares **one** name, a roadmap Owner or claim that is not that name (a full name or a
+handle where the record says `me`), because any declared roster now counts; a solo project that wrote
+`"developers": ["me"]` once and spells its Owners otherwise is the likeliest first red run. A project with a string-only
+roster whose names already match its Owners and Reviewers sees no verdict move, and its doctor and mode are exactly what
+they were; only its roadmap-claims OK line now says the Owners were graded.
+
+**What does NOT change.** Every existing exit code, the `Mode` and count the record produces, the doctor's output for a
+record of names, and any project that declares no `developers`. The Owner and WIP lines print only when a roster is
+declared, and the roadmap-claims OK line gains `, Owners and claim counts graded against the declared roster` only when it
+graded them.
+
+**What was measured** (SC-003, FR-011). Each of FitForge, FlowBoard and ExpenseTracker was cloned from its local directory
+with its nested code repositories (nothing in place touched, no network), the kit before this feature (`85b944f`) was
+applied with `update-kit.ps1`, `build-digests.ps1` was run, then the kit as it stands was applied and the digests rebuilt, and
+`verify-kit.ps1`, `enforcement-pack.ps1`, `roadmap-claim-check.ps1` and `ritual-checks.ps1` were run in the installed state
+and after each application. **No verdict moved**: every member was `OK` (`n/a` for `scope-check` and `scope-repos` on the
+trunk, as before) in every state of every project, and `ritual-checks.ps1` was `RESULT OK` once the digests were rebuilt.
+Every line that changed between the two states is listed in `specs/021-developer-roster/notes.md`; the only output a project
+could read as a difference is FitForge's, the one project that declares a roster (`anas.m`, `ahmad`, matching its roadmap
+Owners): its roadmap-claims line gained `, Owners and claim counts graded against the declared roster`. The Owner check was
+shown live in the same clone by writing a roadmap Owner `Anas M.`, which it named with the roster (exit 1; discarded).
+Not exercised, and said so: no adopted project has a Critical feature, two claims for one Owner or a claim whose tip
+date cannot be read, so the Reviewer reading, the counter and the UNGRADED paths are proved by the kit's fixtures, not by an
+adopter's case.
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. If you
+declare a roster, write each name exactly as your roadmap Owner cells and review Reviewer lines do, one name per cell.
+
+<!-- digest: Declaring developers makes them a roster: a Reviewer or roadmap Owner not on it fails, and a third active claim fails. -->
+<!-- digest: Roster checks are graded only where a roster is declared; names match exactly (one name per Owner cell), case aside. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

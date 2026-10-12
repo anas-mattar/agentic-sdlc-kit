@@ -125,8 +125,11 @@ not give it to itself, and a machine can check only that it is well formed.
    - **Nothing declared, or one developer** → `second-model-review.md`, first committed at
      least 24 hours before merge. The substitute above, unchanged.
    - **Two or more developers** → `specs/NNN-name/human-pr-review.md`, **committed**, carrying
-     a filled `## Review Provenance` block whose **Reviewer** is not its **Owner**, plus the
-     verbatim attestation. No cooling-off.
+     a filled `## Review Provenance` block whose **Reviewer** is not its **Owner**, **is on the
+     roster** (below), and is not a developer whose entry says `canApproveCritical: false`, plus
+     the verbatim attestation. No cooling-off. A Reviewer who is not on the roster fails naming
+     the Reviewer and the names declared; a Reviewer whose entry does not permit it fails saying
+     so.
 
    The count is taken after non-string and blank entries are dropped and duplicates collapsed
    case-insensitively, so `["Ada","ada"]` is one developer, not two. An absent, empty, or
@@ -135,14 +138,30 @@ not give it to itself, and a machine can check only that it is well formed.
    reports a malformed declaration and states the mode it produces, because the fallback is
    otherwise silent. See **adoption/updating.md** for the shape.
 
-   **Honesty about the team arm too**: it compares two names written by the same team, in
-   one file. That converts a silent omission into a written claim a reviewer can falsify —
-   which is worth something, and is not the same as verifying that the review happened. The
+   **The roster** (feature 021). Each entry of `developers` is a name, or an object
+   `{ "name": "grace", "repos": ["api"], "canApproveCritical": false }`; the two may be mixed,
+   and only `name` is required. A bare name is permitted to approve Critical, so a project that has
+   only ever written names is not newly locked out; `canApproveCritical: false` (a value that
+   is not a boolean is read as `false`, the safe direction for a permission) is how a record says a developer may not be the
+   Reviewer of a Critical feature. `repos` is validated and recorded and **read by no check** —
+   matching developers to repositories is assignment authority, which the kit does not
+   implement. Names compare after trimming, exactly and case-insensitively: a Reviewer written
+   `Grace Hopper` does not match the entry `grace`, and the failure names both strings so the fix
+   is visible.
+
+   **Honesty about the team arm too**: it compares names written by the same team, in one
+   file. That converts a silent omission into a written claim a reviewer can falsify —
+   which is worth something, and is not the same as verifying that the review happened.
+   Membership of the roster catches a stranger, a typo, a name the project did not declare and a
+   person the record says may not judge; it does **not** prove the person is who the name says,
+   and whether the review was independent is still the human reviewer's to judge. The
    cooling-off does not apply there because the period exists to give a solo developer
-   distance from their own work, and a second person already is that distance.
+   distance from their own work, and a second person already is that distance. The solo arm is
+   unchanged and never reads the human review.
 
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->
+   <!-- digest: Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. -->
 
 ## What this addendum is NOT
 

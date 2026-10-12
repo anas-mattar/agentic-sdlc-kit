@@ -23,6 +23,8 @@
 - CLAUDE.md Feature Structure now points at branch-strategy for the full spec-directory set; edit your copy by hand. (`adoption/updating.md`)
 - doc-lint now fails a table or list severed by a comment or blank line, and a ragged table row; fix it where named. (`adoption/updating.md`)
 - A doc-lint structure finding fails an adopted project too: put a digest marker after a block, never inside one. (`adoption/updating.md`)
+- Declaring developers makes them a roster: a Reviewer or roadmap Owner not on it fails, and a third active claim fails. (`adoption/updating.md`)
+- Roster checks are graded only where a roster is declared; names match exactly (one name per Owner cell), case aside. (`adoption/updating.md`)
 - Surgical files carry project-filled content: re-apply by hand only what applies — an ordinary governance edit. (`adoption/updating.md`)
 - verify-kit.ps1 is the adoption doctor: read-only, runs at init end, update end, and in adopted-project CI. (`adoption/updating.md`)
 - kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. (`adoption/updating.md`)
