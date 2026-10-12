@@ -1,5 +1,5 @@
 {
-  "description": "REPOS-034 fail-skipped-commits: B applies (carries the branch) but every commit it offers is skipped (no phase N token). That compared nothing in B, so the run-level line names it, even though A graded.",
+  "description": "REPOS-034 fail-skipped-commits: B applies (carries the branch) but everything it offers is skipped: two commits with no phase N token, and a merge commit that --no-merges drops from the range. That compared nothing in B, so the run-level line names it, even though A graded.",
   "defaultBranch": "main",
   "commits": [
     {
@@ -98,6 +98,20 @@
           "write": {
             "src/b.txt": "a\n"
           }
+        },
+        {
+          "branch": "side",
+          "message": "chore: side",
+          "hoursAgo": 1,
+          "write": {
+            "src/c.txt": "a\n"
+          }
+        },
+        {
+          "branch": "001-thing",
+          "message": "merge side work",
+          "hoursAgo": 0,
+          "merge": "side"
         }
       ]
     }

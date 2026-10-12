@@ -37,6 +37,11 @@
     (feature 015, FR-010; GAP-027). Until that feature this script called an ungraded run
     n/a, which blurred the two claims US3 acceptance scenario 3 keeps apart. The per-repo
     and per-commit detail lines above the run-level line are not read by the wrapper.
+    Under -All, when at least one repository graded and another applicable one graded nothing
+    (no trunk, no commits since the merge base, or every commit skipped as a merge or a non-phase
+    commit), the run-level line is 'UNGRADED (N declared code repositories applied to ... and graded
+    nothing: <names> - ...; graded: <names>)', also beside a FAIL (feature 022, FR-001; GAP-030).
+    A run in which every repository graded prints nothing new. Tip mode (no -All) never prints it.
     Overall exit is 1 iff at least one repository FAILs. Read-only: never writes, fetches
     or checks out.
 

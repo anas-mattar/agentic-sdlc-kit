@@ -993,9 +993,9 @@
       "script": "scope-check-repos.ps1",
       "function": "(dispatch)",
       "summary": "under -All, no merge base with a trunk can be resolved",
-      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F5",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F5; specs/022-verdict-honesty-repos-territory FR-004, SC-005; roadmap GAP-030",
       "emitAnchor": "UNGRADED could not resolve a merge base with a trunk",
-      "notes": "Code repositories are pre-existing and independent, so their trunk is often master or develop. NOTHING WAS GRADED is shouted because a silent skip here exempts a whole repository. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
+      "notes": "Code repositories are pre-existing and independent, so their trunk is often master or develop. NOTHING WAS GRADED is shouted because a silent skip here exempts a whole repository. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The verdict-word change is the D11 record for that conversion (the previous revision of this rule's expected.txt). Feature 022 phase 1 changed the printed hint: it used to say to pass -BaseRef alone, which does nothing without -All, and now prints the command that works (-All -Repo <repo> -BaseRef <trunk>); fail expects the new hint, and pass-hint-as-printed runs that command as written against a repository whose trunk is not named main and expects a graded verdict (SC-005)."
     },
     {
       "id": "REPOS-016",
