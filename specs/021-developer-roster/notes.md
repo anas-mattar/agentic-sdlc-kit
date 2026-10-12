@@ -312,3 +312,21 @@ owner may newly see" paragraph rather than claiming byte-identity for every rost
 membership is not identity, `repos` is read by nothing, assignment authority (GAP-024 b and c) is out, and the row's old wording
 ("at most one active claim per Owner") is corrected to the shipped rule (more than two fails, two is a note). The inventory rows
 carry no closed marker in the kit's precedent, so none was added.
+
+### T020: the final run, on an isolated checkout of the phase 4 commit
+
+A detached `git worktree` of `382f5da`, outside the repository, removed afterwards (the main checkout was untouched and
+`git worktree list` shows only it):
+
+| Measurement | Result |
+|---|---|
+| Full harness | **1327 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` (phase 3 remediation: 1327; phase 4 adds only documents) |
+| Coverage, `roadmap-claim-check.ps1` | 15 of 16 site(s) fixtured (1 not a rule: the UNGRADED roll-up) |
+| `ritual-checks.ps1 -Branch 021-developer-roster` | every member OK (`scope-repos` and `verify-kit` `n/a`, as for the kit), `RESULT OK` |
+| `scope-check.ps1` on the phase 4 commit | PASS (10 files) |
+
+Run without `-Branch` in the detached checkout, `ritual-checks.ps1` is `RESULT FAIL` on `enforcement-pack` ("Branch naming: 'HEAD'
+does not match a known taxonomy") and `scope-check` is `UNGRADED` (detached HEAD): the tool's own message says a wrapper must pass
+`-Branch`, as CI does. Recorded so it is not mistaken for a finding; the run above is the one that counts.
+
+The phase 3 gate and its second review round, the phase 4 AI review, the human reviews and the owner's gate are still to come.

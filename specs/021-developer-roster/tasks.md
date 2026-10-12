@@ -145,7 +145,7 @@ the roadmap row. No script changes.
 - [x] T019 Regenerate the digests (`pwsh -File scripts/build-digests.ps1`). Flip the roadmap row for the
       developer roster to `shipped` with its spec link unbracketed, and add the decisions-log entry, stating what
       stays open by decision (membership is not identity; `repos` is read by nothing; assignment authority is out).
-- [ ] T020 Run `pwsh -File scripts/ritual-checks.ps1`, and the full
+- [x] T020 Run `pwsh -File scripts/ritual-checks.ps1`, and the full
       `pwsh -File tests/enforcement/Run-Tests.ps1` on an isolated checkout of the final commit. Every member
       OK. Then stop and ask the owner to run the gate.
 
