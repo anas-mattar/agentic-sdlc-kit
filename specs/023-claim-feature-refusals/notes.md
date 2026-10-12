@@ -260,3 +260,23 @@ both mine.
 was not a terminal" framing for the exit code of its refusals, which this review found inaccurate for 023. Whether 022's note
 overstates a child-process difference the same way has not been checked in this session; it is on `main` and any fix is a separate
 docs commit, the owner's call.
+
+### T009: the final run on an isolated checkout
+
+Run on a detached `git worktree` of `5b1d659` (the phase 2 remediation commit) outside the repository, removed afterwards; nothing in
+this repository was written by it. An earlier run on `868cfc6` (the phase 2 commit before its remediation) was superseded by this one
+and gave the same harness result, as expected: everything after `6f5e0b7` changed documents only.
+
+| Check | Result |
+|---|---|
+| `scope-check.ps1 -Commit <sha> -Branch 023-claim-feature-refusals` on each commit since `12e9a1f` | the five spec, plan and tasks commits (`52e58c7`, `da2792f`, `c55317d`, `aab831c`, `3fa9b45`): `UNGRADED`, no `phase N` token, as expected; the four phase commits: **PASS**: `d10a37a` (49 files), `6f5e0b7` (17), `868cfc6` (4), `5b1d659` (8) |
+| `ritual-checks.ps1 -Branch 023-claim-feature-refusals` | **RESULT OK**: `doc-lint`, `enforcement-pack`, `scope-check`, `digests` (100 markers), `roadmap-claims` OK; `scope-repos` and `verify-kit` n/a |
+| Full harness | **1410 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
+| Coverage | 10 grading scripts, 242 of 254 sites fixtured; `claim-feature.ps1` **7 of 10** (3 declared not a rule, nothing exempt); exempt rules **3** |
+
+Counts across the feature: full harness 1373 on the parent of phase 1, 1403 after phase 1, 1410 after its remediation (the `CLF-007`
+pair and the `originPushUrl` self-tests), unchanged by phase 2 (documents only). This section is the only change of this commit; it
+carries no `phase N` token and is not graded by the scope check. Remaining: the owner's gate on the final state, the human review of
+both phases, and the merge. Open for the owner, none blocking: the line-47 `throw` and the refused-push misreport (recorded, not
+rows); feature 022's roadmap row still bracketed and whether its flow-down note shares 023's child-process framing; the reviewer's
+stray empty directory `D:\LongDirectoryNameForShortTest_cr`; and the Linux CI leg, which no session has run for this feature.
