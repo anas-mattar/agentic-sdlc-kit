@@ -363,7 +363,7 @@ carry no closed marker in the kit's precedent, so none was added.
 - **F3**: "blank and non-string entries are dropped" is replaced by "every entry that is neither a non-blank name nor an object with a
   usable `name` is dropped" in `team-workflow.md`, `critical-delivery.md` and the update note, and in feature 013's older paragraph of
   `updating.md` that said the same.
-- **F4** (the roadmap row still says "at most one active claim per Owner"): **left for the owner**; the decisions-log entry is the
+- **F4** (the roadmap row said "at most one active claim per Owner"): **amended on the owner's approval, anas.m, 2026-10-12 ("go with your recommendation"): the row now reads "at most two active claims per Owner, exactly two being a note". Earlier text, kept for the record: left for the owner**; the decisions-log entry is the
   correction. Say if the row's parenthesis should be amended to "at most two active claims per Owner, exactly two being a note".
 - **F5**: the observation above now lists all four classes and proposes the SC-001 rewording for the owner's approval.
 - **F6**: the update note documents the `not graded` line for a roster over a roadmap with no `Owner` column (and for a claim that binds
