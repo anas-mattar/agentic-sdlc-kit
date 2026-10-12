@@ -345,7 +345,7 @@ a roster with a **third active claim** for one Owner (FR-007); and a roster whos
 (`ada, grace`, `**ada**`), which is a stranger. What is byte-identical is the reader's mode and count, the doctor's output for a record
 of names, every existing fixture, and any project with no roster, or whose names, Owners and claims already match. The measurement
 found no project among the three that falls in any of the four classes. The update note names all four in "What an owner may newly
-see" rather than claiming byte-identity for every roster. **Proposed for the owner's approval (not made: an amendment is never
+see" rather than claiming byte-identity for every roster. **Approved by the owner (anas.m, 2026-10-12) and applied to `spec.md` SC-001, which carries the approval line. Earlier text: proposed for the owner's approval (not made: an amendment is never
 approved by its author, constitution I): reword SC-001 to "Every verdict a string-only or absent roster produced before is
 byte-identical after, except where a declared roster does not match the Reviewer, Owner or claim count the new checks read."**
 ### T019: digests and the roadmap

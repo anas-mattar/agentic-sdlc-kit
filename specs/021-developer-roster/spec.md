@@ -219,8 +219,10 @@ before and after, with none moved or each moved verdict explained.
 
 ### Measurable Outcomes
 
-- **SC-001**: Every verdict a string-only or absent roster produced before this feature is byte-identical after it
-  (the whole harness passes with only new fixtures added).
+- **SC-001**: Every verdict a string-only or absent roster produced before this feature is byte-identical after it,
+  except where a declared roster does not match the Reviewer, Owner or claim count the new checks read (the whole harness
+  passes with only new fixtures added).
+  **Amendment approved by**: anas.m, 2026-10-12.
 - **SC-002**: Each of FR-005, FR-006 and FR-007 has a failing fixture that fails for the stated reason and a passing
   fixture that differs only in the condition under test; the coverage test reports every new site fixtured.
 - **SC-003**: On clones of the three adopted projects, no verdict moves, or every one that moves is listed with its
