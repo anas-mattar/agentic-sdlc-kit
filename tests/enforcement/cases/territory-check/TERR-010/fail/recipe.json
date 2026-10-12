@@ -1,0 +1,24 @@
+{
+  "description": "TERR-010 fail: origin points at a path under the fixture that does not exist, so 'git fetch origin' fails. The check refuses to answer from a ledger it could not refresh, exit 1. Differs from the pass direction in where origin points, and in nothing else.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "no-such-origin"
+}

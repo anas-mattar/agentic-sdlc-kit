@@ -2014,9 +2014,7 @@
       "function": "(top level)",
       "summary": "a run started outside a git repository is refused rather than answered",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "Not inside a git repository.",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "Not inside a git repository."
     },
     {
       "id": "TERR-009",
@@ -2024,9 +2022,7 @@
       "function": "(top level)",
       "summary": "the territory check applies to the feature lane only, and says so for any other branch",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "is not a numbered feature branch (NNN-name)",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "is not a numbered feature branch (NNN-name)"
     },
     {
       "id": "TERR-010",
@@ -2034,9 +2030,7 @@
       "function": "(top level)",
       "summary": "a failed fetch is refused rather than answered from a stale ledger",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "git fetch origin failed.",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "git fetch origin failed."
     },
     {
       "id": "TERR-011",
@@ -2044,9 +2038,7 @@
       "function": "(top level)",
       "summary": "a base branch that cannot be diffed against is refused rather than reported as clean",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "Cannot diff $BaseBranch...$ownRef",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "Cannot diff $BaseBranch...$ownRef"
     },
     {
       "id": "TERR-012",
