@@ -156,3 +156,65 @@ answer to that applies here.
 Not exercised: the Linux CI leg (the reviewer read the stub, line endings, default branch and the nested push for Linux risks and
 found none; nothing was run there). Left for the owner: the reviewer created an empty directory `D:\LongDirectoryNameForShortTest_cr`
 outside the repository while testing Windows short temp paths; a safety check blocked its removal.
+
+## Phase 2: guidance, flow-down and bookkeeping
+
+### T006: `adoption/updating.md`
+
+A flow-down note shaped like feature 022's, placed after it and before "3. Other surgical files": what was wrong (seven refusals,
+terminating `Write-Error`), what it does now, what flows down (the verbatim `scripts/claim-feature.ps1` and the document itself;
+nothing surgical), what an owner may newly see (the bare message at a terminal; exactly exit 1 and the message through a wrapper;
+the in-process stderr property), what does not change, the two known limits (below), what was measured, what to do. Two digest
+markers (110 and 107 characters of content, limit 120). Every backticked path resolves in an adopted project (`doc-lint` `OK` in
+all three measured states).
+
+The note states the two behaviours found while fixing this script that are **not** changed, so adopters are not surprised by
+them: the terminating `throw` in `Get-RemoteFeatureHeads` (also after a push that succeeded: check the remote before retrying), and
+a failed `git push` being reported as a lost race that burns three numbers (F5 of the phase 1 review).
+
+### T007: `docs/roadmap.md` and the digests
+
+GAP-031 gained a 2026-10-13 status (closed by feature 023, with what stays open); its feature row is `shipped` with the spec path
+unbracketed (the directory is on the branch), and the row's "candidate for the Micro lane" wording now says Standard, not Micro, and why;
+a decisions-log entry dated 2026-10-13 records what shipped, what was measured, what the owner decided (lane, D1, D2 as amended),
+what the work corrected (the false lost-race premise), and what stays open. `build-digests.ps1` rebuilt the digests: 100 markers, only
+`docs/digests/adoption-digest.md` changed (the two new markers).
+
+### T008: the measurement (US3, SC-001)
+
+Method: for each project, `git clone` from its local directory into the scratchpad (never the real project; the clone's `origin` is
+the project on disk), the kit before this feature applied (a detached worktree of `12e9a1f`, the merge of PR #69, the parent of the
+feature's first commit) with `update-kit.ps1`, `build-digests.ps1` run, committed; the kit as it stands applied the same way, digests
+rebuilt, committed. Probes in each state on `main`, resetting the clone to a clean `main` between runs: a successful claim
+(`claim-feature.ps1 -NoPush -ShortName probe "a probe"`), three refusals (an untracked file, a checkout of another branch, `origin`
+set to a path that does not exist), `doc-lint.ps1`, `ritual-checks.ps1 -Branch main`. States: S0 installed, S1 kit before (rebuilt),
+S2 kit now (rebuilt). Nothing was pushed.
+
+| Probe | S0 -> S1 -> S2 (all three projects) |
+|---|---|
+| successful claim, `-NoPush` | exit 0 in every state; **S1 and S2 byte-identical** in FitForge, FlowBoard and ExpenseTracker |
+| dirty working tree (line 79) | exit 1 in every state; S1: the PowerShell error record with the message and the dirty path on its last line; S2: the message, then the dirty path on its own line |
+| not on main (line 84) | exit 1 in every state; S1: error record; S2: the message alone |
+| fetch of origin fails (line 96) | exit 1 in every state; S1: error record; S2: the message alone |
+| `doc-lint.ps1` | exit 0 and byte-identical S1 to S2 in all three |
+| `ritual-checks.ps1 -Branch main` | `RESULT OK` in every state of every project; no member word moved |
+
+Every other line that differs between S1 and S2 in the `ritual-checks` output is the second update's own bookkeeping: the
+`enforcement-pack` line's changed-file count (22 to 23, one more commit), the `digests` line's marker count (two more: 97 to 99 in
+FitForge, 74 to 76 in FlowBoard and ExpenseTracker) and the `verify-kit` line's recorded kit commit (`12e9a1f` to `6f5e0b7`). Not
+exercised: the other four refusals in an adopted project, anything run through a wrapper that starts the script as a child, and a
+claim with a push (it would push to the project's real origin); the kit's fixtures cover those through the enforcement harness.
+
+**A defect in the first measurement driver, found and fixed before any number was used.** The first pass reported S1 and S2
+identical on everything, including the refusals, which is impossible: the refusal text must differ. The driver's reset between
+runs used `git checkout -f main`, which discarded the uncommitted second update during the "as applied" probe, so every later state
+silently ran the first kit. It was caught because the refusal output was byte-identical across the two kits and the digest count did
+not move; the clone's last commit was "measure: kit before" and its script still had `Write-Error`. The driver was fixed (no forced
+checkout, no probe of the uncommitted state, and an assertion that the "kit now" commit exists), the clones were re-made, and the
+first pass was discarded. The numbers above are from the corrected driver, whose clones end on "measure: kit now" with
+`Stop-Refused` in the script and the recorded kit commit `6f5e0b7`. A second pass, on the final documents (the measured paragraph
+was written after the first corrected pass), is recorded below.
+
+Second pass, on the final documents (the measured paragraph and the roadmap entry written): all 36 outputs of S1-rebuilt and S2-rebuilt
+(three projects, six probes, two states) are byte-identical to the first corrected pass once the scratch directory's name is set
+aside, and each clone ends on "measure: kit now" with `Stop-Refused` in the script and the recorded kit commit `6f5e0b7`.
