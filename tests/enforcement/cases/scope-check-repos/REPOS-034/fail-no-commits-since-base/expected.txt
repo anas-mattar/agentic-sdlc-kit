@@ -1,0 +1,3 @@
+scope-repos: code-repo: PASS phase 1 commit <SHA> (1 file(s))
+scope-repos: web-repo: UNGRADED (no commits since merge base — no commit was examined)
+scope-repos: UNGRADED (1 declared code repository applied to '001-thing' and graded nothing: web-repo — the reason is on the line(s) above; graded: code-repo)

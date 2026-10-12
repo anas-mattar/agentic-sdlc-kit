@@ -37,6 +37,11 @@
     (feature 015, FR-010; GAP-027). Until that feature this script called an ungraded run
     n/a, which blurred the two claims US3 acceptance scenario 3 keeps apart. The per-repo
     and per-commit detail lines above the run-level line are not read by the wrapper.
+    Under -All, when at least one repository graded and another applicable one graded nothing
+    (no trunk, no commits since the merge base, or every commit skipped as a merge or a non-phase
+    commit), the run-level line is 'UNGRADED (N declared code repositories applied to ... and graded
+    nothing: <names> - ...; graded: <names>)', also beside a FAIL (feature 022, FR-001; GAP-030).
+    A run in which every repository graded prints nothing new. Tip mode (no -All) never prints it.
     Overall exit is 1 iff at least one repository FAILs. Read-only: never writes, fetches
     or checks out.
 
@@ -324,6 +329,8 @@ if ($Branch -notmatch '^\d{3}-') {
 
 $failed = $false
 $graded = 0
+$gradedRepos = @()     # applicable repositories that graded at least one commit (feature 022, plan D1)
+$ungradedRepos = @()   # applicable repositories that graded nothing in an -All run
 foreach ($repoName in $toGrade) {
     $repoPath = Join-Path $Root $repoName
     if (-not (Test-Path $repoPath)) {
@@ -359,12 +366,14 @@ foreach ($repoName in $toGrade) {
         if ($BaseRef) { $candidates = @($BaseRef) }
         $base = (Get-RepoMergeBase -RepoPath $repoPath -Ref $Branch -Candidates $candidates).Base
         if (-not $base) {
-            Write-Line "${repoName}: UNGRADED could not resolve a merge base with a trunk ($($candidates -join ', ')) — NOTHING WAS GRADED in this repository; pass -BaseRef <ref> naming its trunk"
+            Write-Line "${repoName}: UNGRADED could not resolve a merge base with a trunk ($($candidates -join ', ')) — NOTHING WAS GRADED in this repository; to grade it, run: pwsh -File scripts/scope-check-repos.ps1 -All -Repo $repoName -BaseRef <trunk>"
+            $ungradedRepos += $repoName
             continue
         }
         $commits = @((git -C $repoPath rev-list --reverse --no-merges "$base..$Branch" 2>$null) | Where-Object { $_ })
         if ($commits.Count -eq 0) {
             Write-Line "${repoName}: UNGRADED (no commits since merge base — no commit was examined)"
+            $ungradedRepos += $repoName
             continue
         }
     } else {
@@ -374,12 +383,15 @@ foreach ($repoName in $toGrade) {
         $commits = @($explicitCommit ? $Commit : $Branch)
     }
 
+    $repoGraded = 0
     foreach ($c in $commits) {
         $verdict = Invoke-RepoScopeCheck -RepoName $repoName -RepoPath $repoPath -Sha $c `
             -FeatureBranch $Branch -PhaseOverride $Phase -Declared $declared
-        if ($verdict -in @('PASS', 'FAIL')) { $graded++ }   # SKIP graded nothing (re-review N3)
+        if ($verdict -in @('PASS', 'FAIL')) { $graded++; $repoGraded++ }   # SKIP graded nothing (re-review N3)
         if ($verdict -eq 'FAIL') { $failed = $true }
     }
+    if ($repoGraded -gt 0) { $gradedRepos += $repoName }
+    elseif ($All) { $ungradedRepos += $repoName }   # tip mode: a skipped tip is the documented not applicable (spec FR-001)
 }
 
 # The run-level verdict for a run that graded nothing (phase 1 review, F6; feature 015
@@ -388,5 +400,13 @@ foreach ($repoName in $toGrade) {
 # declaring it means - so this is UNGRADED, and US3 acceptance scenario 3 says the two
 # claims must not be blurred.
 if ($graded -eq 0) { Write-Line "UNGRADED (nothing was graded in the declared code repositories for '$Branch' — the reason is on the line(s) above)" }
+# A run that graded something but left an applicable repository unread says so (feature 022, GAP-030): under -All,
+# every repository that carried the feature branch and compared nothing is named, beside the ones that graded.
+# Also printed beside a FAIL, so the unread repository is named next to the failure. Begins 'scope-repos: UNGRADED'
+# so ritual-checks lifts it with no change of its own.
+elseif ($All -and $ungradedRepos.Count -gt 0) {
+    $noun = if ($ungradedRepos.Count -eq 1) { 'repository' } else { 'repositories' }
+    Write-Line "UNGRADED ($($ungradedRepos.Count) declared code $noun applied to '$Branch' and graded nothing: $($ungradedRepos -join ', ') — the reason is on the line(s) above; graded: $($gradedRepos -join ', '))"
+}
 if ($failed) { exit 1 }
 exit 0

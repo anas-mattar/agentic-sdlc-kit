@@ -1,0 +1,24 @@
+{
+  "description": "TERR-011 fail: the repository's trunk is called master, so the default base branch 'main' does not exist and 'git diff main...HEAD' fails. The check refuses instead of reporting a clean result over a comparison it could not make, exit 1. Differs from the pass direction in the trunk's name, and in nothing else.",
+  "defaultBranch": "master",
+  "commits": [
+    {
+      "branch": "master",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self"
+}

@@ -1,0 +1,105 @@
+{
+  "description": "REPOS-034 pass-tip-mode: without -All B's tip carries no phase N token, which is the documented not applicable for a phase that touches no code in B. The run-level verdict is unchanged: no new line.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 5,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"code-repo\", \"web-repo\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "hoursAgo": 4,
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `code-repo/src/**`",
+          "- `web-repo/src/**`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing",
+  "nestedRepos": {
+    "code-repo": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "hoursAgo": 3,
+          "write": {
+            "README.md": "code\n"
+          }
+        },
+        {
+          "branch": "001-thing",
+          "message": "phase 1: the thing",
+          "hoursAgo": 2,
+          "write": {
+            "src/a.txt": "a\n"
+          }
+        }
+      ]
+    },
+    "web-repo": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "hoursAgo": 3,
+          "write": {
+            "README.md": "code\n"
+          }
+        },
+        {
+          "branch": "001-thing",
+          "message": "chore: setup",
+          "hoursAgo": 2,
+          "write": {
+            "src/b.txt": "a\n"
+          }
+        }
+      ]
+    }
+  }
+}

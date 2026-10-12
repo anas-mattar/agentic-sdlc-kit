@@ -1,0 +1,1 @@
+Branch 'main' is not a numbered feature branch (NNN-name) — the territory check applies to the feature lane only.

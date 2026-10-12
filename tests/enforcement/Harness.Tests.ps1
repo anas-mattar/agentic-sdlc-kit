@@ -205,6 +205,41 @@ Describe 'nested fixture repositories' {
     }
 }
 
+Describe 'noGit fixtures (feature 022, D7)' {
+    # TERR-008 is a refusal about a directory that is not a repository, and every recipe state
+    # until now ended in one. If 'noGit' quietly left a repository behind, the fail case would
+    # run against a healthy tree and go red - but a harness that cannot say what it built should
+    # say so itself, so the shape is asserted here and not only inferred from that case.
+
+    It 'leaves the written files and no repository' {
+        $recipe = [pscustomobject]@{
+            commits = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            noGit   = $true
+        }
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            Test-Path (Join-Path $root 'a.txt') | Should -BeTrue
+            Test-Path (Join-Path $root '.git') | Should -BeFalse
+            & git -C $root rev-parse --show-toplevel 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses to be combined with nestedRepos or shallow instead of ignoring either' {
+        foreach ($other in @(
+                @{ nestedRepos = [pscustomobject]@{ 'code-repo' = [pscustomobject]@{ commits = @() } } },
+                @{ shallow = 1 })) {
+            $recipe = [pscustomobject]@{
+                commits = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+                noGit   = $true
+            }
+            foreach ($key in $other.Keys) { $recipe | Add-Member -NotePropertyName $key -NotePropertyValue $other[$key] }
+            # Refused before anything is built, so there is no directory to clean up.
+            { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'noGit' cannot be combined*"
+        }
+    }
+}
+
 Describe 'output normalisation' {
     # A third substitution joined <ROOT> and <SHA> in T029. scope-check-repos.ps1's
     # anti-retroactivity message quotes the code commit's own committer date back to the reader,

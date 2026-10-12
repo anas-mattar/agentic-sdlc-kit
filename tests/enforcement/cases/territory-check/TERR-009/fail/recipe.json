@@ -1,0 +1,24 @@
+{
+  "description": "TERR-009 fail: HEAD is on main, which is not a numbered feature branch. The check applies to the feature lane only and says so, exit 1. Differs from the pass direction in the checked-out branch, and in nothing else.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

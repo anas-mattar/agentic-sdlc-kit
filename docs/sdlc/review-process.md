@@ -66,9 +66,19 @@ pwsh -File scripts/scope-check-repos.ps1   # multi-repo only; n/a elsewhere
    writing, as the next paragraph requires. For a phase that touches no code repository, on a
    feature that does have code branches, the command above grades each such branch's tip: a real `PASS` for an
    earlier phase when the tip is that phase's commit, or `not applicable` when the tip carries no
-   `phase N` token. And one repository going ungraded — an `UNGRADED` line, or only skipped
-   commits — does not change the run-level verdict while another repository was graded, so
-   read the per-repository lines.
+   `phase N` token. And under `-All`, one repository going ungraded while another graded no
+   longer hides behind the graded one: a repository that applied (present, a repository of its
+   own, carrying the feature branch) and graded nothing — no trunk found, no commits since the
+   merge base, or only skipped commits — is named by its own run-level `UNGRADED` line,
+   `UNGRADED (… declared code repositories applied to '<feature>' and graded nothing: <names> — …;
+   graded: <names>)`, and `ritual-checks.ps1` lifts the `scope-repos` member from it. It also
+   prints beside a `FAIL`, so the unread repository is named next to the failure. A repository
+   that is `n/a` or `not applicable` for the reasons above (absent, not a repository of its own,
+   no branch for the feature) does not make the run `UNGRADED`. The per-phase command above, in
+   tip mode (no `-All`), is unchanged: there, one repository going ungraded does not change the
+   run-level verdict while another was graded, so read the per-repository lines. An unresolved
+   trunk now prints the command that grades that repository:
+   `scope-check-repos.ps1 -All -Repo <repo> -BaseRef <trunk>`.
 
    **`UNGRADED` is not a pass.** It exits 0, so it will not stop you, and it means the
    check RAN AND COMPARED NOTHING: no diff base, a commit range with no commits in it, a

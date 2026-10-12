@@ -54,8 +54,18 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'adoption-lib.ps1')   # Get-CodeRepos: the one reader of codeRepos (feature 018)
 . (Join-Path $PSScriptRoot 'scope-lib.ps1')      # Get-RepoMergeBase / Get-RepoTrunkCandidates: one trunk order
 
+# A refusal: the run cannot be answered, so it says why on the error stream and exits 1. Not
+# Write-Error: under ErrorActionPreference = Stop that THROWS, the 'exit 1' beneath it never runs,
+# and the reader gets a PowerShell error record (a position, a caret rule) and an exit code that
+# is whatever the launcher or the last git call left behind, not the rule's (feature 022, GAP-029).
+function Stop-Refused {
+    param([Parameter(Mandatory)][string]$Message)
+    [Console]::Error.WriteLine($Message)
+    exit 1
+}
+
 $repoRoot = git rev-parse --show-toplevel 2>$null
-if ($LASTEXITCODE -ne 0) { Write-Error 'Not inside a git repository.'; exit 1 }
+if ($LASTEXITCODE -ne 0) { Stop-Refused 'Not inside a git repository.' }
 Push-Location $repoRoot
 try {
 
@@ -65,8 +75,7 @@ if (-not $Branch) {
     $checkingCurrent = $true
 }
 if ($Branch -notmatch '^\d{3,}-') {
-    Write-Error "Branch '$Branch' is not a numbered feature branch (NNN-name) — the territory check applies to the feature lane only."
-    exit 1
+    Stop-Refused "Branch '$Branch' is not a numbered feature branch (NNN-name) — the territory check applies to the feature lane only."
 }
 
 git remote get-url origin 2>$null | Out-Null
@@ -76,14 +85,14 @@ if ($LASTEXITCODE -ne 0) {
     exit 0
 }
 git fetch origin --prune 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) { Write-Error 'git fetch origin failed.'; exit 1 }
+if ($LASTEXITCODE -ne 0) { Stop-Refused 'git fetch origin failed.' }
 
 # --- Touched set of the branch under check ---------------------------------------------
 $ownRef = if ($checkingCurrent) { 'HEAD' } else {
     if (git branch --list $Branch) { $Branch } else { "origin/$Branch" }
 }
 $ownFiles = @(git diff --name-only "$BaseBranch...$ownRef" 2>$null)
-if ($LASTEXITCODE -ne 0) { Write-Error "Cannot diff $BaseBranch...$ownRef — does '$BaseBranch' exist?"; exit 1 }
+if ($LASTEXITCODE -ne 0) { Stop-Refused "Cannot diff $BaseBranch...$ownRef — does '$BaseBranch' exist?" }
 if ($checkingCurrent) {
     $ownFiles += @(git diff --name-only HEAD 2>$null)   # tracked, uncommitted
 }

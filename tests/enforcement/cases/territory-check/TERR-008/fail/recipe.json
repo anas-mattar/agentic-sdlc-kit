@@ -1,0 +1,25 @@
+{
+  "description": "TERR-008 fail: the same tree as the pass case with its .git directory removed, so the directory is not a git repository. The check refuses first, on its own error stream, and exits 1; it used to die in the launcher's exit 128, the leaked exit code of the last git call (feature 022). Differs from the pass direction in the repository, and in nothing else.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    }
+  ],
+  "checkout": "011-thing",
+  "origin": "self",
+  "noGit": true
+}

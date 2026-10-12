@@ -993,9 +993,9 @@
       "script": "scope-check-repos.ps1",
       "function": "(dispatch)",
       "summary": "under -All, no merge base with a trunk can be resolved",
-      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F5",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F5; specs/022-verdict-honesty-repos-territory FR-004, SC-005; roadmap GAP-030",
       "emitAnchor": "UNGRADED could not resolve a merge base with a trunk",
-      "notes": "Code repositories are pre-existing and independent, so their trunk is often master or develop. NOTHING WAS GRADED is shouted because a silent skip here exempts a whole repository. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
+      "notes": "Code repositories are pre-existing and independent, so their trunk is often master or develop. NOTHING WAS GRADED is shouted because a silent skip here exempts a whole repository. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The verdict-word change is the D11 record for that conversion (the previous revision of this rule's expected.txt). Feature 022 phase 1 changed the printed hint: it used to say to pass -BaseRef alone, which does nothing without -All, and now prints the command that works (-All -Repo <repo> -BaseRef <trunk>); fail expects the new hint, and pass-hint-as-printed runs that command as written against a repository whose trunk is not named main and expects a graded verdict (SC-005)."
     },
     {
       "id": "REPOS-016",
@@ -1140,6 +1140,15 @@
       "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; feature 012 phase 1 review F6; GAP-027",
       "emitAnchor": "UNGRADED (nothing was graded in the declared code repositories",
       "notes": "The run-level verdict. Every inert line above it is a reason, and this is what stops a run made entirely of reasons from exiting 0 with no verdict in it. Suppressed as soon as one repository is actually graded. WORD CHANGED in the phase-5 remediation (review F1): this site reported a run that graded nothing, and did it in a word that meant something else. The case is unchanged except for the verdict word it expects - the before-state is the previous revision of this rule's expected.txt, which is the D11 record for this conversion."
+    },
+    {
+      "id": "REPOS-034",
+      "script": "scope-check-repos.ps1",
+      "function": "(dispatch)",
+      "summary": "under -All, a repository that applied to the feature and graded nothing is named at run level even when another repository graded",
+      "law": "Definition of Done gate 4 (scope); docs/sdlc/repository-strategy.md; specs/022-verdict-honesty-repos-territory FR-001, FR-002; roadmap GAP-030",
+      "emitAnchor": "and graded nothing: ",
+      "notes": "Added in feature 022 phase 1. REPOS-032 prints the run-level line only when NOTHING graded anywhere; this one covers the case it left silent, where one repository graded and another applied (present, a repository of its own, carrying the feature branch) and compared nothing - an unresolved trunk, an empty range, or every offered commit skipped. It begins 'scope-repos: UNGRADED' so ritual-checks lifts it with no change (RIT-009). Read under -All only: a skipped tip without -All is the documented not applicable (spec FR-001 as amended). Printed beside a FAIL too, so the unread repository is named next to the failure."
     },
     {
       "id": "DOC-001",
@@ -1934,6 +1943,15 @@
       "notes": "Feature 021 teaches roadmap-claim-check.ps1 to say UNGRADED when a claim's tip date or Owner cannot be read. The member was already in $naCapableMembers, and $captureMembers is the union of that list and $ungradedCapableMembers, so the aggregator lifted its UNGRADED line before this feature: the plan's D8 premise that it would be read as OK was wrong (phase 3 review F2), and this case was green on the parent. It is a regression guard on the UNION of the two lists, not on the new name: it fails only if roadmap-claims leaves both. The stub prints the member's own UNGRADED line; the case asserts the word on the member's line and on the RESULT line, exit 0. Same emission site as RIT-006 and RIT-007, deliberately."
     },
     {
+      "id": "RIT-009",
+      "script": "ritual-checks.ps1",
+      "function": "(run verdict)",
+      "summary": "a partly graded multi-repository run is lifted to UNGRADED for scope-repos, not summarised OK",
+      "law": "specs/022-verdict-honesty-repos-territory FR-005, SC-004; feature 015 FR-010; roadmap GAP-030",
+      "emitAnchor": "ritual-checks: RESULT UNGRADED",
+      "notes": "Feature 022 makes scope-check-repos.ps1 print a run-level 'scope-repos: UNGRADED (...)' line when one repository graded and another applied and did not. ritual-checks.ps1 is unchanged: its anchored match on '^scope-repos: UNGRADED' already lifts the line, which is the point of FR-005 (no new aggregator word, no -BaseRef pass-through). The member here is a stub printing the line the real script prints (REPOS-034 proves the script prints it); the pass case is the same tree with both repositories graded."
+    },
+    {
       "id": "AMEND-006",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-AmendmentAuthorityCheck",
@@ -1996,9 +2014,7 @@
       "function": "(top level)",
       "summary": "a run started outside a git repository is refused rather than answered",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "Not inside a git repository.",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "Not inside a git repository."
     },
     {
       "id": "TERR-009",
@@ -2006,9 +2022,7 @@
       "function": "(top level)",
       "summary": "the territory check applies to the feature lane only, and says so for any other branch",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "is not a numbered feature branch (NNN-name)",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "is not a numbered feature branch (NNN-name)"
     },
     {
       "id": "TERR-010",
@@ -2016,9 +2030,7 @@
       "function": "(top level)",
       "summary": "a failed fetch is refused rather than answered from a stale ledger",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "git fetch origin failed.",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "git fetch origin failed."
     },
     {
       "id": "TERR-011",
@@ -2026,9 +2038,7 @@
       "function": "(top level)",
       "summary": "a base branch that cannot be diffed against is refused rather than reported as clean",
       "law": "docs/sdlc/team-workflow.md rule 5; feature 003",
-      "emitAnchor": "Cannot diff $BaseBranch...$ownRef",
-      "exemption": "territory-check.ps1 reports these four error paths with Write-Error under its own ErrorActionPreference = Stop, which makes the write TERMINATING: the script dies there and the exit 1 written after each one is unreachable. Measured through the harness, the run produces the launcher's own line and exit 97 (did not run to a verdict), not the script's message and not exit 1. A fixture could pin that, but it would be asserting RunChild.ps1's behaviour rather than the rule's, and 97 is documented as a code no kit script emits. Recorded as a finding instead - specs/015-enforcement-assurance/notes.md, phase 6, awaiting promotion to a roadmap GAP row (docs/roadmap.md is outside this phase's Territory) - and NOT worked around here, because scripts/territory-check.ps1 is outside phase 6's Territory and this phase may not change it.",
-      "notes": "Exempted in phase 6 (T045, FR-004). Four sites, one cause; the fix is a roadmap item this phase records and may not itself write. (Five until the phase 6 review, F3, showed the fifth - TERR-012 - was reachable.)"
+      "emitAnchor": "Cannot diff $BaseBranch...$ownRef"
     },
     {
       "id": "TERR-012",

@@ -73,6 +73,13 @@
       review (F3) showed the exemption written over it was false.
     - "detach": true leaves HEAD detached at the checked-out commit, the CI shape where the
       current branch cannot be read from the repository at all.
+    - "noGit": true removes the .git directory once the fixture is written, so the directory is
+      a plain tree that is not a git repository: the state territory-check.ps1 refuses first
+      (TERR-008), and the one no recipe could reach because this function always initialises a
+      repository. It is refused with 'shallow' or 'nestedRepos' rather than ignored, since a clone
+      lands elsewhere and a nested repository is only meaningful inside a repository. No self-test
+      beyond its own: a case that ignores the field runs against a healthy repository and so
+      fails loudly, unlike a state whose silent skip would produce a passing wrong answer.
     - "nestedRepos" maps a directory name -> a recipe of its own, built as an INDEPENDENT git
       repository inside the outer one once the outer one is finished. That is the nested layout
       (docs/sdlc/repository-strategy.md) scope-check-repos.ps1 exists to grade, and it cannot be
@@ -121,6 +128,17 @@ function New-FixtureRepo {
         [string]$CaseDir,
         [string]$At
     )
+
+    # Refused FIRST, before a directory exists: a refusal that fired after the build would leave
+    # a repository (and a shallow clone) behind in the temp directory on every refusal. 'shallow'
+    # and 'nestedRepos' would quietly make noGit mean something else, so they are refused, not ignored.
+    if ($Recipe.PSObject.Properties.Name -contains 'noGit' -and $Recipe.noGit) {
+        foreach ($incompatible in 'shallow', 'nestedRepos') {
+            if ($Recipe.PSObject.Properties.Name -contains $incompatible -and $Recipe.$incompatible) {
+                throw "fixture 'noGit' cannot be combined with '$incompatible': a fixture with no repository has nothing to clone or nest into. Refused rather than silently ignored."
+            }
+        }
+    }
 
     if ($At) {
         # A nested repository: it must be built where the outer recipe asked for it, because its
@@ -327,6 +345,14 @@ function New-FixtureRepo {
         # whatever root the case ends up with, and an early return here would have built them
         # into a directory this function had just deleted.
         $root = $clone
+    }
+
+    # A directory that is not a repository. Removed AFTER everything else so the tree that remains
+    # is exactly what the recipe wrote. The incompatible fields were refused at the top, before
+    # anything was built.
+    if ($Recipe.PSObject.Properties.Name -contains 'noGit' -and $Recipe.noGit) {
+        # git writes loose objects read-only; -Force clears that, as Remove-FixtureRepo relies on.
+        Remove-Item -LiteralPath (Join-Path $root '.git') -Recurse -Force
     }
 
     # Independent repositories inside this one, built last (recursively, through this same
