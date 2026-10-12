@@ -90,25 +90,25 @@ neither changes a project with no roster, and an unreadable tip date is UNGRADED
 - `scripts/ritual-checks.ps1`
 - `tests/**`
 
-- [ ] T010 Fixtures first, next free `CLAIM-` ids, built on the existing fixture `origin`: `fail` a declared
+- [x] T010 Fixtures first, next free `CLAIM-` ids, built on the existing fixture `origin`: `fail` a declared
       roster and a claim whose row Owner is a stranger; `pass` the Owner on the roster in another case; `pass`
       (and unchanged, byte for byte) a project with no roster, a string-only roster whose Owner is on it, an
       `idea` row, a blank or `—` Owner, the checked branch's own claim; WIP: one claim passes, two pass with the
       one note, three fail, a stale claim is not counted, a `shipped` claim is not counted; a roadmap with no
       `Owner` column under a declared roster prints that it graded neither; an unreadable tip date is UNGRADED.
       Expectations by hand; run them on the parent commit.
-- [ ] T011 Edit `scripts/roadmap-claim-check.ps1` (plan D4): dot-source `scripts/adoption-lib.ps1`, find the
+- [x] T011 Edit `scripts/roadmap-claim-check.ps1` (plan D4): dot-source `scripts/adoption-lib.ps1`, find the
       `Owner` column of the same table, and for each claim with a non-`idea` row and a real Owner cell fail an
       Owner not on `Roster`, naming the claim, the Owner and the declared names. Graded only with a usable roster;
       with none, output is byte-identical to today.
-- [ ] T012 In the same script (plan D7): per Owner, count the claims whose row Status is `specified` or `in
+- [x] T012 In the same script (plan D7): per Owner, count the claims whose row Status is `specified` or `in
       progress` and whose tip is not stale (14 days), reading tip dates only for an Owner with two or more
       candidate claims, by `git log -1 --format=%ct` on the sha `ls-remote` returns and, if the object is
       absent, `git fetch --quiet origin <branch>`; more than two fails, exactly two passes with one note, an
       unreadable date makes that Owner's count `UNGRADED` with the reason. Graded only with a usable roster.
-- [ ] T013 Edit `scripts/ritual-checks.ps1` (plan D8): add `roadmap-claims` to the members that can report
+- [x] T013 Edit `scripts/ritual-checks.ps1` (plan D8): add `roadmap-claims` to the members that can report
       UNGRADED, with its harness fixture; the member's exit code is unchanged.
-- [ ] T014 Run `-Case CLAIM-`, `-Case RITUAL-` (or the ritual-checks cases), the full harness and
+- [x] T014 Run `-Case CLAIM-`, `-Case RITUAL-` (or the ritual-checks cases), the full harness and
       `ritual-checks.ps1`; nothing pre-existing moves.
 
 ---

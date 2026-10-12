@@ -25,6 +25,15 @@
     first CI run cannot deadlock on its not-yet-flipped row. Cell parsing counts only
     unescaped pipes (the GAP-015 lesson). Read-only.
 
+    Where kit-adoption.json declares a usable developer roster (feature 021, scripts/adoption-lib.ps1)
+    two further readings run, and only then: a claim's non-idea row must name an Owner on the
+    roster (blank and em-dash Owners are not graded), and no Owner may hold more than two active,
+    non-stale claims (Status specified or in progress; no commit for 14 days is stale). Exactly two
+    is noted, never failed. The date of a tip is read only for an Owner with two or more candidate
+    claims; if it cannot be read the Owner's count is UNGRADED, said out loud, never counted and
+    never dropped. With no usable roster neither reading runs and the output is byte-identical to
+    what it was before. The own claim of the checked branch is exempt from both, as from visibility.
+
 .EXAMPLE
     pwsh -File scripts/roadmap-claim-check.ps1
     pwsh -File scripts/roadmap-claim-check.ps1 -Branch 011-roadmap-claim-check
@@ -37,6 +46,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path $Root).Path
+$adoptionLib = Join-Path $PSScriptRoot 'adoption-lib.ps1'
+if (Test-Path -LiteralPath $adoptionLib) { . $adoptionLib }   # Get-DeveloperMode: the one reader of the roster (feature 021)
 
 function Get-Cells {
     # GAP-015: an escaped \| is cell content, not a boundary. Shield it before splitting.
@@ -58,10 +69,12 @@ if ($LASTEXITCODE -ne 0) {
     exit 0
 }
 $claims = @()
+$claimShas = @{}
 foreach ($line in $heads) {
     # Same shape claim-feature.ps1 allocates; datestamped Spec Kit branches are not claims.
     if ($line -match 'refs/heads/(\d{3,}-\S+)$' -and $matches[1] -notmatch '^\d{8}-\d{6}-') {
         $claims += $matches[1]
+        $claimShas[$matches[1]] = ("$line" -split '\s+')[0]
     }
 }
 if ($claims.Count -eq 0) {
@@ -83,22 +96,27 @@ if (-not (Test-Path $roadmapPath)) {
 $lines = Get-Content $roadmapPath
 
 # Collect data rows from every table whose header carries a Status column.
-$rows = @()   # each: @{ Text = raw line; Status = trimmed status cell or $null }
+$rows = @()   # each: @{ Text = raw line; Status = trimmed status cell or $null; Owner = trimmed Owner cell or $null }
 $statusIdx = -1
+$ownerIdx = -1
+$ownerColumnSeen = $false
 for ($i = 0; $i -lt $lines.Count; $i++) {
     $line = $lines[$i]
-    if ($line -notmatch '^\s*\|') { $statusIdx = -1; continue }
+    if ($line -notmatch '^\s*\|') { $statusIdx = -1; $ownerIdx = -1; continue }
     if ($line -match '^\s*\|[\s:|-]+\|?\s*$') { continue }   # separator row
     $cells = Get-Cells $line
     $next = if ($i + 1 -lt $lines.Count) { $lines[$i + 1] } else { '' }
     if ($next -match '^\s*\|[\s:|-]+\|?\s*$') {
         # Header row: remember where Status sits (or mark the table as not ours).
         $statusIdx = [array]::IndexOf(@($cells | ForEach-Object { "$_" }), 'Status')
+        $ownerIdx = [array]::IndexOf(@($cells | ForEach-Object { "$_" }), 'Owner')
+        if ($statusIdx -ge 0 -and $ownerIdx -ge 0) { $ownerColumnSeen = $true }
         continue
     }
     if ($statusIdx -lt 0) { continue }
     $status = if ($statusIdx -lt $cells.Count) { $cells[$statusIdx] } else { $null }
-    $rows += @{ Text = $line; Status = $status }
+    $owner = if ($ownerIdx -ge 0 -and $ownerIdx -lt $cells.Count) { $cells[$ownerIdx] } else { $null }
+    $rows += @{ Text = $line; Status = $status; Owner = $owner }
 }
 if ($rows.Count -eq 0) {
     Write-Host 'roadmap-claims: n/a (docs/roadmap.md has no table with a Status column)'
@@ -119,10 +137,74 @@ foreach ($claim in $claims) {
     }
 }
 
+# --- 5. The Owner and the claim count, where a roster is declared (feature 021) -----------
+# Graded only with a usable roster; with none this section prints nothing and changes nothing.
+$roster = @()
+if (Get-Command Get-DeveloperMode -ErrorAction SilentlyContinue) { $roster = @((Get-DeveloperMode -Root $Root).Roster) }
+$graded = $roster.Count -gt 0
+$ungraded = @()   # one entry per Owner whose count could not be made
+$visibilityFailures = $failures.Count
+if ($graded -and -not $ownerColumnSeen) {
+    Write-Host 'roadmap-claims: not graded — a roster is declared but docs/roadmap.md has no Owner column, so neither the Owners nor the claim counts were checked'
+}
+if ($graded -and $ownerColumnSeen) {
+    $rosterNames = @($roster | ForEach-Object { "$($_.Name)" })
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $staleAfter = 14 * 24 * 3600
+    $candidates = [ordered]@{}   # lower-cased Owner -> @{ Name; Claims }
+    foreach ($claim in $claims) {
+        if ($ownNumber -and $claim -match "^$ownNumber-") { continue }   # own claim: exempt, as from visibility
+        $owned = @($rows | Where-Object { $_.Text -like "*$claim*" -and $_.Status -and $_.Status -ne 'idea' -and $_.Owner -and $_.Owner -ne '—' })
+        foreach ($ownerName in @($owned | ForEach-Object { $_.Owner } | Select-Object -Unique)) {
+            if ($rosterNames -notcontains $ownerName.Trim()) {
+                # -notcontains is case-insensitive; the roster is already deduplicated the same way (plan D3).
+                $failures += "roadmap-claims: claim '$claim' is owned by '$ownerName', who is not on the developer roster in kit-adoption.json ($($rosterNames -join ', ')) — name a declared developer as Owner, or add the person to the roster (feature 021)"
+            }
+        }
+        foreach ($row in @($owned | Where-Object { $_.Status -in 'specified', 'in progress' })) {
+            $key = $row.Owner.Trim().ToLowerInvariant()
+            if (-not $candidates.Contains($key)) { $candidates[$key] = @{ Name = $row.Owner.Trim(); Claims = @() } }
+            if ($candidates[$key].Claims -notcontains $claim) { $candidates[$key].Claims += $claim }
+        }
+    }
+    foreach ($entry in $candidates.Values) {
+        if ($entry.Claims.Count -lt 2) { continue }   # a date is read only where the count could matter
+        $active = @()
+        $unreadable = $null
+        foreach ($claim in $entry.Claims) {
+            $sha = $claimShas[$claim]
+            $ct = "$(git -C $Root log -1 --format=%ct $sha 2>$null)".Trim()
+            if ($LASTEXITCODE -ne 0 -or $ct -notmatch '^\d+$') {
+                git -C $Root fetch --quiet origin $claim 2>$null | Out-Null
+                $ct = "$(git -C $Root log -1 --format=%ct $sha 2>$null)".Trim()
+            }
+            if ($LASTEXITCODE -ne 0 -or $ct -notmatch '^\d+$') { $unreadable = $claim; break }
+            if (($now - [int64]$ct) -le $staleAfter) { $active += $claim }
+        }
+        if ($unreadable) {
+            Write-Host "roadmap-claims: not graded — the claim count for '$($entry.Name)' was not made: the tip date of '$unreadable' could not be read (git log failed on the tip commit, and a fetch did not supply it)"
+            $ungraded += $entry.Name
+        } elseif ($active.Count -gt 2) {
+            $failures += "roadmap-claims: '$($entry.Name)' holds $($active.Count) active claims ($($active -join ', ')) — more than two is over the WIP limit in docs/sdlc/team-workflow.md; finish or release one before claiming another"
+        } elseif ($active.Count -eq 2) {
+            Write-Host "roadmap-claims: note — '$($entry.Name)' holds two active claims ($($active -join ', ')); two are lawful only under the pipelining conditions in docs/sdlc/team-workflow.md, which a human confirms"
+        }
+    }
+}
+
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Host $_ }
-    Write-Host "roadmap-claims: FAIL ($($failures.Count) of $checked claim(s) invisible or stale on this tree's roadmap)"
+    # The visibility roll-up keeps the words it always had; a finding of the roster readings changes it.
+    $summary = if ($failures.Count -eq $visibilityFailures) { "$($failures.Count) of $checked claim(s) invisible or stale on this tree's roadmap" }
+               else { "$($failures.Count) finding(s) on $checked claim(s) — the lines above say what and why" }
+    Write-Host "roadmap-claims: FAIL ($summary)"
     exit 1
 }
-Write-Host "roadmap-claims: OK ($checked claim(s) visible with non-idea rows$(if ($ownNumber) { ", own claim $ownNumber exempt" }))"
+$ownText = if ($ownNumber) { ", own claim $ownNumber exempt" }
+$gradedText = if ($graded -and $ownerColumnSeen) { ', Owners and claim counts graded against the declared roster' }
+if ($ungraded.Count -gt 0) {
+    Write-Host "roadmap-claims: UNGRADED ($checked claim(s) visible with non-idea rows; the claim count for $(($ungraded | ForEach-Object { "'$_'" }) -join ', ') was not made — the reason is on the line(s) above)"
+    exit 0
+}
+Write-Host "roadmap-claims: OK ($checked claim(s) visible with non-idea rows$gradedText$ownText)"
 exit 0

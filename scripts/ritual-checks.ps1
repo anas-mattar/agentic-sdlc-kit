@@ -181,7 +181,11 @@ $naCapableMembers = @('digests', 'roadmap-claims', 'scope-repos')
 # the identical GAP-027 fail-open: on the same depth-1 clone GAP27-001 and GAP27-004 build,
 # scope-check printed 'WARN ... nothing checked' and this block summarised it OK. Being
 # left out of this list was half of that defect - the other half was the member's own word.
-$ungradedCapableMembers = @('enforcement-pack', 'scope-check', 'scope-repos')
+#
+# roadmap-claims joined with feature 021 (plan D8): it now reports UNGRADED when the tip date
+# of a claim cannot be read, and left off this list that line would be summarised OK. Its
+# exit code is unchanged - UNGRADED is a verdict, never an exit code.
+$ungradedCapableMembers = @('enforcement-pack', 'scope-check', 'scope-repos', 'roadmap-claims')
 $captureMembers = @($naCapableMembers + $ungradedCapableMembers | Select-Object -Unique)
 foreach ($name in $members.Keys) {
     Write-Host "=== ritual-checks: $name ==="

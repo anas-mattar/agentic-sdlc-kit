@@ -1686,8 +1686,54 @@
       "function": "(visibility)",
       "summary": "every claim but the branch’s own is visible with a non-idea row",
       "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
-      "emitAnchor": "claim(s) visible with non-idea rows",
+      "emitAnchor": "roadmap-claims: OK ($checked claim(s) visible with non-idea rows",
       "notes": "The affirmative verdict, and it names the exempted number. A branch is exempt for its OWN claim so a fresh claim’s first CI run cannot deadlock on a row the same change is about to flip — stating the exemption is what stops it being mistaken for coverage."
+    },
+    {
+      "id": "CLAIM-009",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a claim's roadmap row names an Owner who is not on the declared developer roster",
+      "law": "specs/021-developer-roster FR-005; docs/sdlc/team-workflow.md",
+      "emitAnchor": "is owned by",
+      "notes": "Graded only where a usable roster is declared (D4, D5): with none the output is byte-identical to before, which 'pass-no-roster' and 'pass-empty-roster' assert. An idea row, a blank or em-dash Owner and the checked branch's own claim are not graded, and a pass case each says so. Membership is exact, case-insensitive and trimmed (D3); it catches a stranger or a typo and does not prove identity (D9)."
+    },
+    {
+      "id": "CLAIM-010",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a roster is declared and the roadmap table has no Owner column",
+      "law": "specs/021-developer-roster FR-005, FR-007; plan Risks (roadmap shape)",
+      "emitAnchor": "has no Owner column",
+      "notes": "The existing n/a idiom for an adopter-authored roadmap in another shape: nothing to read an Owner from, so the check says it graded neither the Owners nor the claim counts instead of passing silently. It is a line before the OK verdict, not an n/a verdict, because the visibility reading did run."
+    },
+    {
+      "id": "CLAIM-011",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(wip)",
+      "summary": "one Owner holds more than two active, non-stale claims",
+      "law": "specs/021-developer-roster FR-007; docs/sdlc/team-workflow.md (WIP limit)",
+      "emitAnchor": "over the WIP limit",
+      "notes": "Active is a row Status of specified or in progress; idea, shipped and dropped are not, a tip with no commit for fourteen days is not, and the checked branch's own claim is exempt as it is from visibility (D7). The count is per Owner. With no roster the count is not graded and the output is byte-identical to before (pass-no-roster)."
+    },
+    {
+      "id": "CLAIM-012",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(wip)",
+      "summary": "one Owner holds exactly two active claims, noted and never failed",
+      "law": "specs/021-developer-roster FR-007; docs/sdlc/team-workflow.md (pipelining exception)",
+      "emitAnchor": "which a human confirms",
+      "notes": "Two claims are lawful only under the pipelining conditions (one awaiting review, one active, territory disjoint or sequenced), which a script cannot see; so it says so and exits 0. The 'fail' direction of this rule is therefore exit 0 with the note printed, as CLAIM-010's is."
+    },
+    {
+      "id": "CLAIM-013",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(wip)",
+      "summary": "the tip date of a candidate claim cannot be read, so the Owner's count is UNGRADED",
+      "law": "specs/021-developer-roster FR-007, plan D7, D8; feature 015 (a comparison not made is never OK)",
+      "emitAnchor": "the claim count for",
+      "siteCount": 2,
+      "notes": "Two sites, one rule: the line naming the Owner and the claim whose date was unreadable, and the verdict line that replaces OK so the ritual aggregate can lift the word (D8). A date is read only for an Owner with two or more candidate claims, so a corrupt tip on a lone claim reads nothing (pass-single-claim-reads-no-date). Exit 0 in both directions: UNGRADED is a verdict, never an exit code."
     },
     {
       "id": "TERR-001",
@@ -1859,6 +1905,15 @@
       "law": "feature 015 FR-010; roadmap GAP-027",
       "emitAnchor": "ritual-checks: RESULT UNGRADED",
       "notes": "Added in the phase-5 remediation (review F1). $ungradedCapableMembers is an allow-list, so the mechanism RIT-006 proves is silently inert for any member left out of it - which is how scope-check shipped its own GAP-027 fail-open through a phase that existed to close GAP-027. This case stubs scope-check instead of enforcement-pack and asserts the same three things: the word on the member's line, the word on the RESULT line, exit 0. It fails if a future edit drops a name from that list, which RIT-006 would not notice. The anchor is the same emission site RIT-006 names, and that is deliberate rather than sloppy: the allow-list is not itself an emission site, and the site it governs is this one. RIT-006 asks whether the line can be printed at all; RIT-007 asks whether it is printed for the second member to reach the state. One site, two rules, said out loud - the inventory allows it and the ambiguity check counts hits per rule, not rules per hit."
+    },
+    {
+      "id": "RIT-008",
+      "script": "ritual-checks.ps1",
+      "function": "(run verdict)",
+      "summary": "the ungraded state is lifted for roadmap-claims, the third member that can reach it",
+      "law": "specs/021-developer-roster plan D8; feature 015 FR-010; roadmap GAP-027",
+      "emitAnchor": "ritual-checks: RESULT UNGRADED",
+      "notes": "Feature 021 teaches roadmap-claim-check.ps1 to say UNGRADED when a claim's tip date cannot be read. $ungradedCapableMembers is an allow-list, so without 'roadmap-claims' in it that word would be summarised as OK (RIT-007's argument, for the next member). The stub prints the member's own UNGRADED line; the case asserts the word on the member's line and on the RESULT line, exit 0. Same emission site as RIT-006 and RIT-007, deliberately: the allow-list is not itself an emission site, and the site it governs is this one."
     },
     {
       "id": "AMEND-006",

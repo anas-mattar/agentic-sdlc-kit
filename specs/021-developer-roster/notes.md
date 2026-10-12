@@ -145,3 +145,65 @@ pre-existing case is unchanged. Run on this working tree; the isolated-checkout 
 Certified by the owner (anas.m), 2026-10-12: the phase 2 gate was run and the owner reported exit code 0
 (user-confirmed, not agent-claimed). Phase commit `6fe88b6`; scope-check PASS on it; AI review
 `ai-code-review-phase-2.md` (`76482e6`), approve with follow-ups. Human review is not yet recorded.
+
+## Phase 3: the claim ledger
+
+### T010: the fixtures, shown failing on the parent
+
+Five new `CLAIM-` rules (009 to 013) and one `RIT-` rule (008), 27 new cases, expectations written by hand before the
+script was touched, built on the existing fixture `origin`:
+
+| Rule | Cases |
+|---|---|
+| `CLAIM-009` (Owner not on the roster) | `fail`, `pass`, `pass-object-roster`, `pass-case-differs`, `pass-no-roster`, `pass-empty-roster`, `pass-blank-owner`, `pass-dash-owner`, `pass-own-claim`, `pass-idea-row` |
+| `CLAIM-010` (roster, no Owner column) | `fail`, `pass`, `pass-no-roster` |
+| `CLAIM-011` (over two active claims) | `fail` (three), `pass` (one), `pass-stale-not-counted`, `pass-shipped-not-counted`, `pass-different-owners`, `pass-no-roster`, `pass-own-claim-not-counted` |
+| `CLAIM-012` (exactly two, noted) | `fail` (the note, exit 0), `pass` |
+| `CLAIM-013` (unreadable tip date, UNGRADED) | `fail` (corrupt tip commit), `pass`, `pass-single-claim-reads-no-date` |
+| `RIT-008` (the aggregate lifts UNGRADED for `roadmap-claims`) | `fail`, `pass` |
+
+On the parent commit every case that asserts the byte-identical no-roster output (`pass-no-roster` x3,
+`pass-empty-roster`, `pass-idea-row`) passes, and every case of the new behaviour fails, as it should: both
+`fail` directions of `CLAIM-009` and `CLAIM-011` (exit code and output), and every roster-declared `pass` (the
+new OK line). All eight existing `CLAIM-001` to `CLAIM-008` pairs pass on the parent and after.
+
+### T011/T012: the readings
+
+`roadmap-claim-check.ps1` dot-sources `adoption-lib.ps1` and reads the roster with `Get-DeveloperMode`.
+**"Usable roster" is read as any non-empty `Roster`** (one developer included), the definition spec Key Entities
+gives; a one-developer string roster whose Owner is someone else would now fail. That is the likeliest
+verdict to move and phase 4's measurement (SC-003) must list it. Silence, not a note, with no roster (D5).
+
+- Owner (D4): for each non-own claim with a non-`idea` row and a real Owner cell (not blank, not `—`), the Owner
+  must be on the roster, trimmed, `OrdinalIgnoreCase`.
+- Count (D7): per Owner (case-folded), claims whose row Status is `specified` or `in progress`; own claim exempt.
+  Dates are read only for an Owner with two or more candidates (`git log -1 --format=%ct <sha>`, then one
+  `git fetch --quiet origin <branch>`); older than 14 days is not counted. More than two fails, two prints one note,
+  an unreadable date prints the reason and makes the verdict `UNGRADED` (exit 0).
+- No `Owner` column under a declared roster: prints `not graded` and the visibility reading proceeds.
+- The FAIL roll-up keeps its old words when every finding is a visibility finding, and says `N finding(s)` when a
+  roster reading found something. The OK line gains `, Owners and claim counts graded against the declared roster`
+  only when the roster was graded.
+
+### T013: UNGRADED wiring
+
+`roadmap-claims` joins `$ungradedCapableMembers` in `ritual-checks.ps1`; `RIT-008` fails if the name is dropped.
+The member's exit code is unchanged.
+
+Test-infrastructure edits that follow from the new sites: `emission-idioms.json` (the printed idiom now covers
+`UNGRADED`, `not graded` and `note`; the FAIL roll-up not-a-rule anchor follows its new wording) and `rules.json`
+(the `CLAIM-008` anchor is now `roadmap-claims: OK ($checked claim(s) visible with non-idea rows`, because the new
+UNGRADED line shares the old, shorter phrase and the inventory counts hits per anchor).
+
+### T014: results
+
+| Measurement | Phase 2 | Phase 3 |
+|---|---|---|
+| `-Case CLAIM-` | not recorded | 117 passed, 0 failed |
+| `-Case RIT-` | not recorded | 129 passed, 0 failed |
+| Full harness | 1255 passed | **1309 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
+| Coverage, `roadmap-claim-check.ps1` | not recorded | 14 of 14 site(s) fixtured |
+| `ritual-checks.ps1` | RESULT OK | RESULT OK |
+
+The difference of 54 is exactly the new cases (27 x an exit-code and an output assertion). Every pre-existing case is
+unchanged. Run on this working tree; the isolated-checkout run of the final commit is T020.
