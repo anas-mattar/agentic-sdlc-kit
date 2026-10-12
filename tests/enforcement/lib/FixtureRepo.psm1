@@ -129,6 +129,17 @@ function New-FixtureRepo {
         [string]$At
     )
 
+    # Refused FIRST, before a directory exists: a refusal that fired after the build would leave
+    # a repository (and a shallow clone) behind in the temp directory on every refusal. 'shallow'
+    # and 'nestedRepos' would quietly make noGit mean something else, so they are refused, not ignored.
+    if ($Recipe.PSObject.Properties.Name -contains 'noGit' -and $Recipe.noGit) {
+        foreach ($incompatible in 'shallow', 'nestedRepos') {
+            if ($Recipe.PSObject.Properties.Name -contains $incompatible -and $Recipe.$incompatible) {
+                throw "fixture 'noGit' cannot be combined with '$incompatible': a fixture with no repository has nothing to clone or nest into. Refused rather than silently ignored."
+            }
+        }
+    }
+
     if ($At) {
         # A nested repository: it must be built where the outer recipe asked for it, because its
         # whole reason to exist is the path it occupies inside the outer working tree.
@@ -336,15 +347,10 @@ function New-FixtureRepo {
         $root = $clone
     }
 
-    # A directory that is not a repository. Removed AFTER everything else, including any shallow
-    # clone's reassignment of $root, so the tree that remains is exactly what the recipe wrote.
-    # Refused, not ignored, with the two fields that would quietly make it mean something else.
+    # A directory that is not a repository. Removed AFTER everything else so the tree that remains
+    # is exactly what the recipe wrote. The incompatible fields were refused at the top, before
+    # anything was built.
     if ($Recipe.PSObject.Properties.Name -contains 'noGit' -and $Recipe.noGit) {
-        foreach ($incompatible in 'shallow', 'nestedRepos') {
-            if ($Recipe.PSObject.Properties.Name -contains $incompatible -and $Recipe.$incompatible) {
-                throw "fixture 'noGit' cannot be combined with '$incompatible': a fixture with no repository has nothing to clone or nest into. Refused rather than silently ignored."
-            }
-        }
         # git writes loose objects read-only; -Force clears that, as Remove-FixtureRepo relies on.
         Remove-Item -LiteralPath (Join-Path $root '.git') -Recurse -Force
     }

@@ -234,9 +234,8 @@ Describe 'noGit fixtures (feature 022, D7)' {
                 noGit   = $true
             }
             foreach ($key in $other.Keys) { $recipe | Add-Member -NotePropertyName $key -NotePropertyValue $other[$key] }
-            $root = $null
-            { $root = New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'noGit' cannot be combined*"
-            if ($root) { Remove-FixtureRepo -Path $root }
+            # Refused before anything is built, so there is no directory to clean up.
+            { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'noGit' cannot be combined*"
         }
     }
 }

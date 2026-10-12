@@ -143,3 +143,26 @@ behind), and is why the new `Stop-Refused` pins `exit 1` explicitly.
 
 Every pre-existing case passes unchanged; the coverage report fixtures `TERR-008` to `TERR-011` and no longer lists them
 as exempt.
+
+### Phase 2 AI review: remediation and recorded findings
+
+Review: `ai-code-review-phase-2.md` (APPROVE with follow-ups). Fixed in the remediation commit: F1 (the `note` in
+`emission-idioms.json` no longer states a site count), F2 (the `noGit` incompatibility is refused at the top of
+`New-FixtureRepo`, before anything is built, so the refusal self-test no longer leaves two `kit-fixture-*` repositories
+behind; the cleanup that could never run is removed from the test), F3 (the `TERR-008/fail` description says 128, the
+measured exit, not 97).
+
+**F4, recorded: `claim-feature.ps1` has the same defect, at seven sites, not the five the plan's Risks list.** The
+script sets `$ErrorActionPreference = 'Stop'` (line 37), and `Write-Error` therefore throws before any `exit 1` after
+it. Sites: `scripts/claim-feature.ps1:72` (not inside a git repository), `:79` (working tree not clean), `:84` (claims
+start from main), `:96` (`git fetch origin` failed), `:108` (stock script not found), `:112` (`create-new-feature.ps1`
+failed) and `:135` (lost the allocation race). The plan listed the first five; `:112` and `:135` were found by the
+Phase 2 review. It is outside this feature's scope and Territory and is not fixed here. It is a candidate roadmap gap
+for the owner to open (the same shape as GAP-029: `Stop-Refused`-style exit, fixtures, exemptions out); Phase 3's
+`docs/roadmap.md` update is where it would be filed if the owner wants it, and has not been.
+
+**F5 (confirm) and F6 (minor), not changed.** F5: `[Console]::Error.WriteLine` writes to the process's stderr, not
+PowerShell's error stream, so in-process `2>&1` / `2>$null` no longer see the message; `pwsh -File` callers are
+unaffected and plan D6 approved the method. Awaiting the owner's answer on whether `pwsh -File` is the only supported
+contract. F6: `TERR-008` assumes the OS temp directory is not inside a git work tree (true on this machine and both CI
+legs); `GIT_CEILING_DIRECTORIES` for `noRoot` cases would harden it. Optional.
