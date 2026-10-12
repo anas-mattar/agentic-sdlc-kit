@@ -334,9 +334,13 @@ Nothing was pushed and the clones' `origin` is the real directory.
 
 | Project | Roster | Verdicts S0, S1 and S2 (rebuilt) | Differences in output S1 to S2 |
 |---|---|---|---|
-| FitForge | `anas.m`, `ahmad` (strings) | `verify-kit` OK, `enforcement-pack` OK, `roadmap-claims` OK (1 claim), `ritual-checks` `RESULT OK` in S0 and after the digests are rebuilt in S1 and S2 (`RESULT FAIL` as applied, see below) | `.kit-version` commit; `enforcement-pack` changed files 19 to 22; digest markers 90 to 93; **`roadmap-claims` OK line gains `, Owners and claim counts graded against the declared roster`** |
-| FlowBoard | none | the same members OK (`roadmap-claims`: no claims on `origin`) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 70 |
-| ExpenseTracker | none | the same members OK (1 claim) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 70 |
+| FitForge | `anas.m`, `ahmad` (strings) | `verify-kit` OK, `enforcement-pack` OK, `roadmap-claims` OK (1 claim), `ritual-checks` `RESULT OK` in S0 and after the digests are rebuilt in S1 and S2 (`RESULT FAIL` as applied, see below) | `.kit-version` commit; `enforcement-pack` changed files 19 to 22; digest markers 90 to 95; `doc-lint` OK as applied and rebuilt; **`roadmap-claims` OK line gains `, Owners and claim counts graded against the declared roster`** |
+| FlowBoard | none | the same members OK (`roadmap-claims`: no claims on `origin`) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 72; `doc-lint` OK as applied and rebuilt |
+| ExpenseTracker | none | the same members OK (1 claim) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 72; `doc-lint` OK as applied and rebuilt |
+
+Marker counts and the `doc-lint` verdict are read from the re-measurement run on the final documents (`build-digests` after S1 and S2, and the `doc-lint` member of
+`ritual-checks` in each S2 state). An earlier version of this table said 93 and 70: those were counted before the update note gained its five markers, and are
+corrected here after the phase 4 round 2 review (R2-1).
 
 **No verdict moved in any project.** What moved: `ritual-checks.ps1` is `RESULT FAIL` **as applied**, in S1 and S2 alike
 and in all three projects, because the `digests` member reports the stale digests until `build-digests.ps1` is run. That is
@@ -361,6 +365,7 @@ found no project among the three that falls in any of the four classes. The upda
 see" rather than claiming byte-identity for every roster. **Approved by the owner (anas.m, 2026-10-12) and applied to `spec.md` SC-001, which carries the approval line. Earlier text: proposed for the owner's approval (not made: an amendment is never
 approved by its author, constitution I): reword SC-001 to "Every verdict a string-only or absent roster produced before is
 byte-identical after, except where a declared roster does not match the Reviewer, Owner or claim count the new checks read."**
+
 ### T019: digests and the roadmap
 
 `scripts/build-digests.ps1` regenerated (5 digests, 96 markers). The roadmap row for the developer roster is `shipped`, Owner
@@ -390,6 +395,7 @@ carry no closed marker in the kit's precedent, so none was added.
 - **F6**: the update note documents the `not graded` line for a roster over a roadmap with no `Owner` column (and for a claim that binds
   to no row), says the doctor's roster line needs an object with a usable `name`, and `roadmap.md` and `notes.md` have their trailing
   newline back.
+
 ### T020: the final run, on an isolated checkout of the phase 4 commit
 
 A detached `git worktree` of `447ad7b` (the phase 4 commit with its review remediation, after the phase 3 round 2 commit
