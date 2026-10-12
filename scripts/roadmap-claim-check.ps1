@@ -34,13 +34,16 @@
     never dropped. With no usable roster neither reading runs and the output is byte-identical to
     what it was before. The own claim of the checked branch is exempt from both, as from visibility.
 
-    These two readings bind a claim to its row by a delimited token (the name bounded by
-    characters that cannot continue a branch name), preferring the row whose Spec cell holds
-    specs/<claim>: a row that merely MENTIONS another claim in free text does not take it, and a
-    claim whose name is a prefix of another does not match the longer one. If the rows left name
-    different Owners the claim is not graded, said out loud and UNGRADED; a claim whose only rows
-    sit in a table with no Owner column is likewise said not to have been graded. The visibility
-    reading is unchanged.
+    These two readings bind a claim to its row by a delimited token, case-insensitively (the name
+    not run into more letters, digits, '_' or '-', or into a dot that is followed by one; a final
+    full stop is not part of the name), preferring the row whose Spec cell holds specs/<claim>: a
+    row that merely MENTIONS another claim in free text does not take it, and a claim whose name is a
+    prefix of another does not match the longer one. The set of characters is the common one, not
+    every character a branch name may hold: where two claims still collide the answer is the safe
+    one, not graded. If the rows left name different Owners the claim is not graded, said out loud
+    and UNGRADED; so is a claim the visibility reading found but that no token binds to a row (its
+    name appears only inside a longer one); a claim whose only rows sit in a table with no Owner
+    column is likewise said not to have been graded. The visibility reading is unchanged.
 
 .EXAMPLE
     pwsh -File scripts/roadmap-claim-check.ps1
@@ -163,9 +166,19 @@ if ($graded -and $ownerColumnSeen) {
     $candidates = [ordered]@{}   # lower-cased Owner -> @{ Name; Claims }
     foreach ($claim in $claims) {
         if ($ownNumber -and $claim -match "^$ownNumber-") { continue }   # own claim: exempt, as from visibility
-        $token = [regex]::new("(?<![A-Za-z0-9._-])$([regex]::Escape($claim))(?![A-Za-z0-9._-])")
-        $bound = [regex]::new("specs/$([regex]::Escape($claim))(?![A-Za-z0-9._-])")
+        $ci = [Text.RegularExpressions.RegexOptions]::IgnoreCase
+        $token = [regex]::new("(?<![A-Za-z0-9_-])(?<![A-Za-z0-9]\.)$([regex]::Escape($claim))(?![A-Za-z0-9_-])(?!\.[A-Za-z0-9])", $ci)
+        $bound = [regex]::new("specs/$([regex]::Escape($claim))(?![A-Za-z0-9_-])(?!\.[A-Za-z0-9])", $ci)
         $named = @($rows | Where-Object { $token.IsMatch($_.Text) })
+        if ($named.Count -eq 0) {
+            # The visibility reading (section 4) matches loosely; a claim it passed that no token binds to a row
+            # would otherwise leave this section in silence while the OK line says Owners were graded.
+            if (@($rows | Where-Object { $_.Text -like "*$claim*" -and $_.Status -and $_.Status -ne 'idea' }).Count -gt 0) {
+                Write-Host "roadmap-claims: not graded — claim '$claim' is on a roadmap row only in a form this check cannot bind to the claim (inside a longer name, say), so its Owner and its place in a count were not graded"
+                $ungraded += "the Owner of '$claim' was not graded"
+            }
+            continue
+        }
         $mine = @($named | Where-Object { $bound.IsMatch($_.Text) })
         if ($mine.Count -eq 0) { $mine = $named }
         $live = @($mine | Where-Object { $_.Status -and $_.Status -ne 'idea' })

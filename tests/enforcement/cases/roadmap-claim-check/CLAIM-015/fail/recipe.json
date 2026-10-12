@@ -1,0 +1,32 @@
+{
+  "description": "A claim, 011-aaa, whose only row writes it inside a longer name (011-aaa_x) and holds no Spec path: the visibility reading passes it, no token binds it to the row, so its Owner and its place in a count cannot be graded, and the check says so out loud — UNGRADED, never a silent skip with an OK that says Owners were graded (phase 3 round 2 review R2-1). Exit 0.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Alpha 011-aaa_x | in progress | ada | — |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: 011-aaa"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

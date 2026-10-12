@@ -248,6 +248,37 @@ because they pin behaviour that was already right.
 
 The difference of 18 is exactly the nine new cases (an exit-code and an output assertion each). No pre-existing case changed.
 
+### Remediation of the phase 3 round 2 review (R2-1, R2-2, R2-5)
+
+`ai-code-review-phase-3-round-2.md`: approve with follow-ups; F1, F2, F5 and F6 of the first review confirmed fixed. Remediated here:
+
+- **R2-1** (a claim the visibility reading found, bound to no row by the strict token, was skipped in silence while the OK line said
+  Owners were graded; the reviewer's example, a row "Alpha 011-aaa." with a stranger as Owner, was a stranger that `660cccb` failed and
+  `666fddc` passed). Two changes, both mine: the binding is now **case-insensitive** (as the visibility reading is) and a **final full stop
+  is not part of the name** (a dot followed by a letter or digit still is), so the reviewer's example and a row written in capitals bind
+  and are graded; and a claim that passes visibility but still binds to no row prints
+  `not graded — claim '<claim>' is on a roadmap row only in a form this check cannot bind to the claim (inside a longer name, say) ...`,
+  adds the clause `the Owner of '<claim>' was not graded` and the verdict is `UNGRADED`, exit 0, never a silent skip. New rule `CLAIM-015`
+  (`fail`: the claim only inside `011-aaa_x`; `pass`: written `011-aaa`) and two `CLAIM-009` fixtures that pin what must still bind
+  (`fail-claim-written-with-final-period`, `fail-claim-written-in-capitals`). Shown against the `666fddc` script: all three `fail` cases
+  fail there (the two `CLAIM-009` ones on exit code and output, `CLAIM-015/fail` on output), and the `CLAIM-015` `pass` passes.
+- **R2-2** (the delimiter set is narrower than what a branch name may hold). Accepted as the safe direction (two claims that still collide
+  are not graded) and the script header now says exactly what the token is rather than "characters that cannot continue a branch name".
+- **R2-5** (the `CLAIM-014` summary named one of two ways to reach the line): reworded in `rules.json`.
+- **Not changed, on the record**: R2-3 (a table with no Owner column stays `OK` with its line, an ambiguity or an unbound claim gives
+  `UNGRADED`: the first leaves nothing the check could have read, the others a reading it tried and could not make) and R2-4 (an ambiguous or
+  unbound claim is kept out of both the roster check and the WIP count, said aloud, exit 0). Both are visible in the output and neither is a
+  block.
+
+| Measurement | After the phase 3 remediation | After round 2 |
+|---|---|---|
+| `-Case CLAIM-` | 135 passed | 143 passed, 0 failed (the 8 are four new cases, two assertions each) |
+| `-Case RIT-` | 129 passed | 129 passed, 0 failed |
+| `ritual-checks.ps1` | RESULT OK | RESULT OK |
+
+The full harness for the final commit is recorded under T020 below. No roster, an empty roster and an unusable roster still reach none of this
+code, so their output is unchanged; every pre-existing case is unchanged.
+
 ## Phase 4: guidance, flow-down and bookkeeping
 
 ### T015 to T017: the documents

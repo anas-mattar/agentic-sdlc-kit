@@ -1,0 +1,32 @@
+{
+  "description": "The same row writing the claim as 011-aaa. Differs only in the characters after the name (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Alpha 011-aaa | in progress | ada | — |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: 011-aaa"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

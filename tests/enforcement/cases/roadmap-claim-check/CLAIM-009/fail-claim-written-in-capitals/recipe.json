@@ -1,0 +1,32 @@
+{
+  "description": "The row writes the claim as 011-AAA and names a stranger. The visibility reading matches without regard to case, and so does the binding, so the stranger is found.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| ALPHA 011-AAA | in progress | linus | — |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: 011-aaa"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

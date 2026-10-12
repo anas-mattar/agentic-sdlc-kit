@@ -1739,10 +1739,19 @@
       "id": "CLAIM-014",
       "script": "roadmap-claim-check.ps1",
       "function": "(owner)",
-      "summary": "a claim is named by rows with different Owners and none of them holds its own Spec path, so it cannot be graded",
+      "summary": "a claim is named by rows with different Owners, after preferring the rows that hold its own Spec path, so it cannot be graded",
       "law": "specs/021-developer-roster FR-005, FR-007, plan D4; phase 3 review F1; feature 015 (a comparison not made is never OK)",
       "emitAnchor": "named by rows with different Owners",
       "notes": "A claim is bound to its row by a delimited token, preferring the row that holds specs/<claim>; a row that only mentions it, or a claim whose name is a prefix of another, does not take it (CLAIM-009 fail-prefix-claim, CLAIM-011 pass-cross-reference-not-counted). When that still leaves rows that disagree on the Owner there is nothing true to grade, so the Owner and the count are not graded and the verdict is UNGRADED, never a guess: a false failure here would fail a lawful Owner. Exit 0."
+    },
+    {
+      "id": "CLAIM-015",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a claim the visibility reading found is bound to no roadmap row by the strict token, so its Owner and count cannot be graded",
+      "law": "specs/021-developer-roster FR-005, FR-007, plan D4; phase 3 round 2 review R2-1; feature 015 (a comparison not made is never OK)",
+      "emitAnchor": "cannot bind to the claim",
+      "notes": "The visibility reading matches a claim loosely (the name anywhere in a row) and the Owner and count readings bind it strictly (a delimited token, case-insensitive, a final full stop allowed). A claim that passes the first and matches nothing under the second used to leave the readings in silence while the OK line said Owners were graded; now the Owner is not graded, said out loud, and the verdict is UNGRADED, exit 0. The two sibling fixtures in CLAIM-009 pin the cases that must still bind: a final full stop and capitals."
     },
     {
       "id": "TERR-001",
