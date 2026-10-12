@@ -1,0 +1,3 @@
+scope-repos: code-repo: PASS phase 1 commit <SHA> (1 file(s))
+scope-repos: web-repo: not applicable (commit <SHA> carries no 'phase N' token — not a phase commit)
+scope-repos: UNGRADED (1 declared code repository applied to '001-thing' and graded nothing: web-repo — the reason is on the line(s) above; graded: code-repo)
