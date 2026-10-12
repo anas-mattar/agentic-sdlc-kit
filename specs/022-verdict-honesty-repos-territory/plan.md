@@ -4,6 +4,7 @@
 **Input**: Feature specification (approved, anas.m, 2026-10-12) + decisions D1–D9 below
 **Gate Batching**: none
 **Gate Certification**: user-run
+**Amendment approved by**: anas.m, 2026-10-12
 
 ## Summary
 
@@ -71,8 +72,7 @@ one repository was not touched by the phase: noise that trains the reader to ign
 this feature exists to remove. CI runs `-All` (`scripts/ritual-checks.ps1:151`), where the range is the feature's
 whole history and zero graded commits in an applicable repository is a real hole. **The plan implements: the
 partly-graded run-level line under `-All` only; tip mode keeps today's behaviour (the existing line when nothing graded
-anywhere, nothing otherwise).** That narrows FR-001 and the first sentence of the edge-case bullet in the spec; see
-Needs the owner (1).
+anywhere, nothing otherwise).** FR-001 was amended to say so (anas.m, 2026-10-12); see Needs the owner (1).
 
 **D3 — The line's words (FR-001, FR-003).** The existing line, for a run that graded nothing anywhere, is kept
 verbatim. A new line is printed when at least one repository graded and `$ungradedRepos` is not empty:
@@ -203,15 +203,16 @@ needs no entry. `scripts/ritual-checks.ps1` is deliberately absent from the list
 
 ## Needs the owner
 
-1. **D2, the scope of FR-001.** The spec's FR-001 reads as covering tip mode too; the plan covers `-All` only, for the
+1. **Decided (anas.m, 2026-10-12): D2, the scope of FR-001.** FR-001, US1 scenario 2, the edge-case bullet and the assumption now say `-All`; the
+   original question follows. The spec's FR-001 reads as covering tip mode too; the plan covers `-All` only, for the
    reason in D2. Recommended: approve an amendment of FR-001 to "under `-All`", of the edge-case bullet to match, and of
    US1 scenario 2 to say "under `-All`". The alternative is the spec as written, under which every per-phase tip run on
    a multi-repository feature whose phase touched one repository ends `UNGRADED`; say if you want that, and the plan's
    `pass-tip-mode` fixture and D2 change.
-2. **The stream** (Assumptions; spec leaves it to the plan). D6 keeps the refusal on the error stream. Say if you want
+2. **Decided (anas.m, 2026-10-12, by approving the plan as written): the error stream, D6.** The stream (Assumptions; spec leaves it to the plan). D6 keeps the refusal on the error stream. Say if you want
    it on standard output instead, as `scope-check-repos.ps1` prints its own errors; it changes only which stream, never
    the wording.
-3. **The plan's approval**, then `tasks.md`.
+3. **The plan's approval**: given (anas.m, 2026-10-12), then `tasks.md`.
 
 ## Complexity Tracking
 

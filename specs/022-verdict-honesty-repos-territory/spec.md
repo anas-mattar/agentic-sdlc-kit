@@ -65,10 +65,12 @@ graded prints no run-level line and is byte-identical to today.
 **Acceptance Scenarios**:
 
 1. **Given** repository A graded a phase commit and repository B applies but has no resolvable merge base, **When**
-   the check runs, **Then** it prints B's own `UNGRADED` line and a run-level `scope-repos: UNGRADED` line naming B,
+   the check runs under `-All`, **Then** it prints B's own `UNGRADED` line and a run-level `scope-repos: UNGRADED` line naming B,
    and exits 0.
 2. **Given** repository A graded and repository B applies but every commit it offers is skipped (`not applicable`, a
-   merge commit, no `phase N` token), **Then** the run-level line names B too.
+   merge commit, no `phase N` token), **Then**, under `-All`, the run-level line names B too. Without `-All` (the tip
+   of the branch) a skipped tip is the documented `not applicable` and the run-level verdict is unchanged.
+   **Amendment approved by**: anas.m, 2026-10-12.
 3. **Given** every applicable repository graded at least one commit, **When** the check runs, **Then** its output and
    exit code are byte-identical to the parent commit.
 4. **Given** repository B is declared but absent, not a repository of its own, or carries no branch for the feature,
@@ -148,9 +150,9 @@ none did, with the old and new output for FitForge's `scope-repos` line.
 - A repository that graded at least one commit but also had skipped commits: it is graded; skipped commits are not
   ungraded repositories.
 - `-Commit` or the non-`-All` path (tip of the branch): a repository whose tip is skipped (`not applicable`, no
-  `phase N` token) graded nothing in that run; whether that is `UNGRADED` at run level is decided in the plan against
-  the existing wording of the header and US3 acceptance scenario 3 of feature 015 (the plan records the answer; the
-  default is that the run-level verdict follows the same rule in both modes).
+  `phase N` token) is the documented answer for a phase that touches no code repository, and the run-level verdict is
+  unchanged in this mode: the partly graded run-level line is an `-All` reading (FR-001).
+  **Amendment approved by**: anas.m, 2026-10-12.
 - `territory-check.ps1` with `-Json`: the refusals print no JSON object today and stay that way.
 - A refusal written to stderr today (`Write-Error`) versus stdout: which stream carries the message after the change
   is decided in the plan; the wording and the exit code are fixed here (FR-006).
@@ -168,9 +170,10 @@ none did, with the old and new output for FitForge's `scope-repos` line.
 ### Functional Requirements
 
 - **FR-001**: When a declared code repository applies to the feature (present, a repository of its own, and carrying
-  the feature branch) and grades no commit in the run, `scripts/scope-check-repos.ps1` MUST print a run-level
+  the feature branch) and grades no commit in an `-All` run, `scripts/scope-check-repos.ps1` MUST print a run-level
   `scope-repos: UNGRADED` line that names each such repository, whether or not another repository graded, and MUST
-  exit 0 on that account alone.
+  exit 0 on that account alone. Without `-All` the run-level verdict is unchanged.
+  **Amendment approved by**: anas.m, 2026-10-12.
 - **FR-002**: A repository that is `n/a` or `not applicable` for the reasons it is today (declared but absent, not a
   repository of its own, no branch for the feature) MUST NOT make the run `UNGRADED`. A repository that graded at
   least one commit MUST NOT be named by the run-level line.
@@ -237,6 +240,6 @@ none did, with the old and new output for FitForge's `scope-repos` line.
   script printed.
 - A repository that applies and grades nothing is the right reading of "ungraded" for the run-level line even when
   the cause is a legitimate skip (a merge commit, no `phase N` token): the line says nothing was compared there, which
-  is true, and the reader decides whether that matters. Whether a tip-mode run, where a skipped tip is common, should
-  say the same is the edge case above, settled in the plan against feature 015's wording.
+  is true, and the reader decides whether that matters. This is read under `-All`, the range CI runs; a tip-mode run,
+  where a skipped tip is common and documented, is left as it is (FR-001, the edge case above).
 - GAP-004, GAP-022 and the roadmap's other open gaps are outside this feature.
