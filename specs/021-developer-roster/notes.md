@@ -139,3 +139,9 @@ the roster is counted and never compared now says what membership proves and wha
 
 The difference is exactly the 18 new assertions (9 cases, each with an exit code and an output assertion). Every
 pre-existing case is unchanged. Run on this working tree; the isolated-checkout run of the final commit is T020.
+
+### Phase 2 gate
+
+Certified by the owner (anas.m), 2026-10-12: the phase 2 gate was run and the owner reported exit code 0
+(user-confirmed, not agent-claimed). Phase commit `6fe88b6`; scope-check PASS on it; AI review
+`ai-code-review-phase-2.md` (`76482e6`), approve with follow-ups. Human review is not yet recorded.
