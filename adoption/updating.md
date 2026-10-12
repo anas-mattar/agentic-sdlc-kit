@@ -840,13 +840,15 @@ recorded and **read by no check**. Names compare after trimming, exactly and cas
 
 Not a failure: exactly two active claims for an Owner is **noted** (lawful only under the pipelining conditions, which a
 human confirms); a blank or `—` Owner and the branch being checked are not graded; and where the machine cannot read what it
-needs the verdict is `UNGRADED` with the reason: a tip commit the clone does not have, or a claim named by rows with
-different Owners. `scripts/ritual-checks.ps1` already lifts that word. `scripts/verify-kit.ps1` reports each malformed
-entry by position and cause and prints the roster it read, only when an entry is an object, so the doctor's output for a
+needs the verdict is `UNGRADED` with the reason: a tip commit the clone does not have, a claim named by rows with
+different Owners, or a claim written in a form that binds to no row (inside a longer name, say). `scripts/ritual-checks.ps1`
+already lifts that word. A roster declared over a roadmap with no `Owner` column, or a claim whose only rows sit in a table
+without one, prints a `not graded` line saying the Owners and counts were not checked, and the run stays `OK`. `scripts/verify-kit.ps1` reports each malformed
+entry by position and cause and prints the roster it read, only when an entry is an object with a usable `name`, so the doctor's output for a
 record of names is unchanged.
 
-**All of the Owner and WIP reading is graded only where a roster is declared** (a non-empty `developers` after blank and
-non-string entries are dropped): a project that declares none gets byte-identical output and verdicts, with no new line. The
+**All of the Owner and WIP reading is graded only where a roster is declared** (a non-empty `developers`, after every entry that
+is neither a non-blank name nor an object with a usable `name` is dropped): a project that declares none gets byte-identical output and verdicts, with no new line. The
 Critical reading applies in the team arm only, as before; the solo arm is untouched and never reads the human review.
 
 **What membership proves.** It catches a stranger, a typo, a name the project did not declare and a developer the record
@@ -878,9 +880,11 @@ graded them.
 with its nested code repositories (nothing in place touched, no network), the kit before this feature (`85b944f`) was
 applied with `update-kit.ps1`, `build-digests.ps1` was run, then the kit as it stands was applied and the digests rebuilt, and
 `verify-kit.ps1`, `enforcement-pack.ps1`, `roadmap-claim-check.ps1` and `ritual-checks.ps1` were run in the installed state
-and after each application. **No verdict moved**: every member was `OK` (`n/a` for `scope-check` and `scope-repos` on the
-trunk, as before) in every state of every project, and `ritual-checks.ps1` was `RESULT OK` once the digests were rebuilt.
-Every line that changed between the two states is listed in `specs/021-developer-roster/notes.md`; the only output a project
+and after each application. **No verdict moved**: once the digests were rebuilt every member was `OK` (`n/a` for `scope-check` and `scope-repos` on the
+trunk, as before) in every state of every project and `ritual-checks.ps1` was `RESULT OK`, `doc-lint.ps1` included. As applied,
+before `build-digests.ps1`, the `digests` member reports the digests stale and the run is `RESULT FAIL`: that is the existing
+flow-down step, and it fails identically after the kit as it stood before this feature, so it is not a verdict this feature
+moves. Every line that changed between the two states is listed in the notes of feature 021 in the kit repository; the only output a project
 could read as a difference is FitForge's, the one project that declares a roster (`anas.m`, `ahmad`, matching its roadmap
 Owners): its roadmap-claims line gained `, Owners and claim counts graded against the declared roster`. The Owner check was
 shown live in the same clone by writing a roadmap Owner `Anas M.`, which it named with the roster (exit 1; discarded).
@@ -999,8 +1003,8 @@ Do not declare it to make a check pass: a team declaration on a one-person proje
 the cooling-off period and asks a reviewer line you will end up filling with your own name,
 which the check rejects — correctly.
 
-The count is taken **after** blank *and non-string* entries are dropped and duplicates
-collapsed case-insensitively — so `["Ada","ada"]` is one developer and stays solo,
+The count is taken **after** blank entries, numbers and other non-names are dropped (an object with a usable `name` is a
+developer since feature 021) and duplicates collapsed case-insensitively — so `["Ada","ada"]` is one developer and stays solo,
 `["ada","grace"," "]` is two and is team, and `["ada",5,"grace"]` is also two, because the
 number is discarded rather than counted. A value that is not an array at all, or a file whose
 root is not a JSON object, is ignored entirely and the project falls back to solo.

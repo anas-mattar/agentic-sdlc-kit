@@ -313,7 +313,7 @@ Nothing was pushed and the clones' `origin` is the real directory.
 
 | Project | Roster | Verdicts S0, S1 and S2 (rebuilt) | Differences in output S1 to S2 |
 |---|---|---|---|
-| FitForge | `anas.m`, `ahmad` (strings) | `verify-kit` OK, `enforcement-pack` OK, `roadmap-claims` OK (1 claim), `ritual-checks` `RESULT OK`, all three states | `.kit-version` commit; `enforcement-pack` changed files 19 to 22; digest markers 90 to 93; **`roadmap-claims` OK line gains `, Owners and claim counts graded against the declared roster`** |
+| FitForge | `anas.m`, `ahmad` (strings) | `verify-kit` OK, `enforcement-pack` OK, `roadmap-claims` OK (1 claim), `ritual-checks` `RESULT OK` in S0 and after the digests are rebuilt in S1 and S2 (`RESULT FAIL` as applied, see below) | `.kit-version` commit; `enforcement-pack` changed files 19 to 22; digest markers 90 to 93; **`roadmap-claims` OK line gains `, Owners and claim counts graded against the declared roster`** |
 | FlowBoard | none | the same members OK (`roadmap-claims`: no claims on `origin`) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 70 |
 | ExpenseTracker | none | the same members OK (1 claim) | `.kit-version` commit; changed files 19 to 22; digest markers 67 to 70 |
 
@@ -329,13 +329,17 @@ developer roster in kit-adoption.json (anas.m, ahmad) ...` and exit 1 (finding c
 `git checkout` and the clone was clean. Not exercised, and said so: no adopted project has a Critical feature, two claims for one
 Owner or a claim whose tip date cannot be read.
 
-**Observation for the owner (SC-001 against FR-005 and FR-006).** SC-001 says every verdict a string-only roster produced before
-is byte-identical after. Read literally that is not true of a **team** project with a string roster whose Reviewer or roadmap
-Owner is not on it: the phase 2 and 3 checks fail it, which is the point of FR-005 and FR-006. What is byte-identical is the
-reader's mode and count, the doctor's output for a record of names, every existing fixture, and any project with no roster or
-whose names already match. The measurement found no such project among the three. The update note says so in its "What an
-owner may newly see" paragraph rather than claiming byte-identity for every roster.
-
+**Observation for the owner (SC-001 against FR-005 to FR-007), and a decision asked for.** SC-001 says every verdict a string-only
+roster produced before is byte-identical after. Read literally that is not true. Four classes of project with a **declared** roster
+move a verdict, each by design: a team project whose Reviewer or roadmap Owner is not on a string roster (FR-005, FR-006); a
+**one-name** roster whose roadmap Owners are spelled otherwise (the likeliest first red run, because any declared roster now counts);
+a roster with a **third active claim** for one Owner (FR-007); and a roster whose Owner cell holds more than one name or decoration
+(`ada, grace`, `**ada**`), which is a stranger. What is byte-identical is the reader's mode and count, the doctor's output for a record
+of names, every existing fixture, and any project with no roster, or whose names, Owners and claims already match. The measurement
+found no project among the three that falls in any of the four classes. The update note names all four in "What an owner may newly
+see" rather than claiming byte-identity for every roster. **Proposed for the owner's approval (not made: an amendment is never
+approved by its author, constitution I): reword SC-001 to "Every verdict a string-only or absent roster produced before is
+byte-identical after, except where a declared roster does not match the Reviewer, Owner or claim count the new checks read."**
 ### T019: digests and the roadmap
 
 `scripts/build-digests.ps1` regenerated (5 digests, 96 markers). The roadmap row for the developer roster is `shipped`, Owner
@@ -344,6 +348,27 @@ membership is not identity, `repos` is read by nothing, assignment authority (GA
 ("at most one active claim per Owner") is corrected to the shipped rule (more than two fails, two is a note). The inventory rows
 carry no closed marker in the kit's precedent, so none was added.
 
+### Remediation of the phase 4 review (F1 to F6)
+
+`ai-code-review-phase-4.md`: **request changes**; F1 blocked. Remediated in phase 4 Territory only (documents):
+
+- **F1** (blocking): `adoption/updating.md` named a path in the feature's spec directory, which does not flow down, so `doc-lint`
+  failed in an adopted project after the update. Mine: the measurement ran before that sentence was written and I did not re-run it.
+  The path-shaped token is gone (the note says "the notes of feature 021 in the kit repository"); no other kit-only path appears in the
+  five flowing documents. The T018 measurement was **re-run on fresh clones of all three projects with the documents as shipped**:
+  `doc-lint` is `OK` in every S2 state, as applied and after the rebuild, in all three. The Owner probe was repeated on FitForge's
+  clone with the final script (Owner `Anas M.` named with the roster, exit 1, discarded, clone clean).
+- **F2**: the T018 table row and the update note now say `ritual-checks` is `RESULT FAIL` as applied (the `digests` member, stale until
+  `build-digests.ps1`) and `RESULT OK` after, identically for the kit as it stood before this feature.
+- **F3**: "blank and non-string entries are dropped" is replaced by "every entry that is neither a non-blank name nor an object with a
+  usable `name` is dropped" in `team-workflow.md`, `critical-delivery.md` and the update note, and in feature 013's older paragraph of
+  `updating.md` that said the same.
+- **F4** (the roadmap row still says "at most one active claim per Owner"): **left for the owner**; the decisions-log entry is the
+  correction. Say if the row's parenthesis should be amended to "at most two active claims per Owner, exactly two being a note".
+- **F5**: the observation above now lists all four classes and proposes the SC-001 rewording for the owner's approval.
+- **F6**: the update note documents the `not graded` line for a roster over a roadmap with no `Owner` column (and for a claim that binds
+  to no row), says the doctor's roster line needs an object with a usable `name`, and `roadmap.md` and `notes.md` have their trailing
+  newline back.
 ### T020: the final run, on an isolated checkout of the phase 4 commit
 
 A detached `git worktree` of `382f5da`, outside the repository, removed afterwards (the main checkout was untouched and

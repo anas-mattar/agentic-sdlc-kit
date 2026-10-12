@@ -131,8 +131,8 @@ not give it to itself, and a machine can check only that it is well formed.
      the Reviewer and the names declared; a Reviewer whose entry does not permit it fails saying
      so.
 
-   The count is taken after non-string and blank entries are dropped and duplicates collapsed
-   case-insensitively, so `["Ada","ada"]` is one developer, not two. An absent, empty, or
+   The count is taken after every entry that is neither a non-blank name nor an object with a usable `name`
+   is dropped (a number, a blank, an object with no name) and duplicates are collapsed case-insensitively, so `["Ada","ada"]` is one developer, not two. An absent, empty, or
    otherwise unusable declaration selects the **solo arm**: a project that has never declared
    anything keeps the stricter requirement, forever. The doctor (`scripts/verify-kit.ps1`)
    reports a malformed declaration and states the mode it produces, because the fallback is

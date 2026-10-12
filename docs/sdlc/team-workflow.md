@@ -86,7 +86,7 @@ while their first awaits review, under all of these conditions:
 ### What the machine counts, and what it cannot see (feature 021)
 
 Everything below is graded **only where `kit-adoption.json` declares a roster**: a non-empty
-`developers` list after blank and non-string entries are dropped. A project that declares
+`developers` list, after every entry that is neither a non-blank name nor an object with a usable `name` is dropped. A project that declares
 none keeps its CI exactly as it was and is told nothing about Owners it was never going to
 be checked on.
 
@@ -102,7 +102,8 @@ names both strings. `repos` is recorded and read by nothing.
 cell carries **one roster name and nothing else**: `ada, grace`, `**grace**`, `@ada` and `TBD`
 are strangers. A claim is bound to its row by its name as a whole word, preferring the row that
 holds its `specs/<claim>/` path, so a row that only mentions a claim in free text does not
-take it; when the rows left still name different Owners the claim is **not graded** and the verdict says UNGRADED. The branch being checked is
+take it; when the rows left still name different Owners the claim is **not graded** and the verdict says UNGRADED, and so is a claim the check cannot bind to
+any row (its name appears only inside a longer one, say). The branch being checked is
 exempt for its own claim, as it is for visibility.
 
 **The WIP counter.** Per Owner, the machine counts the claims whose row Status is `specified` or
