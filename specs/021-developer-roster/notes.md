@@ -279,6 +279,14 @@ The difference of 18 is exactly the nine new cases (an exit-code and an output a
 The full harness for the final commit is recorded under T020 below. No roster, an empty roster and an unusable roster still reach none of this
 code, so their output is unchanged; every pre-existing case is unchanged.
 
+### Phase 3 and phase 4 gate
+
+Certified by the owner (anas.m), 2026-10-12: the owner ran `pwsh -File scripts/ritual-checks.ps1 -Branch 021-developer-roster; if ($LASTEXITCODE -eq 0) { pwsh -File tests/enforcement/Run-Tests.ps1 }`
+on `fb41bc3` (the phase 3 code is unchanged since `f8303cc`; phase 4 adds only documents) and reported `EXIT: 0`, with the harness at
+1335 passed, 0 failed, 0 skipped (user-confirmed, not agent-claimed). The harness ran only because `ritual-checks` exited 0; its own
+`RESULT` line was not in the pasted output. One run covers both phases. AI reviews: phase 3 `ai-code-review-phase-3.md` and
+`-round-2.md` (approve with follow-ups); phase 4 `ai-code-review-phase-4.md` (request changes, remediated) and `-round-2.md`
+(approve with follow-ups). Human reviews for phases 2 to 4 are not yet recorded.
 ## Phase 4: guidance, flow-down and bookkeeping
 
 ### T015 to T017: the documents
