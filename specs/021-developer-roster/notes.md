@@ -144,7 +144,7 @@ pre-existing case is unchanged. Run on this working tree; the isolated-checkout 
 
 Certified by the owner (anas.m), 2026-10-12: the phase 2 gate was run and the owner reported exit code 0
 (user-confirmed, not agent-claimed). Phase commit `6fe88b6`; scope-check PASS on it; AI review
-`ai-code-review-phase-2.md` (`76482e6`), approve with follow-ups. Human review is not yet recorded.
+`ai-code-review-phase-2.md` (`76482e6`), approve with follow-ups. Human review: approved, see "Human reviews" below.
 
 ### Phase 2 review F2: three edge cases covered by reading only
 
@@ -299,7 +299,18 @@ on `fb41bc3` (the phase 3 code is unchanged since `f8303cc`; phase 4 adds only d
 1335 passed, 0 failed, 0 skipped (user-confirmed, not agent-claimed). The harness ran only because `ritual-checks` exited 0; its own
 `RESULT` line was not in the pasted output. One run covers both phases. AI reviews: phase 3 `ai-code-review-phase-3.md` and
 `-round-2.md` (approve with follow-ups); phase 4 `ai-code-review-phase-4.md` (request changes, remediated) and `-round-2.md`
-(approve with follow-ups). Human reviews for phases 2 to 4 are not yet recorded.
+(approve with follow-ups). Human reviews for phases 2 to 4: approved, see "Human reviews" below.
+### Human reviews (gate 6)
+
+Recorded 2026-10-12 on the owner's word, not agent-verified: the human review of **phases 2, 3 and 4** was done by **anas.m** on
+2026-10-12 and **all three were approved**. No comments or follow-ups were reported. The feature was merged to `main` as pull request #64
+(`e8a8d68`).
+
+| Phase | AI review | Gate | Human review |
+|---|---|---|---|
+| 2 | `ai-code-review-phase-2.md`, approve with follow-ups | certified, exit 0 | approved, anas.m, 2026-10-12 |
+| 3 | `ai-code-review-phase-3.md` and `-round-2.md`, approve with follow-ups | certified, exit 0 on `fb41bc3` | approved, anas.m, 2026-10-12 |
+| 4 | `ai-code-review-phase-4.md` (request changes, remediated) and `-round-2.md`, approve with follow-ups | certified, exit 0 on `fb41bc3` | approved, anas.m, 2026-10-12 |
 ## Phase 4: guidance, flow-down and bookkeeping
 
 ### T015 to T017: the documents
@@ -413,5 +424,5 @@ Run without `-Branch` in the detached checkout, `ritual-checks.ps1` is `RESULT F
 does not match a known taxonomy") and `scope-check` is `UNGRADED` (detached HEAD): the tool's own message says a wrapper must pass
 `-Branch`, as CI does. Recorded so it is not mistaken for a finding; the run above is the one that counts.
 
-Still to come: the owner's gate for phases 3 and 4, the human reviews for phases 2 to 4, the owner's decisions on F4 (the roadmap row's wording)
-and on the proposed rewording of SC-001, and the phase 2 F2 fixtures decision.
+Nothing is still to come: the owner's gate for phases 3 and 4, the human reviews for phases 2 to 4, and the owner's decisions on F4, SC-001 and the
+phase 2 F2 fixtures are all recorded above (this paragraph said "still to come" when the run was made, 2026-10-12).
