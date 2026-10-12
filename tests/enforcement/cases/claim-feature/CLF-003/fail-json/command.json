@@ -1,0 +1,1 @@
+{"script":"claim-feature.ps1","args":["-ShortName","probe","-Json","a probe"],"exitCode":1,"noRoot":true}

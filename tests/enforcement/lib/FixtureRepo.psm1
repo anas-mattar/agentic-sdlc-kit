@@ -71,6 +71,11 @@
       for. That is the state territory-check.ps1 skips out loud (TERR-012) - reachable in any
       clone configured with a single-branch refspec, and unprovable here until the phase 6
       review (F3) showed the exemption written over it was false.
+    - "originPushUrl": "<path>" gives origin a separate push URL, a path under the fixture, while its fetch
+      URL stays as "origin" set it. With a path that does not exist, a fetch and an ls-remote still read the
+      ledger and every 'git push' fails: the state in which a claim's push is rejected with no rival, which
+      claim-feature.ps1 reports as a lost allocation race (feature 023, CLF-007). It needs "origin", and is
+      refused without one rather than ignored.
     - "detach": true leaves HEAD detached at the checked-out commit, the CI shape where the
       current branch cannot be read from the repository at all.
     - "noGit": true removes the .git directory once the fixture is written, so the directory is
@@ -137,6 +142,12 @@ function New-FixtureRepo {
             if ($Recipe.PSObject.Properties.Name -contains $incompatible -and $Recipe.$incompatible) {
                 throw "fixture 'noGit' cannot be combined with '$incompatible': a fixture with no repository has nothing to clone or nest into. Refused rather than silently ignored."
             }
+        }
+    }
+
+    if ($Recipe.PSObject.Properties.Name -contains 'originPushUrl' -and $Recipe.originPushUrl) {
+        if (-not ($Recipe.PSObject.Properties.Name -contains 'origin' -and $Recipe.origin)) {
+            throw "fixture 'originPushUrl' needs 'origin': a push URL belongs to a remote, and there is none. Refused rather than silently ignored."
         }
     }
 
@@ -277,6 +288,9 @@ function New-FixtureRepo {
         if ($Recipe.PSObject.Properties.Name -contains 'originFetch' -and $Recipe.originFetch) {
             $only = "$($Recipe.originFetch)"
             Invoke-FixtureGit -RepoPath $root -Arguments @('config', 'remote.origin.fetch', "+refs/heads/${only}:refs/remotes/origin/${only}") | Out-Null
+        }
+        if ($Recipe.PSObject.Properties.Name -contains 'originPushUrl' -and $Recipe.originPushUrl) {
+            Invoke-FixtureGit -RepoPath $root -Arguments @('config', 'remote.origin.pushurl', (Join-Path $root "$($Recipe.originPushUrl)")) | Out-Null
         }
     }
 

@@ -2139,6 +2139,63 @@
       "law": "feature 018 spec FR-013; plan D7",
       "emitAnchor": "open feature branch$comparedNote",
       "notes": "Added in feature 018 phase 3, sharing the CLEAN verdict site with TERR-002. pass (no codeRepos key) and pass-empty (an empty array) run over a layout in which api exists and WOULD overlap, and print the original line: that is what proves it is not read. fail declares api over the same layout and the overlap appears."
+    },
+    {
+      "id": "CLF-001",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim started outside a git repository is refused rather than answered",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
+      "emitAnchor": "Not inside a git repository."
+    },
+    {
+      "id": "CLF-002",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim from a dirty working tree is refused and the dirty paths are listed",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
+      "emitAnchor": "Working tree is not clean"
+    },
+    {
+      "id": "CLF-003",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim from any branch but main is refused, with or without -Json",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
+      "emitAnchor": "Claims start from main"
+    },
+    {
+      "id": "CLF-004",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim against an origin that cannot be fetched is refused rather than allocated from a stale ledger",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
+      "emitAnchor": "git fetch origin failed"
+    },
+    {
+      "id": "CLF-005",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim with no stock create-new-feature.ps1 to delegate to is refused as a partial install",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
+      "emitAnchor": "Stock script not found"
+    },
+    {
+      "id": "CLF-006",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim whose stock create-new-feature.ps1 fails is refused with that script's output",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
+      "emitAnchor": "create-new-feature.ps1 failed:"
+    },
+    {
+      "id": "CLF-007",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim whose pushes keep failing or keep meeting a rival is refused, with its remote claim withdrawn, rather than pushed under a contested number",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003, FR-004 (amended); roadmap GAP-031",
+      "emitAnchor": "Lost the allocation race",
+      "notes": "Added exempt in feature 023 phase 1 on the premise that only a rival claim appearing between allocation and the check could reach this site. The phase 1 AI review (F1) showed that false: the loop treats a failed push as a lost race, so any push that fails does the same. Fixtured by CLF-007 through the originPushUrl recipe field (a push URL that does not exist, origin reading fine), which the owner approved as a plan amendment (anas.m, 2026-10-12). The fail leaves the local branch and spec directory in place, renumbered twice; only the remote claim is withdrawn, and nothing landed here to withdraw."
     }
   ]
 }

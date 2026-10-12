@@ -1,0 +1,3 @@
+WARNING: No origin remote configured — allocating from the LOCAL ledger only. This claim is NOT team-visible.
+Allocating feature number 001 (next free across local + remote + specs/).
+Stock script not found: <ROOT>/.specify/scripts/powershell/create-new-feature.ps1 — partial kit install? Run scripts/doc-lint.ps1.

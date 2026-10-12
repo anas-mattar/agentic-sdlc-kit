@@ -1,0 +1,5 @@
+Allocating feature number 001 (next free across local + remote + specs/).
+WARNING: Push skipped (-NoPush) — this claim is NOT team-visible until you push the branch.
+CLAIMED LOCALLY: 001-probe (not pushed — not team-visible)
+SPEC_FILE: <ROOT>/specs/001-probe/spec.md
+NEXT: flip the roadmap row for 001-probe (Status, Owner, Spec `specs/001-probe/`) in a main-side docs commit — ritual-checks fails while a claim's row still reads 'idea' (GAP-017).

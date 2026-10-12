@@ -240,6 +240,41 @@ Describe 'noGit fixtures (feature 022, D7)' {
     }
 }
 
+Describe 'originPushUrl fixtures (feature 023, plan D2 as amended)' {
+    # A claim's push is rejected with no rival only if origin reads fine and writes fail. The field must
+    # leave the fetch URL alone, or every fixture using it would fail at the fetch (CLF-004's refusal)
+    # and not at the push (CLF-007's), which is the defect the field exists to separate.
+
+    BeforeAll { $script:Base = [pscustomobject]@{ commits = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } }); origin = 'origin.git' } }
+
+    It 'sets a push URL under the fixture and leaves the fetch URL alone' {
+        $recipe = $script:Base.PSObject.Copy(); $recipe | Add-Member -NotePropertyName originPushUrl -NotePropertyValue 'no-such-push-target'
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            $push = (& git -C $root config remote.origin.pushurl) -join ''
+            $fetch = (& git -C $root remote get-url origin) -join ''
+            $push.Replace('\', '/') | Should -Be ((Join-Path $root 'no-such-push-target').Replace('\', '/'))
+            $fetch.Replace('\', '/') | Should -Be ((Join-Path $root 'origin.git').Replace('\', '/'))
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'leaves no push URL when the recipe does not ask for one' {
+        $root = New-FixtureRepo -Recipe $script:Base
+        try {
+            & git -C $root config remote.origin.pushurl 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses a push URL with no origin instead of ignoring it' {
+        $recipe = [pscustomobject]@{
+            commits       = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            originPushUrl = 'no-such-push-target'
+        }
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'originPushUrl' needs 'origin'*"
+    }
+}
+
 Describe 'output normalisation' {
     # A third substitution joined <ROOT> and <SHA> in T029. scope-check-repos.ps1's
     # anti-retroactivity message quotes the code commit's own committer date back to the reader,
@@ -260,6 +295,19 @@ Describe 'output normalisation' {
     It 'leaves a calendar date with no time on it exactly as written' {
         $out = ConvertTo-NormalisedOutput -Text 'approved 2026-09-10 by the owner' -RepoPath 'no-such-path'
         $out.Trim() | Should -Be 'approved 2026-09-10 by the owner'
+    }
+
+    It 'writes a path under the repository with forward slashes, whatever separator the script printed' {
+        $repo = 'C:/fixtures/kit-fixture-abc123'
+        foreach ($printed in 'C:/fixtures/kit-fixture-abc123/specs/001-x/spec.md', 'C:\fixtures\kit-fixture-abc123\specs\001-x\spec.md', 'C:\fixtures\kit-fixture-abc123/specs\001-x/spec.md') {
+            $out = ConvertTo-NormalisedOutput -Text "SPEC_FILE: $printed" -RepoPath $repo
+            $out.Trim() | Should -Be 'SPEC_FILE: <ROOT>/specs/001-x/spec.md'
+        }
+    }
+
+    It 'leaves a backslash that is not part of a path under the repository alone' {
+        $out = ConvertTo-NormalisedOutput -Text 'a\b under C:/fixtures/kit-fixture-abc123 then x\y' -RepoPath 'C:/fixtures/kit-fixture-abc123'
+        $out.Trim() | Should -Be 'a\b under <ROOT> then x\y'
     }
 
     It 'still replaces the sha inside a line that also carries an instant' {

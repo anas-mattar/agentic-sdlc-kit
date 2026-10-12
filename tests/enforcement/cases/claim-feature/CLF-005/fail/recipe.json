@@ -1,0 +1,13 @@
+{
+  "description": "CLF-005 fail: no create-new-feature.ps1 under .specify/scripts/powershell/. The claim allocates a number, finds nothing to delegate to and refuses, exit 1. Differs from the pass direction in the stock script, and in nothing else.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    }
+  ]
+}

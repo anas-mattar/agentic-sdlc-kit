@@ -60,7 +60,7 @@ objects are first-class recipe states for the same reason.
 }
 ```
 
-Beyond the fields shown, a recipe may carry `origin`, `detach`, `uncommitted`, `truncateCommit`,
+Beyond the fields shown, a recipe may carry `origin`, `originPushUrl`, `detach`, `uncommitted`, `truncateCommit`,
 `nestedRepos` and `noGit` — the full list, with what each is for, is the header comment of
 `lib/FixtureRepo.psm1`. `noGit` leaves a plain directory that is not a repository (the state
 `territory-check.ps1` refuses first); it is refused alongside `shallow` or `nestedRepos`.

@@ -1,0 +1,4 @@
+WARNING: No origin remote configured — allocating from the LOCAL ledger only. This claim is NOT team-visible.
+Allocating feature number 001 (next free across local + remote + specs/).
+create-new-feature.ps1 failed:
+stub says no

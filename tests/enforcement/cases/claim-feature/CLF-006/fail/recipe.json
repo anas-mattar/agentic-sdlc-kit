@@ -1,0 +1,20 @@
+{
+  "description": "CLF-006 fail: the stock script exits non-zero. The claim reports its output and refuses, exit 1. Differs from the pass direction in whether that script exits non-zero, and in nothing else.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        ".specify/scripts/powershell/create-new-feature.ps1": [
+          "# Fixture stub of .specify/scripts/powershell/create-new-feature.ps1 that fails on purpose: it prints one line",
+          "# and exits non-zero, which is what scripts/claim-feature.ps1 reports as \"create-new-feature.ps1 failed\".",
+          "param([switch]$Json, [int]$Number, [string]$ShortName, [Parameter(ValueFromRemainingArguments)]$Rest)",
+          "Write-Output 'stub says no'",
+          "exit 1"
+        ]
+      }
+    }
+  ]
+}

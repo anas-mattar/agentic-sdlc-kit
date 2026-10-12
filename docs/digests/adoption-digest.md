@@ -27,6 +27,8 @@
 - Roster checks are graded only where a roster is declared; names match exactly (one name per Owner cell), case aside. (`adoption/updating.md`)
 - Under -All a code repo that graded nothing is named by a run-level UNGRADED beside a graded one; exit stays 0. (`adoption/updating.md`)
 - territory-check's four refusals print their message and exit 1 themselves; the no-trunk hint names -All -Repo. (`adoption/updating.md`)
+- claim-feature's seven refusals now print their message and exit 1 themselves; a successful claim is unchanged. (`adoption/updating.md`)
+- claim-feature still dies in a throw if ls-remote fails, and a push the remote refuses reads as a lost race. (`adoption/updating.md`)
 - Surgical files carry project-filled content: re-apply by hand only what applies — an ordinary governance edit. (`adoption/updating.md`)
 - verify-kit.ps1 is the adoption doctor: read-only, runs at init end, update end, and in adopted-project CI. (`adoption/updating.md`)
 - kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. (`adoption/updating.md`)
