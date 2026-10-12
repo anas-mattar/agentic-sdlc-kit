@@ -4,6 +4,7 @@
 **Input**: Feature specification (approved, anas.m, 2026-10-12) + decisions D1–D7 below
 **Gate Batching**: none
 **Gate Certification**: user-run
+**Amendment approved by**: anas.m, 2026-10-12
 
 ## Summary
 
@@ -171,11 +172,13 @@ docs/digests/**                           # phase 2
 
 ## Needs the owner
 
-1. **D1: copy `Stop-Refused`, or share it?** Recommended: copy (six lines, the claim stays standalone, `territory-check.ps1`
-   stays untouched). Approving the plan approves the copy.
-2. **D2: exempt site 135, or build a hook field to fixture it?** Recommended: exempt, with the written reason in D2.
-   Approving the plan approves the exemption (exempt rules three to four).
-3. **The plan's approval**: then `tasks.md`.
+1. **Decided (anas.m, 2026-10-12, by approving the plan as written): D1, copy `Stop-Refused`.** Recommended and approved:
+   a copy (six lines, the claim stays standalone, `territory-check.ps1` stays untouched). The alternative, a shared
+   helper in `scope-lib.ps1`, would add a phase that touches `territory-check.ps1`.
+2. **Decided (anas.m, 2026-10-12, by approving the plan as written): D2, exempt site 135.** Recommended and approved: exempt,
+   with the written reason in D2 (exempt rules three to four). The alternative, a hook recipe field, would add a harness task
+   to phase 1.
+3. **The plan's approval**: given (anas.m, 2026-10-12); `tasks.md` is already written and follows it.
 
 ## Complexity Tracking
 
