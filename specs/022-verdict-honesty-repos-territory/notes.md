@@ -238,3 +238,23 @@ The measurement was run twice: once on the Phase 3 documents with the measured p
 on the final documents. The exit codes and the set of files that differ between S1 and S2 are identical in both passes;
 the only difference between the passes' outputs is the scratch directory name that `doc-lint` prints in its
 `scanned N governance docs under <path>` line.
+
+### T016: the final run on an isolated checkout
+
+Run on a detached `git worktree` of `5e82b34` (the phase 3 commit) outside the repository, removed afterwards; nothing in
+this repository was written by it.
+
+| Check | Result |
+|---|---|
+| `scope-check.ps1 -Commit <sha> -Branch 022-verdict-honesty-repos-territory` on each commit since `b4987a1` | the four spec, plan and tasks commits (`bcf2750`, `192b141`, `a5ac721`, `c300851`): `not applicable` (no `phase N` token); the five phase commits: **PASS**: `cea8cce` (31 files), `3ed189e` (8), `6c3c27f` (31), `4b845dd` (6), `5e82b34` (5) |
+| `ritual-checks.ps1 -Branch 022-verdict-honesty-repos-territory` | **RESULT OK**: `doc-lint`, `enforcement-pack`, `scope-check`, `digests` (98 markers), `roadmap-claims` OK; `scope-repos` and `verify-kit` n/a |
+| Full harness | **1373 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
+| Coverage | exempt rules **3** (parent of this feature: 7); `territory-check.ps1` 22 of 23 sites fixtured, 1 not a rule (was 18 of 23); `scope-check-repos.ps1` 29 of 30, 1 exempt |
+
+Counts across the feature: full harness 1335 on the parent of phase 1, 1355 on the parent of phase 2, 1373 now (phase 1
+added 20 including its remediation, phase 2 added 18). This commit adds only this section to `notes.md`; it carries no
+`phase N` token and is not graded by the scope check. Remaining: the owner's gate, the human review of the three phases,
+and the merge. Open items for the owner: F5 (is `pwsh -File` the only supported contract for `territory-check.ps1`),
+F6 (optional `GIT_CEILING_DIRECTORIES` hardening), whether to open a roadmap row for `claim-feature.ps1`'s seven
+terminating `Write-Error` sites, and the stale `wt-base` worktree under the system temp directory, which this session did
+not create and did not remove.
