@@ -19,6 +19,13 @@
           "[PSCustomObject]@{ BRANCH_NAME = $b } | ConvertTo-Json -Compress"
         ]
       }
+    },
+    {
+      "branch": "feature-x",
+      "message": "work",
+      "write": {
+        "work.txt": "work\n"
+      }
     }
   ],
   "checkout": "main"

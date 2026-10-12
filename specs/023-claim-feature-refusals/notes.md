@@ -102,8 +102,57 @@ Every pre-existing case passes unchanged.
 - **An eighth terminating site, outside the spec's seven.** `scripts/claim-feature.ps1` line 47, in `Get-RemoteFeatureHeads`:
   `throw "git ls-remote failed — cannot read the remote ledger."`. It is the same species (a terminating write under
   `$ErrorActionPreference = 'Stop'`: the process exits through PowerShell's error path, not through the script's own exit),
-  but a `throw`, so the spec's grep for `Write-Error` missed it and the coverage sweep does not report it. It is reachable only
-  when `git ls-remote` fails right after a successful `git fetch`, which a fixture cannot produce without a new recipe
-  field. Left unchanged: FR-006 forbids other behaviour changes, and widening the spec mid-phase needs an approved amendment.
+  but a `throw`, so the spec's grep for `Write-Error` missed it and the coverage sweep does not report it (`throw` matches no
+  candidate pattern of the recall sweep; confirmed by the phase 1 review). *Corrected after that review (F3):* it is not reachable
+  only after the first fetch. `Get-RemoteFeatureHeads` has three callers: after the first fetch, after **every push** (the rival
+  check), and after the in-loop re-fetch. After a push that succeeded the claim is already live on origin, so a wrapper sees a
+  failure for a claim that was in fact taken, the misreading the spec's US1 priority note warns about. A fixture would need
+  `git ls-remote` to fail after a successful fetch or push, which no recipe field builds. Left unchanged: FR-006 forbids other behaviour changes, and widening the spec mid-phase needs an approved amendment.
   Decision (the owner's go-ahead, 2026-10-12, "go with your recommendation"): record it, do not widen; it goes in the phase 2
   decisions-log entry as open. A later feature can convert it and add the field.
+
+### Phase 1 AI review and its remediation
+
+Review: `ai-code-review-phase-1.md` (fresh-context reviewer, REQUEST CHANGES; the script change itself was confirmed correct:
+the seven messages byte-identical, the three successful claims identical, the remote branch withdrawn before the refusal on a
+forced race, two mutations turning their cases red).
+
+**F1 (blocking): the exemption of site 135 rested on a false premise, and the plan approval had accepted it.** The plan,
+`rules.json` and `emission-idioms.json` said the site could only be reached by a rival claim appearing between allocation and the
+check. The loop treats `-not $pushOk` as a lost race, so a push that fails with no rival reaches it too: the reviewer reached it
+with one `git config remote.origin.pushurl <missing path>` on the `CLF-004/pass` fixture. The owner re-decided on 2026-10-12
+(option (a), "go with your recommendation"): fixture it.
+
+- `originPushUrl`, a new recipe field in `FixtureRepo.psm1` shaped like `originFetch`: a push URL under the fixture that does not
+  exist while the fetch URL is untouched; refused without `origin`; three self-tests in `Harness.Tests.ps1` (it sets the push URL
+  and leaves the fetch URL alone; it leaves none when not asked; it is refused without `origin`). README and header documented.
+- `CLF-007` fail/pass: the `CLF-004/pass` recipe with and without the field. The fail expects `Allocating ...`, three `WARNING: Number
+  NNN was claimed concurrently () — renumbering.` lines, two `Renumbered: NNN-probe -> NNN-probe` lines and the refusal, exit 1.
+  The expectation was written by hand before the first run and matched on the first run. On the parent's script the `fail`
+  fails (exit **97**, the launcher's line) and the `pass` passes.
+- The exemption is gone from `rules.json` (the summary and law rewritten, F4), the race warning's not-a-rule reason now cites
+  the `CLF-007` fail, the idiom `note` no longer says anything is exempt.
+- Amendments, each carrying `Amendment approved by: anas.m, 2026-10-12`: spec (the site-135 row of Background, US2 scenario 3, the
+  Assumptions bullets), plan (D2, summary, the Technical Context and Constitution lines that follow, the file list now naming
+  `FixtureRepo.psm1`, `Harness.psm1` and `Harness.Tests.ps1`, Testing Strategy, Needs the owner, Complexity Tracking), tasks
+  (the phase 1 purpose, T002, T003, T005). Nothing was ticked or approved by this session.
+
+**F2** fixed: `CLF-003/pass` keeps the `feature-x` commit, so the pair differs only in `checkout` (and the description). **F3** fixed
+in the section above (the `throw` also fires after a successful push). **F4** fixed with F1: `CLF-007`'s summary says the remote claim
+is withdrawn (nothing landed in the failing-push fixture, and the refusal leaves the local branch and spec directory in place,
+renumbered twice) and its law cites FR-004. **F5** recorded, not fixed (FR-006): a failed `git push` (an authentication or network
+failure) is reported as `Number NNN was claimed concurrently ()` with an empty rival list; the script renumbers three times, burning
+three numbers, and ends with the lost-race message, which misdiagnoses the cause. A candidate roadmap gap next to the line-47 `throw`,
+for phase 2's decisions-log entry. **F6**: no action; the refusal is on the process's stderr, as in feature 022's F5, and the owner's
+answer to that applies here.
+
+| Measurement after the remediation | Value |
+|---|---|
+| `-Case CLF-` | 74 passed, 0 failed (16 cases) |
+| Full harness | **1410 passed**, 0 failed, 0 skipped (1403 before; 7 more: the `CLF-007` pair at two checks each, plus the 3 `originPushUrl` self-tests) |
+| Coverage | `claim-feature.ps1` **7 of 10** sites fixtured (3 not a rule, nothing exempt); exempt rules **3** (the parent's three; the `CLF-007` exemption added and withdrawn within phase 1) |
+| `ritual-checks.ps1` | `RESULT OK` |
+
+Not exercised: the Linux CI leg (the reviewer read the stub, line endings, default branch and the nested push for Linux risks and
+found none; nothing was run there). Left for the owner: the reviewer created an empty directory `D:\LongDirectoryNameForShortTest_cr`
+outside the repository while testing Windows short temp paths; a safety check blocked its removal.

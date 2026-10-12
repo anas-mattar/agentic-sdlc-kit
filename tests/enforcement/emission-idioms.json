@@ -233,10 +233,10 @@
         },
         {
           "anchor": "was claimed concurrently",
-          "reason": "The per-attempt warning printed when a rival claim with the same number is seen on origin, before the script renumbers and tries again. It sits in the same path as CLF-007 (lost the race three times), which the fixture model cannot reach, and is covered by that rule's written exemption (feature 023 plan D2)."
+          "reason": "The per-attempt warning printed when a rival claim with the same number is seen on origin, before the script renumbers and tries again. It sits in the path of CLF-007 (lost the race three times) and is asserted verbatim, three times, by the CLF-007 fail case (a push URL that does not exist makes every push fail, which the loop reports as a lost race)."
         }
       ],
-      "note": "Added in feature 023 (GAP-031), when the script entered the coverage sweep. Its seven refusals were Write-Error calls, which under ErrorActionPreference = 'Stop' throw before the exit 1 beneath them; they are now Stop-Refused calls and each is fixtured, except the lost-race one (CLF-007, exempt with a written reason)."
+      "note": "Added in feature 023 (GAP-031), when the script entered the coverage sweep. Its seven refusals were Write-Error calls, which under ErrorActionPreference = 'Stop' throw before the exit 1 beneath them; they are now Stop-Refused calls and each is fixtured (CLF-001 to CLF-007)."
     }
   ]
 }

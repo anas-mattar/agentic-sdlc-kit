@@ -11,7 +11,7 @@
 `scripts/claim-feature.ps1` reports seven refusals with `Write-Error` under `$ErrorActionPreference = 'Stop'`, so the
 `exit 1` after each is unreachable: the same defect feature 022 closed in `scripts/territory-check.ps1`. Two phases,
 each independently revertible. First the script and its proof, fixtures first: `Stop-Refused` at the seven sites, a
-fail and a pass fixture for each of the six that a fixture can reach, the script brought into the coverage sweep. Then
+fail and a pass fixture for each of the seven (the lost-race site reached through one new recipe field, D2 as amended), the script brought into the coverage sweep. Then
 the guidance, the flow-down note, the roadmap and a measurement over clones of the three adopted projects. No new
 script, no new library file, no new recipe field, no verdict word (the script has none).
 
@@ -21,13 +21,13 @@ script, no new library file, no new recipe field, no verdict word (the script ha
 **Primary Dependencies**: none new
 **Storage**: files and git state only
 **Testing**: the enforcement harness (`tests/enforcement/`): real temporary git repositories, hand-written expectations,
-a passing and a failing fixture per rule. Recipe fields that already exist reach every fixtured site: `noGit`,
+a passing and a failing fixture per rule. Recipe fields that already exist reach six of the seven sites (the seventh needs `originPushUrl`, D2): `noGit`,
 `uncommitted`, `origin`, `checkout`, `copy`, run with the case's `noRoot` (the script has no `-Root`).
 **Target Platform**: any runner with `pwsh` and `git`
 **Project Type**: governance tooling (scripts plus documents)
 **Constraints**: a successful claim prints the same bytes and exits 0 (SC-001); the seven refusals keep their wording and
 exit 1; the lane is Standard (spec, "Why this is Standard and not Micro")
-**Scale/Scope**: one script changed, one coverage list and one idiom entry extended, about eight rules' fixtures, three
+**Scale/Scope**: one script changed, one recipe field added (D2), one coverage list and one idiom entry extended, about eight rules' fixtures, three
 documents, digests
 
 ## Constitution Check
@@ -40,7 +40,7 @@ documents, digests
   The messages name paths and branches only.
 - [ ] **External Integration Governance (VII)**: not applicable.
 - [x] **Testing Requirements (VIII)**: every reachable refusal has a passing and a failing fixture, hand-written; the one
-  that is not reachable is exempt with a written reason (D2), subject to the owner.
+  that was first thought unreachable is fixtured through a new recipe field (D2, as amended after the phase 1 review).
 - [x] **Human Review (IX)**: gate-6 human review at merge; each phase has a fresh-context AI review with Reviewer
   Provenance. Constitution IX is unchanged.
 - [x] **Controlled Delivery (X)**: two phases, one at a time. This changes an enforcement-adjacent script, so the owner
@@ -62,23 +62,28 @@ script's own site 108 is about: `claim-feature.ps1` runs before any feature exis
 installed, and a missing library would break the command that reports exactly that. The cost is six duplicated lines, both copies fixtured. Alternative:
 a shared helper in `scope-lib.ps1`; say if you want it, and the plan grows a phase that touches `territory-check.ps1`.
 
-**D2 — Site 135 (lost the allocation race three times) is exempt with a written reason, not fixtured (FR-004).** The
-refusal fires only when, after each of three pushes, a rival claim with the same number is on `origin`. The script
-allocates the next number free across the remote ledger, so a rival present *before* allocation is never the same number;
-the rival has to appear between allocation and the check, on every attempt. The recipe cannot build that, and a git hook
-on the fixture's origin would be a new recipe field (hooks are shell scripts, behaving differently on Windows and Linux
-runners) that asserts the hook, not the rule. The exemption has the shape of `AMEND-007` and `REPOS-033`: reachable only by a
-state the fixture model cannot produce honestly, written down rather than faked. Effect: the exempt-rule count goes from
-three to four (SC-003 allows at most one). Site 135 still gets `Stop-Refused` and its message is covered by reading,
-the review and the same function every other site calls, which the six fixtures exercise. Alternative: build the hook
-field; say if you want it, and phase 1 gains a harness task.
+**D2 — Site 135 (lost the allocation race three times) is fixtured through a new `originPushUrl` recipe field (FR-004).**
+*Amended after the phase 1 AI review (F1).*
+**Amendment approved by**: anas.m, 2026-10-12
+The plan first exempted this site, on the
+premise that it fires only when a rival claim with the same number is on `origin` after each of three pushes, a rival that
+would have to appear between allocation and the check. That premise was false: the loop treats `-not $pushOk` as a lost
+race, so a push that fails with no rival reaches the site too. The recipe builds that with one field, shaped like
+`originFetch`: `originPushUrl` gives `origin` a separate push URL, a path under the fixture that does not exist, while its
+fetch URL stays as it was, so a fetch and an ls-remote still read the ledger and every push fails. The pair is the
+`CLF-004` pass with and without the field. The fail shows three `WARNING: Number NNN was claimed concurrently ()` lines,
+two `Renumbered:` lines and the refusal, exit 1; nothing landed on origin, so nothing is withdrawn. The refusal leaves the
+local branch and its spec directory in place, renumbered twice (`CLF-007`'s summary says only that the remote claim is
+withdrawn, not that nothing is left). The field is refused without `origin`, with a self-test. Effect: the exempt-rule count
+stays at three, and SC-003 holds at its lower bound. Alternative recorded and not taken: keep the exemption with a truthful
+reason (reachable by a failing push, not fixtured because no recipe field sets a push URL).
 
 **D3 — The refusals keep to the error stream and `-Json` is unchanged (FR-001, FR-006).** As in 022: the message goes to
 the error stream, so a human at a terminal sees the same stream as before. With `-Json` a refusal is still a message and
 exit 1 with no JSON object (spec US1 scenario 7); no error object is added.
 
 **D4 — Fixtures, rule ids and the coverage sweep (FR-003, FR-005).** Rule ids `CLF-001` to `CLF-006` for sites 72, 79, 84,
-96, 108, 112 and `CLF-007` for site 135 (exempt). `CLAIM-` is taken by `roadmap-claim-check.ps1`. Cases live under
+96, 108, 112 and `CLF-007` for site 135 (fixtured through `originPushUrl`, D2). `CLAIM-` is taken by `roadmap-claim-check.ps1`. Cases live under
 `tests/enforcement/cases/claim-feature/`. Each pair differs only in the condition: `noGit` (72), `uncommitted` (79), the
 checked-out branch (84), where `origin` points (96), the presence of the stub `create-new-feature.ps1` (108), whether that
 stub exits non-zero (112). Stubs are plain files under the case directory placed by the recipe's `copy` field; the
@@ -87,8 +92,7 @@ success stub creates the branch and spec directory and prints the JSON the scrip
 line that preceded it). The script is added to the coverage test's list of grading scripts and gets an entry in
 `emission-idioms.json` with `Stop-Refused\s+['"]` and `Write-Warning\s` as accumulators; its three warnings (no origin,
 `-NoPush`, and the per-attempt race warning) are declared not-a-rule with written reasons, the first two because the
-success-path `pass` cases assert them verbatim, the third because it sits in CLF-007's unreachable path, so the exempt-rule
-count rises only by CLF-007. The recall sweep is run first and anything else it reports is classified the same way.
+success-path `pass` cases assert them verbatim, the third because the `CLF-007` fail asserts it verbatim, so no rule is exempt. The recall sweep is run first and anything else it reports is classified the same way.
 
 **D5 — A baseline measures the parent before anything changes (spec, Background).** The spec says the terminal exit is
 already 1 for these refusals; it is measured on territory-check, not here. Phase 1's first task records, on the parent
@@ -110,7 +114,7 @@ ships.** The same entry records what the owner decided on D1 and D2.
 Detailed tasks and the per-phase **Territory** blocks are in `tasks.md`.
 
 1. **The refusals and their proof.** D1–D5. Delivers US1 and US2 and FR-001 to FR-006: `Stop-Refused` at seven sites,
-   fixtures first and shown failing on the parent, the script in the coverage sweep, the exempt rule for site 135.
+   fixtures first and shown failing on the parent, the script in the coverage sweep, a recipe field to reach site 135 and its pair.
 2. **Guidance, flow-down, measurement.** D6, D7. `adoption/updating.md`, `docs/roadmap.md`, digests and the measurement
    over three clones (US3, FR-007, SC-001).
 
@@ -133,6 +137,9 @@ scripts/claim-feature.ps1                 # phase 1: Stop-Refused at the seven s
 tests/enforcement/rules.json              # phase 1: CLF-001..CLF-007
 tests/enforcement/emission-idioms.json    # phase 1: the script's idiom entry
 tests/enforcement/Coverage.Tests.ps1      # phase 1: the list of grading scripts
+tests/enforcement/lib/FixtureRepo.psm1    # phase 1: the originPushUrl recipe field (D2, as amended)
+tests/enforcement/lib/Harness.psm1        # phase 1: path normalisation after <ROOT> (needed for the success fixtures; not in the plan as first approved)
+tests/enforcement/Harness.Tests.ps1       # phase 1: self-tests for both
 tests/enforcement/cases/claim-feature/    # phase 1: fixtures and stubs
 adoption/updating.md                      # phase 2: flow-down note
 docs/roadmap.md                           # phase 2
@@ -146,7 +153,7 @@ docs/digests/**                           # phase 2
 
 - Each rule is first written as a failing fixture and shown failing on the parent commit, then the behaviour lands.
   The harness runs the script with the case's working directory set to the fixture (`noRoot`).
-- Phase 1 fixtures: a `fail` and a `pass` for each of `CLF-001` to `CLF-006`, differing only in the condition; the `fail`
+- Phase 1 fixtures: a `fail` and a `pass` for each of `CLF-001` to `CLF-007`, differing only in the condition; the `fail`
   expects the message and exit 1 (not the launcher's 97 or 128). Success-path `pass` cases pin the output a successful
   claim prints today: no origin (with its warning), an origin that takes the push, and `-NoPush` (with its warning), each
   exit 0; these also own the warning sites.
@@ -175,11 +182,10 @@ docs/digests/**                           # phase 2
 1. **Decided (anas.m, 2026-10-12, by approving the plan as written): D1, copy `Stop-Refused`.** Recommended and approved:
    a copy (six lines, the claim stays standalone, `territory-check.ps1` stays untouched). The alternative, a shared
    helper in `scope-lib.ps1`, would add a phase that touches `territory-check.ps1`.
-2. **Decided (anas.m, 2026-10-12, by approving the plan as written): D2, exempt site 135.** Recommended and approved: exempt,
-   with the written reason in D2 (exempt rules three to four). The alternative, a hook recipe field, would add a harness task
-   to phase 1.
+2. **Decided (anas.m, 2026-10-12): D2, first exempt site 135, then, after the phase 1 review showed the premise false, fixture it
+   through `originPushUrl`.** Approved by the owner on the same day (the record is on D2). Exempt rules stay at three.
 3. **The plan's approval**: given (anas.m, 2026-10-12); `tasks.md` is already written and follows it.
 
 ## Complexity Tracking
 
-No constitution violation to justify. One duplication (D1) and one exemption (D2), both stated above.
+No constitution violation to justify. One duplication (D1), stated above; D2's exemption was withdrawn after the phase 1 review.

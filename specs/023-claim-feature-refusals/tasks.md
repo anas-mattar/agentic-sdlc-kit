@@ -21,9 +21,11 @@ run on an isolated checkout of the final commit, never in a working directory so
 
 ## Phase 1: The refusals and their proof (US1, US2; FR-001–FR-006)
 
-**Purpose**: the seven refusals of `claim-feature.ps1` reach their own message and exit 1; the six a fixture can reach are
-proved by a fail and a pass; the script is in the coverage sweep; site 135 is exempt with a written reason. A successful
-claim prints what it printed before.
+**Purpose**: the seven refusals of `claim-feature.ps1` reach their own message and exit 1; each is proved by a fail and a pass
+(the lost-race site through a new `originPushUrl` recipe field); the script is in the coverage sweep. A successful claim
+prints what it printed before.
+This purpose, T002, T003 and T005 were reworded after the phase 1 AI review (F1): the lost-race site is fixtured, not exempt.
+**Amendment approved by**: anas.m, 2026-10-12
 
 **Territory**:
 
@@ -38,15 +40,17 @@ claim prints what it printed before.
       measured on `territory-check.ps1` only.
 - [ ] T002 Write the fixtures first (plan D4, Testing Strategy), under `tests/enforcement/cases/claim-feature/`: a `fail`
       and a `pass` for each of `CLF-001` (`noGit`), `CLF-002` (`uncommitted`), `CLF-003` (checked-out branch), `CLF-004`
-      (where `origin` points; the pass pushes to `origin: self`), `CLF-005` (no stub `create-new-feature.ps1` against a
-      stub present) and `CLF-006` (a stub that exits non-zero against one that succeeds), differing only in the condition;
-      the stubs are plain files placed by `copy`, each carrying a comment naming the output contract the real script
+      (where `origin` points; the pass pushes to a repository nested as `origin`), `CLF-005` (no stub `create-new-feature.ps1`
+      against a stub present), `CLF-006` (a stub that exits non-zero against one that succeeds) and `CLF-007` (the pass with and
+      without an `originPushUrl` that does not exist: every push fails, the loop reads it as a lost race), differing only in the
+      condition; add the `originPushUrl` recipe field to `FixtureRepo.psm1` with its self-tests; the stubs are plain files
+      written by the recipe, each carrying a comment naming the output contract the real script
       reads (`BRANCH_NAME`). Add success-path `pass` cases for a claim with no origin, one with an origin that takes the
       push, and one with `-NoPush`. Expectations by hand; remember the harness reads stdout and then stderr. Run them on
       the parent commit and record that each `fail` fails there for the stated reason (the launcher's line, exit 97 or
       128) and each `pass` passes.
-- [ ] T003 Bring the script into the coverage sweep: add `CLF-001` to `CLF-006` and the exempt `CLF-007` (site 135, the
-      written reason of plan D2) to `tests/enforcement/rules.json`, with each rule's anchor and law; add the script to the
+- [ ] T003 Bring the script into the coverage sweep: add `CLF-001` to `CLF-007` (site 135 included, plan D2 as amended)
+      to `tests/enforcement/rules.json`, with each rule's anchor and law; add the script to the
       list in `tests/enforcement/Coverage.Tests.ps1`; add its entry to `tests/enforcement/emission-idioms.json` with the
       `Stop-Refused\s+['"]` and `Write-Warning\s` accumulators and the three warnings declared not-a-rule with written
       reasons (plan D4). Run the sweep and classify anything else it reports.
@@ -55,7 +59,7 @@ claim prints what it printed before.
       message text, including the embedded dirty paths and the stock script's output. Nothing else in the script changes.
 - [ ] T005 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
       unchanged, every new fixture as written, the coverage report lists `claim-feature.ps1` with no unowned site and the
-      exempt count at four. Re-run T001's refusals and successful claims under `pwsh -File` and diff against the saved text:
+      exempt count unchanged at three. Re-run T001's refusals and successful claims under `pwsh -File` and diff against the saved text:
       the message is the same, the exit is the same, and a successful claim is byte-identical.
 
 ---

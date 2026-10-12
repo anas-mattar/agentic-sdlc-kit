@@ -2192,11 +2192,10 @@
       "id": "CLF-007",
       "script": "claim-feature.ps1",
       "function": "(top level)",
-      "summary": "a claim that loses the allocation race three times is refused rather than left half made",
-      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
+      "summary": "a claim whose pushes keep failing or keep meeting a rival is refused, with its remote claim withdrawn, rather than pushed under a contested number",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003, FR-004 (amended); roadmap GAP-031",
       "emitAnchor": "Lost the allocation race",
-      "exemption": "A claim loses the allocation race three times only if, after each of three pushes, a rival claim with the same number is on origin. The script allocates the next number free across the remote ledger, so a rival that exists before allocation never has the same number: the rival has to appear between allocation and the check, on every attempt. The recipe cannot build that, and a git hook on the fixture's origin would be a new recipe field (hooks are shell scripts that behave differently on Windows and Linux runners) that asserts the hook, not the rule. Exempted rather than faked, in the manner of AMEND-007 and REPOS-033: the site still calls Stop-Refused, the same function the six fixtured refusals exercise.",
-      "notes": "Feature 023 plan D2, approved by the owner (anas.m, 2026-10-12). The warning the script prints on each lost attempt (was claimed concurrently) sits in the same unreachable path and is declared not-a-rule in emission-idioms.json under this rule's exemption."
+      "notes": "Added exempt in feature 023 phase 1 on the premise that only a rival claim appearing between allocation and the check could reach this site. The phase 1 AI review (F1) showed that false: the loop treats a failed push as a lost race, so any push that fails does the same. Fixtured by CLF-007 through the originPushUrl recipe field (a push URL that does not exist, origin reading fine), which the owner approved as a plan amendment (anas.m, 2026-10-12). The fail leaves the local branch and spec directory in place, renumbered twice; only the remote claim is withdrawn, and nothing landed here to withdraw."
     }
   ]
 }

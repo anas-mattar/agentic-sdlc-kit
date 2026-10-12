@@ -29,7 +29,7 @@ The seven sites, as of `main` at `12e9a1f`:
 | 96 | `git fetch origin failed — cannot claim against an unreachable ledger.` | `origin` is configured and the fetch fails |
 | 108 | `Stock script not found: <path> — partial kit install? Run scripts/doc-lint.ps1.` | `.specify/scripts/powershell/create-new-feature.ps1` is absent |
 | 112 | `create-new-feature.ps1 failed:` + its output | the stock script exits non-zero |
-| 135 | `Lost the allocation race 3 times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation).` | a rival claim with the same number is on `origin` after each of three pushes |
+| 135 | `Lost the allocation race 3 times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation).` | after each of three pushes, a rival claim with the same number is on `origin`, or the push itself failed (the loop reads a failed push as a lost race) |
 
 None has a fixture, and `claim-feature.ps1` is not one of the harness's nine grading scripts, so none appears in
 `tests/enforcement/rules.json` or in the coverage report.
@@ -93,7 +93,8 @@ fixtured rule, or declared exempt with a written reason.
 2. **Given** the change, **When** the harness runs, **Then** every `fail` shows its message and exit 1 and every `pass`
    shows a successful claim, differing from its `fail` in the one condition under test.
 3. **Given** the seventh refusal (lost the race three times), **When** the plan is written, **Then** it is either
-   fixtured or exempt with a written reason, and the coverage report shows which.
+   fixtured or exempt with a written reason, and the coverage report shows which. (As amended below it is fixtured, by a
+   push that fails with no rival: a new `originPushUrl` recipe field.)
 
 ---
 
@@ -178,10 +179,14 @@ with `-NoPush`, prints what it printed before.
 
 - The harness reaches this script the way it reaches `territory-check.ps1`: with the working directory set to the fixture
   (the script has no `-Root`), the fixture carrying a stub `create-new-feature.ps1` where a claim should succeed or fail on
-  purpose. Recipe fields that exist today (`noGit`, `uncommitted`, `origin`, `checkout`, `copy`) reach sites 72, 79, 84, 96,
-  108 and 112; none reaches 135, which needs a rival claim to appear between allocation and push.
+  purpose. Recipe fields that exist today (`noGit`, `uncommitted`, `origin`, `checkout`) reach sites 72, 79, 84, 96, 108 and
+  112. Site 135 was first thought to need a rival claim to appear between allocation and push, which the recipe cannot
+  build; the phase 1 AI review (F1) showed that any push that fails reaches it too, because the loop treats `-not $pushOk`
+  as a lost race, and a new recipe field, `originPushUrl` (a push URL that does not exist, origin reading fine), builds that.
+  This bullet, US2 scenario 3 and the site-135 row of the table in Background were corrected after the phase 1 AI review (F1).
+  **Amendment approved by**: anas.m, 2026-10-12
 - The refusal text stays on the error stream, as in feature 022, so a human at a terminal sees the same stream as before.
   Whether the helper is a second copy of `Stop-Refused` or a shared one is a plan decision.
-- Tip-of-spec questions left to the plan: how site 135 is accounted for (fixture by a means the recipe cannot offer today,
-  or an exemption), and whether the helper is shared between `territory-check.ps1` and this script.
+- Left to the plan, and decided there: whether the helper is shared between `territory-check.ps1` and this script (D1, a copy),
+  and how site 135 is accounted for (D2, as amended: fixtured through `originPushUrl`).
 - The script is kit-owned and flows down verbatim; no adopted project has a verdict from it to move.
