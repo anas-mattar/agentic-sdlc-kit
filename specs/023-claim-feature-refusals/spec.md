@@ -2,7 +2,8 @@
 
 **Feature Branch**: `023-claim-feature-refusals`
 **Created**: 2026-10-12
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-12
+**Status**: Approved (anas.m, 2026-10-12)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-031: scripts/claim-feature.ps1 reports seven refusals with Write-Error under ErrorActionPreference = 'Stop', so the exit 1 after each is unreachable. The same defect feature 022 closed in territory-check.ps1 (GAP-029). Give each refusal its own message and exit 1, prove each with a fixture, and tell adopters."
