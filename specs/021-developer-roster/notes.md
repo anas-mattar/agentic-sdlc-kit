@@ -371,18 +371,20 @@ carry no closed marker in the kit's precedent, so none was added.
   newline back.
 ### T020: the final run, on an isolated checkout of the phase 4 commit
 
-A detached `git worktree` of `382f5da`, outside the repository, removed afterwards (the main checkout was untouched and
-`git worktree list` shows only it):
+A detached `git worktree` of `447ad7b` (the phase 4 commit with its review remediation, after the phase 3 round 2 commit
+`f8303cc`), outside the repository, removed afterwards (the main checkout was untouched and `git worktree list` shows only it). An earlier run
+of the same kind on `382f5da` (1327 passed) is superseded by this one:
 
 | Measurement | Result |
 |---|---|
-| Full harness | **1327 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` (phase 3 remediation: 1327; phase 4 adds only documents) |
-| Coverage, `roadmap-claim-check.ps1` | 15 of 16 site(s) fixtured (1 not a rule: the UNGRADED roll-up) |
+| Full harness | **1335 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` (1327 after the phase 3 remediation, plus 8 assertions for the four round 2 cases; the phase 4 commits add only documents) |
+| Coverage, `roadmap-claim-check.ps1` | 16 of 17 site(s) fixtured (1 not a rule: the UNGRADED roll-up) |
 | `ritual-checks.ps1 -Branch 021-developer-roster` | every member OK (`scope-repos` and `verify-kit` `n/a`, as for the kit), `RESULT OK` |
-| `scope-check.ps1` on the phase 4 commit | PASS (10 files) |
+| `scope-check.ps1` | PASS on `f8303cc` (16 files, phase 3 round 2) and on `447ad7b` (6 files, phase 4) |
 
 Run without `-Branch` in the detached checkout, `ritual-checks.ps1` is `RESULT FAIL` on `enforcement-pack` ("Branch naming: 'HEAD'
 does not match a known taxonomy") and `scope-check` is `UNGRADED` (detached HEAD): the tool's own message says a wrapper must pass
 `-Branch`, as CI does. Recorded so it is not mistaken for a finding; the run above is the one that counts.
 
-The phase 3 gate and its second review round, the phase 4 AI review, the human reviews and the owner's gate are still to come.
+Still to come: the owner's gate for phases 3 and 4, the human reviews for phases 2 to 4, the owner's decisions on F4 (the roadmap row's wording)
+and on the proposed rewording of SC-001, and the phase 2 F2 fixtures decision.
