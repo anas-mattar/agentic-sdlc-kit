@@ -1,5 +1,5 @@
 {
-  "description": "The third member to reach the ungraded state: roadmap-claims, which feature 021 teaches to say UNGRADED when the tip date of a claim cannot be read. RIT-006 and RIT-007 prove the aggregator lifts the word for enforcement-pack and scope-check; a member is lifted only if its name is in $ungradedCapableMembers, so those prove nothing about this one, and without the name the word is read as OK (plan D8). Exit 0 in both directions: UNGRADED is a verdict, never an exit code. Differs from the pass direction in exactly one line of one stub (plan D10).",
+  "description": "A further member to reach the ungraded state: roadmap-claims, which feature 021 teaches to say UNGRADED when the tip date or the Owner of a claim cannot be read. RIT-006 and RIT-007 prove the aggregator lifts the word for enforcement-pack and scope-check. This one is a regression guard on the union of $naCapableMembers and $ungradedCapableMembers, which already lifted this member before feature 021 (phase 3 review F2: the plan's D8 premise was wrong), so it fails only if the name leaves both lists. Exit 0 in both directions: UNGRADED is a verdict, never an exit code. Differs from the pass direction in exactly one line of one stub (plan D10).",
   "defaultBranch": "main",
   "commits": [
     {

@@ -207,3 +207,43 @@ UNGRADED line shares the old, shorter phrase and the inventory counts hits per a
 
 The difference of 54 is exactly the new cases (27 x an exit-code and an output assertion). Every pre-existing case is
 unchanged. Run on this working tree; the isolated-checkout run of the final commit is T020.
+
+### Remediation of the phase 3 review (F1, F2, F5, F6)
+
+`ai-code-review-phase-3.md`: approve with follow-ups. Remediated here, in phase 3 Territory only:
+
+- **F1** (a claim took every row whose text contained its name). The Owner and count readings now bind a claim to
+  its row by a delimited token (the name bounded by characters that cannot continue a branch name, so a prefix claim
+  and a wildcard no longer match), preferring the row that holds `specs/<claim>`. The visibility reading is unchanged.
+  Where the rows left still name different Owners the claim is **not graded** and the verdict is `UNGRADED`, never a
+  guess and never a hard failure: a false failure would fail a lawful Owner. That is a new rule, `CLAIM-014`, not in the
+  review's list; the review offered "name the ambiguity as not graded" as the alternative to binding by Spec cell alone.
+  Fixtures: `CLAIM-009/fail-prefix-claim`, `CLAIM-011/pass-cross-reference-not-counted`, `CLAIM-014/{fail,pass,pass-same-owner-twice}`.
+- **F2** (the D8 wiring is a no-op). Correct: `roadmap-claims` was already in `$naCapableMembers`, the capture set is the
+  union of the two lists, and `RIT-008` is green on the parent. **Plan D8's premise ("roadmap-claims is not there, so its
+  UNGRADED line would be read as OK") was wrong; recorded here as a plan inaccuracy, the plan itself not amended.** The
+  `rules.json` note, the `RIT-008` fixture description and the `ritual-checks.ps1` comment now say what is true: the case
+  is a regression guard on the union of the two lists, and naming the member in `$ungradedCapableMembers` changes no verdict.
+  Not stated as fixed in phase 3's earlier results: "RIT-008 fails if the name is dropped" was wrong.
+- **F6** (a table with no Owner column beside one that has it). A claim whose only non-idea rows sit in a table with no
+  Owner column is named as not graded (`CLAIM-010`, second site), and the OK line then omits "Owners and claim counts graded
+  against the declared roster". Fixture `CLAIM-010/fail-claim-in-table-without-owner`.
+- **F5** (edge cases without a fixture): added `CLAIM-009/fail-stranger-with-two-claims`, `CLAIM-013/fail-ungraded-beside-a-finding`
+  (exit 1, the detail line kept, no UNGRADED verdict over a FAIL) and `CLAIM-013/fail-first-tip-unreadable`. Not fixtured, checked
+  by hand in the review and unchanged: the 14-day boundary and `In Progress` capitalisation.
+- **Not changed**: F3 (the Owner cell carries one roster name and nothing else; `-` and `TBD` are strangers) and F4 (a
+  one-developer roster is usable) go to the phase 4 guidance and the SC-003 measurement.
+
+Shown against the pre-remediation script (`660cccb`): `CLAIM-009/fail-prefix-claim`, `CLAIM-010/fail-claim-in-table-without-owner`,
+`CLAIM-011/pass-cross-reference-not-counted` and `CLAIM-014/fail` fail there (output); the F5 cases and the other `CLAIM-014` pair pass there,
+because they pin behaviour that was already right.
+
+| Measurement | Phase 3 | After remediation |
+|---|---|---|
+| `-Case CLAIM-` | 117 passed | 135 passed, 0 failed |
+| `-Case RIT-` | 129 passed | 129 passed, 0 failed |
+| Full harness | 1309 passed | **1327 passed**, 0 failed, 0 skipped, `enforcement-tests: OK` |
+| Coverage, `roadmap-claim-check.ps1` | 14 of 14 | 15 of 16 site(s) fixtured (1 not a rule: the UNGRADED roll-up) |
+| `ritual-checks.ps1` | RESULT OK | RESULT OK |
+
+The difference of 18 is exactly the nine new cases (an exit-code and an output assertion each). No pre-existing case changed.

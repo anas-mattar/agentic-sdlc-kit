@@ -1702,10 +1702,11 @@
       "id": "CLAIM-010",
       "script": "roadmap-claim-check.ps1",
       "function": "(owner)",
-      "summary": "a roster is declared and the roadmap table has no Owner column",
+      "summary": "a roster is declared and a claim has no Owner column to be read from: the whole roadmap, or the table the claim is in",
       "law": "specs/021-developer-roster FR-005, FR-007; plan Risks (roadmap shape)",
-      "emitAnchor": "has no Owner column",
-      "notes": "The existing n/a idiom for an adopter-authored roadmap in another shape: nothing to read an Owner from, so the check says it graded neither the Owners nor the claim counts instead of passing silently. It is a line before the OK verdict, not an n/a verdict, because the visibility reading did run."
+      "emitAnchor": "no Owner column",
+      "siteCount": 2,
+      "notes": "The existing n/a idiom for an adopter-authored roadmap in another shape: nothing to read an Owner from, so the check says it graded neither the Owners nor the claim counts instead of passing silently. It is a line before the OK verdict, not an n/a verdict, because the visibility reading did run. Two sites, one rule: the whole roadmap has no Owner column, and (review F6) a claim whose only rows sit in a table without one while another table has one; the second also withdraws the OK line's statement that Owners were graded."
     },
     {
       "id": "CLAIM-011",
@@ -1732,8 +1733,16 @@
       "summary": "the tip date of a candidate claim cannot be read, so the Owner's count is UNGRADED",
       "law": "specs/021-developer-roster FR-007, plan D7, D8; feature 015 (a comparison not made is never OK)",
       "emitAnchor": "the claim count for",
-      "siteCount": 2,
-      "notes": "Two sites, one rule: the line naming the Owner and the claim whose date was unreadable, and the verdict line that replaces OK so the ritual aggregate can lift the word (D8). A date is read only for an Owner with two or more candidate claims, so a corrupt tip on a lone claim reads nothing (pass-single-claim-reads-no-date). Exit 0 in both directions: UNGRADED is a verdict, never an exit code."
+      "notes": "The line naming the Owner and the claim whose date was unreadable; the UNGRADED verdict line that replaces OK is declared a roll-up in emission-idioms.json (it also carries CLAIM-014's clause). A date is read only for an Owner with two or more candidate claims, so a corrupt tip on a lone claim reads nothing (pass-single-claim-reads-no-date). Exit 0 in both directions: UNGRADED is a verdict, never an exit code."
+    },
+    {
+      "id": "CLAIM-014",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a claim is named by rows with different Owners and none of them holds its own Spec path, so it cannot be graded",
+      "law": "specs/021-developer-roster FR-005, FR-007, plan D4; phase 3 review F1; feature 015 (a comparison not made is never OK)",
+      "emitAnchor": "named by rows with different Owners",
+      "notes": "A claim is bound to its row by a delimited token, preferring the row that holds specs/<claim>; a row that only mentions it, or a claim whose name is a prefix of another, does not take it (CLAIM-009 fail-prefix-claim, CLAIM-011 pass-cross-reference-not-counted). When that still leaves rows that disagree on the Owner there is nothing true to grade, so the Owner and the count are not graded and the verdict is UNGRADED, never a guess: a false failure here would fail a lawful Owner. Exit 0."
     },
     {
       "id": "TERR-001",
@@ -1910,10 +1919,10 @@
       "id": "RIT-008",
       "script": "ritual-checks.ps1",
       "function": "(run verdict)",
-      "summary": "the ungraded state is lifted for roadmap-claims, the third member that can reach it",
+      "summary": "the ungraded state is lifted for roadmap-claims, a member that can now reach it",
       "law": "specs/021-developer-roster plan D8; feature 015 FR-010; roadmap GAP-027",
       "emitAnchor": "ritual-checks: RESULT UNGRADED",
-      "notes": "Feature 021 teaches roadmap-claim-check.ps1 to say UNGRADED when a claim's tip date cannot be read. $ungradedCapableMembers is an allow-list, so without 'roadmap-claims' in it that word would be summarised as OK (RIT-007's argument, for the next member). The stub prints the member's own UNGRADED line; the case asserts the word on the member's line and on the RESULT line, exit 0. Same emission site as RIT-006 and RIT-007, deliberately: the allow-list is not itself an emission site, and the site it governs is this one."
+      "notes": "Feature 021 teaches roadmap-claim-check.ps1 to say UNGRADED when a claim's tip date or Owner cannot be read. The member was already in $naCapableMembers, and $captureMembers is the union of that list and $ungradedCapableMembers, so the aggregator lifted its UNGRADED line before this feature: the plan's D8 premise that it would be read as OK was wrong (phase 3 review F2), and this case was green on the parent. It is a regression guard on the UNION of the two lists, not on the new name: it fails only if roadmap-claims leaves both. The stub prints the member's own UNGRADED line; the case asserts the word on the member's line and on the RESULT line, exit 0. Same emission site as RIT-006 and RIT-007, deliberately."
     },
     {
       "id": "AMEND-006",

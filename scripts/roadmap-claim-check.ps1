@@ -34,6 +34,14 @@
     never dropped. With no usable roster neither reading runs and the output is byte-identical to
     what it was before. The own claim of the checked branch is exempt from both, as from visibility.
 
+    These two readings bind a claim to its row by a delimited token (the name bounded by
+    characters that cannot continue a branch name), preferring the row whose Spec cell holds
+    specs/<claim>: a row that merely MENTIONS another claim in free text does not take it, and a
+    claim whose name is a prefix of another does not match the longer one. If the rows left name
+    different Owners the claim is not graded, said out loud and UNGRADED; a claim whose only rows
+    sit in a table with no Owner column is likewise said not to have been graded. The visibility
+    reading is unchanged.
+
 .EXAMPLE
     pwsh -File scripts/roadmap-claim-check.ps1
     pwsh -File scripts/roadmap-claim-check.ps1 -Branch 011-roadmap-claim-check
@@ -116,7 +124,7 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
     if ($statusIdx -lt 0) { continue }
     $status = if ($statusIdx -lt $cells.Count) { $cells[$statusIdx] } else { $null }
     $owner = if ($ownerIdx -ge 0 -and $ownerIdx -lt $cells.Count) { $cells[$ownerIdx] } else { $null }
-    $rows += @{ Text = $line; Status = $status; Owner = $owner }
+    $rows += @{ Text = $line; Status = $status; Owner = $owner; HasOwnerColumn = ($ownerIdx -ge 0) }
 }
 if ($rows.Count -eq 0) {
     Write-Host 'roadmap-claims: n/a (docs/roadmap.md has no table with a Status column)'
@@ -142,7 +150,8 @@ foreach ($claim in $claims) {
 $roster = @()
 if (Get-Command Get-DeveloperMode -ErrorAction SilentlyContinue) { $roster = @((Get-DeveloperMode -Root $Root).Roster) }
 $graded = $roster.Count -gt 0
-$ungraded = @()   # one entry per Owner whose count could not be made
+$skippedNoOwner = $false   # a claim whose only rows sit in a table with no Owner column
+$ungraded = @()   # one clause per reading that could not be made: an Owner's count, or a claim's Owner
 $visibilityFailures = $failures.Count
 if ($graded -and -not $ownerColumnSeen) {
     Write-Host 'roadmap-claims: not graded — a roster is declared but docs/roadmap.md has no Owner column, so neither the Owners nor the claim counts were checked'
@@ -154,7 +163,24 @@ if ($graded -and $ownerColumnSeen) {
     $candidates = [ordered]@{}   # lower-cased Owner -> @{ Name; Claims }
     foreach ($claim in $claims) {
         if ($ownNumber -and $claim -match "^$ownNumber-") { continue }   # own claim: exempt, as from visibility
-        $owned = @($rows | Where-Object { $_.Text -like "*$claim*" -and $_.Status -and $_.Status -ne 'idea' -and $_.Owner -and $_.Owner -ne '—' })
+        $token = [regex]::new("(?<![A-Za-z0-9._-])$([regex]::Escape($claim))(?![A-Za-z0-9._-])")
+        $bound = [regex]::new("specs/$([regex]::Escape($claim))(?![A-Za-z0-9._-])")
+        $named = @($rows | Where-Object { $token.IsMatch($_.Text) })
+        $mine = @($named | Where-Object { $bound.IsMatch($_.Text) })
+        if ($mine.Count -eq 0) { $mine = $named }
+        $live = @($mine | Where-Object { $_.Status -and $_.Status -ne 'idea' })
+        if ($live.Count -gt 0 -and @($live | Where-Object { $_.HasOwnerColumn }).Count -eq 0) {
+            Write-Host "roadmap-claims: not graded — claim '$claim' is in a roadmap table with no Owner column, so its Owner and its place in a count were not graded"
+            $skippedNoOwner = $true
+            continue
+        }
+        $owned = @($live | Where-Object { $_.Owner -and $_.Owner -ne '—' })
+        $distinctOwners = @($owned | ForEach-Object { $_.Owner.Trim() } | Sort-Object -Unique)
+        if ($distinctOwners.Count -gt 1) {
+            Write-Host "roadmap-claims: not graded — claim '$claim' is named by rows with different Owners ($($distinctOwners -join ', ')), so its Owner and its place in a count were not graded"
+            $ungraded += "the Owner of '$claim' was not graded"
+            continue
+        }
         foreach ($ownerName in @($owned | ForEach-Object { $_.Owner } | Select-Object -Unique)) {
             if ($rosterNames -notcontains $ownerName.Trim()) {
                 # -notcontains is case-insensitive; the roster is already deduplicated the same way (plan D3).
@@ -183,7 +209,7 @@ if ($graded -and $ownerColumnSeen) {
         }
         if ($unreadable) {
             Write-Host "roadmap-claims: not graded — the claim count for '$($entry.Name)' was not made: the tip date of '$unreadable' could not be read (git log failed on the tip commit, and a fetch did not supply it)"
-            $ungraded += $entry.Name
+            $ungraded += "the claim count for '$($entry.Name)' was not made"
         } elseif ($active.Count -gt 2) {
             $failures += "roadmap-claims: '$($entry.Name)' holds $($active.Count) active claims ($($active -join ', ')) — more than two is over the WIP limit in docs/sdlc/team-workflow.md; finish or release one before claiming another"
         } elseif ($active.Count -eq 2) {
@@ -201,9 +227,9 @@ if ($failures.Count -gt 0) {
     exit 1
 }
 $ownText = if ($ownNumber) { ", own claim $ownNumber exempt" }
-$gradedText = if ($graded -and $ownerColumnSeen) { ', Owners and claim counts graded against the declared roster' }
+$gradedText = if ($graded -and $ownerColumnSeen -and -not $skippedNoOwner) { ', Owners and claim counts graded against the declared roster' }
 if ($ungraded.Count -gt 0) {
-    Write-Host "roadmap-claims: UNGRADED ($checked claim(s) visible with non-idea rows; the claim count for $(($ungraded | ForEach-Object { "'$_'" }) -join ', ') was not made — the reason is on the line(s) above)"
+    Write-Host "roadmap-claims: UNGRADED ($checked claim(s) visible with non-idea rows; $($ungraded -join '; ') — the reason is on the line(s) above)"
     exit 0
 }
 Write-Host "roadmap-claims: OK ($checked claim(s) visible with non-idea rows$gradedText$ownText)"

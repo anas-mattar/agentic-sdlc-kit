@@ -1,0 +1,42 @@
+{
+  "description": "Two claims where one name is a prefix of the other, 011-a and 011-aaa, and a stranger on the longer one. The finding names 011-aaa and only 011-aaa: a claim does not take the row of a claim whose name merely begins with it (review F1).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing | in progress | ada | `specs/011-a/` |",
+          "| Thing | in progress | linus | `specs/011-aaa/` |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-a",
+      "message": "spec: 011-a",
+      "write": {
+        "specs/011-a/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

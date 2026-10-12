@@ -1,0 +1,2 @@
+roadmap-claims: not graded — claim '012-bbb' is in a roadmap table with no Owner column, so its Owner and its place in a count were not graded
+roadmap-claims: OK (2 claim(s) visible with non-idea rows)
