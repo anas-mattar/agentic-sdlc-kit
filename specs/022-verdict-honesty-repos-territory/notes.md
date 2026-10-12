@@ -166,3 +166,75 @@ PowerShell's error stream, so in-process `2>&1` / `2>$null` no longer see the me
 unaffected and plan D6 approved the method. Awaiting the owner's answer on whether `pwsh -File` is the only supported
 contract. F6: `TERR-008` assumes the OS temp directory is not inside a git work tree (true on this machine and both CI
 legs); `GIT_CEILING_DIRECTORIES` for `noRoot` cases would harden it. Optional.
+
+## Phase 3: guidance, flow-down and bookkeeping
+
+### T012: `docs/sdlc/review-process.md` step 3
+
+The sentence that said one repository going ungraded does not change the run-level verdict now says what the run-level
+line guarantees under `-All` (a repository that applied and graded nothing is named, also beside a `FAIL`; a repository
+that is `n/a` or `not applicable` is not), keeps "read the per-repository lines" for the per-phase tip command, and names
+the corrected no-trunk command. The `UNGRADED is not a pass` paragraph is untouched. No digest marker added or changed here.
+The file is surgical-class (`kit-manifest.json`), so adopters copy the passage by hand; the flow-down note says so.
+
+### T013: `adoption/updating.md`
+
+A flow-down note shaped like feature 021's (what was wrong, what it does now, what flows down, what an owner may newly see,
+what does not change, what was measured, what to do), placed before "3. Other surgical files", with two digest markers
+(111 characters of content each, limit 120). Brought up to date: the feature 012 bullet (the `-BaseRef` advice now names
+`-All -Repo <repo> -BaseRef <trunk>`), the feature 015 disclosure table (the two multi-repo rows: the run-level line, and
+the "summary hides a partly ungraded run" row, which was true until this feature) and the feature 018 paragraph (the four
+refusals are no longer "still open, GAP-029"). Every backticked path in the new text exists in an adopted project
+(`doc-lint` is `OK` in all three measured states). Verbatim on update: `scripts/scope-check-repos.ps1`,
+`scripts/territory-check.ps1`, `adoption/updating.md`; surgical: `docs/sdlc/review-process.md`.
+
+### T014: `docs/roadmap.md` and the digests
+
+GAP-029 and GAP-030 each gained a 2026-10-12 status (closed by feature 022); the feature row is `shipped`; a decisions-log
+entry is appended (what shipped, what was measured, what the owner decided, what the work corrected, what stays open).
+`build-digests.ps1` rebuilt the digests: 98 markers, only `docs/digests/adoption-digest.md` changed in content (the two new
+markers); the branching and critical digests show as modified in `git status` from line endings alone, not content.
+GAP-029 is closed for its four refusals; the same defect in `scripts/claim-feature.ps1` (seven sites, F4 above) was not
+opened as a row.
+
+### T015: the measurement (SC-003, FR-010)
+
+Method: for each project, `git clone` from its local directory into the scratchpad (never the real project), each declared
+code repository cloned in beside it, every remote branch made a local branch (the scripts read local branches), the outer
+status clean as the real project's `.gitignore` keeps it. Kit before: a detached worktree of `b4987a1` (the parent of
+this feature, `Merge pull request #66`), applied with `update-kit.ps1`, `build-digests.ps1` run, committed. Kit now: the
+working tree with the Phase 3 documents, applied the same way, digests rebuilt, committed. In each state: `doc-lint.ps1`,
+`scope-check-repos.ps1 -All` and `ritual-checks.ps1`, on `main` and with `-Branch <feature>` from `main` for each probed
+feature branch (a feature branch's own tree would run its older scripts). Probes: FitForge `002-identity-member-profile`;
+FlowBoard `009-card-attachments` and `008-realtime-sync`; ExpenseTracker `003-expense-entry` and `002-expenses-read`. States:
+S0 installed, S1 kit before (as applied and rebuilt), S2 kit now (as applied and rebuilt). Nothing was pushed.
+
+**Deviation from the plan (D9).** The plan says FitForge is the only adopted project with declared code repositories and so
+the only one whose verdict can move. All three declare `codeRepos` (FitForge `fitforge-api`/`fitforge-web`, FlowBoard
+`flowboard-api`/`flowboard-web`, ExpenseTracker `expense-tracker-api`/`expense-tracker-web`), so the probes cover all three.
+
+| Project / probe | `scope-check-repos -All`, S1 vs S2 | `ritual-checks` members, S1 vs S2 | Exit codes |
+|---|---|---|---|
+| FitForge `main` | `n/a` (trunk) both | same | same |
+| FitForge `002-identity-member-profile` | same: both repositories `PASS` | same (`scope-repos` `OK`; `enforcement-pack` `FAIL` in every state, S0 included, a consequence of probing a branch from `main`) | same |
+| FlowBoard `main` | `n/a` both | same | same |
+| FlowBoard `009-card-attachments`, `008-realtime-sync` | same: nothing graded anywhere, `UNGRADED (nothing was graded ...)` | same (`enforcement-pack` `FAIL` in every state) | same |
+| ExpenseTracker `main` | `n/a` both | same | same |
+| ExpenseTracker `002-expenses-read` | same: nothing graded anywhere | same | same |
+| ExpenseTracker `003-expense-entry` | **one line added**: `scope-repos: UNGRADED (1 declared code repository applied to '003-expense-entry' and graded nothing: expense-tracker-api — ...; graded: expense-tracker-web)`, beside `expense-tracker-web`'s existing territory `FAIL` (exit 1 before and after) | `scope-repos` `FAIL` before and after: no member word moved | same (1) |
+
+Every other line that differs between S1 and S2 is the second update's own bookkeeping, and is listed so none is left
+unexplained: the digest count (two more markers: 72 to 74 in FlowBoard and ExpenseTracker, 95 to 97 in FitForge), the
+`verify-kit` line's recorded kit commit (`b4987a1` to the measured tree's HEAD), `AmendmentAuthority: graded 1 of 1` to
+`graded 2 of 2` (one more commit to read, the S2 commit), and one more `scope-check: not applicable (commit ... carries no
+'phase N' token)` line for that same commit. `doc-lint.ps1` was `OK` in every state of every project. As applied, before the
+digests are rebuilt, `ritual-checks.ps1 -Branch main` is `RESULT FAIL` (digests stale) in S1 and S2 alike: the existing
+flow-down step, not this feature. The one adopter-visible change is the ExpenseTracker line above, the new run-level line
+doing its job beside a failure. Not exercised: no adopted project had one repository graded clean, another graded nothing and
+no `FAIL`, the case where a member word goes `OK` to `UNGRADED` (fixtures `REPOS-034` and `RIT-009` prove it); and the
+territory-check refusals were run only in purpose-built directories (T006, T011), not in an adopted project.
+
+The measurement was run twice: once on the Phase 3 documents with the measured paragraph still a placeholder, then again
+on the final documents. The exit codes and the set of files that differ between S1 and S2 are identical in both passes;
+the only difference between the passes' outputs is the scratch directory name that `doc-lint` prints in its
+`scanned N governance docs under <path>` line.

@@ -268,7 +268,8 @@ code was outside the scope check's reach (GAP-016).
   always applied to its own commits.
 - **Reading a code-repo CI run**: PASS or FAIL means it graded. A run showing only WARN or
   `n/a` graded nothing — a mismatched directory name, a missing branch, or a code repository
-  whose trunk is not `main` (pass `-BaseRef`). Do not accept that as a green gate.
+  whose trunk is not `main` (run `scope-check-repos.ps1 -All -Repo <repo> -BaseRef <trunk>`; from kit
+  feature 022 the no-trunk line prints that command). Do not accept that as a green gate.
 
 ### Flow-down note: the 2026-09-16 amendment authority (kit 0.6.0 → 0.7.0, feature 014)
 
@@ -489,8 +490,8 @@ line you see is not in it, the line is right and the table is short.
 | An `NNN-*` branch with no commits since the merge base — just created, or already merged | `scope-check -All`: `no commits since merge base`; `enforcement-pack`: `AmendmentAuthority: no commits in …` | No | Nothing: there is nothing to grade. The amendment line goes with the branch's first commit; `scope-check`'s goes with its first graded phase commit (next row). |
 | An `NNN-*` branch whose commits are all skipped: spec/plan/tasks commits with no `phase N` token, merge commits, or phase commits graded only by a pre-006 `WARN` (a `tasks.md` that declares no Territory at all, or no `tasks.md` at the commit or its parent) | `scope-check -All`: `no commit on '<branch>' was graded — the reason is on the line(s) above` | No | Every feature branch is here until phase 1 is committed; the word goes with the first phase commit graded against a declared Territory. A pre-006 history stays here until it declares one. |
 | `scope-check` **without** `-All` (the form run by hand after a phase commit) on a HEAD that is not a phase commit | `scope-check`: `no commit on '<branch>' was graded …`, even when earlier phase commits on the branch pass | No | Without `-All` the check grades HEAD only. Run it right after the phase commit, or pass `-All` (what `ritual-checks` and CI run) to grade every phase commit on the branch. |
-| Multi-repo: nothing graded in any declared code repository | `scope-repos`: `UNGRADED (nothing was graded in the declared code repositories …)`, after one line per repository naming why — not present in this checkout (every governance-repository CI run), present but not a git repository, not a repository of its own, no branch named after the **feature** there, no trunk found, no commits, or no phase commits | No, except a shallow code-repository clone | Governance CI, and a feature that has no branch in any code repository: expected — each code repository's own CI grades it, and the review says so in writing (`docs/sdlc/review-process.md`, step 3). A code repository whose trunk is not `main`/`master`: run `scope-check-repos.ps1 -All -Repo <repo> -BaseRef <trunk>` directly, since `ritual-checks` does not pass `-BaseRef` through. Both of the other flags matter: without `-All` the script ignores `-BaseRef`, and without `-Repo` it applies that one trunk name to every declared repository. |
-| Multi-repo: one code repository graded, another not | `scope-repos`: on the ungraded repository's line only — `<repo>: UNGRADED …`, or, when every commit it offers was skipped, just `not applicable` or `WARN` lines and no `UNGRADED` at all. **The run-level verdict does not say `UNGRADED` here**: it prints only when nothing at all was graded, so `ritual-checks` shows `scope-repos` as `OK` | Depends on the repository's reason | Read the per-repository lines, not the summary. The summary hiding a partly ungraded run is a known gap, recorded for the owner in the notes of kit feature 015 (in the kit repository, not in an adopted project). |
+| Multi-repo: nothing graded in any declared code repository | `scope-repos`: `UNGRADED (nothing was graded in the declared code repositories …)`, after one line per repository naming why — not present in this checkout (every governance-repository CI run), present but not a git repository, not a repository of its own, no branch named after the **feature** there, no trunk found, no commits, or no phase commits | No, except a shallow code-repository clone | Governance CI, and a feature that has no branch in any code repository: expected — each code repository's own CI grades it, and the review says so in writing (`docs/sdlc/review-process.md`, step 3). A code repository whose trunk is not `main`/`master`: run `scope-check-repos.ps1 -All -Repo <repo> -BaseRef <trunk>` directly, since `ritual-checks` does not pass `-BaseRef` through (from kit feature 022 the no-trunk line prints exactly that command). Both of the other flags matter: without `-All` the script ignores `-BaseRef`, and without `-Repo` it applies that one trunk name to every declared repository. |
+| Multi-repo: one code repository graded, another not | `scope-repos`: the ungraded repository's own line (`<repo>: UNGRADED …`, or, when every commit it offers was skipped, `not applicable` or `WARN` lines), **and, from kit feature 022 under `-All`, a run-level `UNGRADED (… declared code repository applied to '<feature>' and graded nothing: <names> …; graded: <names>)`** that `ritual-checks` lifts, so the member says `UNGRADED` and not `OK` (before 022 the summary printed nothing here and the member said `OK`). Without `-All` (the per-phase tip command) the run-level verdict is as it was, and the per-repository lines are still where to read it | Depends on the repository's reason | The repository's reason and the fix are on its own line. See the 022 flow-down note below. |
 
 The code-repository check asks whether a repository has a branch named after the **feature**,
 not whether the current phase touched it. So a docs-only phase that follows a code phase shows
@@ -680,8 +681,9 @@ exactly what it printed before; and `docs/sdlc/team-workflow.md`.
 **What does NOT change.** Every exit code: `0` no live overlap, `2` live overlap, `1` execution error.
 `UNGRADED` is a verdict and never an exit code, so an ungraded run exits `0` and an overlap keeps `2`
 with the ungraded lines printed beside it. The parameters, the refusal of a non-numbered branch, the
-`no remote — nothing to check against` line and the four terminating refusals (still open, GAP-029)
-are as they were.
+`no remote — nothing to check against` line and the four refusals (their text and their exit `1`
+are as they were; since kit feature 022 they reach that exit themselves, see the 022 note below) are
+as they were.
 
 **What was measured** (SC-004). Each of FitForge, FlowBoard and ExpenseTracker was cloned (nothing in
 place touched; FlowBoard has no open feature, so a throwaway branch name was checked from `main`, as
@@ -897,6 +899,82 @@ declare a roster, write each name exactly as your roadmap Owner cells and review
 
 <!-- digest: Declaring developers makes them a roster: a Reviewer or roadmap Owner not on it fails, and a third active claim fails. -->
 <!-- digest: Roster checks are graded only where a roster is declared; names match exactly (one name per Owner cell), case aside. -->
+
+### Flow-down note: the 2026-10-12 verdicts that say what was compared (kit feature 022 — no constitution amendment)
+
+**What was wrong.** Two scripts told the truth about part of a run and left the rest to the reader (GAP-030,
+GAP-029). `scripts/scope-check-repos.ps1` printed its run-level `UNGRADED` only when nothing at all was graded, so when
+one declared code repository graded and another applied and graded nothing, the run printed no run-level verdict,
+exited 0, and `ritual-checks.ps1` showed `scope-repos` as `OK`. The line it printed for a repository with no
+resolvable trunk told you to pass `-BaseRef <ref>` alone, which does nothing without `-All` and, without `-Repo`,
+would have replaced the trunk of every declared repository. And the four refusals of `scripts/territory-check.ps1`
+(not inside a git repository; a branch that is not `NNN-name`; a failed `git fetch origin`; a base branch that cannot
+be diffed against) used `Write-Error` under `$ErrorActionPreference = 'Stop'`, which throws before the `exit 1`
+written after it, so a caller that was not a terminal got an error record and whatever exit code the last git call
+left behind, never the script's.
+
+**What it does now.** Under `-All`, a declared code repository that applies (present, the root of a repository of its
+own, carrying the feature branch) and graded no commit is named by a run-level line,
+`scope-repos: UNGRADED (N declared code repositories applied to '<feature>' and graded nothing: <names> — the reason is on
+the line(s) above; graded: <names>)`, whether or not another repository graded, and also beside a `FAIL`. It never
+changes an exit code: `0` unless a repository fails. The line for a run that graded nothing anywhere is unchanged word
+for word, a run in which every applicable repository graded prints exactly what it printed before, and without `-All`
+(the per-phase tip command) nothing new prints. A repository that is `n/a` or `not applicable` for the reasons it
+always was (absent, not a repository of its own, no branch for the feature) does not make the run `UNGRADED`. The
+no-trunk line now ends `to grade it, run: pwsh -File scripts/scope-check-repos.ps1 -All -Repo <repo> -BaseRef <trunk>`.
+`scripts/ritual-checks.ps1` is unchanged: it already lifts a line beginning `scope-repos: UNGRADED`, so a partly graded
+run now shows the member `UNGRADED` and the run `RESULT UNGRADED`, exit 0, and it still does not pass `-BaseRef`
+through. The four refusals print the same message, unchanged in wording, on the error stream and exit `1` from the
+script itself. At a terminal under `pwsh -File` the exit code was already `1`; what goes is PowerShell's error-record
+header (the script path, a line number, a caret rule) around the message.
+
+**What flows down.** Verbatim files: `scripts/scope-check-repos.ps1`, `scripts/territory-check.ps1` and this document.
+One surgical file: `docs/sdlc/review-process.md`, whose step 3 now says what the run-level line guarantees; the update
+reports it, and you copy that one passage into your own copy by hand. Nothing in your constitution. Run
+`scripts/build-digests.ps1` after the update, as after every update that moves a digest marker: until you do, the
+digests member of `ritual-checks.ps1` reports the affected digests as stale.
+
+**What an owner may newly see.** On a project that declares `codeRepos`: when you run `scripts/scope-check-repos.ps1
+-All`, or `scripts/ritual-checks.ps1`, in a checkout where some declared code repository carries the feature branch and
+grades a commit while another carries it and grades none (no trunk found, no commits since the merge base, every commit a
+merge or without a `phase N` token), the `scope-repos` member now says `UNGRADED` where it said `OK`. That is the one
+verdict that can move, and it moves from a clean word to the honest one: the repository it names was never graded. It
+exits 0, so no pipeline turns red on it; read the repository's own line above for the reason and fix that
+(`-All -Repo <repo> -BaseRef <trunk>` for a trunk that is not `main`/`master`). A project that declares no `codeRepos`,
+a governance-only CI run (no code repository present), and a run in which every repository graded see no change.
+
+**What does NOT change.** Every exit code of both scripts. The verdict for a run that graded everything, for one that
+graded nothing, and for tip mode. `scripts/ritual-checks.ps1` and its vocabulary. Territory-check's overlap detection, its
+exit `2`, its `UNGRADED` accumulator and its `no remote` note.
+
+**What was measured** (SC-003, FR-010). Each of FitForge, FlowBoard and ExpenseTracker (all three declare `codeRepos`) was
+cloned from its local directory with its code repositories cloned in beside it and their branches made local (nothing in
+place touched, no network). The kit before this feature (`b4987a1`) was applied with `update-kit.ps1`, `build-digests.ps1`
+was run and committed, then the kit as it stands was applied and the digests rebuilt; `doc-lint.ps1`,
+`scope-check-repos.ps1 -All` and `ritual-checks.ps1` were run in each state, on `main` and, for each project, on its
+feature branches named with `-Branch` from `main`, so the applied scripts ran and not a feature branch's older copy.
+**Exit codes: none moved, in any run. Verdicts: no `ritual-checks` member word moved in any project**, and `doc-lint` was
+`OK` in every state, as applied and after the rebuild. As applied, before `build-digests.ps1`, the `digests` member
+reports the digests stale and the run is `RESULT FAIL`: that is the existing flow-down step, identical after the kit
+as it stood before this feature. **One output line was added.** ExpenseTracker with `-Branch 003-expense-entry`: its
+`expense-tracker-web` repository already `FAIL`ed the territory check on its phase 2 commits (unchanged), and
+`expense-tracker-api` had no commits since its merge base, so `scope-repos` now prints, beside that `FAIL`, the run-level
+line `UNGRADED (1 declared code repository applied to '003-expense-entry' and graded nothing: expense-tracker-api — …;
+graded: expense-tracker-web)`. The member said `FAIL` before and after. FitForge's `002-identity-member-profile` (both
+repositories graded `PASS`) and the FlowBoard and ExpenseTracker probes where nothing was graded anywhere printed what they
+printed before. Everything else that differed between the two states is the second update's own bookkeeping: two more
+digest markers, the recorded kit commit, and one more commit for the amendment-authority check to read. Every line that
+changed is listed in the notes of feature 022 in the kit repository. Not exercised, and said so: no adopted project had
+a run in which one repository graded clean and another graded nothing with no `FAIL` beside it, which is the case where the
+member word goes from `OK` to `UNGRADED`; that path, the `-All -Repo <repo> -BaseRef <trunk>` hint and the four
+territory-check refusals are proved by the kit's fixtures, not by an adopter's case.
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. If
+`scope-repos` now says `UNGRADED`, `UNGRADED` is still not a pass: read the repository named on the line and say in the
+review why the phase is safe to approve without that repository's grade, or grade it.
+
+<!-- digest: Under -All a code repo that graded nothing is named by a run-level UNGRADED beside a graded one; exit stays 0. -->
+<!-- digest: territory-check's four refusals print their message and exit 1 themselves; the no-trunk hint names -All -Repo. -->
 
 ## 3. Other surgical files
 
