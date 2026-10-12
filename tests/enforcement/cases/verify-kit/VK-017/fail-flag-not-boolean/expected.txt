@@ -1,0 +1,10 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: FAIL record: kit-adoption.json developers entry 1 ('ada') has a canApproveCritical that is not true or false — fix: write the JSON value true or false — until it is a boolean the developer is read as NOT permitted to approve Critical features
+verify-kit: ok record — 2 developer(s) declared — Critical features use the team evidence rule (docs/sdlc/critical-delivery.md item 5)
+verify-kit: ok record — roster read from kit-adoption.json: ada, grace — not permitted to approve Critical: ada
+verify-kit: ok record — criticalSurfaces not declared — the surface floor is not armed (adoption/updating.md)
+verify-kit: ok record — adoption record valid — tiers: backend; gate proven
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

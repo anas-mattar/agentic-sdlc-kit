@@ -1,0 +1,2 @@
+roadmap-claims: not graded — a roster is declared but docs/roadmap.md has no Owner column, so neither the Owners nor the claim counts were checked
+roadmap-claims: OK (1 claim(s) visible with non-idea rows)

@@ -1,0 +1,42 @@
+{
+  "description": "Two active claims for one Owner: lawful only under the pipelining conditions a human confirms, so the check notes it and exits 0 — never fails it.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing | in progress | ada | `specs/011-aaa/` |",
+          "| Thing | specified | ada | `specs/012-bbb/` |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "012-bbb",
+      "message": "spec: 012-bbb",
+      "write": {
+        "specs/012-bbb/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

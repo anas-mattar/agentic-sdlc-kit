@@ -1,0 +1,2 @@
+roadmap-claims: 'ada' holds 3 active claims (011-aaa, 012-bbb, 013-ccc) — more than two is over the WIP limit in docs/sdlc/team-workflow.md; finish or release one before claiming another
+roadmap-claims: FAIL (1 finding(s) on 3 claim(s) — the lines above say what and why)

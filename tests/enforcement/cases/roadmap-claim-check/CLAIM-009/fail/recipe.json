@@ -1,0 +1,32 @@
+{
+  "description": "A roster of ada and grace, and a claim whose row names linus. The Owner column is free text and nothing used to check it against anyone; with a declared roster a stranger is a finding that names the claim, the Owner and the names declared.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing | in progress | linus | `specs/011-aaa/` |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

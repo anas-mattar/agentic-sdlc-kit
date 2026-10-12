@@ -1,0 +1,2 @@
+roadmap-claims: note — 'ada' holds two active claims (011-aaa, 012-bbb); two are lawful only under the pipelining conditions in docs/sdlc/team-workflow.md, which a human confirms
+roadmap-claims: OK (2 claim(s) visible with non-idea rows, Owners and claim counts graded against the declared roster, own claim 013 exempt)

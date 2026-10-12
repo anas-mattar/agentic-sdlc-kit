@@ -69,7 +69,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 | Flow-efficiency pack | — | P1 | shipped | anas.m | `specs/003-flow-efficiency-pack/` |
 | Kit-update channel (manifest of kit-owned vs slot-bearing files; update script that copies the verbatim set and reports the surgical set; amendment flow-down guidance) | GAP-001 | P1 | shipped | anas.m | `specs/004-kit-update-channel/` |
 | Field-lesson harvest (encode the adoption traps into `adoption/` steps and rulebook templates) | GAP-003 | P2 | shipped | anas.m | `specs/005-field-lesson-harvest/` |
-| Load-bearing developer roster (the adoption record's developers become objects — name, repos, canApproveCritical — keeping string entries legal and keeping 013's absent-record-defaults-to-strict rule; read three ways: a feature's Owner is in the roster, a Critical feature's reviewer is in it and is neither the Owner nor unpermitted, and at most one active claim per Owner — which is GAP-004's pipelining WIP counter, absorbed here rather than built twice) | GAP-024, GAP-004 | P2 | idea | — | — |
+| Load-bearing developer roster (the adoption record's developers become objects — name, repos, canApproveCritical — keeping string entries legal and keeping 013's absent-record-defaults-to-strict rule; read three ways: a feature's Owner is in the roster, a Critical feature's reviewer is in it and is neither the Owner nor unpermitted, and at most two active claims per Owner, exactly two being a note — which is GAP-004's pipelining WIP counter, absorbed here rather than built twice) | GAP-024, GAP-004 | P2 | shipped | anas.m | `specs/021-developer-roster/` |
 | Verification pack (per-phase file territory declared in `tasks.md` + machine scope check; fresh-context/second-model AI review separation; ritual checks wired as required CI on feature branches) | GAP-008, GAP-009, GAP-010 | P1 | shipped | anas.m | `specs/006-verification-pack/` |
 | Adoption doctor (`verify-kit.ps1`: audits slots, structure, gate proof, tier rulebooks, `.kit-version`; runs post-init, post-update, and in adopted-project CI) | GAP-011 | P2 | shipped | anas.m | `specs/007-adoption-doctor/` |
 | CI-held certifying gate for Lite/Standard (gate evidence = unforgeable CI run on the branch; owner approves on evidence asynchronously; user-run gate stays law for Critical) | GAP-012 | P2 | shipped | anas.m | `specs/008-ci-held-gate/` |
@@ -474,3 +474,27 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   not remembered and a tab continuation or lazy text resets a list); no real adopter document was flagged, so the fixes are
   proved by fixtures rather than by an adopter's case. "Shipped" and "closed" here mean built, reviewed and
   measured: the human review at merge is still to come.
+
+- 2026-10-12 Feature 021 shipped; GAP-024 (a) and GAP-004 closed. The `developers` array is now a roster three checks
+  read, through the one reader in `scripts/adoption-lib.ps1`: a Critical feature's Reviewer must be on it and permitted
+  (`canApproveCritical`, missing meaning permitted) in the team arm; a roadmap claim's non-`idea` Owner must be on it; and
+  an Owner may not hold more than two active, non-stale claims, with exactly two noted and a tip date or an Owner the
+  machine cannot read reported UNGRADED. Entries may be names or objects, mixed, and a project that declares none, or that
+  keeps to names that match, sees no verdict move. Measured on clones of FitForge, FlowBoard and ExpenseTracker: no verdict
+  moved, `ritual-checks` `RESULT OK` once the digests were rebuilt as the update note says; the Owner check was shown live on
+  FitForge's clone (the only project with a roster). **Decided at the owner's approval of the plan (2026-10-11):** with no
+  roster the Owner and WIP readings print nothing, rather than a note, so that no existing output changes (spec
+  amendments to US2 scenario 3, FR-005, FR-007); the checked branch's own claim is exempt from both. **Corrected by the
+  work:** the roadmap row above said "at most one active claim per Owner"; the counter follows `team-workflow.md`'s own
+  rule, the pipelining ceiling, so more than two fails and exactly two is a note. Plan D8's premise was wrong
+  (`roadmap-claims` was already lifted to UNGRADED by the ritual aggregator), recorded in the feature's `notes.md`; and
+  the phase 3 review (F1) found a claim could be credited to any row that mentioned it, so a claim is now bound to its
+  own row, with a claim named by rows that disagree on the Owner reported UNGRADED (`CLAIM-014`). **Open by decision**, on
+  the record: roster membership catches a stranger or a typo, not identity, independence of the review, or a pull
+  request being open (the guidance says so in `critical-delivery.md`, `team-workflow.md` and the update note); `repos` is
+  validated and recorded and read by nothing; and GAP-024 (b) and (c) stay open, the owner picking their own cross-reviewer
+  and pull-time matching of developers to features, which is assignment authority this row deliberately excludes. Also
+  open: an Owner cell must be exactly one roster name (`ada, grace`, `**ada**` and `TBD` are strangers), and a solo
+  project that declares a one-name roster counts as having one, which the update note names as the likeliest first red
+  run. "Shipped" and "closed" here mean built, reviewed and measured: the owner's gate and the human review at merge are
+  still to come.

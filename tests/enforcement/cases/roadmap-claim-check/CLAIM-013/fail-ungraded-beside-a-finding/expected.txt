@@ -1,0 +1,3 @@
+roadmap-claims: not graded — the claim count for 'ada' was not made: the tip date of '012-bbb' could not be read (git log failed on the tip commit, and a fetch did not supply it)
+roadmap-claims: claim '013-ccc' is owned by 'linus', who is not on the developer roster in kit-adoption.json (ada, grace) — name a declared developer as Owner, or add the person to the roster (feature 021)
+roadmap-claims: FAIL (1 finding(s) on 3 claim(s) — the lines above say what and why)
