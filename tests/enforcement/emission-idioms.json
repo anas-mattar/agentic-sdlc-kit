@@ -176,13 +176,17 @@
       "script": "roadmap-claim-check.ps1",
       "accumulators": [
         "\\$failures\\s*\\+=",
-        "Write-Host\\s+['\"]roadmap-claims: (n/a|OK)"
+        "Write-Host\\s+['\"]roadmap-claims: (n/a|OK|UNGRADED|not graded|note)"
       ],
-      "note": "Two conditions accumulate and six are decided and printed on the spot — four n/a states and two OKs — and for this script the inert half IS the interesting half. It is the only kit check whose input is the claim ledger rather than the tree, so it declines for reasons that are entirely ordinary (no remote, offline, an adopter-authored roadmap in another shape) and must never decline in silence: an unspoken exit 0 here reads exactly like a roadmap that is honest. Deliberately OUT: the failures loop and the FAIL count beside it, which print what the two accumulators already hold. NOT-RULES (phase 6, T044): sites matched here that are not distinct failure conditions are declared in 'notRules' with a written reason, so that an UNOWNED site can be a hard failure without the declaration having to pretend a roll-up line is a rule.",
+      "note": "Feature 021 widened the printed half to UNGRADED, 'not graded' and 'note' lines (the roster readings: an Owner not on the roster and an Owner over the WIP cap accumulate; the no-Owner-column decline, the two-claims note and the unreadable-tip-date pair print on the spot). Two conditions accumulate and six are decided and printed on the spot — four n/a states and two OKs — and for this script the inert half IS the interesting half. It is the only kit check whose input is the claim ledger rather than the tree, so it declines for reasons that are entirely ordinary (no remote, offline, an adopter-authored roadmap in another shape) and must never decline in silence: an unspoken exit 0 here reads exactly like a roadmap that is honest. Deliberately OUT: the failures loop and the FAIL count beside it, which print what the two accumulators already hold. NOT-RULES (phase 6, T044): sites matched here that are not distinct failure conditions are declared in 'notRules' with a written reason, so that an UNOWNED site can be a hard failure without the declaration having to pretend a roll-up line is a rule.",
       "notRules": [
         {
-          "anchor": "roadmap-claims: FAIL ($($failures.Count) of $checked claim(s)",
-          "reason": "The verdict roll-up over the per-claim lines above it, each of which is a CLAIM rule."
+          "anchor": "roadmap-claims: UNGRADED ($checked claim(s) visible with non-idea rows",
+          "reason": "The verdict roll-up over the not-graded lines above it (CLAIM-013, CLAIM-014), which replaces OK so that the ritual aggregate can lift the word. It names the clauses the accumulator holds and decides nothing itself."
+        },
+        {
+          "anchor": "roadmap-claims: FAIL ($summary)",
+          "reason": "The verdict roll-up over the per-claim lines above it, each of which is a CLAIM rule. Its wording is chosen by a variable: the visibility words it always had when every finding is a visibility finding, and a generic count when a roster reading (CLAIM-009, CLAIM-011) found something."
         }
       ]
     },

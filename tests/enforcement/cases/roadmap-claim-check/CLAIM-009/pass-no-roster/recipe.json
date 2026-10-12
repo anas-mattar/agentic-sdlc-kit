@@ -1,0 +1,31 @@
+{
+  "description": "No kit-adoption.json at all, and an Owner who is nobody the project declared. Nothing is graded and nothing new is printed: the output is byte-identical to what it was before this feature (SC-001).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing | in progress | linus | `specs/011-aaa/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

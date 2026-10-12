@@ -1,0 +1,33 @@
+{
+  "description": "A claim named by two rows that agree on the Owner is not ambiguous and is graded.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing 011-aaa | in progress | ada | — |",
+          "| Other, see 011-aaa | in progress | ada | — |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing 011-aaa"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

@@ -83,6 +83,52 @@ while their first awaits review, under all of these conditions:
 
 <!-- digest: WIP limit: one active feature each; pipelining: one awaiting-review + one active, territory disjoint or sequenced. -->
 
+### What the machine counts, and what it cannot see (feature 021)
+
+Everything below is graded **only where `kit-adoption.json` declares a roster**: a non-empty
+`developers` list, after every entry that is neither a non-blank name nor an object with a usable `name` is dropped. A project that declares
+none keeps its CI exactly as it was and is told nothing about Owners it was never going to
+be checked on.
+
+**The roster.** Each `developers` entry is a name, or an object
+`{ "name": "grace", "repos": [...], "canApproveCritical": false }`, mixed freely; only `name`
+is required. Names compare after trimming, exactly and case-insensitively, and a person written
+twice counts once (and is denied Critical approval if any copy denies it). There is no mapping
+between a handle and a display name: `Anas M.` against `anas.m` is a mismatch, and the failure
+names both strings. `repos` is recorded and read by nothing.
+
+**The Owner reading.** For each claim on `origin` whose roadmap row has a Status other than
+`idea` and a real Owner cell (not blank, not `—`), the Owner must be on the roster. The Owner
+cell carries **one roster name and nothing else**: `ada, grace`, `**grace**`, `@ada` and `TBD`
+are strangers. A claim is bound to its row by its name as a whole word, preferring the row that
+holds its `specs/<claim>/` path, so a row that only mentions a claim in free text does not
+take it; when the rows left still name different Owners the claim is **not graded** and the verdict says UNGRADED, and so is a claim the check cannot bind to
+any row (its name appears only inside a longer one, say). The branch being checked is
+exempt for its own claim, as it is for visibility.
+
+**The WIP counter.** Per Owner, the machine counts the claims whose row Status is `specified` or
+`in progress` and whose branch tip has a commit in the last 14 days. `idea`, `shipped`,
+`dropped` and a stale claim are not counted.
+
+- **More than two** fails, naming the Owner and the claims: two claims is the pipelining ceiling
+  above, and a third is number squatting whatever the states.
+- **Exactly two** passes with one note. Two claims are lawful only under the pipelining
+  conditions, and the machine cannot see them; the note asks a human to confirm.
+- **A tip date that cannot be read** (a tip commit the clone does not have and a fetch does not supply)
+  makes that Owner's count UNGRADED with the reason. It is never silently counted and never
+  silently dropped.
+
+**What only a human can see.** Whether the first feature is genuinely awaiting review: a pull
+request being open, or the reviewer having been asked, is a fact about a pull request that git
+history does not show, so the machine cannot tell a lawful pair from squatting; whether two
+territories are disjoint is `scripts/territory-check.ps1`'s, not this counter's; and whether an
+Owner who is on the roster is the person the cell says. **Membership of the roster catches a
+stranger, a typo, a name the project did not declare and a developer the record says may not
+approve a Critical feature. It does not prove identity.**
+
+<!-- digest: WIP counter: more than two active claims per Owner fails, exactly two is noted; graded only where a roster is declared. -->
+<!-- digest: The roster catches a stranger or a typo as Owner or Reviewer; it does not prove identity or that a pull request is open. -->
+
 ## 4. Cross-review — the owner never approves their own feature
 
 With one developer, human review means reviewing your own agent's work. With a team there

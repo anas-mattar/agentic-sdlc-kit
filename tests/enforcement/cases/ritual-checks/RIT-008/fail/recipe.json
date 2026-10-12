@@ -1,0 +1,19 @@
+{
+  "description": "A further member to reach the ungraded state: roadmap-claims, which feature 021 teaches to say UNGRADED when the tip date or the Owner of a claim cannot be read. RIT-006 and RIT-007 prove the aggregator lifts the word for enforcement-pack and scope-check. This one is a regression guard on the union of $naCapableMembers and $ungradedCapableMembers, which already lifted this member before feature 021 (phase 3 review F2: the plan's D8 premise was wrong), so it fails only if the name leaves both lists. Exit 0 in both directions: UNGRADED is a verdict, never an exit code. Differs from the pass direction in exactly one line of one stub (plan D10).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "the tree and its checks",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/doc-lint.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'doc-lint: OK - stub'\nexit 0\n",
+        "scripts/enforcement-pack.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'enforcement-pack: OK - stub'\nexit 0\n",
+        "scripts/scope-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-check: OK - stub'\nexit 0\n",
+        "scripts/scope-check-repos.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'scope-repos: OK - stub'\nexit 0\n",
+        "scripts/build-digests.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'digests: OK - stub'\nexit 0\n",
+        "scripts/roadmap-claim-check.ps1": "param([string]$Root, [string]$Branch, [switch]$All, [switch]$Check)\nWrite-Host 'roadmap-claims: UNGRADED (2 claim(s) visible with non-idea rows; the claim count for ada was not made - the reason is on the line(s) above)'\nexit 0\n"
+      }
+    }
+  ]
+}

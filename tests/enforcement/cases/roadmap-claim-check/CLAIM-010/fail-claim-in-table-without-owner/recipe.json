@@ -1,0 +1,45 @@
+{
+  "description": "Two tables under a declared roster: the first has an Owner column, the second does not, and 012-bbb is only in the second. The claim is named as not graded; the OK line then no longer says Owners were graded (review F6).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing | in progress | ada | `specs/011-aaa/` |",
+          "",
+          "| Item | Status | Spec |",
+          "|---|---|---|",
+          "| Thing | in progress | `specs/012-bbb/` |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "012-bbb",
+      "message": "spec: 012-bbb",
+      "write": {
+        "specs/012-bbb/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

@@ -1,0 +1,4 @@
+roadmap-claims: note — 'linus' holds two active claims (011-aaa, 012-bbb); two are lawful only under the pipelining conditions in docs/sdlc/team-workflow.md, which a human confirms
+roadmap-claims: claim '011-aaa' is owned by 'linus', who is not on the developer roster in kit-adoption.json (ada, grace) — name a declared developer as Owner, or add the person to the roster (feature 021)
+roadmap-claims: claim '012-bbb' is owned by 'linus', who is not on the developer roster in kit-adoption.json (ada, grace) — name a declared developer as Owner, or add the person to the roster (feature 021)
+roadmap-claims: FAIL (2 finding(s) on 2 claim(s) — the lines above say what and why)

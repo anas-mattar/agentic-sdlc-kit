@@ -1,0 +1,2 @@
+roadmap-claims: not graded — claim '011-aaa' is on a roadmap row only in a form this check cannot bind to the claim (inside a longer name, say), so its Owner and its place in a count were not graded
+roadmap-claims: UNGRADED (1 claim(s) visible with non-idea rows; the Owner of '011-aaa' was not graded — the reason is on the line(s) above)

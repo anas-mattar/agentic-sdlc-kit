@@ -311,7 +311,7 @@ function Invoke-CriticalEvidenceCheck {
 
     $mode = Get-EvidenceMode
     if ($mode.Mode -eq 'team') {
-        Invoke-CriticalTeamEvidence -Dir $dir -Why $mode.Why
+        Invoke-CriticalTeamEvidence -Dir $dir -Why $mode.Why -Roster $mode.Roster
     } else {
         Invoke-CriticalSoloEvidence -Dir $dir
     }
@@ -356,12 +356,16 @@ function Invoke-CriticalSoloEvidence {
 #      header carries its own '**Reviewer**:' field (006 phase-2 F1), and matching the
 #      attestation against the whole file let it be satisfied from an unrelated comment.
 #
-# The roster in kit-adoption.json is COUNTED and nothing more: it selects the mode, and is
-# never compared against Reviewer or Owner. A review naming two people who are not in the
-# roster passes. That limit is deliberate and recorded rather than hidden — cross-checking
-# free-text names against a free-text roster would read as verification while providing none.
+# The roster in kit-adoption.json selects the mode, and (feature 021) the Reviewer is checked
+# against it: a Reviewer who is not on the roster fails, and so does one whose entry sets
+# canApproveCritical to false. The Owner is not compared here. What membership proves is that the
+# name is one the project declared and may approve — it catches a stranger, a typo, a person the
+# record says may not judge. It does NOT prove the person is who the name says: cross-checking
+# free-text names against a free-text roster reads as verification while providing little, which
+# is why feature 013 declined it, and independence stays the human reviewer's to judge (021
+# plan D9). Anyone who can edit the record can add a name to it; the record is reviewed code.
 function Invoke-CriticalTeamEvidence {
-    param([string]$Dir, [string]$Why)
+    param([string]$Dir, [string]$Why, [object[]]$Roster = @())
     $attestation = 'This reviewer is not the owner of the feature under review.'
     $reviewPath = Join-Path $Dir 'human-pr-review.md'
 
@@ -432,6 +436,22 @@ function Invoke-CriticalTeamEvidence {
     if ($reviewer -and $owner -and $reviewer -notmatch $placeholder -and $owner -notmatch $placeholder) {
         if ($reviewer -ieq $owner) {
             $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$reviewer' as both reviewer and owner — the human reviewer of a Critical feature MUST NOT be its owner (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md rule 4)"
+        }
+    }
+    # The Reviewer must be a developer the project declared, and one its record permits to approve a
+    # Critical feature (feature 021, FR-006). An empty or placeholder Reviewer was already failed above
+    # and is not graded a second time. The match is exact and case-insensitive, through the same
+    # ordinal comparer the reader deduplicates with (plan D3), never a second one.
+    if ($reviewer -and $reviewer -notmatch $placeholder) {
+        $entry = $null
+        foreach ($d in @($Roster)) {
+            if ([string]::Equals($d.Name, $reviewer, [StringComparison]::OrdinalIgnoreCase)) { $entry = $d; break }
+        }
+        if (-not $entry) {
+            $names = (@($Roster) | ForEach-Object { $_.Name }) -join ', '
+            $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$reviewer' as its reviewer, who is not on the developer roster in kit-adoption.json ($names) — team mode ($Why) needs a reviewer the project declared (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md)"
+        } elseif (-not $entry.CanApproveCritical) {
+            $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$reviewer' as its reviewer, whose roster entry in kit-adoption.json does not permit approving Critical features (canApproveCritical is not true) — name a reviewer who may (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md)"
         }
     }
     if ($slice -notmatch [regex]::Escape($attestation)) {

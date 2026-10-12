@@ -23,6 +23,8 @@
 - Every feature has exactly one owner — "the user" means the feature's owner, never a teammate and never the agent. (`docs/sdlc/team-workflow.md`)
 - A remote NNN-* branch IS the claim — check remote branches before picking, never the roadmap alone. (`docs/sdlc/team-workflow.md`)
 - WIP limit: one active feature each; pipelining: one awaiting-review + one active, territory disjoint or sequenced. (`docs/sdlc/team-workflow.md`)
+- WIP counter: more than two active claims per Owner fails, exactly two is noted; graded only where a roster is declared. (`docs/sdlc/team-workflow.md`)
+- The roster catches a stranger or a typo as Owner or Reviewer; it does not prove identity or that a pull request is open. (`docs/sdlc/team-workflow.md`)
 - Cross-review: the human reviewer of a feature must not be its owner. (`docs/sdlc/team-workflow.md`)
 - Run territory-check.ps1 before each phase, code repos too; UNGRADED is not clean; overlap is sequenced, never forbidden. (`docs/sdlc/team-workflow.md`)
 - Rebase on main before the final phase's gate, and after any teammate's merge touching your territory. (`docs/sdlc/team-workflow.md`)

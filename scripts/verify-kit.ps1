@@ -270,9 +270,19 @@ try {
             $devMode = Get-DeveloperMode -Root $Root
             if ($devMode.Declared) {
                 foreach ($problem in $devMode.Problems) {
-                    Add-Finding FAIL 'record' $problem.Message $problem.Fix
+                    # The severity travels with the problem (feature 021): the doctor never decides it.
+                    # Only an unknown repos name is a warning; every other problem is a failure, as before.
+                    if ($problem.Severity -eq 'warn') { Add-Finding WARN 'record' $problem.Message $problem.Fix }
+                    else { Add-Finding FAIL 'record' $problem.Message $problem.Fix }
                 }
                 Add-Finding ok 'record' "$($devMode.Count) developer(s) declared — Critical features use the $($devMode.Mode) evidence rule (docs/sdlc/critical-delivery.md item 5)" ''
+                # A roster written with at least one object entry is stated back, with who may not approve a
+                # Critical feature. A strings-only roster prints nothing here, so its output is unchanged.
+                if ($devMode.HasObjectEntries) {
+                    $denied = @($devMode.Roster | Where-Object { -not $_.CanApproveCritical } | ForEach-Object { $_.Name })
+                    $who = if ($denied.Count -gt 0) { "not permitted to approve Critical: $($denied -join ', ')" } else { 'every developer may approve Critical' }
+                    Add-Finding ok 'record' "roster read from kit-adoption.json: $(@($devMode.Roster | ForEach-Object { $_.Name }) -join ', ') — $who" ''
+                }
             }
 
             # criticalSurfaces (017): where the project's critical code lives, which arms the

@@ -1,0 +1,42 @@
+{
+  "description": "The own claim of the checked branch names a stranger on a row that rides this very change: exempt from the Owner reading as it is from visibility (plan D4). The other claim is fine.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing | in progress | linus | `specs/011-aaa/` |",
+          "| Thing | in progress | ada | `specs/012-bbb/` |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "012-bbb",
+      "message": "spec: 012-bbb",
+      "write": {
+        "specs/012-bbb/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "011-aaa",
+  "origin": "self"
+}

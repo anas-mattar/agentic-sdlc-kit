@@ -1,0 +1,2 @@
+roadmap-claims: not graded — the claim count for 'ada' was not made: the tip date of '012-bbb' could not be read (git log failed on the tip commit, and a fetch did not supply it)
+roadmap-claims: UNGRADED (2 claim(s) visible with non-idea rows; the claim count for 'ada' was not made — the reason is on the line(s) above)

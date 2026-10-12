@@ -1,0 +1,51 @@
+{
+  "description": "Three active claims for one Owner and no roster: the count is graded only where a roster is declared, and the output is byte-identical to what it was before.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing | in progress | ada | `specs/011-aaa/` |",
+          "| Thing | specified | ada | `specs/012-bbb/` |",
+          "| Thing | in progress | ada | `specs/013-ccc/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "012-bbb",
+      "message": "spec: 012-bbb",
+      "write": {
+        "specs/012-bbb/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "013-ccc",
+      "message": "spec: 013-ccc",
+      "write": {
+        "specs/013-ccc/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

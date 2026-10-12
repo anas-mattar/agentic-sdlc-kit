@@ -1,0 +1,31 @@
+{
+  "description": "No roster and no Owner column: the project that never declared one is told nothing about Owners it was never going to check.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Spec |",
+          "|---|---|---|",
+          "| Thing | in progress | `specs/011-aaa/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

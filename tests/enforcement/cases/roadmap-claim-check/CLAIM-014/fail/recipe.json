@@ -1,0 +1,33 @@
+{
+  "description": "A claim, 011-aaa, named by two rows with different Owners and neither row holds specs/011-aaa: there is no telling whose it is, so its Owner and its place in a count are not graded, and the verdict says so — UNGRADED, never a guess and never OK. Exit 0.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Thing 011-aaa | in progress | ada | — |",
+          "| Other, see 011-aaa | in progress | grace | — |"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "011-aaa",
+      "message": "spec: 011-aaa",
+      "write": {
+        "specs/011-aaa/spec.md": [
+          "# Feature Specification: Thing 011-aaa"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

@@ -653,6 +653,24 @@
       "notes": "Matched inside the provenance slice, not the whole file: an attestation quoted in an unrelated comment used to satisfy it."
     },
     {
+      "id": "CRIT-T08",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the human reviewer of a Critical feature is not on the developer roster",
+      "law": "docs/sdlc/critical-delivery.md item 5; specs/021-developer-roster FR-006",
+      "emitAnchor": "who is not on the developer roster in kit-adoption.json",
+      "notes": "Exact, case-insensitive membership (plan D3): it catches a stranger or a typo and does not prove identity (D9). A placeholder or empty Reviewer is failed by CRIT-T04/T05 and not graded again. The solo arm never reads the human review, and a pass case shows it."
+    },
+    {
+      "id": "CRIT-T09",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalTeamEvidence",
+      "summary": "the human reviewer's roster entry does not permit approving a Critical feature",
+      "law": "docs/sdlc/critical-delivery.md item 5; specs/021-developer-roster FR-006",
+      "emitAnchor": "does not permit approving Critical features",
+      "notes": "canApproveCritical false, or any non-boolean value (read as not permitted, plan D2). A denial binds only the person who reviews: a denied Owner is not graded here."
+    },
+    {
       "id": "BATCH-001",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-GateBatchingCheck",
@@ -1380,6 +1398,24 @@
       "notes": "Absence is NOT a finding — an adoption predating feature 013 declares nothing and is treated as solo, the stricter arm — so the fail direction is the field’s absence and the line simply does not appear."
     },
     {
+      "id": "VK-031",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "the roster has an object entry, so the doctor states the roster it read and who may not approve a Critical feature",
+      "law": "feature 021 spec FR-008; GAP-024",
+      "emitAnchor": "roster read from kit-adoption.json",
+      "notes": "Printed only when at least one usable entry is an object, so a project that writes strings only sees exactly the output it saw before the roster existed (SC-001); that string-only record is the pass direction. The line is what lets an owner confirm the doctor read the roster they meant, including a developer a flag has denied."
+    },
+    {
+      "id": "VK-032",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a developer's repos names a repository codeRepos does not declare",
+      "law": "feature 021 spec FR-008, FR-012",
+      "emitAnchor": "Add-Finding WARN 'record' $problem.Message $problem.Fix",
+      "notes": "A WARN, never a FAIL: repos is recorded and read by no check, so an unknown name cannot make an adoption wrong, only misleading. The same loop prints the FAIL problems (VK-017); the severity travels with the problem so the doctor never decides it itself."
+    },
+    {
       "id": "VK-019",
       "script": "verify-kit.ps1",
       "function": "dimension 4 record",
@@ -1650,8 +1686,72 @@
       "function": "(visibility)",
       "summary": "every claim but the branch’s own is visible with a non-idea row",
       "law": "GAP-017; feature 011; docs/sdlc/branch-strategy.md (Number Allocation)",
-      "emitAnchor": "claim(s) visible with non-idea rows",
+      "emitAnchor": "roadmap-claims: OK ($checked claim(s) visible with non-idea rows",
       "notes": "The affirmative verdict, and it names the exempted number. A branch is exempt for its OWN claim so a fresh claim’s first CI run cannot deadlock on a row the same change is about to flip — stating the exemption is what stops it being mistaken for coverage."
+    },
+    {
+      "id": "CLAIM-009",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a claim's roadmap row names an Owner who is not on the declared developer roster",
+      "law": "specs/021-developer-roster FR-005; docs/sdlc/team-workflow.md",
+      "emitAnchor": "is owned by",
+      "notes": "Graded only where a usable roster is declared (D4, D5): with none the output is byte-identical to before, which 'pass-no-roster' and 'pass-empty-roster' assert. An idea row, a blank or em-dash Owner and the checked branch's own claim are not graded, and a pass case each says so. Membership is exact, case-insensitive and trimmed (D3); it catches a stranger or a typo and does not prove identity (D9)."
+    },
+    {
+      "id": "CLAIM-010",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a roster is declared and a claim has no Owner column to be read from: the whole roadmap, or the table the claim is in",
+      "law": "specs/021-developer-roster FR-005, FR-007; plan Risks (roadmap shape)",
+      "emitAnchor": "no Owner column",
+      "siteCount": 2,
+      "notes": "The existing n/a idiom for an adopter-authored roadmap in another shape: nothing to read an Owner from, so the check says it graded neither the Owners nor the claim counts instead of passing silently. It is a line before the OK verdict, not an n/a verdict, because the visibility reading did run. Two sites, one rule: the whole roadmap has no Owner column, and (review F6) a claim whose only rows sit in a table without one while another table has one; the second also withdraws the OK line's statement that Owners were graded."
+    },
+    {
+      "id": "CLAIM-011",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(wip)",
+      "summary": "one Owner holds more than two active, non-stale claims",
+      "law": "specs/021-developer-roster FR-007; docs/sdlc/team-workflow.md (WIP limit)",
+      "emitAnchor": "over the WIP limit",
+      "notes": "Active is a row Status of specified or in progress; idea, shipped and dropped are not, a tip with no commit for fourteen days is not, and the checked branch's own claim is exempt as it is from visibility (D7). The count is per Owner. With no roster the count is not graded and the output is byte-identical to before (pass-no-roster)."
+    },
+    {
+      "id": "CLAIM-012",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(wip)",
+      "summary": "one Owner holds exactly two active claims, noted and never failed",
+      "law": "specs/021-developer-roster FR-007; docs/sdlc/team-workflow.md (pipelining exception)",
+      "emitAnchor": "which a human confirms",
+      "notes": "Two claims are lawful only under the pipelining conditions (one awaiting review, one active, territory disjoint or sequenced), which a script cannot see; so it says so and exits 0. The 'fail' direction of this rule is therefore exit 0 with the note printed, as CLAIM-010's is."
+    },
+    {
+      "id": "CLAIM-013",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(wip)",
+      "summary": "the tip date of a candidate claim cannot be read, so the Owner's count is UNGRADED",
+      "law": "specs/021-developer-roster FR-007, plan D7, D8; feature 015 (a comparison not made is never OK)",
+      "emitAnchor": "the claim count for",
+      "notes": "The line naming the Owner and the claim whose date was unreadable; the UNGRADED verdict line that replaces OK is declared a roll-up in emission-idioms.json (it also carries CLAIM-014's clause). A date is read only for an Owner with two or more candidate claims, so a corrupt tip on a lone claim reads nothing (pass-single-claim-reads-no-date). Exit 0 in both directions: UNGRADED is a verdict, never an exit code."
+    },
+    {
+      "id": "CLAIM-014",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a claim is named by rows with different Owners, after preferring the rows that hold its own Spec path, so it cannot be graded",
+      "law": "specs/021-developer-roster FR-005, FR-007, plan D4; phase 3 review F1; feature 015 (a comparison not made is never OK)",
+      "emitAnchor": "named by rows with different Owners",
+      "notes": "A claim is bound to its row by a delimited token, preferring the row that holds specs/<claim>; a row that only mentions it, or a claim whose name is a prefix of another, does not take it (CLAIM-009 fail-prefix-claim, CLAIM-011 pass-cross-reference-not-counted). When that still leaves rows that disagree on the Owner there is nothing true to grade, so the Owner and the count are not graded and the verdict is UNGRADED, never a guess: a false failure here would fail a lawful Owner. Exit 0."
+    },
+    {
+      "id": "CLAIM-015",
+      "script": "roadmap-claim-check.ps1",
+      "function": "(owner)",
+      "summary": "a claim the visibility reading found is bound to no roadmap row by the strict token, so its Owner and count cannot be graded",
+      "law": "specs/021-developer-roster FR-005, FR-007, plan D4; phase 3 round 2 review R2-1; feature 015 (a comparison not made is never OK)",
+      "emitAnchor": "cannot bind to the claim",
+      "notes": "The visibility reading matches a claim loosely (the name anywhere in a row) and the Owner and count readings bind it strictly (a delimited token, case-insensitive, a final full stop allowed). A claim that passes the first and matches nothing under the second used to leave the readings in silence while the OK line said Owners were graded; now the Owner is not graded, said out loud, and the verdict is UNGRADED, exit 0. The two sibling fixtures in CLAIM-009 pin the cases that must still bind: a final full stop and capitals."
     },
     {
       "id": "TERR-001",
@@ -1823,6 +1923,15 @@
       "law": "feature 015 FR-010; roadmap GAP-027",
       "emitAnchor": "ritual-checks: RESULT UNGRADED",
       "notes": "Added in the phase-5 remediation (review F1). $ungradedCapableMembers is an allow-list, so the mechanism RIT-006 proves is silently inert for any member left out of it - which is how scope-check shipped its own GAP-027 fail-open through a phase that existed to close GAP-027. This case stubs scope-check instead of enforcement-pack and asserts the same three things: the word on the member's line, the word on the RESULT line, exit 0. It fails if a future edit drops a name from that list, which RIT-006 would not notice. The anchor is the same emission site RIT-006 names, and that is deliberate rather than sloppy: the allow-list is not itself an emission site, and the site it governs is this one. RIT-006 asks whether the line can be printed at all; RIT-007 asks whether it is printed for the second member to reach the state. One site, two rules, said out loud - the inventory allows it and the ambiguity check counts hits per rule, not rules per hit."
+    },
+    {
+      "id": "RIT-008",
+      "script": "ritual-checks.ps1",
+      "function": "(run verdict)",
+      "summary": "the ungraded state is lifted for roadmap-claims, a member that can now reach it",
+      "law": "specs/021-developer-roster plan D8; feature 015 FR-010; roadmap GAP-027",
+      "emitAnchor": "ritual-checks: RESULT UNGRADED",
+      "notes": "Feature 021 teaches roadmap-claim-check.ps1 to say UNGRADED when a claim's tip date or Owner cannot be read. The member was already in $naCapableMembers, and $captureMembers is the union of that list and $ungradedCapableMembers, so the aggregator lifted its UNGRADED line before this feature: the plan's D8 premise that it would be read as OK was wrong (phase 3 review F2), and this case was green on the parent. It is a regression guard on the UNION of the two lists, not on the new name: it fails only if roadmap-claims leaves both. The stub prints the member's own UNGRADED line; the case asserts the word on the member's line and on the RESULT line, exit 0. Same emission site as RIT-006 and RIT-007, deliberately."
     },
     {
       "id": "AMEND-006",

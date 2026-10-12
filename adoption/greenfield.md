@@ -49,7 +49,10 @@ owner-editable if tiers change later). **Two or more developers? Pass
 `-Developers ada,grace` now** — a comma-separated list, which the initializer splits, so it
 works under `pwsh -File` where PowerShell would otherwise hand the whole string over as one
 name. Or hand-edit the record later: that array decides whether a **Critical** feature owes an
-independent human review or the solo substitute (`docs/sdlc/critical-delivery.md` item 5). Left
+independent human review or the solo substitute (`docs/sdlc/critical-delivery.md` item 5), and,
+once it is non-empty, it is the **roster** the roadmap Owners and the WIP counter are checked
+against, and from two names the Critical reviewer too; an entry may also be an object (`{ "name": "grace",
+"canApproveCritical": false }`, see **adoption/updating.md**). Left
 undeclared it stays solo, which is the stricter arm — so declaring nothing is safe, and
 declaring a team you do not have is not. Then it prints the judgment slots that remain yours
 and finishes by running `scripts/verify-kit.ps1`, whose red verdict at that moment is your
@@ -173,7 +176,9 @@ From the first week:
   governance repository, leaving every code phase commit's territory reviewer-verified prose
   (`docs/sdlc/repository-strategy.md`, "Territory across repositories").
 - **Check the `developers` array is right** (step 1 writes it). It decides which independence
-  evidence a **Critical** feature owes. What the team check proves is bounded — two names in
+  evidence a **Critical** feature owes, and it is the roster a Critical Reviewer and a roadmap
+  Owner must be on and the WIP counter groups claims by: write each name exactly as the
+  roadmap Owner cells and the review Reviewer lines will. What the team check proves is bounded — two names in
   one file, written by the same team; it makes an omission falsifiable, it does not verify the
   review happened. See **adoption/updating.md** for the full table.
 - **CI gate as second witness**: run the gate on every push. The owner-held certifying
