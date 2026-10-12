@@ -3,6 +3,7 @@
 **Feature Branch**: `023-claim-feature-refusals`
 **Created**: 2026-10-12
 **Amendment approved by**: anas.m, 2026-10-12
+**Amendment approved by**: anas.m, 2026-10-13
 **Status**: Approved (anas.m, 2026-10-12)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
@@ -78,7 +79,7 @@ exit 97 or 128.
 ### User Story 2 - The refusals are proved, not assumed (Priority: P1)
 
 Seven rules the kit ships are unproved because the harness has never run this script. Each reachable refusal gets a
-failing and a passing fixture; the one that is not reachable is accounted for in writing.
+failing and a passing fixture; the lost-race site, first thought unreachable, is reached through a push that fails (see Assumptions).
 
 **Why this priority**: the territory-check refusals stayed unproved until feature 022 for the same reason (GAP-029). A fix
 without fixtures is the state that produced the defect.
@@ -88,7 +89,7 @@ fixtured rule, or declared exempt with a written reason.
 
 **Acceptance Scenarios**:
 
-1. **Given** the fixtures for the six reachable refusals, **When** the harness runs them on the parent commit, **Then**
+1. **Given** the fixtures for the seven refusals, **When** the harness runs them on the parent commit, **Then**
    each `fail` fails for the stated reason (the launcher's line, exit 97 or 128) and each `pass` passes.
 2. **Given** the change, **When** the harness runs, **Then** every `fail` shows its message and exit 1 and every `pass`
    shows a successful claim, differing from its `fail` in the one condition under test.
@@ -144,7 +145,7 @@ with `-NoPush`, prints what it printed before.
   the enforcement harness observe the message and exit 1 and never exit 97 or a leaked exit code of a git call.
 - **FR-002**: A claim that succeeds (with a remote, with no remote, with `-NoPush`, and after renumbering) MUST print
   exactly what it prints today and exit 0 (SC-001). The `-Json` object keeps its shape and its fields.
-- **FR-003**: Each refusal that a fixture can reach (sites 72, 79, 84, 96, 108, 112) MUST gain a failing and a passing
+- **FR-003**: Each of the seven refusals (sites 72, 79, 84, 96, 108, 112, and 135 through the `originPushUrl` recipe field) MUST gain a failing and a passing
   fixture that differ only in the condition under test, written first and shown failing on the parent commit, each new
   rule inventoried in `tests/enforcement/rules.json` with its anchor.
 - **FR-004**: The seventh refusal (site 135) MUST NOT be left unowned: the plan either fixtures it or exempts it with a
@@ -169,7 +170,7 @@ with `-NoPush`, prints what it printed before.
 
 - **SC-001**: A successful claim (with a remote, none, `-NoPush`, and one renumbering) prints the same bytes and exits 0
   before and after, on fixtures and on a clone of each adopted project.
-- **SC-002**: Each of the six reachable refusals has a `fail` that fails on the parent commit for the stated reason and
+- **SC-002**: Each of the seven refusals has a `fail` that fails on the parent commit for the stated reason and
   passes after, and a `pass` that passes on both.
 - **SC-003**: The coverage report lists `claim-feature.ps1` with no unowned site; the exempt-rule count rises by at most one
   (site 135), and only with a written reason.

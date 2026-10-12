@@ -7,7 +7,8 @@ description: "Task list for feature 023 — claim-feature.ps1's refusals reach t
 
 **Input**: `specs/023-claim-feature-refusals/spec.md`, `plan.md` (decisions D1–D7)
 **Prerequisites**: spec.md approved (anas.m, 2026-10-12); plan.md approved, including D1 (a copy of `Stop-Refused`) and D2
-(site 135 exempt) before phase 1 starts; no new dependency, no new script file.
+(site 135 fixtured through `originPushUrl`, as amended) before phase 1 starts; no new dependency, no new script file.
+**Amendment approved by**: anas.m, 2026-10-13
 
 **Tests**: every reachable refusal ships with a passing and a failing harness fixture in the same phase as the behaviour,
 expectations written by hand (feature 015). New fixtures are run against the parent commit before the code changes and

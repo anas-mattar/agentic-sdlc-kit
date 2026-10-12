@@ -981,11 +981,11 @@ review why the phase is safe to approve without that repository's grade, or grad
 **What was wrong.** `scripts/claim-feature.ps1`, the command that takes a feature number, reported seven refusals with `Write-Error`
 followed by `exit 1`: not inside a git repository; a working tree that is not clean; a branch other than `main`; a failed
 `git fetch origin`; a missing stock `create-new-feature.ps1`; that script failing; and losing the allocation race three times. The
-script runs under `$ErrorActionPreference = 'Stop'`, where `Write-Error` throws, so the `exit 1` after it never ran. At a terminal under
-`pwsh -File` the exit was still 1, with a PowerShell error record (the script path, a line number, a caret rule) around the message.
-A caller that was not a terminal got something else: through a wrapper that starts the script as a child, the exit was whatever the
-launcher or the last git call left behind (97, or a leaked 128), and the message was not the script's own. It is the defect
-`scripts/territory-check.ps1` had until feature 022 (GAP-029, GAP-031).
+script runs under `$ErrorActionPreference = 'Stop'`, where `Write-Error` throws, so the `exit 1` after it never ran. Started with
+`pwsh -File`, which is how a terminal, a CI job or an agent starts a script, the exit was still 1, with a PowerShell error record
+(the script path, a line number, a caret rule) around the message. Called in-process from another PowerShell script, the refusal was a
+terminating error: the caller's `catch` fired, `$LASTEXITCODE` stayed 0, and the exit a launcher reported was the launcher's own choice
+(the kit's test harness, which runs the script inside a try/catch, saw 97 or a leaked 128 from the last git call). It is the defect `scripts/territory-check.ps1` had until feature 022 (GAP-029, GAP-031).
 
 **What it does now.** Each of the seven prints its existing message, unchanged in wording and in any text it carries (the dirty
 paths of the working-tree refusal, the stock script's output), on the error stream, and exits 1 from the script itself. Under
@@ -997,11 +997,12 @@ allocation, the delegation to the stock script and the push-and-renumber loop ar
 constitution. Run `scripts/build-digests.ps1` after the update, as after every update that moves a digest marker: until you do, the
 digests member of `scripts/ritual-checks.ps1` reports the affected digests as stale.
 
-**What an owner may newly see.** At a terminal, the bare message instead of the error record around it; the exit code was 1 and
-still is. A wrapper, CI job or agent that starts the script as a child process now gets exactly exit 1 and the message for each of
-the seven, where it could get 97 or a leaked git exit code. Run in-process from another PowerShell script, the message is written to
-the process's standard error rather than PowerShell's error stream, so `2>$null` or `2>&1` on the call no longer silences or
-captures it; `pwsh -File` callers are unaffected. There is no verdict word in this script, so no `ritual-checks` member moves.
+**What an owner may newly see.** Started with `pwsh -File`, the bare message instead of the error record around it; the exit was 1 and
+still is. **Called in-process from another PowerShell script, a refusal no longer throws:** there is no exception to catch,
+`$LASTEXITCODE` is 1, and a caller that relied on the throw (a `catch`, or `$ErrorActionPreference = 'Stop'` halting it) now carries on
+past a refused claim unless it checks `$LASTEXITCODE`. The message is written to the process's standard error rather than PowerShell's
+error stream, so `2>$null` on the call no longer silences it and `2>&1` no longer captures it. There is no verdict word in this script,
+so no `ritual-checks` member moves.
 
 **What does NOT change.** The output and exit code of a successful claim, the `-Json` object and its fields, every message's
 wording, the order of the checks, and the behaviour of the push-and-renumber loop, including its withdrawal of a remote branch it
@@ -1010,9 +1011,11 @@ pushed before it renumbers.
 **Known limits, stated rather than hidden.** Two behaviours of the same script were found while fixing this one and are not changed
 here. The helper that reads the remote ledger still ends in a terminating `throw` (`git ls-remote failed`) if the read fails, which
 can also happen right after a push that succeeded, so a caller can see a failure for a claim that was in fact taken: check
-`git ls-remote --heads origin` before retrying. And a failed `git push` (an authentication or network failure) is reported as the
-claim having been made concurrently, renumbers three times and ends in the lost-race message, which burns three numbers and
-misdiagnoses the cause: the push error itself is not shown.
+`git ls-remote --heads origin` before retrying. And a push that the remote refuses while it can still be read (no write permission, a
+server-side hook) is reported as the claim having been made concurrently, renumbered twice and ended with the lost-race message,
+which passes over three numbers and misdiagnoses the cause: the push error itself is not shown. A push that fails because `origin` is
+unreachable usually ends in the `ls-remote` throw instead. After either, the working copy is left on the new branch with its spec
+directory: return to `main` and delete the local branch if the remote shows the claim did not land.
 
 **What was measured** (US3, SC-001). Each of FitForge, FlowBoard and ExpenseTracker was cloned from its local directory (nothing in
 place touched, no network; the clone's `origin` is the project on disk). The kit before this feature (`12e9a1f`) was applied with
@@ -1020,8 +1023,8 @@ place touched, no network; the clone's `origin` is the project on disk). The kit
 fresh clone of `main`, a successful claim made with `-NoPush` (`claim-feature.ps1 -NoPush -ShortName probe "a probe"`), three refusals
 (a dirty working tree, a branch other than `main`, an `origin` that cannot be fetched), `doc-lint.ps1` and
 `ritual-checks.ps1 -Branch main` were run, the clone reset to a clean `main` between runs. **A successful claim printed the same
-bytes before and after in all three projects, and exited 0. Every refusal exited 1 in both states; what changed is the text around
-the message**: before, a PowerShell error record (the script path, a line number, a caret rule) with the message last; after, the
+bytes before and after in all three projects, and exited 0. Each of the three refusals run exited 1 in both states; what changed is
+the text around the message**: before, a PowerShell error record (the script path, a line number, a caret rule) with the message last; after, the
 message alone, and the dirty-tree refusal lists each dirty path on its own line. No `ritual-checks` member word moved, `doc-lint.ps1`
 was `OK`, and `ritual-checks.ps1 -Branch main` was `RESULT OK`, in every project and every state. Everything else that differed
 between the two states is the second update's own bookkeeping: two more digest markers, the recorded kit commit, and one more commit
@@ -1031,11 +1034,12 @@ race) were not run in an adopted project, nothing was run through a wrapper that
 with a push was not run, since it would push to the project's real origin; those are proved by the kit's fixtures, which run the
 script as a child process through the enforcement harness.
 
-**What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. If a wrapper of yours
-parsed the PowerShell error record around a refusal, it now gets the message alone; if it relied on a non-1 exit, it now gets 1.
+**What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. If a wrapper of
+yours parsed the PowerShell error record around a refusal, it now gets the message alone. If a script of yours calls the claim
+in-process and relied on its throwing, check `$LASTEXITCODE` after the call.
 
 <!-- digest: claim-feature's seven refusals now print their message and exit 1 themselves; a successful claim is unchanged. -->
-<!-- digest: claim-feature still dies in a terminating throw if ls-remote fails, and a failed push reads as a lost race. -->
+<!-- digest: claim-feature still dies in a throw if ls-remote fails, and a push the remote refuses reads as a lost race. -->
 
 ## 3. Other surgical files
 

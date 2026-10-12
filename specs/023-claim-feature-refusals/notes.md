@@ -140,9 +140,12 @@ with one `git config remote.origin.pushurl <missing path>` on the `CLF-004/pass`
 **F2** fixed: `CLF-003/pass` keeps the `feature-x` commit, so the pair differs only in `checkout` (and the description). **F3** fixed
 in the section above (the `throw` also fires after a successful push). **F4** fixed with F1: `CLF-007`'s summary says the remote claim
 is withdrawn (nothing landed in the failing-push fixture, and the refusal leaves the local branch and spec directory in place,
-renumbered twice) and its law cites FR-004. **F5** recorded, not fixed (FR-006): a failed `git push` (an authentication or network
-failure) is reported as `Number NNN was claimed concurrently ()` with an empty rival list; the script renumbers three times, burning
-three numbers, and ends with the lost-race message, which misdiagnoses the cause. A candidate roadmap gap next to the line-47 `throw`,
+renumbered twice) and its law cites FR-004. **F5** recorded, not fixed (FR-006): a push the remote refuses while it can still be
+read (no write permission, a server-side hook) is reported as `Number NNN was claimed concurrently ()` with an empty rival list; the
+script renumbers twice and refuses on the third attempt, passing over three numbers, and ends with the lost-race message, which
+misdiagnoses the cause. *Corrected after the phase 2 review (F2): this text first said "an authentication or network failure" and
+"renumbers three times". A push that fails because origin is unreachable never gets there: the ledger read straight after the push hits
+the line-47 `throw` (exit 1, no renumber).* A candidate roadmap gap next to the line-47 `throw`,
 for phase 2's decisions-log entry. **F6**: no action; the refusal is on the process's stderr, as in feature 022's F5, and the owner's
 answer to that applies here.
 
@@ -218,3 +221,42 @@ was written after the first corrected pass), is recorded below.
 Second pass, on the final documents (the measured paragraph and the roadmap entry written): all 36 outputs of S1-rebuilt and S2-rebuilt
 (three projects, six probes, two states) are byte-identical to the first corrected pass once the scratch directory's name is set
 aside, and each clone ends on "measure: kit now" with `Stop-Refused` in the script and the recorded kit commit `6f5e0b7`.
+
+### Phase 2 AI review and its remediation
+
+Review: `ai-code-review-phase-2.md` (fresh-context reviewer, REQUEST CHANGES). The bookkeeping was confirmed clean (scope check PASS, the
+digest changing by exactly the two markers, no spec/plan/tasks change in the phase commit, `doc-lint` and `ritual-checks` OK) and the
+reviewer re-ran the measurement on FitForge and got the same results; the blocking findings were two claims in the adopter-facing note,
+both mine.
+
+- **F1 (blocking), fixed.** The flow-down note said a wrapper, CI job or agent starting the script as a child process could get 97 or a
+  leaked 128 and now gets 1. False: started with `pwsh -File` (or `pwsh -Command`) the exit was already 1 (this session's own T001
+  measured it); the 97 and 128 are particular to the harness's launcher, which runs the script in-process inside a try/catch. What the
+  note had left out is the change an in-process caller actually meets, measured by the reviewer: before, a refusal threw (the caller's
+  `catch` fired, `$LASTEXITCODE` stayed 0); now nothing is thrown, `$LASTEXITCODE` is 1, and a caller under
+  `$ErrorActionPreference = 'Stop'` carries on past the refused claim. The note's "what was wrong", "what an owner may newly see" and
+  "what to do" now say that, and the roadmap entry carries it.
+- **F2 (blocking), fixed.** The "failed push" limit said "an authentication or network failure ... renumbers three times". It renumbers
+  twice (three `WARNING` lines, two `Renumbered:` lines; passing over three numbers), and a network failure never gets there: the
+  ledger read straight after the push hits the line-47 `throw`. Only a push the remote refuses while it can still be read (no write
+  permission, a server-side hook, a push URL that differs from the fetch URL, which is what `originPushUrl` builds) takes the lost-race
+  path. The note, the roadmap entries, the second digest marker and the phase 1 F5 text above are corrected, and the retry advice now
+  says what state the failed claim leaves (the working copy on the new branch with its spec directory).
+- **F3 (doc drift), fixed with the owner's approval.** The withdrawn lost-race premise survived in `spec.md` (the US2 intro, US2
+  scenario 1, FR-003, SC-002), `plan.md` (the Summary's "no new recipe field") and `tasks.md` (Prerequisites: "site 135 exempt"). Each
+  now says seven fixtured sites, one new recipe field, site 135 fixtured; each amended document carries `Amendment approved by: anas.m,
+  2026-10-13`, and the remediation commit names the same approver. Nothing was ticked or approved by this session.
+- **F4 (minor), fixed.** The decisions-log entry said "every refusal exits 1 in both states"; only three of the seven were run on the
+  clones. It now says "each of the three refusals run", and the note's measured paragraph says the same.
+- **F5 (minor), recorded.** SC-001's "one renumbering" success had no evidence. The reviewer built a fixture by hand (a bare origin and a
+  stub stock script that pushes `001-rival` between allocation and the push) and ran the `12e9a1f` and `868cfc6` scripts with
+  `pwsh -File`: both printed `Allocating 001`, `WARNING: Number 001 was claimed concurrently (001-rival)`, `Renumbered: 001-probe ->
+  002-probe`, `CLAIMED: 002-probe (pushed ...)`, `SPEC_FILE` and `NEXT`, exit 0, byte-identical; the loop body is unchanged, so the
+  result was expected. Not run on an adopted project and not a harness fixture.
+- **F6 (minor), not ours.** Feature 022's roadmap row still has a bracketed spec path although 022 is on `main`; the owner may unbracket
+  it in a main-side docs commit. 023's row is unbracketed before its merge, as 020 and 021 did.
+
+**A finding about feature 022's merged note, not fixed here.** The review says feature 022's flow-down note used the same "a caller that
+was not a terminal" framing for the exit code of its refusals, which this review found inaccurate for 023. Whether 022's note
+overstates a child-process difference the same way has not been checked in this session; it is on `main` and any fix is a separate
+docs commit, the owner's call.

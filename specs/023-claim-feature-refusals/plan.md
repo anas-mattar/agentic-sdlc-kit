@@ -5,6 +5,7 @@
 **Gate Batching**: none
 **Gate Certification**: user-run
 **Amendment approved by**: anas.m, 2026-10-12
+**Amendment approved by**: anas.m, 2026-10-13
 
 ## Summary
 
@@ -13,7 +14,7 @@
 each independently revertible. First the script and its proof, fixtures first: `Stop-Refused` at the seven sites, a
 fail and a pass fixture for each of the seven (the lost-race site reached through one new recipe field, D2 as amended), the script brought into the coverage sweep. Then
 the guidance, the flow-down note, the roadmap and a measurement over clones of the three adopted projects. No new
-script, no new library file, no new recipe field, no verdict word (the script has none).
+script, no new library file, one new recipe field (`originPushUrl`, D2 as amended), no verdict word (the script has none).
 
 ## Technical Context
 
