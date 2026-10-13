@@ -376,8 +376,9 @@ function Get-CriticalMergeReadiness {
     $tip = [long]0
     foreach ($s in $subjects) {
         # The final phase has landed if ANY phase token in a subject names it or beyond (plan D3 as
-        # amended): the noisy direction is a subject that merely mentions it early, which is strict.
-        foreach ($m in [regex]::Matches($s, '(?i)\bphase\s+(\d+)\b')) {
+        # amended): 'phase 3', 'phase3', 'phase 3a' and 'phases 3' all count. The noisy direction is a
+        # subject that merely mentions it early, which is strict.
+        foreach ($m in [regex]::Matches($s, '(?i)\bphases?\s*(\d+)')) {
             if ((ConvertTo-PhaseNumber $m.Groups[1].Value) -ge $final) {
                 return @{ Pending = $false; Why = $null; Final = $final; Tip = $final }
             }

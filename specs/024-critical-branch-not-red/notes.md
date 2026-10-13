@@ -106,3 +106,18 @@ Confirmed by the owner (anas.m, 2026-10-13): the plan's six rules, `CRIT-R01` to
 
 A fresh-context re-review of `4c8fe99` was started on the owner's instruction (2026-10-13); its file will be
 `ai-code-review-phase-1-round-2.md`, filed verbatim.
+
+### Round 2 review remediation (owner decisions of 2026-10-13)
+
+Owner decisions: approve the plan amendment, extend the F2 token, run a round 3. The amendment is recorded with the approver
+in `plan.md` and `tasks.md` (commit "plan and tasks: 024 text brought in line with the code ...").
+
+| Round 2 finding | What was done |
+|---|---|
+| F1 DOC DRIFT | `plan.md` D1 (the return shape and the gate), D3 (a second amended paragraph), Risks (bullets 1 and 2) and `tasks.md` T004 rewritten to say what the code does, each with an approver line. |
+| F2 MINOR | The final-phase token is `\bphases?\s*(\d+)`, so `phase3`, `phase 3a` and `phases 3` count. Fixtures: `CRIT-R01/fail-phase-token-no-space`, `fail-phase-token-suffix`, `fail-phase-token-plural`, each differing from `pass-limit-final-commit-names-no-phase` only in the subject; they failed on the code as round 2 left it. |
+| F3 MINOR | A design consequence, not a defect: committing the artifact early turns the branch red for the rest of the feature; an uncommitted artifact leaves the WARN where the parent failed; an unparsable `kit-adoption.json` resolves to solo, so a committed team artifact does not end the pending state. Recorded in plan Risks now and **to be said in the phase 2 guidance** (T006, T007). |
+| F4 MINOR | `CRIT-R01/pass-artifact-committed-mid-feature` added, so `fail-artifact-committed-invalid-mid-feature` now has a pair differing only in the review's validity. It passed on the code as it stood: a fixture gap, not a behaviour change. |
+
+Runs (agent-run, feedback only): full harness **1460 passed, 0 failed** (1452 + 4 cases); every pre-existing case unchanged;
+coverage unchanged (`enforcement-pack.ps1` 70 of 75 fixtured, overall exempt count 3).
