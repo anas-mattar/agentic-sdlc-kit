@@ -121,3 +121,12 @@ in `plan.md` and `tasks.md` (commit "plan and tasks: 024 text brought in line wi
 
 Runs (agent-run, feedback only): full harness **1460 passed, 0 failed** (1452 + 4 cases); every pre-existing case unchanged;
 coverage unchanged (`enforcement-pack.ps1` 70 of 75 fixtured, overall exempt count 3).
+
+### Round 3 review remediation (owner decision of 2026-10-13: approve the doc fixes)
+
+Round 3 found no code defect; its three findings were wording. Done in `plan.md`, each with an approver line: the residual-hole wording
+(Risks, bullet 1) now says what the pattern does not read (no phase word; a separator it does not read; a list or range whose first
+number is lower) instead of "names no phase"; the D1 rewrite has its own approver line and the stray one inside the Risks list is
+gone (one at the end of the section); D3's first paragraph carries a note that the amended paragraphs supersede its anchored-form
+description. `tasks.md` T004 keeps the single approver line in its phase block. No code, fixture or test changed, so no harness
+re-run is owed; the gate for `20855f5` was certified by the owner (exit 0, 2026-10-13).

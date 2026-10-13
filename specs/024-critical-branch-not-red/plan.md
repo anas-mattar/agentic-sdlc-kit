@@ -60,6 +60,7 @@ function adds one entry to `$script:warnings` and returns, and otherwise calls t
 `Why` first when the branch could not be shown mid-feature). The two arms (`Invoke-CriticalSoloEvidence`, `Invoke-CriticalTeamEvidence`) are not edited, so their messages
 and order cannot drift (FR-002). The signature gains `-Base`, the diff base the dispatch already computes, as the other
 members that read history take it.
+**Amendment approved by**: anas.m, 2026-10-13
 
 **D2 — The declared final phase is the highest `## Phase N` heading of the committed `tasks.md` (FR-003).** Read from the
 committed blob at `HEAD` (`git show "HEAD:./specs/$Branch/tasks.md"`, the `./` rule of 013 phase 5), through
@@ -80,6 +81,11 @@ a Critical branch with zero phase commits is exactly the state of every existing
 skipped phase naming; it stays strict, so the relaxation applies only to a branch that has *shown* it is mid-feature, by
 carrying phase commits `1..k` with `k < N` (FR-003). This is the owner's decision: the alternative, WARN when merely
 "no final-phase commit", is simpler and is exactly the shape that lets a branch avoid the artifact by never naming a phase.
+
+*Superseded in part by the two amended paragraphs below.* The anchored form (`^(?i)phase\s+N\b`) and the decision not to reuse
+scope-check's looser token, as described above, now apply only to showing that the branch is mid-feature at all; the final phase
+is read with a looser token anywhere in a subject, as the amendments say.
+**Amendment approved by**: anas.m, 2026-10-13
 
 *Amended after the phase 1 AI review (F1, F3).* Two tighter signals, both approved by the owner, close most of the disclosed hole
 and leave the rest named. (a) **An artifact already committed ends the pending state**: if the active arm's artifact file
@@ -183,9 +189,9 @@ phase grammar is read, not changed (D2, D3).
 
 ## Risks
 
-- **A branch can stay in `WARN` by never naming its final phase commit.** The relaxation's one real hole, narrowed again after the phase 1 review by D3's two added signals (an artifact already committed ends the pending state; a phase token anywhere in a subject counts as the final phase) and not closed: a final commit that names no phase and a branch with no artifact yet still reads as mid-feature. D3 narrows it
+- **A branch can stay in `WARN` by never naming its final phase commit.** The relaxation's one real hole, narrowed again after the phase 1 review by D3's two added signals (an artifact already committed ends the pending state; a phase token anywhere in a subject counts as the final phase) and not closed: a final commit the pattern does not read as final, on a branch with no artifact committed yet, still reads as mid-feature. D3 narrows it
   (only a branch that already carries phase commits `1..k`, `k < N`, qualifies; contiguity D2 blocks an invented phase) but
-  does not close it: a final commit that names no phase (no `phase N`, `phaseN`, `phase Na` or `phases N` token anywhere in its subject) is not seen as final. What still stands behind it is gate 6,
+  does not close it: a final commit whose subject carries no token that `\bphases?\s*(\d+)` reads as the final number is not seen as final: no phase word at all, a separator the pattern does not read (`phase-3`, `phase: 3`, `phase #3`, `Phase III`), or a list or range whose first number is lower (`phase 1 and 3`, `phases 2-3`, `phase 2/3`). What still stands behind it is gate 6,
   the human review at merge, which is held by a person and is not a machine check; the `WARN` is printed on every run so the
   artifact cannot be forgotten silently. Disclosed in the script header and in the flow-down note, as 013 disclosed its limit.
 - **Mid-feature is anchored, final is not.** Only a subject that BEGINS with `phase k` shows the branch is mid-feature at all
@@ -195,7 +201,6 @@ phase grammar is read, not changed (D2, D3).
   red for the rest of the feature, and an uncommitted artifact leaves the branch on the WARN where the parent failed; the
   phase 2 guidance says so. An unparsable `kit-adoption.json` resolves to solo mode, so a committed team artifact does not end
   the pending state there (round 2, F3).
-**Amendment approved by**: anas.m, 2026-10-13
 - **A mid-feature `tasks.md` amendment moves the final phase.** The branch goes back to `WARN`; correct, and the amendment
   is already graded by the amendment-authority check.
 - **`Get-VisibleFromText` is not a markdown parser.** It hides comments, fences and code spans; an exotic construct could
