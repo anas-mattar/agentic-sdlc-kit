@@ -4,6 +4,8 @@
 **Input**: Feature specification (approved, anas.m, 2026-10-13; option A) + decisions D1–D9 below
 **Gate Batching**: none
 **Gate Certification**: user-run
+**Status**: Approved (anas.m, 2026-10-13) — decisions D1–D9 approved as written
+**Amendment approved by**: anas.m, 2026-10-13
 
 ## Summary
 
