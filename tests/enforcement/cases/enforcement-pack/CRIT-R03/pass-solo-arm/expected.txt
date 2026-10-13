@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+WARNING: CriticalEvidence: specs/001-thing/second-model-review.md is not yet due - specs/001-thing/plan.md declares **Merge Readiness**: pending (the owner's declaration, a recorded plan amendment) and the second-model review is owed once it is set to ready (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)
+enforcement-pack: OK

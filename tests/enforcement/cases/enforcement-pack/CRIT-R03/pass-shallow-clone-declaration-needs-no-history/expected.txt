@@ -1,0 +1,7 @@
+enforcement-pack: branch '001-thing', diff base '', 0 changed file(s)
+WARNING: enforcement-pack: no integration branch to diff against, so nothing on '001-thing' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout).
+WARNING: CriticalEvidence: specs/001-thing/human-pr-review.md is not yet due - specs/001-thing/plan.md declares **Merge Readiness**: pending (the owner's declaration, a recorded plan amendment) and the independent human review is owed once it is set to ready (team mode (2 developers declared in kit-adoption.json); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)
+UNGRADED: ReviewProvenance: no diff base, so no review file on '001-thing' was inspected - the machine half of DoD gate 5 formed no opinion. Fetch the full history ('fetch-depth: 0' on actions/checkout)
+UNGRADED: PhaseSizeWarning: no diff base, so no commit on '001-thing' was measured against the phase-size guideline
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: cannot grade '001-thing' — this is a shallow clone, so the boundary (plan D2b) would be computed from history that is not present, and every commit would report as predating the check. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' on a build agent (constitution I, Amendment authority)

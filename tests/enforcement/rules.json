@@ -568,7 +568,7 @@
       "function": "Invoke-CriticalEvidenceCheck",
       "summary": "a Critical feature that is provably mid-feature is warned that its independence artifact is pending, and not failed for it",
       "law": "docs/sdlc/definition-of-done.md item 6 (the human review is once per feature, at merge); feature 024 spec FR-001, FR-002",
-      "emitAnchor": "is not yet due",
+      "emitAnchor": "is not yet due - the branch is at phase",
       "siteCount": 2,
       "notes": "GAP-022. Two emission sites, declared: the team arm names human-pr-review.md and the solo arm names second-model-review.md, and both say the same thing - which artifact is owed once the final phase lands. Mid-feature means tasks.md declares phases 1..N with no gap and the branch carries a phase commit below N and none at N. The pass is the WARN with exit 0; the fail is the same branch once the final phase commit lands, where today's failure is back unchanged. Variants: the solo arm (the cooling-off is not demanded while mid-feature either), and a final phase heading that exists only inside a fenced block, which declares nothing. The parent exits 1 on every pass here."
     },
@@ -580,6 +580,16 @@
       "law": "feature 024 spec FR-003 (undeterminable merge-readiness keeps today's failure); the GAP-027 lesson that a relaxation must not be silent",
       "emitAnchor": "not treated as mid-feature",
       "notes": "One site, several reasons, each a variant: no phase heading in tasks.md (the fail), a gap in the heading numbers (so an invented high phase cannot hold a branch in WARN), no phase commit yet, and a depth-1 clone with no diff base. The failure itself is the unchanged CriticalEvidence message; what is new is the WARNING line naming the reason, so a branch held strict is never quiet about it. Recorded in 024's notes: the plan named six rules (CRIT-R01 to CRIT-R06) and the coverage sweep owns one rule per emission site, of which there are two, so the six conditions became variants of these two."
+    },
+    {
+      "id": "CRIT-R03",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalEvidenceCheck",
+      "summary": "a Critical feature whose plan declares Merge Readiness: pending is warned that its independence artifact is deferred, whatever the subjects, headings or history say",
+      "law": "docs/sdlc/definition-of-done.md item 6 (the human review is once per feature, at merge); feature 025 spec FR-001, FR-002, FR-003",
+      "emitAnchor": "declares **Merge Readiness**: pending",
+      "siteCount": 2,
+      "notes": "GAP-022 follow-up. Two emission sites, declared: the team arm names human-pr-review.md and the solo arm names second-model-review.md. The pass is the owner's declared pending on a branch shaped like FitForge 002 (duplicate 'Phase N amendment' headings, 'tasks: phase N done' subjects, the final phase landing before phase 2), where feature 024 reads final-landed and fails; the fail is the same branch with ready, today's failure. Variants: the solo arm; a depth-1 clone and a missing tasks.md (an explicit declaration needs no history, plan D2); a committed invalid artifact (pending never suppresses the arm's grading); a marker inside a comment or a fence (hidden, so feature 024 decides); a Standard feature carrying the marker (ignored, plan D4). The malformed-marker reasons (two lines, an unknown value, an empty value) reuse CRIT-R02's site and are its variants. The amendment grading of the marker line is shown by AMEND-001 variants (plan D5). The parent fails or reads differently on every pass here."
     },
     {
       "id": "CRIT-S01",

@@ -332,6 +332,12 @@ function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 #      wrongly warned at the tip. Strict is the safe direction: it costs relief, not safety.
 # What stands behind both is gate 6, the human review at merge, which a person holds; the WARN is
 # printed on every run so the pending artifact cannot be forgotten silently.
+#
+# DECLARATION (feature 025): a plan.md may carry '**Merge Readiness**: pending' or 'ready', which
+# decides before the heuristic above is consulted and needs no history. 'pending' is a CLAIM the
+# owner makes: an owner who sets it and never flips it merges with only the deferral WARN on this
+# check, and gate 6 stands behind it. Flipping it is a plan amendment, so it carries a recorded
+# approver (constitution I), a written claim a reviewer can falsify, not proof of who approved.
 function ConvertTo-PhaseNumber {
     # A number too large to parse is not an error: it is "beyond any declared phase" (review F2).
     param([string]$Text)
@@ -348,6 +354,33 @@ function Get-CriticalMergeReadiness {
     # current directory, not the repository root.
     git cat-file -e "HEAD:./$Artifact" 2>$null
     if ($LASTEXITCODE -eq 0) { return @{ Pending = $false; Why = $null } }
+    # An explicit declaration (feature 025, plan D1, D2) is read from the committed plan.md and
+    # decides before any history is consulted, so a shallow clone, a missing tasks.md and out-of-order
+    # phases cannot overrule it. 'ready' is the arm's own grading; 'pending' is the deferral warning;
+    # anything else is strict with the reason. Absent, hidden (comment or fence) or unreadable falls
+    # through to the heuristic below, byte for byte.
+    $planBlob = @(git show "HEAD:./specs/$Branch/plan.md" 2>$null)
+    if ($LASTEXITCODE -eq 0) {
+        $planVisible = @(Get-VisibleFromText -Lines $planBlob)
+        $planFenced = Get-FencedLineMap -Lines $planVisible
+        $declarations = [System.Collections.Generic.List[string]]::new()
+        for ($i = 0; $i -lt $planVisible.Count; $i++) {
+            if (-not $planFenced[$i] -and $planVisible[$i] -match '^\*\*Merge Readiness\*\*:\s*(.*?)\s*$') {
+                $declarations.Add($matches[1])
+            }
+        }
+        if ($declarations.Count -gt 1) {
+            return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness** more than once" }
+        }
+        if ($declarations.Count -eq 1) {
+            switch -CaseSensitive ($declarations[0]) {
+                'ready'   { return @{ Pending = $false; Why = $null } }
+                'pending' { return @{ Pending = $true; Why = $null; Declared = $true } }
+                ''        { return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness** with no value, which is neither pending nor ready" } }
+                default   { return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness**: '$($declarations[0])', which is neither pending nor ready" } }
+            }
+        }
+    }
     if (-not $Base) {
         return @{ Pending = $false; Why = 'there is no diff base to read the branch history against, as in a shallow clone' }
     }
@@ -417,6 +450,14 @@ function Invoke-CriticalEvidenceCheck {
     $mode = Get-EvidenceMode
     $artifact = if ($mode.Mode -eq 'team') { "$dir/human-pr-review.md" } else { "$dir/second-model-review.md" }
     $readiness = Get-CriticalMergeReadiness -Branch $Branch -Base $Base -Artifact $artifact
+    if ($readiness.Pending -and $readiness.Declared) {
+        if ($mode.Mode -eq 'team') {
+            $script:warnings += "CriticalEvidence: $dir/human-pr-review.md is not yet due - $dir/plan.md declares **Merge Readiness**: pending (the owner's declaration, a recorded plan amendment) and the independent human review is owed once it is set to ready (team mode ($($mode.Why)); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+        } else {
+            $script:warnings += "CriticalEvidence: $dir/second-model-review.md is not yet due - $dir/plan.md declares **Merge Readiness**: pending (the owner's declaration, a recorded plan amendment) and the second-model review is owed once it is set to ready (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+        }
+        return
+    }
     if ($readiness.Pending) {
         if ($mode.Mode -eq 'team') {
             $script:warnings += "CriticalEvidence: $dir/human-pr-review.md is not yet due - the branch is at phase $($readiness.Tip) of $($readiness.Final) and the independent human review is owed once the phase $($readiness.Final) commit lands (team mode ($($mode.Why)); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
