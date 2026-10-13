@@ -160,7 +160,7 @@ not give it to itself, and a machine can check only that it is well formed.
    unchanged and never reads the human review.
 
    **When the check demands the artifact** (feature 024). The artifact is owed *at merge*, after the final phase
-   (`docs/sdlc/definition-of-done.md`, item 6), so while a Critical branch is provably **mid-feature** the check does not
+   (`docs/sdlc/definition-of-done.md`, item 6), so while a Critical branch is evidently **mid-feature** (by the heuristic below, which is evidence and not proof) the check does not
    fail it for the artifact's absence: it prints one `WARNING: CriticalEvidence: ... is not yet due` line naming the artifact
    and the phase that makes the branch merge-ready, and the run is not red for it. Mid-feature means all of: the committed
    `tasks.md` declares phase headings whose **distinct** numbers are exactly `1..N` (a heading such as
@@ -171,8 +171,9 @@ not give it to itself, and a machine can check only that it is well formed.
    exactly as before: the final phase has landed, or the artifact is committed (the arm then grades it, mid-feature or not),
    or the check cannot establish mid-feature at all (no diff base, a shallow clone, `tasks.md` unreadable or with no phase
    heading or a gap or a number too large to read, no commit subject with a phase token yet), in which last group it prints a
-   `not treated as mid-feature` line saying why. What an owner may therefore see: committing the artifact early turns the
-   branch red for the rest of the feature (the arm grades it, and the solo arm's cooling-off clock starts then); an artifact
+   `not treated as mid-feature` line saying why. What an owner may therefore see: committing the artifact early puts it
+   under the arm's grading from that commit on (the branch is red until the artifact is valid in team mode, or 24 hours old in solo
+   mode, where the cooling-off clock starts at that commit, and passes once it is); an artifact
    left uncommitted mid-feature warns where it used to fail; and an unusable `kit-adoption.json` selects the solo arm, so a
    committed team-arm file does not end the pending state there. **A limit, stated rather than hidden:** a final commit whose
    subject is not read as naming the final phase (no phase word at all; a separator the pattern does not read such as
@@ -180,11 +181,12 @@ not give it to itself, and a machine can check only that it is well formed.
    `phases 2-3` or `phase 2/3`), on a branch with no artifact committed yet, still reads as mid-feature and stays on the
    `WARN`. What stands behind it is gate 6, the human review at merge, which a person holds, and the `WARN` is printed on
    every run. Name the final commit `phase N: ...`. **A second limit, measured on a real Critical feature:** phases that land
-   out of order, or are never named, defeat the heuristic in both directions. "Final landed" is read as a token at or above the
+   out of order, or are never named, defeat the heuristic. "Final landed" is read as a token at or above the
    highest declared phase, so a feature that does a high-numbered phase early (FitForge's phase 11 ran before its phases 4 to 9)
-   stays strict for that stretch, and a subject such as `declare phase 17` reads as phase 17 landed; requiring every declared phase
-   to be named would instead wrongly warn at the end, as that feature's phases 14 to 16 were never named. Strict is the safe
-   direction: the cost is relief the feature does not get, never a pass it should not have.
+   reads as final too soon and stays strict for that stretch, and a subject such as `declare phase 17` reads as phase 17 landed;
+   a rule requiring every declared phase to be named would instead warn at the end, as that feature's phases 14 to 16 were never
+   named. The first effect is in the safe direction (relief the feature does not get); the first limit above is the unsafe
+   one (an unnamed final commit can get a `WARN` where it should fail), which is why gate 6 stays behind it.
 
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->

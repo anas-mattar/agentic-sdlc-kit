@@ -1050,7 +1050,7 @@ exist before the final phase is written and reviewed (`docs/sdlc/definition-of-d
 An owner trained that red is normal stops reading the other six members, which are the ones a Critical feature most needs read on
 every phase (GAP-022; observed on a ten-phase Critical feature in an adopted project).
 
-**What it does now.** While a Critical branch is provably mid-feature, the check prints one
+**What it does now.** While a Critical branch is evidently mid-feature (by a heuristic over `tasks.md` and commit subjects, below), the check prints one
 `WARNING: CriticalEvidence: <artifact> is not yet due - the branch is at phase K of N ...` line and does not fail for the
 artifact. Mid-feature means: the committed `tasks.md` declares phase headings whose distinct numbers are exactly `1..N` (a heading such as
 `## Phase 1 amendment requests` repeats a number and is allowed; a gap is not); some commit subject carries a phase token below `N`
@@ -1067,8 +1067,7 @@ your constitution. Run `scripts/build-digests.ps1` after the update: until you d
 reports the affected digests as stale.
 
 **What an owner may newly see.** On a Critical feature mid-flight, a `WARNING: CriticalEvidence` line where there was a failure, and
-a green `enforcement-pack` verdict that used to be red. **Committing the artifact early turns the branch red for the rest of the
-feature**: once it exists the arm grades it, and the solo arm's cooling-off clock starts at that commit. An artifact left
+a green `enforcement-pack` verdict that used to be red. **Committing the artifact early puts it under the arm's grading from that commit on:** the branch is red until the artifact is valid (team mode) or 24 hours old (solo mode, where the cooling-off clock starts at that commit), and passes once it is. An artifact left
 uncommitted mid-feature warns where it used to fail. An unusable `kit-adoption.json` selects the solo arm, so a committed team-arm
 file does not end the pending state there. A branch the check cannot show to be mid-feature (a depth-1 CI checkout, a `tasks.md`
 without `## Phase N` headings) is exactly as red as before, now with the reason on a `WARNING` line. Non-Critical features and the
@@ -1084,10 +1083,11 @@ mid-feature and stays on the warning. What stands behind it is gate 6, the human
 warning is printed on every run so the pending artifact is not forgotten silently. Name the final commit `phase N: ...`.
 
 **A second limit, found by measuring on a real adopted Critical feature rather than by the kit's own fixtures.** Phases that land out
-of order, or are never named in a commit subject, defeat the heuristic in both directions. "Final landed" is read as a phase token at
-or above the highest declared phase, so a feature that does a high-numbered phase early stays strict for that stretch, and a subject
-such as `declare phase 17` reads as phase 17 landed; requiring every declared phase to be named would instead wrongly warn at the end.
-Strict is the safe direction: the cost is relief the feature does not get, never a pass it should not have. A better merge-ready
+of order, or are never named in a commit subject, defeat the heuristic. "Final landed" is read as a phase token at
+or above the highest declared phase, so a feature that does a high-numbered phase early reads as final too soon and stays strict for
+that stretch, and a subject such as `declare phase 17` reads as phase 17 landed; a rule requiring every declared phase to be named
+would instead warn at the end. The first effect is in the safe direction (relief the feature does not get); the first limit above is
+the unsafe one (an unnamed final commit can get a warning where it should fail), which is why gate 6 stays behind it. A better merge-ready
 signal than a commit-subject token is a separate piece of work, on the kit's roadmap.
 
 **What was measured.** Each of FitForge, FlowBoard and ExpenseTracker was cloned from its local directory (nothing in place touched,
@@ -1101,7 +1101,7 @@ changed-file count). The one Critical branch, FitForge's `002-identity-member-pr
 tip, which is correct (its phase 17 has landed), and at the two earlier points probed (after phases 4 and 9) it is still strict:
 that feature's phase 11 ran before phases 4 to 9, which this heuristic reads as the final phase having landed.** A fresh-context
 reviewer ran the pack at all 43 commits of that branch: it warns at 17, is strict for the out-of-order stretch (19 commits), strict
-with a printed reason at 4 and strict at 3. So on the one real Critical feature the relaxation reaches part of its history, not
+with a printed reason at 4 and strict at 3 others (two near the end, one early at `declare phase 17`). So on the one real Critical feature the relaxation reaches part of its history, not
 all of it; that is the second limit above. The first measuring pass was discarded: its driver ran each branch with the branch's
 own older scripts, so a branch could not move between states. FlowBoard has no feature branch, so no branch probe ran there.
 Not exercised: a Critical branch in the solo arm, and any run in the adopted projects' own CI.
@@ -1110,8 +1110,9 @@ Not exercised: a Critical branch in the solo arm, and any run in the adopted pro
 in flight, expect the warning in place of the failure until the final phase lands. Commit the independence artifact when it exists, not
 before. If you have a Critical branch that stays on the warning at its last commit, check that the commit is named `phase N: ...`.
 
-<!-- digest: A Critical branch now warns, not fails, for a not-yet-due independence artifact while provably mid-feature. -->
-<!-- digest: Committing the Critical independence artifact early turns the branch red from then on; name the last commit phase N. -->
+<!-- digest: A Critical branch now warns, not fails, for a not-yet-due independence artifact while evidently mid-feature. -->
+<!-- digest: An early-committed Critical independence artifact is graded at once, red until valid; name the last commit phase N. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

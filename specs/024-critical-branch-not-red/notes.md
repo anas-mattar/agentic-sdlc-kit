@@ -234,3 +234,20 @@ the evidence (17 `WARN`, 19 strict while phase 11 ran ahead, 4 strict with a rea
 Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on the phase 1 final commit `2b9c24b` (run on a working tree that also
 held the uncommitted phase 2 files), exit code **0**, confirmed by the owner (anas.m, 2026-10-13). Phase 1's gate history: `2300e44`
 (exit 0), `4c8fe99` (exit 0), `20855f5` (exit 0), `2b9c24b` (exit 0); each remediation commit was re-gated.
+
+### Phase 2 AI review and its remediation
+
+Review: `ai-code-review-phase-2.md` (fresh-context, APPROVE with follow-ups), filed verbatim. It confirmed the mid-feature definition and the
+strict-state list match the code, the four-file flow-down list matches `kit-manifest.json`, the roadmap and decisions log are
+consistent and the claim check passes, no contradiction with `team-workflow.md`, `review-process.md`, `branch-strategy.md` or the
+constitution, and it **reproduced the FitForge headline** by overlaying this kit's scripts on all 43 commits of the branch in a scratchpad
+clone (17 `WARN`, 19 strict, 3 other strict, 4 strict with a printed reason; 81d7424, 398e75f and the tip strict). It did not re-run the
+three-project update measurement or the full harness.
+
+| Finding | What was done |
+|---|---|
+| F1 DOC DRIFT | "Committing the artifact early turns the branch red for the rest of the feature" overstated the code: a valid artifact committed early **passes** (`pass-artifact-committed-mid-feature`, `pass-solo-artifact-old-mid-feature`). Corrected in `critical-delivery.md`, the flow-down note (bold sentence), the roadmap entry and the digest marker (now 115 characters): graded from that commit on, red until valid (team) or 24 hours old (solo), passing once it is. **Plan Risks and D3 carry the same sentence and wait for the owner's approval of the amendment.** |
+| F2 DOC DRIFT | "never a pass it should not have" contradicted limit 1 (an unnamed final commit can get a `WARN` where it should fail). Replaced in both documents by what is true: the out-of-order effect is in the safe direction, the first limit is the unsafe one, which is why gate 6 stays behind it. "In both directions" is gone; "provably mid-feature" became "evidently mid-feature (by the heuristic below, which is evidence and not proof)" in the documents, the roadmap and a digest marker. |
+| F3 MINOR | "3 strict at the end" became "3 other strict (two near the end, one early at `declare phase 17`)" in the roadmap (twice) and the flow-down note. **Plan D3's "strict at 3" and its "phases 4 to 9" / "4 to 10" wording wait for the owner's approval of the amendment.** |
+| F4 MINOR | The decisions log said "green at 1470 cases"; those are test results (two per case) and not the state where the failure was found. Now "1460 test results, two per case, when the measurement ran; 1478 as shipped". |
+| F5 cosmetic | A blank line before `## 3. Other surgical files` in `adoption/updating.md`. |
