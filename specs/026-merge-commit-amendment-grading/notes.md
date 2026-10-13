@@ -50,3 +50,32 @@ owner's own run showed doc-lint, enforcement-pack, scope-check (`PASS phase 1 co
 verify-kit n/a.
 
 Awaiting: the fresh-context AI review of phase 1 (Reviewer Provenance) and the owner's go-ahead for phase 2.
+
+### Phase 1 review remediation (review `ai-code-review-phase-1.md`, REQUEST CHANGES; owner decision of 2026-10-14)
+
+Owner decision, in the owner's words in the session: "leave it as is, commit the remediation" (on F3).
+
+| Finding | What was done |
+|---|---|
+| F1 (BLOCKING) | When the merged branch was already an ancestor, `git merge --no-ff --no-commit` started no merge and the library committed an ordinary one-parent commit titled "merge" carrying the `mergeWrite` content (the plain path silently made no commit at all). Both paths now refuse: the content path when `MERGE_HEAD` does not exist, the plain path when `HEAD` has fewer than two parents afterwards. Two self-tests. Mutation shown for each guard (removing it fails exactly its test); the library was restored byte for byte (`cmp`). |
+| F2 | A `resolve` naming a file that did not conflict, beside one that did, is refused (was silently treated as a write). Self-test and mutation shown. The earlier "leaves a conflicted file unnamed" test now uses two conflicted files, so it still isolates its own refusal. |
+| F3 (CONFIRM) | **Owner decision: leave it as is.** `hoursAgo` on a merge is ignored on both paths, as it always was; `REPOS-016`, `REPOS-018` and `REPOS-034` carry it. Stated in the module header so it is no longer silent. |
+| F4 | A file named by both `resolve` and `mergeWrite` is refused (was: `mergeWrite` silently won). Self-test and mutation shown. |
+| F5 | The module header now says what cannot be expressed: an octopus merge with a conflict (git itself refuses one) and a conflict resolved by deleting the file (`resolve` always writes content). |
+| F6 | **Recorded, not changed (pre-dates the phase and is library-wide):** a refusal leaves the temporary fixture repository on disk, and `%TEMP%` held 1280 `kit-fixture-*` directories when the reviewer looked. Not fixed here: cleaning up on every throw changes the whole library and is its own piece of work. |
+| F7 | The plain-merge control now pins the default message ("merge main") and a second test builds a merge with no message; the `mergeDelete` test now asserts two parents. **Not addressed, said plainly:** removing the `merge --abort` is unobservable from a test (the repository is thrown away when New-FixtureRepo throws), and "routing a plain merge through the new path" cannot fail a test because both paths build the same merge. |
+| F8 | Accepted: the octopus array and refusing a `resolve` on a non-conflicting merge are within D8. |
+| F9 | `notes.md` now carries T001's exact output below. **Plan D8 drift, carried to the next owner-approved amendment of the plan, not edited here:** it says the old code ran `--no-commit`; it ran `--no-edit`. |
+| F10 | Accepted, as for the existing `delete`: `mergeDelete` of a missing path is ignored; `"mergeDelete": []` and `"resolve": ""` on a non-merge commit are accepted as empty. |
+
+**T001's exact output (`AMEND-001/pass-merge`, a merge that authors nothing; exit 0):**
+
+```text
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
+AmendmentAuthority: graded 1 of 3 commit(s) in <SHA>..HEAD (2 not graded: 1 merge commit(s); 1 made before the check existed (plan D2b))
+enforcement-pack: OK
+```
+
+Runs after the remediation: `-Case NOTHING` (the harness self-tests): 58 passed, 0 failed (53 before the remediation, 5 added); `-Case AMEND-`: 126 passed, 0 failed.
+The full-harness count for the remediated tree is recorded below when its run finishes.

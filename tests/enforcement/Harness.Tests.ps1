@@ -312,6 +312,14 @@ Describe 'merge commits that carry content (feature 026, plan D8)' {
         } finally { Remove-FixtureRepo -Path $root }
     }
 
+    It 'keeps the default merge message and builds a merge when no message is given' {
+        $root = New-FixtureRepo -Recipe (New-MergeRecipe -MergeJson '"merge": "main"')
+        try {
+            Get-ParentCount -Root $root | Should -Be 2
+            ((& git -C $root log -1 --format=%s) -join '') | Should -Be 'merge main'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
     It 'writes content into the merge result so it differs from both parents (mergeWrite)' {
         $root = New-FixtureRepo -Recipe (New-MergeRecipe -MergeJson '"merge": "main", "message": "merge main", "mergeWrite": { "a.txt": "authored in the merge\n" }')
         try {
@@ -325,6 +333,7 @@ Describe 'merge commits that carry content (feature 026, plan D8)' {
     It 'removes a file from the merge result only (mergeDelete)' {
         $root = New-FixtureRepo -Recipe (New-MergeRecipe -MergeJson '"merge": "main", "message": "merge main", "mergeDelete": ["b.txt"]')
         try {
+            Get-ParentCount -Root $root | Should -Be 2
             (Test-Path (Join-Path $root 'b.txt')) | Should -BeFalse
             (Get-Blob $root 'HEAD^1' 'b.txt') | Should -Be 'feat'
         } finally { Remove-FixtureRepo -Path $root }
@@ -373,10 +382,49 @@ Describe 'merge commits that carry content (feature 026, plan D8)' {
     }
 
     It 'refuses a resolve that leaves a conflicted file unnamed' {
-        $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n"' -MainLine ', "x.txt": "main side\n"' -MergeJson '"merge": "main", "message": "merge main", "resolve": { "other.txt": "x\n" }'
+        $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n", "a.txt": "feat a\n"' -MainLine ', "x.txt": "main side\n", "a.txt": "main a\n"' -MergeJson '"merge": "main", "message": "merge main", "resolve": { "a.txt": "by hand\n" }'
         { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*conflict in x.txt*'resolve' does not name it*"
     }
 
+    It 'refuses a merge that started no merge because the branch is already merged in (mergeWrite)' {
+        $json = @'
+{
+  "defaultBranch": "main",
+  "commits": [
+    { "branch": "main", "message": "init", "write": { "a.txt": "one\n" } },
+    { "branch": "feat", "message": "feat work", "write": { "b.txt": "feat\n" } },
+    { "branch": "feat", "merge": "main", "message": "merge main", "mergeWrite": { "a.txt": "authored\n" } }
+  ],
+  "checkout": "feat"
+}
+'@
+        { New-FixtureRepo -Recipe ($json | ConvertFrom-Json) } | Should -Throw -ExpectedMessage "*started no merge*already merged*"
+    }
+
+    It 'refuses a plain merge that made no merge commit because the branch is already merged in' {
+        $json = @'
+{
+  "defaultBranch": "main",
+  "commits": [
+    { "branch": "main", "message": "init", "write": { "a.txt": "one\n" } },
+    { "branch": "feat", "message": "feat work", "write": { "b.txt": "feat\n" } },
+    { "branch": "feat", "merge": "main", "message": "merge main" }
+  ],
+  "checkout": "feat"
+}
+'@
+        { New-FixtureRepo -Recipe ($json | ConvertFrom-Json) } | Should -Throw -ExpectedMessage "*made no merge commit*already merged*"
+    }
+
+    It 'refuses a resolve that names a file that did not conflict beside one that did' {
+        $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n"' -MainLine ', "x.txt": "main side\n"' -MergeJson '"merge": "main", "message": "merge main", "resolve": { "x.txt": "by hand\n", "a.txt": "not conflicted\n" }'
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'a.txt', which did not conflict*"
+    }
+
+    It 'refuses a file named by both resolve and mergeWrite instead of letting one win' {
+        $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n"' -MainLine ', "x.txt": "main side\n"' -MergeJson '"merge": "main", "message": "merge main", "resolve": { "x.txt": "by hand\n" }, "mergeWrite": { "x.txt": "also\n" }'
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*both 'resolve' and 'mergeWrite'*"
+    }
     It 'refuses mergeWrite, mergeDelete and resolve on a commit that is not a merge' {
         foreach ($field in '"mergeWrite": { "a.txt": "x\n" }', '"mergeDelete": ["a.txt"]', '"resolve": { "a.txt": "x\n" }') {
             $json = @"

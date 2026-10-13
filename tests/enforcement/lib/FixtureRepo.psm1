@@ -62,8 +62,13 @@
       be: "mergeWrite" is the shape of "write" and lands in the merge result, so the result
       differs from both parents; "mergeDelete" removes files from the merge result only;
       "resolve" is the content taken for each file a conflicting merge leaves conflicted. A
-      conflict with no "resolve" naming it, a "resolve" on a merge that did not conflict, and
-      any of the three fields on a commit that is not a merge are all REFUSED, never ignored.
+      conflict with no "resolve" naming it, a "resolve" naming a file that did not conflict (or a merge
+      that did not conflict at all), the same file named by both "resolve" and "mergeWrite", a merge
+      that starts no merge because the named branch is already merged in (git says "Already up to date"
+      and the result would be an ordinary one-parent commit), and any of the three fields on a commit that
+      is not a merge are all REFUSED, never ignored. NOT expressible: an octopus merge with a conflict (git
+      itself refuses one), a conflict resolved by DELETING the file ("resolve" always writes content), and
+      "hoursAgo" on a merge, which is ignored (as it always was; the REPOS-016, 018 and 034 cases carry it).
     - "uncommittedDelete" removes files from the working tree after the last commit without
       staging the removal — the mirror of "uncommitted", and the state the fail-closed rules
       refuse from the other side: the commit-to-commit diff still names the file, so a check
@@ -222,6 +227,10 @@ function New-FixtureRepo {
             if ($mergeFields.Count -eq 0) {
                 # Exactly the command a plain merge has always run.
                 Invoke-FixtureGit -RepoPath $root -Arguments (@('merge', '--quiet', '--no-ff', '--no-edit', '-m', $mergeMessage) + $mergeNames) | Out-Null
+                $parentCount = @((& git -C $root rev-list --parents -n 1 HEAD) -join '' -split '\s+' | Where-Object { $_ }).Count - 1
+                if ($parentCount -lt 2) {
+                    throw "fixture merge of '$($mergeNames -join ' ')' made no merge commit: the branch is already merged into '$branch' (git says 'Already up to date'), so HEAD is still a one-parent commit. Refused rather than silently building a fixture with no merge in it."
+                }
                 continue
             }
             # A merge with content of its own (feature 026): merge without committing, put the content
@@ -229,6 +238,12 @@ function New-FixtureRepo {
             $mergeOut = & git -C $root merge --quiet --no-ff --no-commit @mergeNames 2>&1
             $mergeExit = $LASTEXITCODE
             $conflicted = @((& git -C $root diff --name-only --diff-filter=U 2>$null) | Where-Object { $_ })
+            if ($mergeExit -eq 0) {
+                & git -C $root rev-parse -q --verify MERGE_HEAD 2>$null | Out-Null
+                if ($LASTEXITCODE -ne 0) {
+                    throw "fixture merge of '$($mergeNames -join ' ')' started no merge: the branch is already merged into '$branch' (git says 'Already up to date'), so committing would make an ordinary one-parent commit that carries the mergeWrite content. Refused rather than silently building a fixture that is not a merge."
+                }
+            }
             $resolveNames = @()
             if ($commit.PSObject.Properties.Name -contains 'resolve' -and $commit.resolve) {
                 $resolveNames = @($commit.resolve.PSObject.Properties.Name)
@@ -236,7 +251,17 @@ function New-FixtureRepo {
             if ($mergeExit -ne 0 -and $conflicted.Count -eq 0) {
                 throw "fixture git failed: git merge $($mergeNames -join ' ')`n$($mergeOut -join "`n")"
             }
+            $both = @($resolveNames | Where-Object { $commit.PSObject.Properties.Name -contains 'mergeWrite' -and $commit.mergeWrite -and (@($commit.mergeWrite.PSObject.Properties.Name) -contains $_) })
+            if ($both.Count -gt 0) {
+                & git -C $root merge --abort 2>&1 | Out-Null
+                throw "fixture names '$($both -join ', ')' in both 'resolve' and 'mergeWrite'. Say which one the merge result takes: refused rather than letting one silently win."
+            }
             if ($conflicted.Count -gt 0) {
+                $stray = @($resolveNames | Where-Object { $conflicted -notcontains $_ })
+                if ($stray.Count -gt 0) {
+                    & git -C $root merge --abort 2>&1 | Out-Null
+                    throw "fixture 'resolve' names '$($stray -join ', ')', which did not conflict in the merge of '$($mergeNames -join ' ')'. Use 'mergeWrite' for content the merge authors: refused rather than silently treated as a write."
+                }
                 $unnamed = @($conflicted | Where-Object { $resolveNames -notcontains $_ })
                 if ($unnamed.Count -gt 0) {
                     & git -C $root merge --abort 2>&1 | Out-Null
