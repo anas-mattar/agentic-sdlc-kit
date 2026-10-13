@@ -2,7 +2,8 @@
 
 **Feature Branch**: `025-critical-merge-ready-signal`
 **Created**: 2026-10-13
-**Status**: Draft — awaiting owner approval (the shape in "Decision for the owner" is the owner's)
+**Status**: Approved (anas.m, 2026-10-13) — option A chosen
+**Amendment approved by**: anas.m, 2026-10-13
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "The roadmap row opened by feature 024: a better merge-ready signal for a Critical feature than commit-subject phase tokens (an explicit owner-set marker in the plan, or the completeness of tasks.md's ticks, or the review artifact's own commit). Feature 024's heuristic misreads phases that land out of order or are never named, so it reaches only part of the one real Critical feature's history."
