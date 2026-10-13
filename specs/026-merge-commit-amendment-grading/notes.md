@@ -79,3 +79,8 @@ enforcement-pack: OK
 
 Runs after the remediation: `-Case NOTHING` (the harness self-tests): 58 passed, 0 failed (53 before the remediation, 5 added); `-Case AMEND-`: 126 passed, 0 failed.
 The full-harness count for the remediated tree is recorded below when its run finishes.
+
+### Gate certification, phase 1 after the review remediation (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `8d3badf` (the phase 1 commit `15a0e6f` and its review remediation), exit code **0**, confirmed
+by the owner (anas.m, 2026-10-14).
