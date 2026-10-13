@@ -55,7 +55,12 @@ declares nothing, a non-Critical branch and every pre-existing `CRIT-*` case are
       `tests/enforcement/rules.json` with its law, and the new warning's entry to `tests/enforcement/emission-idioms.json` the way
       feature 024's warning is; run the recall sweep first and classify anything else it reports (a rule with a pair, an
       exemption, or a not-a-rule with a reason).
+
 T004 grammar follows plan D1 as amended (an empty value is strict).
+
+**Amendment approved by**: anas.m, 2026-10-14
+
+The T004 note above was moved onto its own paragraph so it no longer renders as part of T003 (phase 1 review F11); no task text changed.
 
 **Amendment approved by**: anas.m, 2026-10-14
 

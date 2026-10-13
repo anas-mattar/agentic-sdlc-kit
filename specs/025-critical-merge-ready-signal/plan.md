@@ -12,7 +12,7 @@
 A Critical feature's `plan.md` may declare `**Merge Readiness**: pending` or `ready`. `scripts/enforcement-pack.ps1` reads the line from
 the committed plan and lets it override feature 024's commit-subject heuristic: `pending` is the not-yet-due warning, `ready` is the arm's
 own grading, absent is feature 024 byte for byte. The declaration needs no new approval machinery: a change to an approved plan is
-already an amendment that must name an approver, which is what makes flipping to `ready` a recorded human act. Two phases, each
+an amendment that, in a commit with a single parent, must name an approver, which is what makes flipping to `ready` a recorded human act; a change made inside a merge commit is not graded (D5, Risks). Two phases, each
 independently revertible. First the check and its proof, fixtures first, including a fixture shaped like the real FitForge 002. Then
 the guidance, the plan template, the flow-down note, the roadmap and a measurement that replays FitForge 002's real history.
 
@@ -82,13 +82,13 @@ Amended after the phase 1 AI review (F4): the D1 grammar is `(.*?)` in place of 
 `pending` therefore bypasses feature 024's strict states, on purpose, because an explicit declaration needs no history. The artifact
 committed at `HEAD` still ends the pending state first (D1), so a committed artifact is always graded by its arm. **Owner's decision:**
 whether `pending` should instead leave the history-dependent strict states in force (safer in a depth-1 CI checkout, where it would then
-print the strict reason and not warn). Recommended as written: a declaration the owner made and the approver recorded should not be
+print the strict reason and not warn). Recommended as written: a declaration the owner made should not be
 silently ignored by a shallow clone.
 
 **D3 — The warning and its two emission sites (FR-002).** For a declared `pending` the check prints
 `WARNING: CriticalEvidence: <artifact> is not yet due - specs/<NNN>/plan.md declares **Merge Readiness**: pending (the owner's
-declaration, a recorded plan amendment) and <the review> is owed once it is set to ready (<team mode ($why) | solo mode>;
-docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)`, one line per run, one emission site per arm like feature 024's. The
+declaration in the plan, a claim and not a verified approval; gate 6 stands behind it) and <the review> is owed once it is set to ready (<team mode ($why) | solo mode>;
+docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)`, one line per run, one emission site per arm like feature 024's. The text says "a claim" deliberately, because the amendment check does not grade merge commits (D5). The
 sweep owns one rule per emission site, so these are `CRIT-R03` with `siteCount: 2` and the anchor `declares **Merge Readiness**: pending`.
 The strict reason for a malformed marker reuses feature 024's `not treated as mid-feature` site (`CRIT-R02`, new variants).
 
@@ -105,6 +105,10 @@ that **creates** `plan.md` is a first appearance and is exempt, correctly: that 
 `AMEND-*` rules and in their shape (T001 reads `AMEND-001` and `AMEND-002` for the recipe): an unapproved `pending` to `ready` change
 fails, an approved one passes, and an unapproved addition of the marker to an existing plan fails. **If a fixture shows the check does
 not reach the line, extending it is in scope** (FR-006), and the plan is amended before the code is.
+
+**Limit, accepted by the owner (phase 1 review F1, route 2):** the check skips every commit with more than one parent (feature 014, D7), so a `pending` added inside a merge commit carries no approver check, and gate 6 is the only thing behind that case. This feature does not extend the check to merges: that changes a decision feature 014 made on purpose and belongs to a feature of its own. No fixture pins the limit (the fixture library cannot build a merge with content of its own), so it is stated here and in the script header instead. This amendment also changes the Summary, D2, D3 and Risks to say so.
+
+**Amendment approved by**: anas.m, 2026-10-14
 
 **D6 — No constitution amendment, and the template is a kit file (FR-008).** `.specify/templates/**` is classed `verbatim` in
 `kit-manifest.json`, so the plan template flows down by `update-kit.ps1`. The field is optional and its absence is the default; the
@@ -184,6 +188,8 @@ not reach a plan header line.
 - Phase 2's replay of the real history, recorded in `notes.md`.
 
 ## Risks
+
+- **The amendment record does not cover a merge commit.** A `pending` added inside a merge carries no approver check (D5). It is the same shape as the cost of `pending` itself, a claim an owner can leave in place, and gate 6 stands behind it. The guidance and the flow-down note say so (phase 2).
 
 - **`pending` is a claim an owner can leave in place.** The honest cost of the whole feature, and feature 024's hole in a new place. It
   is visible (a warning on every run, the declaration and its approver in the diff gate 6 reads) and not closed: after `pending` the

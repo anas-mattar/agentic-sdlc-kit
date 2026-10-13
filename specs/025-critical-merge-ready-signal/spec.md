@@ -45,7 +45,9 @@ already live, read by the same pack), with two values: `pending` and `ready`. It
 (`**Amendment approved by**: <name>, <date>` in the amended section and the same name in the commit message; constitution I, Amendment
 authority; `scripts/enforcement-pack.ps1`, AmendmentAuthority). Flipping `pending` to `ready` is therefore a plan amendment, so "this feature is
 done and the independence review is now owed" becomes a **recorded human act**, not a pattern in a subject. Nothing new has to be built to
-carry the approval; the spec's job is to prove it does (a fixture where an unapproved flip fails).
+carry the approval; the spec's job is to prove it does (a fixture where an unapproved flip fails). This holds for every commit the check grades; a merge commit is not graded (FR-006).
+
+**Amendment approved by**: anas.m, 2026-10-14
 
 **The cost, stated up front.** `pending` is a claim. An owner who sets it and never flips it merges with only a warning on this check:
 the machine does not demand the artifact, and gate 6, the human review at merge, is the only thing that does. That is feature 024's
@@ -139,7 +141,7 @@ with the record it passes.
   MUST be strict and say why.
 - **FR-005**: The marker MUST be ignored on a feature that is not Critical.
 - **FR-006**: Changing the marker MUST be graded by the existing amendment-authority check: a fixture MUST show an unapproved change failing
-  and an approved one passing. If the check does not reach a plan header line, this feature MUST say so and extend it, not assume.
+  and an approved one passing. If the check does not reach a plan header line, this feature MUST say so and extend it, not assume. The check reaches the line for every commit it grades; it does not grade merge commits (feature 014, D7), and this feature states that limit instead of extending the check (owner decision, phase 1 review F1).
 - **FR-007**: Each of FR-001 to FR-006 MUST gain a failing and a passing fixture written first and shown failing on the parent, including a
   fixture shaped like FitForge 002; each new rule is inventoried in `tests/enforcement/rules.json`.
 - **FR-008**: `docs/sdlc/critical-delivery.md`, `docs/sdlc/definition-of-done.md` (if it states when the artifact is demanded),
