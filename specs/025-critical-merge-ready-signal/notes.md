@@ -195,3 +195,13 @@ no phase 2 document repeats the retired phrase "a recorded plan amendment". Find
 | F4 MINOR | "Works in a shallow clone" now says the CriticalEvidence line is the same there and the run still exits 1, because the amendment check cannot grade a shallow clone (`critical-delivery.md`, the flow-down note). |
 | F5 MINOR | The two new `critical-delivery.md` digest markers moved below the existing Critical 5 markers and were re-worded; the neighbouring "WARN until the final phase lands or it is committed" markers (`critical-delivery.md`, `definition-of-done.md`) now add "or the plan says ready". Digests rebuilt (109 markers, all within 120 characters). |
 | F6 MINOR | **Recorded only:** a marker indented 1 to 3 spaces still renders as a header line but is read as absent, so the heuristic decides. It is the same line-start anchor `**Gate Batching**` and `**Gate Certification**` use; not changed. |
+### Gate certification, phase 2 (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `7363b9a` (the phase 2 commit `ce047ac` and its review remediation), exit code **0**,
+confirmed by the owner (anas.m, 2026-10-14).
+
+T011 (the final full harness on an isolated checkout) was started on `ce047ac` and had not finished when the gate was certified; its count is recorded
+below when it does. `ritual-checks.ps1 -Branch 025-critical-merge-ready-signal` on that isolated checkout was RESULT OK, and `scope-check.ps1` passes on
+both phase commits (`003c96a`, 54 files; `ce047ac`, 8 files).
+
+Awaiting: the human review at merge (constitution IX, gate 6). Nothing else is open except what is listed under "Open" in the roadmap entry.
