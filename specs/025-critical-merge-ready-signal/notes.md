@@ -108,3 +108,9 @@ merge-readiness`: 0 failed. The full harness and `ritual-checks.ps1` are re-run 
   pre-route-2 design. Each needs an amendment with the owner's approver record before merge, and before phase 2 writes guidance from them.
 - **F11:** the T004 amendment note in `tasks.md` sits directly after T003 with no blank line and so renders as part of it; fix it at the next
   approved tasks amendment.
+### F9 and F11 closed (`e68fe6a`, owner approval 2026-10-14)
+
+The owner approved the drafted amendments as written: plan Summary, D2, D3 (the warning text now matches the code), D5 (the accepted
+merge-commit limit) and Risks; spec FR-006 and the "Why this is not a new honour system" paragraph; the `tasks.md` T004 note moved onto
+its own paragraph (F11). Each document carries `**Amendment approved by**: anas.m, 2026-10-14` and the commit message names anas.m.
+`ritual-checks.ps1`: RESULT OK; `enforcement-pack.ps1`: AmendmentAuthority graded 11 of 11, OK.
