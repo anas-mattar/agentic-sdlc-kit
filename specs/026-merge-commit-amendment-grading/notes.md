@@ -84,3 +84,19 @@ The full-harness count for the remediated tree is recorded below when its run fi
 
 Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `8d3badf` (the phase 1 commit `15a0e6f` and its review remediation), exit code **0**, confirmed
 by the owner (anas.m, 2026-10-14).
+
+### Round 2 review (`ai-code-review-phase-1-round-2.md`, APPROVE with follow-ups) and its remediation
+
+Round 2 reproduced F1 to F10 (each resolved or accepted as dispositioned, all nine existing merge recipes still build, the seven named mutations each fail
+exactly their intended test) and found five more. Owner instruction, in the owner's words: "yes, apply all of those and commit".
+
+| Finding | What was done |
+|---|---|
+| F11 (MINOR) | The plain-path guard counted parents, so a second plain merge of an already-merged branch onto a `HEAD` that is already a merge made no commit and nothing complained. One shared check, `Assert-FixtureMergeShape`, now runs after both paths: `HEAD` must have moved and its parent count must equal 1 plus the number of distinct branches named. Self-test; mutation shown (dropping the "HEAD moved" half fails exactly that test). **A first draft of that test passed for the wrong reason**: its recipe created `two` and `feat` from the tip of `one`, so the first merge was already refused; the mutation (which failed nothing) exposed it, and the recipe now returns to `main` between branches so the second merge is the refused one. |
+| F12 (MINOR) | An octopus naming an already-merged branch quietly became a two-parent merge, on both paths. The same check refuses it (2 parents where 3 were expected). Self-test for the plain and the content path; mutation shown (dropping the parent-count half fails it). A merge of the current branch into itself is refused too (self-test). |
+| F13 (MINOR) | The "started no merge" message no longer says `mergeWrite` when the content is `mergeDelete`, the plain refusal no longer always says "one-parent" (it now reports the real parent count), and the missing blank line between two tests is restored. |
+| F14 (DOC DRIFT) | **Correction to the F7 row above:** routing a plain merge through the new path is not unfailable: it fails one test, by message text. And the default message is pinned by its own test ("keeps the default merge message..."), not by the plain-merge control. |
+| F15 (ACCEPTED) | An identical-content `mergeWrite` authors nothing, and a falsy `merge` with no content field builds an ordinary commit. Same class as F10 and the parent library's existing rule. |
+
+Runs after this remediation: `-Case NOTHING` (the harness self-tests): 61 passed, 0 failed (58 before, 3 added); `-Case AMEND-`: 129 passed; `SCOPE-014`, `SCOPE-026`,
+`REPOS-016`, `REPOS-018`, `REPOS-034` (every existing recipe that merges): all passed. The full-harness count for this tree is recorded below when its run finishes.

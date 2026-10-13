@@ -413,7 +413,7 @@ Describe 'merge commits that carry content (feature 026, plan D8)' {
   "checkout": "feat"
 }
 '@
-        { New-FixtureRepo -Recipe ($json | ConvertFrom-Json) } | Should -Throw -ExpectedMessage "*made no merge commit*already merged*"
+        { New-FixtureRepo -Recipe ($json | ConvertFrom-Json) } | Should -Throw -ExpectedMessage "*did not build the merge it names*"
     }
 
     It 'refuses a resolve that names a file that did not conflict beside one that did' {
@@ -425,6 +425,40 @@ Describe 'merge commits that carry content (feature 026, plan D8)' {
         $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n"' -MainLine ', "x.txt": "main side\n"' -MergeJson '"merge": "main", "message": "merge main", "resolve": { "x.txt": "by hand\n" }, "mergeWrite": { "x.txt": "also\n" }'
         { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*both 'resolve' and 'mergeWrite'*"
     }
+
+    It 'refuses a second plain merge of a branch that is already merged, onto a HEAD that is already a merge' {
+        $json = (@(
+            '{ "defaultBranch": "main", "commits": [',
+            '  { "branch": "main", "message": "init", "write": { "a.txt": "one\n" } },',
+            '  { "branch": "one", "message": "one work", "write": { "o.txt": "o\n" } },',
+            '  { "branch": "main", "message": "main moves on", "write": { "m.txt": "m\n" } },',
+            '  { "branch": "feat", "message": "feat work", "write": { "f.txt": "f\n" } },',
+            '  { "branch": "feat", "merge": "one", "message": "merge one" },',
+            '  { "branch": "feat", "merge": "one", "message": "merge one again" }',
+            '], "checkout": "feat" }'
+        ) -join "`n")
+        { New-FixtureRepo -Recipe ($json | ConvertFrom-Json) } | Should -Throw -ExpectedMessage "*did not build the merge it names*HEAD did not move*"
+    }
+
+    It 'refuses an octopus that names a branch already merged in, instead of shrinking it to a two-parent merge' {
+        foreach ($extra in '', ', "mergeWrite": { "a.txt": "authored\n" }') {
+            $json = (@(
+                '{ "defaultBranch": "main", "commits": [',
+                '  { "branch": "main", "message": "init", "write": { "a.txt": "one\n" } },',
+                '  { "branch": "feat", "message": "feat work", "write": { "f.txt": "f\n" } },',
+                '  { "branch": "left", "message": "left work", "write": { "l.txt": "l\n" } },',
+                '  { "branch": "feat", "merge": ["main", "left"], "message": "octopus"' + $extra + ' }',
+                '], "checkout": "feat" }'
+            ) -join "`n")
+            { New-FixtureRepo -Recipe ($json | ConvertFrom-Json) } | Should -Throw -ExpectedMessage "*did not build the merge it names*2 parent(s) where 3 were expected*"
+        }
+    }
+
+    It 'refuses a merge of the current branch into itself' {
+        $recipe = New-MergeRecipe -MergeJson '"merge": "feat", "message": "merge itself", "mergeWrite": { "a.txt": "x\n" }'
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw
+    }
+
     It 'refuses mergeWrite, mergeDelete and resolve on a commit that is not a merge' {
         foreach ($field in '"mergeWrite": { "a.txt": "x\n" }', '"mergeDelete": ["a.txt"]', '"resolve": { "a.txt": "x\n" }') {
             $json = @"

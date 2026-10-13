@@ -136,6 +136,21 @@ function Write-FixtureFile {
     [IO.File]::WriteAllText($full, $text, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+function Assert-FixtureMergeShape {
+    # A merge the recipe names must be the merge it builds. Git quietly leaves a branch out when it is
+    # already merged into the current one ("Already up to date"), so a plain merge can make no commit
+    # at all, and an octopus can shrink to fewer parents than it names. Either is a fixture that is not
+    # the merge its recipe describes, and a rule graded against it would pass or fail for the wrong
+    # reason (feature 026 phase 1 review, F1, F11 and F12).
+    param([string]$Root, [string]$HeadBefore, [string[]]$Names, [string]$Branch)
+    $headAfter = ((& git -C $Root rev-parse HEAD) -join '').Trim()
+    $parents = @(((& git -C $Root rev-list --parents -n 1 HEAD) -join '') -split '\s+' | Where-Object { $_ }).Count - 1
+    $expected = 1 + @($Names | Sort-Object -Unique).Count
+    if ($headAfter -eq $HeadBefore -or $parents -ne $expected) {
+        $moved = if ($headAfter -eq $HeadBefore) { ' and HEAD did not move' } else { '' }
+        throw "fixture merge of '$($Names -join ' ')' into '$Branch' did not build the merge it names: HEAD has $parents parent(s) where $expected were expected$moved. Git leaves a branch out of a merge when it is already merged into the current one ('Already up to date'). Refused rather than silently building a fixture that is not the merge the recipe describes."
+    }
+}
 function New-FixtureRepo {
     <#
     .SYNOPSIS
@@ -224,13 +239,11 @@ function New-FixtureRepo {
         if ($isMerge) {
             $mergeMessage = if ($commit.PSObject.Properties.Name -contains 'message' -and $commit.message) { $commit.message } else { "merge $(@($commit.merge) -join ' ')" }
             $mergeNames = @($commit.merge)
+            $headBefore = ((& git -C $root rev-parse HEAD) -join '').Trim()
             if ($mergeFields.Count -eq 0) {
                 # Exactly the command a plain merge has always run.
                 Invoke-FixtureGit -RepoPath $root -Arguments (@('merge', '--quiet', '--no-ff', '--no-edit', '-m', $mergeMessage) + $mergeNames) | Out-Null
-                $parentCount = @((& git -C $root rev-list --parents -n 1 HEAD) -join '' -split '\s+' | Where-Object { $_ }).Count - 1
-                if ($parentCount -lt 2) {
-                    throw "fixture merge of '$($mergeNames -join ' ')' made no merge commit: the branch is already merged into '$branch' (git says 'Already up to date'), so HEAD is still a one-parent commit. Refused rather than silently building a fixture with no merge in it."
-                }
+                Assert-FixtureMergeShape -Root $root -HeadBefore $headBefore -Names $mergeNames -Branch $branch
                 continue
             }
             # A merge with content of its own (feature 026): merge without committing, put the content
@@ -241,7 +254,7 @@ function New-FixtureRepo {
             if ($mergeExit -eq 0) {
                 & git -C $root rev-parse -q --verify MERGE_HEAD 2>$null | Out-Null
                 if ($LASTEXITCODE -ne 0) {
-                    throw "fixture merge of '$($mergeNames -join ' ')' started no merge: the branch is already merged into '$branch' (git says 'Already up to date'), so committing would make an ordinary one-parent commit that carries the mergeWrite content. Refused rather than silently building a fixture that is not a merge."
+                    throw "fixture merge of '$($mergeNames -join ' ')' started no merge: the branch is already merged into '$branch' (git says 'Already up to date'), so committing would make an ordinary one-parent commit that carries the merge's own content. Refused rather than silently building a fixture that is not a merge."
                 }
             }
             $resolveNames = @()
@@ -289,6 +302,7 @@ function New-FixtureRepo {
             }
             Invoke-FixtureGit -RepoPath $root -Arguments @('add', '-A') | Out-Null
             Invoke-FixtureGit -RepoPath $root -Arguments @('commit', '--quiet', '--allow-empty', '-m', $mergeMessage) | Out-Null
+            Assert-FixtureMergeShape -Root $root -HeadBefore $headBefore -Names $mergeNames -Branch $branch
             continue
         }
 
