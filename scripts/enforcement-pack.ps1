@@ -309,10 +309,12 @@ function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 # commit on it behaves exactly as before, and wherever mid-feature cannot be shown it stays strict
 # and says why. The two arms below are not edited, so their messages cannot drift.
 #
-# Mid-feature means: tasks.md (committed) declares phases 1..N with no gap, the branch already
-# carries a commit whose subject BEGINS 'phase k' for some k < N, no commit subject names phase N
-# or beyond ANYWHERE in it (so 'feat: phase 3' is seen as final), and the active arm's artifact
-# is not yet committed. An artifact already committed ends the pending state: whoever produced it
+# Mid-feature means: tasks.md (committed) declares phases whose DISTINCT numbers are exactly 1..N
+# (a duplicate such as '## Phase 1 amendment requests' invents no phase and is allowed), some
+# commit subject carries a phase token below N ANYWHERE in it ('tasks: phase 4 done' counts: real
+# branches are mostly bookkeeping commits and almost none begin 'phase k'), no subject carries a
+# token naming phase N or beyond (so 'feat: phase 3' is seen as final), and the active arm's
+# artifact is not yet committed. One token reads both evidence and finality (plan D3 as amended). An artifact already committed ends the pending state: whoever produced it
 # has said the work is ready whatever the last commit was called, and the arm then grades it as
 # it always did (review F1, F3). Anything else - no diff base, a shallow clone, tasks.md
 # unreadable, no phase heading, a gap, a number too large to read, no phase commit yet - is
@@ -365,7 +367,10 @@ function Get-CriticalMergeReadiness {
         return @{ Pending = $false; Why = "$tasksRel declares no '## Phase N' heading" }
     }
     $final = ($declared | Measure-Object -Maximum).Maximum
-    $contiguous = ($declared.Count -eq $final) -and (@($declared | Sort-Object -Unique).Count -eq $final) -and (@($declared | Sort-Object)[0] -eq 1)
+    # DISTINCT numbers exactly 1..N: with the maximum being N and the minimum 1, N distinct values is the full set.
+    # A duplicate heading ("## Phase 1 amendment requests") is allowed; a gap is not (plan D2 as amended).
+    $distinct = @($declared | Sort-Object -Unique)
+    $contiguous = ($distinct.Count -eq $final) -and ($distinct[0] -eq 1)
     if (-not $contiguous) {
         return @{ Pending = $false; Why = "the '## Phase N' headings of $tasksRel are not numbered 1 to N without a gap (found $((@($declared | Sort-Object)) -join ', '))" }
     }
@@ -379,13 +384,11 @@ function Get-CriticalMergeReadiness {
         # amended): 'phase 3', 'phase3', 'phase 3a' and 'phases 3' all count. The noisy direction is a
         # subject that merely mentions it early, which is strict.
         foreach ($m in [regex]::Matches($s, '(?i)\bphases?\s*(\d+)')) {
-            if ((ConvertTo-PhaseNumber $m.Groups[1].Value) -ge $final) {
+            $k = ConvertTo-PhaseNumber $m.Groups[1].Value
+            if ($k -ge $final) {
                 return @{ Pending = $false; Why = $null; Final = $final; Tip = $final }
             }
-        }
-        # Only a subject that BEGINS with the token shows the branch is mid-feature at all.
-        if ($s -match '^(?i)phase\s+(\d+)\b') {
-            $k = ConvertTo-PhaseNumber $matches[1]
+            # The same token below N is the evidence that the branch is mid-feature at all.
             if ($k -gt $tip) { $tip = $k }
         }
     }

@@ -130,3 +130,63 @@ number is lower) instead of "names no phase"; the D1 rewrite has its own approve
 gone (one at the end of the section); D3's first paragraph carries a note that the amended paragraphs supersede its anchored-form
 description. `tasks.md` T004 keeps the single approver line in its phase block. No code, fixture or test changed, so no harness
 re-run is owed; the gate for `20855f5` was certified by the owner (exit 0, 2026-10-13).
+
+## Phase 2
+
+### T006 / T007 (drafted, uncommitted while the finding below is open)
+
+Constitution X was read for any sentence that says when the independence artifact is demanded: it names Critical only in the
+level, the cooling-off hours and the CI-held exclusion, never the timing, so **no amendment is needed**. `critical-delivery.md`
+(item 5, a "When the check demands the artifact" paragraph and two digest markers), `definition-of-done.md` (item 6 and one marker)
+and the `adoption/updating.md` flow-down note are drafted in the working tree; `doc-lint` is OK on them.
+
+### T009 — the measurement, and what it found
+
+Method: clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (nothing in place touched, nothing
+pushed, `origin` is the project on disk). Three states per clone: S0 installed (kit `a1258c5`), S1 the kit before this feature
+(`5fc1274`, applied with `update-kit.ps1`, digests rebuilt, committed), S2 the kit as it stands (`37f4bc9`: `7ca9be6` plus the three
+drafted documents, applied the same way). In each state `ritual-checks.ps1` and `enforcement-pack.ps1` on `main` and on every
+`NNN-*` branch, `doc-lint.ps1`. Every clone was asserted to end on the right kit: the new function is in `HEAD` and absent from
+`HEAD~1` in all three. **First-pass defect, found and discarded**: the first driver ran each feature branch with the branch's own
+older `scripts/`, so a branch probe could not move between states (the same species as feature 023's first driver). The corrected
+driver switches to the branch and merges the updated `main` into it first, the way an adopter meets a kit update on a live branch
+(no merge conflicts in any project).
+
+| Probe | S1 -> S2 |
+|---|---|
+| `doc-lint.ps1`, all three projects | exit 0, byte-identical |
+| `ritual-checks` and `enforcement-pack` on `main`, all three | `RESULT OK`; the only differences are bookkeeping (one more commit, two more digest markers, the recorded kit commit) |
+| ExpenseTracker `003-expense-entry` (non-Critical) | same members, same verdicts; the only differences are the second update's bookkeeping (changed-file count, one more commit graded, the phase-size line's counts) |
+| **FitForge `002-identity-member-profile` (Critical)**, at the tip and at two earlier points (`81d7424` after phase 4, `398e75f` after phase 9) | **FAIL in S1 and still FAIL in S2.** S2 adds one line: `WARNING: CriticalEvidence: not treated as mid-feature - the '## Phase N' headings of specs/002-identity-member-profile/tasks.md are not numbered 1 to N without a gap (found 1, 1, 2, 3, ..., 11)` |
+
+**The finding.** The one real Critical feature the kit has ever run is **not helped** by this feature at any point in its history.
+Two independent mismatches between the check and real field data, each sufficient on its own:
+
+1. **The heading grammar.** FitForge's `tasks.md` carries `## Phase 1 amendment requests (awaiting an approver)` and
+   `## Phase 10 amendment request` beside its `## Phase N: ...` headings. `^##\s+Phase\s+(\d+)\b` reads them as a second phase 1 and a
+   second phase 10, so the "numbered 1 to N without a gap" test fails (found 1, 1, 2, ... 10, 10, ... 17) and the branch stays strict.
+   The same grammar is `Get-Territory`'s, so scope-check reads those headings as phase sections too; here it only costs the relaxation.
+2. **The commit-subject convention.** The relaxation needs a subject that **begins** `phase k` to show the branch is mid-feature. On
+   `002`, **0 of 43** branch commits begin that way; **34 of 43** carry a phase token elsewhere (`tasks: phase 4 done - credentials`,
+   `docs: phase 13 web gate exits 0`). Predicted from reading, not run (fixing the first would expose the second): with the headings
+   accepted the branch would still stay strict, on "no commit on the branch carries a phase subject yet".
+
+CLAUDE.md asks for `phase N` in a phase commit's subject, and FitForge's real code-phase commits may follow it; its bookkeeping commits
+do not, and a mid-feature branch is mostly bookkeeping. The fixtures never showed this because they were built from the kit's own
+convention: **the harness proves the check does what the plan says; the measurement shows the plan does not match the field.**
+
+### Remediation of the measurement finding (owner decisions of 2026-10-13: approve both fixes, run a round 4)
+
+Plan D2 and D3 and tasks T004 amended, with the approver, in their own commit before any code ("plan and tasks: 024 D2 and D3
+amended after the second-phase measurement ..."). The code: the heading test is now "the DISTINCT numbers are exactly 1..N" (a
+duplicate such as `## Phase 1 amendment requests` is allowed, a gap is not; the message still lists every number found), and one
+token `\bphases?\s*(\d+)` anywhere in a subject reads both finality (at or above `N`) and the evidence that the branch is
+mid-feature (below `N`); the anchored `^phase k` form is gone. The accepted cost, recorded in plan D3: a branch earns the WARN a
+little more easily (any subject mentioning an earlier phase), and zero phase tokens still stays strict.
+
+Fixtures first, built from FitForge's real shapes, shown failing on the code as it stood: `CRIT-R01/pass-duplicate-headings-mid-feature`,
+`pass-loose-phase-subjects-mid-feature` and `pass-field-shaped-mid-feature` (each differs from the control pass in one condition, the
+third in both) fail on exit code and output; `fail-field-shaped-final` fails on output (the old code printed a gap reason); the control
+`CRIT-R02/fail-gap-with-duplicate-headings` passes on the old code, as a control should. Full harness after the change:
+**1470 passed, 0 failed** (1460 + 5 cases); every pre-existing case unchanged, including `CRIT-R02/fail-no-phase-commit`
+(subjects with no phase token stay strict); coverage unchanged (`enforcement-pack.ps1` 70 of 75 fixtured, exempt count 3).
