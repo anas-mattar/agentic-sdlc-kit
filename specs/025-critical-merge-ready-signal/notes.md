@@ -121,3 +121,59 @@ Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `ad2e084` (
 amendments and the notes), exit code **0**, confirmed by the owner (anas.m, 2026-10-14).
 
 Awaiting: the owner's go-ahead for phase 2. The AI review (rounds 1 and 2) is filed; the human review at merge is still to come.
+
+## Phase 2
+
+### T006 — constitution X, and the guidance
+
+Constitution X (and the sentences that mention `**Gate Batching**` and `**Gate Certification**`, lines 76 to 135 and 383 to 419) names those two
+fields and their legal values as constants; **no sentence fixes the set of plan header fields**, and none fixes when the independence artifact is
+demanded (the second point is item 6 of the Definition of Done, "at merge", which feature 024 already read). **No amendment is needed**, as plan D6
+expected. `docs/sdlc/critical-delivery.md` gained an "explicit declaration" paragraph under item 5 and two digest markers (115 and 111 characters),
+and `docs/sdlc/definition-of-done.md` item 6 now points to the declaration. The F7 point (`pending` on a branch the heuristic already reads as
+mid-feature gives the same verdict with different warning text) is stated in both places that describe the check.
+
+### T007 — the template
+
+`.specify/templates/plan-template.md` gained an optional, **commented-out** `**Merge Readiness**` explanation after the `**Gate Certification**`
+comment (plan D9). It declares nothing: a comment hides it from the check, which `CRIT-R03/pass-marker-in-comment-falls-back-to-heuristic` shows.
+`kit-manifest.json` already classes `.specify/templates/**` as `verbatim`, so it flows down with `update-kit.ps1` and needs no entry.
+
+### T008 / T009 — flow-down note, roadmap, digests
+
+`adoption/updating.md` has a flow-down note shaped like 024's (what was wrong, what it does now, what flows down, what an owner may newly see,
+what does not change, the known limits, what was measured, what to do) and two digest markers. `docs/roadmap.md`: the GAP-022 row carries an update,
+the "better merge-ready signal" row is `shipped` (owner anas.m, `specs/025-critical-merge-ready-signal/`), and the decisions log has a 2026-10-14
+entry recording the owner's decisions. `scripts/build-digests.ps1` rewrote the digests (109 markers, up from 105 plus four new).
+
+### T010 — the measurement (plan D8, FR-009, SC-002)
+
+**This is a simulation, said plainly.** The `**Merge Readiness**` line does not exist in any real history, so the replay injects it. An injection
+shows the mechanism on real shapes. It does not show that an owner will use it.
+
+**Method.** A scratch clone of FitForge made from its local directory (`core.autocrlf=false`; nothing in place touched, nothing pushed). The
+branch's 43 commits (`git rev-list main..002-identity-member-profile`) were walked oldest to newest; at each, the branch was reset to that
+commit, this kit's `scripts/` (as of `ad2e084`) was overlaid in an untracked directory inside the clone (the pack takes its project root
+from its own location), and `enforcement-pack.ps1 -Branch 002-identity-member-profile` was run. Three modes, three clones, run in parallel:
+no injection; `pending` injected by a throwaway commit at each commit that has a `plan.md`; `ready` injected at the last commit only.
+
+**First-pass defects, found and discarded**: the first driver left the clone's autocrlf at its default, so the checkout aborted and zero commits
+were walked; the second overwrote its own `-Out` parameter (PowerShell variable names are case-insensitive) and lost its rows. Both are
+driver bugs, not kit behaviour. The non-Critical driver's first pass ran each pack version from a directory outside the project, so both
+versions read the kit as the project; it was discarded and rerun with each version inside the clone.
+
+| Mode | Result over FitForge 002's 43 commits |
+|---|---|
+| No marker (the current kit) | `WARN` (heuristic) at **17**, failure ("is missing") at **22**, strict with a printed reason at **4**. Identical to feature 024's measurement (17 warn, 26 strict), as it must be: an absent marker leaves feature 024 byte for byte. |
+| `pending` injected | `WARN` (declared) at **41 of 43**, exit 0 at each of the 41. The other two are commits 1 and 2 (`spec: 002 ...`, `spec: record owner approval of 002`), before `plan.md` exists, so no line can be injected: strict, `tasks.md is not committed or cannot be read`, exit 1. |
+| `ready` injected at the tip (commit 43, `b9e1d88`) | Failure: the missing review is demanded, exit 1, as intended. |
+
+SC-002 reads "warns at every commit that does not carry the artifact, where feature 024 warned at 17 of 43": with the declaration at plan
+creation the check warns at every commit from the third on (41), and 17 where the heuristic alone could. The injected throwaway commits are
+amendments of an approved plan; no run exited 1 for that (41 of 41 injected runs exited 0). I did not investigate why, so I do not claim a reason:
+those throwaway commits sit under the clone's older `scripts/` boundary (plan D2b), which is the likely cause and is not verified here.
+
+**Non-Critical branches** (same method, clones of FlowBoard and ExpenseTracker, the kit's `enforcement-pack.ps1` as of the parent `54ecb0a`
+against the kit as it stands, each version run inside the clone): FlowBoard `main`, ExpenseTracker `main` and `003-expense-entry` (8 changed
+files, exit 0) printed **byte-identical output and exit codes** before and after. FlowBoard has no feature branch. Not exercised: a Critical
+branch in the solo arm on a real project, and any run in an adopted project's own CI. Nothing moved, so there is no line to explain.

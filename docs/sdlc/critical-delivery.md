@@ -188,6 +188,24 @@ not give it to itself, and a machine can check only that it is well formed.
    named. The first effect is in the safe direction (relief the feature does not get); the first limit above is the unsafe
    one (an unnamed final commit can get a `WARN` where it should fail), which is why gate 6 stays behind it.
 
+   **An explicit declaration** (feature 025). A Critical feature's `plan.md` may carry one header line, `**Merge Readiness**: pending`
+   or `**Merge Readiness**: ready`, read from the committed plan (a comment, a fenced block or a code span hides it). It is read
+   **before** the heuristic above and needs no history, so it works in a shallow clone, with no usable `tasks.md`, and when phases land
+   out of order. `pending`: the check prints `WARNING: CriticalEvidence: <artifact> is not yet due - specs/NNN/plan.md declares
+   **Merge Readiness**: pending (...)` and does not fail for the missing artifact, whatever the commit subjects say; an artifact that is
+   already committed is still graded by its arm. `ready`: the arm grades the artifact exactly as for a merge-ready branch (so a missing
+   one fails), which means "owed now", **not** "approved". Two marker lines, a value other than lower-case `pending` or `ready` (including
+   `Pending`), or an empty value: strict, with the `not treated as mid-feature` line saying why. No marker, or one that is hidden: the
+   heuristic above, byte for byte. A Standard, Lite or Micro feature ignores the line. On a branch the heuristic already reads as
+   mid-feature, `pending` gives the same verdict (a warning, not a failure) with different warning text. Changing the line on an approved
+   plan is an amendment: a commit with a single parent must carry `**Amendment approved by**: <name>, <YYYY-MM-DD>` and name the
+   approver (constitution I). **Limits, stated rather than hidden:** `pending` is a claim. An owner who sets it and never flips it merges
+   with only the warning on this check, and gate 6, the human review at merge, is what stands behind it. The approver is a recorded name,
+   a written claim a reviewer can falsify and not proof of who approved. The amendment check does not grade merge commits (feature 014,
+   D7), so a `pending` added inside a merge commit carries no approver check at all.
+
+   <!-- digest: Critical 5: **Merge Readiness**: pending|ready in plan.md overrides the phase-token heuristic and needs no history. -->
+   <!-- digest: Merge Readiness pending is a claim, not proof; flipping it is a plan amendment, ungraded inside a merge commit. -->
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->
    <!-- digest: Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. -->
