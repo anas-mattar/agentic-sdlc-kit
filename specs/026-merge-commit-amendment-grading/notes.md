@@ -42,3 +42,11 @@ Agent-run, feedback only; none of this certifies (the owner holds the gate).
 - Full harness on the working tree with the phase 1 change: **1529 passed, 0 failed, 0 skipped**: 1520 baseline + 9 new self-tests. Every pre-existing
   case unchanged in outcome.
 - No script under `scripts/` changed; no fixture case under `tests/enforcement/cases/` changed.
+
+### Gate certification, phase 1 (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on the phase 1 commit `15a0e6f`, exit code **0**, confirmed by the owner (anas.m, 2026-10-14). The
+owner's own run showed doc-lint, enforcement-pack, scope-check (`PASS phase 1 commit 15a0e6f (4 file(s))`), digests and roadmap-claims OK; scope-repos and
+verify-kit n/a.
+
+Awaiting: the fresh-context AI review of phase 1 (Reviewer Provenance) and the owner's go-ahead for phase 2.
