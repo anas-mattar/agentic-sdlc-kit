@@ -170,10 +170,28 @@ versions read the kit as the project; it was discarded and rerun with each versi
 
 SC-002 reads "warns at every commit that does not carry the artifact, where feature 024 warned at 17 of 43": with the declaration at plan
 creation the check warns at every commit from the third on (41), and 17 where the heuristic alone could. The injected throwaway commits are
-amendments of an approved plan; no run exited 1 for that (41 of 41 injected runs exited 0). I did not investigate why, so I do not claim a reason:
-those throwaway commits sit under the clone's older `scripts/` boundary (plan D2b), which is the likely cause and is not verified here.
+amendments of an approved plan; no run exited 1 for that (41 of 41 injected runs exited 0). **Cause, established by the phase 2 review (F2):** none of FitForge 002's 43 commits carries
+the amendment check in its own committed `scripts/` (the pack prints `graded 0 of 44 ... made before the check existed (plan D2b)`), so the injected,
+unapproved plan amendments were never graded. In an updated project the same unapproved addition fails AmendmentAuthority; the replay therefore shows the
+CriticalEvidence mechanism and says nothing about the approver path, which the AMEND-001 variants cover.
 
 **Non-Critical branches** (same method, clones of FlowBoard and ExpenseTracker, the kit's `enforcement-pack.ps1` as of the parent `54ecb0a`
 against the kit as it stands, each version run inside the clone): FlowBoard `main`, ExpenseTracker `main` and `003-expense-entry` (8 changed
 files, exit 0) printed **byte-identical output and exit codes** before and after. FlowBoard has no feature branch. Not exercised: a Critical
 branch in the solo arm on a real project, and any run in an adopted project's own CI. Nothing moved, so there is no line to explain.
+
+### Phase 2 review (`ai-code-review-phase-2.md`, APPROVE with follow-ups) and remediation
+
+The reviewer tested every behavioural claim in the guidance, template and flow-down note against the code with 13 throwaway Critical repositories (all
+held), re-ran all 43 commits of the FitForge replay (the numbers match exactly: 17 / 22 / 4; 41 declared `WARN` plus 2 strict; `ready` at the tip fails),
+confirmed the template declares nothing, that the flow-down file list (five verbatim files) matches `kit-manifest.json`, that the digests are fresh, and that
+no phase 2 document repeats the retired phrase "a recorded plan amendment". Findings and what was done:
+
+| Finding | What was done |
+|---|---|
+| F1 DOC DRIFT | `definition-of-done.md` carried a literal backslash-n from the edit script. Fixed; the file ships verbatim to adopters. |
+| F2 DOC DRIFT | The replay's exit 0 was true only because FitForge's commits predate the amendment check. Stated in the T010 notes above and in the flow-down note. |
+| F3 DOC DRIFT | The 2026-10-14 decisions-log entry now records D7 (`ready` means "owed now") beside D2 and D9, as T009 requires. |
+| F4 MINOR | "Works in a shallow clone" now says the CriticalEvidence line is the same there and the run still exits 1, because the amendment check cannot grade a shallow clone (`critical-delivery.md`, the flow-down note). |
+| F5 MINOR | The two new `critical-delivery.md` digest markers moved below the existing Critical 5 markers and were re-worded; the neighbouring "WARN until the final phase lands or it is committed" markers (`critical-delivery.md`, `definition-of-done.md`) now add "or the plan says ready". Digests rebuilt (109 markers, all within 120 characters). |
+| F6 MINOR | **Recorded only:** a marker indented 1 to 3 spaces still renders as a header line but is read as absent, so the heuristic decides. It is the same line-start anchor `**Gate Batching**` and `**Gate Certification**` use; not changed. |

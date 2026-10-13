@@ -190,7 +190,7 @@ not give it to itself, and a machine can check only that it is well formed.
 
    **An explicit declaration** (feature 025). A Critical feature's `plan.md` may carry one header line, `**Merge Readiness**: pending`
    or `**Merge Readiness**: ready`, read from the committed plan (a comment, a fenced block or a code span hides it). It is read
-   **before** the heuristic above and needs no history, so it works in a shallow clone, with no usable `tasks.md`, and when phases land
+   **before** the heuristic above and needs no history, so the CriticalEvidence line is the same in a shallow clone (the run itself still exits 1 there, because the amendment check cannot grade a shallow clone), with no usable `tasks.md`, and when phases land
    out of order. `pending`: the check prints `WARNING: CriticalEvidence: <artifact> is not yet due - specs/NNN/plan.md declares
    **Merge Readiness**: pending (...)` and does not fail for the missing artifact, whatever the commit subjects say; an artifact that is
    already committed is still graded by its arm. `ready`: the arm grades the artifact exactly as for a merge-ready branch (so a missing
@@ -204,13 +204,13 @@ not give it to itself, and a machine can check only that it is well formed.
    a written claim a reviewer can falsify and not proof of who approved. The amendment check does not grade merge commits (feature 014,
    D7), so a `pending` added inside a merge commit carries no approver check at all.
 
-   <!-- digest: Critical 5: **Merge Readiness**: pending|ready in plan.md overrides the phase-token heuristic and needs no history. -->
-   <!-- digest: Merge Readiness pending is a claim, not proof; flipping it is a plan amendment, ungraded inside a merge commit. -->
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->
    <!-- digest: Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. -->
-   <!-- digest: Critical 5: the independence artifact is a WARN until the final phase lands or it is committed, then the arm's FAIL. -->
+   <!-- digest: Critical 5: the artifact is a WARN until the final phase lands, it is committed or the plan says ready; then FAIL. -->
    <!-- digest: Critical 5: when mid-feature cannot be shown (no base, shallow clone, bad tasks.md) the check stays strict and says why. -->
+   <!-- digest: Critical 5: plan.md may declare Merge Readiness pending or ready, overriding the heuristic; no history needed. -->
+   <!-- digest: Critical 5: Merge Readiness pending is a claim, not proof; changing it is an amendment, ungraded in a merge commit. -->
 
 ## What this addendum is NOT
 

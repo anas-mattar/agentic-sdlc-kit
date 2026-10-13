@@ -1124,7 +1124,7 @@ the work finished?", is one the owner can answer in one line.
 `**Merge Readiness**: ready`. `scripts/enforcement-pack.ps1` reads it from the committed `plan.md` (a comment, a fence or a code span
 hides it) before it consults the subjects, so it needs no history. `pending`: one
 `WARNING: CriticalEvidence: <artifact> is not yet due - specs/NNN/plan.md declares **Merge Readiness**: pending (...)` line and no failure
-for the missing artifact, whatever the subjects, headings or clone depth say; an artifact that is committed is still graded by its arm.
+for the missing artifact, whatever the subjects, headings or clone depth say (the run still exits 1 in a shallow clone, because the amendment check cannot grade one); an artifact that is committed is still graded by its arm.
 `ready`: the arm grades the artifact exactly as for a merge-ready branch, so a missing one fails ("owed now", not "approved"). Two marker
 lines, a value other than lower-case `pending` or `ready` (including `Pending`), or an empty value: strict, with the
 `not treated as mid-feature` line saying why. No marker, or a hidden one: feature 024's behaviour, byte for byte. A Standard, Lite or
@@ -1156,7 +1156,8 @@ nothing pushed), this kit's scripts were run at each of the branch's 43 commits.
 that history, so a throwaway commit injects it, which shows the mechanism on real shapes and not that an owner will use it. With no marker
 the current kit gives what feature 024 gave: `WARN` at 17 of 43, a failure at 22, strict with a printed reason at 4. With
 `**Merge Readiness**: pending` injected into the plan at every commit that has one, the check warns at **41 of 43** and the run exits 0 at
-each of those 41; the other two are the first two commits, which precede `plan.md` and so cannot carry the line. With `ready` injected at
+each of those 41 (none of the branch's 43 commits carries the amendment check in its own committed scripts, so the injected, unapproved
+plan amendments were never graded; in an updated project the same unapproved addition fails AmendmentAuthority); the other two are the first two commits, which precede `plan.md` and so cannot carry the line. With `ready` injected at
 the tip, the arm demands the missing review and fails, as intended. On the non-Critical branches of FlowBoard (`main`) and ExpenseTracker
 (`main`, `003-expense-entry`), cloned the same way, the kit's `enforcement-pack.ps1` before and after this feature printed byte-identical
 output and exit codes. Not exercised: a Critical branch in the solo arm on a real project, and any run in an adopted project's own CI.

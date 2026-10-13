@@ -585,7 +585,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   (`CRIT-R03`, two emission sites), `ready` grades the artifact as for a merge-ready branch, two lines or any other value (including
   `Pending` and an empty value) is strict with a reason (`CRIT-R02` variants), absent or hidden is feature 024 byte for byte, and a
   non-Critical feature ignores it. 21 new fixture cases (1478 to 1520 test results). **Decided by the owner (anas.m):** option A (a marker in
-  the plan header overriding the heuristic) over B and C; D2 (`pending` bypasses the history-dependent strict states) and D9 (the template
+  the plan header overriding the heuristic) over B and C; D2 (`pending` bypasses the history-dependent strict states), D7 (`ready` means "owed now", not "approved") and D9 (the template
   ships the line absent) as recommended; **route 2 for the merge-commit gap** (state the limit, reword the warning to call the declaration
   a claim, do not extend the amendment check); an empty value is strict (plan D1 and T004 amended); and the F9 amendments to the plan,
   spec and tasks. **Corrected by the work:** the first AI review found the merge-commit gap and two fixtures that tested nothing (the

@@ -148,10 +148,11 @@ Gates apply at two different points, not uniformly at every phase:
    reviewer is who judges whether that approval was real (constitution I). On a **Critical** feature the machine check of
    this artifact (`CriticalEvidence`, `scripts/enforcement-pack.ps1`) accordingly warns, rather than fails, while the branch
    is provably mid-feature, and demands it once the final phase has landed or the artifact is committed
-   (`docs/sdlc/critical-delivery.md`, item 5); a plan that declares `**Merge Readiness**: pending` or `ready` settles the question\n   explicitly, as that item states.
+   (`docs/sdlc/critical-delivery.md`, item 5); a plan that declares `**Merge Readiness**: pending` or `ready` settles the question
+   explicitly, as that item states.
 
    <!-- digest: Gate 6: a human reviews the full feature diff and approves before merge — once per feature. -->
-   <!-- digest: Gate 6 on Critical: the review artifact is a WARN until the final phase lands or it is committed, then required. -->
+   <!-- digest: Gate 6 on Critical: the review is a WARN until the final phase lands, it is committed or the plan says ready. -->
 
 A phase **stands** on the feature branch once items 1–5 are true (items 4–5 verified against
 its commit — a failing commit is remediated and redone). The **feature** may be **merged** to
