@@ -4,7 +4,8 @@
 **Input**: Feature specification (approved, anas.m, 2026-10-14; option A) + decisions D1–D11 below
 **Gate Batching**: none
 **Gate Certification**: user-run
-**Status**: Draft — awaiting owner approval (D2, D3, D4 and the phase count are the owner's)
+**Status**: Approved (anas.m, 2026-10-14) — decisions D1–D11 approved as recommended: D2 (the auto-merge refinement), D3, D4 and three phases
+**Amendment approved by**: anas.m, 2026-10-14
 
 ## Summary
 
