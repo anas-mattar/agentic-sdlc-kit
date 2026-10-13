@@ -90,3 +90,19 @@ printed where none should be), and the controls (the limit, comment heading, two
 Runs after the remediation (agent-run, feedback only; certification stays with the owner): full harness **1452 passed, 0 failed**
 (1430 + 11 new cases); every pre-existing case unchanged; coverage report unchanged in shape (`enforcement-pack.ps1` 70 of 75
 sites fixtured, 1 exempt, 4 not a rule; overall exempt count still 3; no unowned site).
+
+### Gate 3 certification, remediation commit (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on the remediation commit `4c8fe99`, `RESULT OK`, exit code **0**,
+confirmed by the owner (anas.m, 2026-10-13). Two non-blocking `PhaseSizeWarning` lines (`4c8fe99`: 1255 lines across 35 files;
+`2300e44`: 1015 across 33), the same cause as before: the fixtures.
+
+### Owner confirmation of the two-rule layout
+
+Confirmed by the owner (anas.m, 2026-10-13): the plan's six rules, `CRIT-R01` to `CRIT-R06`, stand as variants of `CRIT-R01` and
+`CRIT-R02`, because the coverage sweep owns one rule per emission site. `tasks.md` is left as approved; this note is the record.
+
+### Round 2
+
+A fresh-context re-review of `4c8fe99` was started on the owner's instruction (2026-10-13); its file will be
+`ai-code-review-phase-1-round-2.md`, filed verbatim.
