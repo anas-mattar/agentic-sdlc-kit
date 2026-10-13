@@ -159,9 +159,38 @@ not give it to itself, and a machine can check only that it is well formed.
    distance from their own work, and a second person already is that distance. The solo arm is
    unchanged and never reads the human review.
 
+   **When the check demands the artifact** (feature 024). The artifact is owed *at merge*, after the final phase
+   (`docs/sdlc/definition-of-done.md`, item 6), so while a Critical branch is provably **mid-feature** the check does not
+   fail it for the artifact's absence: it prints one `WARNING: CriticalEvidence: ... is not yet due` line naming the artifact
+   and the phase that makes the branch merge-ready, and the run is not red for it. Mid-feature means all of: the committed
+   `tasks.md` declares phase headings whose **distinct** numbers are exactly `1..N` (a heading such as
+   `## Phase 1 amendment requests` repeats a number and is allowed; a gap is not); some commit subject carries a phase token
+   (`phase k`, `phasek`, `phase ka`, `phases k`, case-insensitive, **anywhere** in the subject, so `tasks: phase 4 done` counts)
+   with `k` below `N`; no commit subject carries a token naming phase `N` or beyond; and the active arm's artifact is **not yet
+   committed**. Anything else behaves
+   exactly as before: the final phase has landed, or the artifact is committed (the arm then grades it, mid-feature or not),
+   or the check cannot establish mid-feature at all (no diff base, a shallow clone, `tasks.md` unreadable or with no phase
+   heading or a gap or a number too large to read, no commit subject with a phase token yet), in which last group it prints a
+   `not treated as mid-feature` line saying why. What an owner may therefore see: committing the artifact early turns the
+   branch red for the rest of the feature (the arm grades it, and the solo arm's cooling-off clock starts then); an artifact
+   left uncommitted mid-feature warns where it used to fail; and an unusable `kit-adoption.json` selects the solo arm, so a
+   committed team-arm file does not end the pending state there. **A limit, stated rather than hidden:** a final commit whose
+   subject is not read as naming the final phase (no phase word at all; a separator the pattern does not read such as
+   `phase-3`, `phase: 3`, `phase #3` or `Phase III`; a list or range whose first number is lower, such as `phase 1 and 3`,
+   `phases 2-3` or `phase 2/3`), on a branch with no artifact committed yet, still reads as mid-feature and stays on the
+   `WARN`. What stands behind it is gate 6, the human review at merge, which a person holds, and the `WARN` is printed on
+   every run. Name the final commit `phase N: ...`. **A second limit, measured on a real Critical feature:** phases that land
+   out of order, or are never named, defeat the heuristic in both directions. "Final landed" is read as a token at or above the
+   highest declared phase, so a feature that does a high-numbered phase early (FitForge's phase 11 ran before its phases 4 to 9)
+   stays strict for that stretch, and a subject such as `declare phase 17` reads as phase 17 landed; requiring every declared phase
+   to be named would instead wrongly warn at the end, as that feature's phases 14 to 16 were never named. Strict is the safe
+   direction: the cost is relief the feature does not get, never a pass it should not have.
+
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->
    <!-- digest: Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. -->
+   <!-- digest: Critical 5: the independence artifact is a WARN until the final phase lands or it is committed, then the arm's FAIL. -->
+   <!-- digest: Critical 5: when mid-feature cannot be shown (no base, shallow clone, bad tasks.md) the check stays strict and says why. -->
 
 ## What this addendum is NOT
 

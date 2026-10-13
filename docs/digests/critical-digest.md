@@ -14,4 +14,6 @@
 - Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. (`docs/sdlc/critical-delivery.md`)
 - kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. (`docs/sdlc/critical-delivery.md`)
 - Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. (`docs/sdlc/critical-delivery.md`)
+- Critical 5: the independence artifact is a WARN until the final phase lands or it is committed, then the arm's FAIL. (`docs/sdlc/critical-delivery.md`)
+- Critical 5: when mid-feature cannot be shown (no base, shallow clone, bad tasks.md) the check stays strict and says why. (`docs/sdlc/critical-delivery.md`)
 - Critical adds nothing beyond the five items — protection comes from evidence and independence, not volume. (`docs/sdlc/critical-delivery.md`)

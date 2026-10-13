@@ -207,3 +207,30 @@ start with a printed reason, 3 strict at the end of which one (`declare phase 17
 
 Runs (agent-run, feedback only): full harness **1478 passed, 0 failed** (1470 + 4 cases); every pre-existing case unchanged; coverage
 unchanged (`enforcement-pack.ps1` 70 of 75 fixtured, exempt count 3).
+
+### T006 to T009, final (phase 2, after the owner chose option 1)
+
+**T006.** `critical-delivery.md` (a "When the check demands the artifact" paragraph with both limits and two digest markers) and
+`definition-of-done.md` (item 6 and one marker). **T007.** The flow-down note in `adoption/updating.md` (what was wrong, what it does,
+what flows down, what an owner may newly see, what does not change, both limits, what was measured, what to do, two markers). Four
+verbatim files flow down: `scripts/enforcement-pack.ps1`, the two documents and the updating document; the kit's fixtures do not.
+**T008.** `docs/roadmap.md`: the GAP-022 inventory row gains a status that says **partly closed** and why; this feature's row is
+`shipped` with the spec path unbracketed; a new `idea` row asks for a better merge-ready signal; a decisions-log entry dated 2026-10-13
+records what shipped, what the owner decided, what the work corrected (four times, by reviewers and by the measurement) and what stays
+open. `build-digests.ps1`: 105 markers (100 before), `docs/digests/adoption-digest.md`, `critical-digest.md` and `delivery-digest.md` changed.
+
+**T009, the final pass** on the final documents (kit `ac029d3` = `2b9c24b` plus the six drafted files, applied to clones of the three
+projects, kit before `5fc1274`; each clone asserted to end on the right kit: the new function is in `HEAD` and not in `HEAD~1`):
+`doc-lint.ps1` byte-identical and `OK` in all three; `main` `RESULT OK` in every state of every project, the only differences being the
+second update's own bookkeeping; ExpenseTracker's non-Critical `003-expense-entry` the same member verdicts (`RESULT UNGRADED`, 2 of 7
+formed no opinion, in both states) with only bookkeeping lines moved; FitForge `002-identity-member-profile` strict (the arm's own
+failure, no `WARNING: CriticalEvidence` line) at the tip, at `81d7424` and at `398e75f` in S2, as in S1, with the pack also failing
+`scope-check` in both states (unchanged by this feature). Identical to the pass before the documents were finalised. The mid-feature
+behaviour on real data is therefore **not** demonstrated by these three probes; the fresh-context reviewer's run at all 43 commits is
+the evidence (17 `WARN`, 19 strict while phase 11 ran ahead, 4 strict with a reason, 3 strict at the end).
+
+### Gate 3 certification, phase 1 final (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on the phase 1 final commit `2b9c24b` (run on a working tree that also
+held the uncommitted phase 2 files), exit code **0**, confirmed by the owner (anas.m, 2026-10-13). Phase 1's gate history: `2300e44`
+(exit 0), `4c8fe99` (exit 0), `20855f5` (exit 0), `2b9c24b` (exit 0); each remediation commit was re-gated.
