@@ -8,7 +8,7 @@ Phase evidence, never law. The documents are `spec.md`, `plan.md`, `tasks.md`.
 
 - `pwsh -File scripts/ritual-checks.ps1` on the untouched tree: doc-lint, enforcement-pack, digests, roadmap-claims OK;
   scope-check UNGRADED (no phase commit yet); scope-repos and verify-kit n/a. Exit 0.
-- Full harness on an isolated detached worktree of the parent: running at the time of the phase commit; the count is recorded under T005 when it finishes.
+- Full harness on an isolated detached worktree of the parent (`890b5e4`): **1478 passed, 0 failed**.
 - Recipe check: a recipe commit carries `branch`, `message`, `write` and `shallow`, and an `AMEND-001` recipe carries the
   boundary stub. **No recipe field was added.**
 - The FitForge 002 shape already exists in the harness as `CRIT-R01/fail-field-shaped-final` and
@@ -65,4 +65,9 @@ amendment check are not edited. The residual limit (`pending` is a claim) is sta
 
 ### T005 — runs
 
-Targeted run (`-Case CRIT-R03`, `fail-marker`, `merge-readiness`): 64 passed, 0 failed. `ritual-checks.ps1` on the uncommitted tree: exit 0 (scope-check UNGRADED until this commit exists). The full-harness counts (baseline and with the change) are appended in a later notes commit when both runs finish.
+Agent-run, feedback only; none of this certifies (the owner holds the gate).
+
+- Targeted run (`-Case CRIT-R03`, `fail-marker`, `merge-readiness`): 64 passed, 0 failed.
+- Full harness on the working tree with the phase 1 change (before the commit `003c96a`): **1512 passed, 0 failed**. 1478 baseline + 34 = 17 new cases (11 `CRIT-R03`, 3 `CRIT-R02`, 3 `AMEND-001`) at two assertions each. Every pre-existing case unchanged in outcome, including the 34 feature 024 cases and all `CRIT-S*` and `CRIT-T*`.
+- `ritual-checks.ps1` on the uncommitted tree: exit 0, doc-lint, enforcement-pack, digests and roadmap-claims OK, scope-check UNGRADED until the commit existed. `scope-check.ps1` on `003c96a`: PASS (54 files).
+- Coverage: no unowned emission site (`Coverage.Tests.ps1` inside the full run); `CRIT-R01` keeps `siteCount: 2` on its narrowed anchor, `CRIT-R03` owns the two new sites.
