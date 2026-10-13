@@ -145,9 +145,13 @@ Gates apply at two different points, not uniformly at every phase:
    from `specs/_templates/human-pr-review-template.md` — the template is where the shape
    lives, never where a review is filed. The full feature diff includes every amendment made
    to the feature's approved documents after approval; each one names an approver, and this
-   reviewer is who judges whether that approval was real (constitution I).
+   reviewer is who judges whether that approval was real (constitution I). On a **Critical** feature the machine check of
+   this artifact (`CriticalEvidence`, `scripts/enforcement-pack.ps1`) accordingly warns, rather than fails, while the branch
+   is provably mid-feature, and demands it once the final phase has landed or the artifact is committed
+   (`docs/sdlc/critical-delivery.md`, item 5).
 
    <!-- digest: Gate 6: a human reviews the full feature diff and approves before merge — once per feature. -->
+   <!-- digest: Gate 6 on Critical: the review artifact is a WARN until the final phase lands or it is committed, then required. -->
 
 A phase **stands** on the feature branch once items 1–5 are true (items 4–5 verified against
 its commit — a failing commit is remediated and redone). The **feature** may be **merged** to

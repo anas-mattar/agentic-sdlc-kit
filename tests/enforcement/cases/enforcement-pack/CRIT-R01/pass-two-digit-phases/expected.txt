@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+WARNING: CriticalEvidence: specs/001-thing/human-pr-review.md is not yet due - the branch is at phase 1 of 10 and the independent human review is owed once the phase 10 commit lands (team mode (2 developers declared in kit-adoption.json); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)
+enforcement-pack: OK
