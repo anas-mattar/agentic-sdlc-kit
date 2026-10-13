@@ -263,3 +263,10 @@ What the run does not cover, said plainly: the commits after `dc7ad52` (the phas
 wording amendment approved by the owner) change documents, `notes.md` and `plan.md` only (`git diff --stat dc7ad52 HEAD`: no script, no
 test), so the harness result carries over by the diff and was not re-run on them; `ritual-checks` was re-run on each, `RESULT OK`.
 The owner's phase 2 gate and the human review at merge are still to come.
+
+### Gate 3 certification, phase 2 (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on the feature branch at `6ebc583` (phase 2 and its remediation, the plan
+wording amendment, the T010 notes), exit code **0**, confirmed by the owner (anas.m, 2026-10-13). Gate 3 is therefore certified for both phases;
+gate 5 (fresh-context AI review) was done five times (four on phase 1, one on phase 2, each filed verbatim in this directory); gate 6, the human
+review at merge, is not done and belongs to a reviewer who is not the owner.
