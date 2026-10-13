@@ -79,10 +79,10 @@ and fix the rest".
 
 | Finding | What was done |
 |---|---|
-| F1 (BLOCKING) | **Route 2, accepted by the owner:** AmendmentAuthority skips merge commits (feature 014, D7), so a `pending` added inside a merge commit carries no approver check, and gate 6 is the only thing behind that case. Recorded as a LIMIT in the script header, and the warning no longer says "a recorded plan amendment": it now says the declaration is "a claim and not a verified approval; gate 6 stands behind it" (all emission sites and the 7 expectation files that print it). No change to `Invoke-AmendmentAuthorityCheck`. **Not yet written into `plan.md` Risks**, because that is an amendment of an approved plan and needs an approver record: the owner is asked whether to record it there. |
+| F1 (BLOCKING) | **Route 2, accepted by the owner:** AmendmentAuthority skips merge commits (feature 014, D7), so a `pending` added inside a merge commit carries no approver check, and gate 6 is the only thing behind that case. Recorded as a LIMIT in the script header, and the warning no longer says "a recorded plan amendment": it now says the declaration is "a claim and not a verified approval; gate 6 stands behind it" (both emission sites and the 6 expectation files that print it). No change to `Invoke-AmendmentAuthorityCheck`. **Not yet written into `plan.md` Risks**, because that is an amendment of an approved plan and needs an approver record: the owner is asked whether to record it there. |
 | F2 (BLOCKING) | Added `CRIT-R03/fail-marker-in-multiline-comment-is-absent` and `pass-trailing-comment-is-stripped`. Mutation shown: with `Get-VisibleFromText` removed from the marker read, exactly these two fail (and the one-line comment cases still pass, which is the review's point). |
 | F3 | Added `CRIT-R02/fail-marker-case-variant` (`Pending`) and `CRIT-R03/fail-marker-in-code-span-is-absent`. Mutations shown: dropping `-CaseSensitive` fails the first; dropping the line-start anchor fails the second. All three mutations were restored byte for byte (`cmp`). |
-| F4 (CONFIRM) | **Open.** The code takes D8's reading (an empty value is strict). If the owner confirms it, D1 and T004 need an amendment with the owner's approver record; if not, the code and three fixtures change. Not decided by this remediation. |
+| F4 (CONFIRM) | **Resolved.** The owner confirmed the strict reading on 2026-10-14; plan D1 and tasks T004 were amended with the approver record (`9e9c8f9`, `**Amendment approved by**: anas.m, 2026-10-14`). |
 | F5 | Accepted as disclosed (the `CRIT-R01` anchor). |
 | F6 | `rules.json` CRIT-R03 notes corrected (no "missing tasks.md" variant; two controls are byte-identical on the parent; the new variants listed). The full-harness counts are recorded above (T001, T005). **No `emission-idioms.json` entry was added, on purpose:** feature 024's warning has none either (`grep` for `not yet due`, `CriticalEvidence` and `CRIT` in that file finds nothing), so T003's "the way feature 024's warning is" means no entry. |
 | F7 | Carried to phase 2: the guidance (T006, T008) must say that `pending` on a branch feature 024 already reads as mid-feature gives the same verdict with different warning text. |
@@ -90,3 +90,21 @@ and fix the rest".
 
 Runs after the remediation: `-Case CRIT-` selects 83 cases (79 before, plus the 4 new): 208 assertions, 0 failed; `-Case
 merge-readiness`: 0 failed. The full harness and `ritual-checks.ps1` are re-run before the remediation commit's gate.
+
+### Round 2 review and what stays open (review `ai-code-review-phase-1-round-2.md`, APPROVE with follow-ups)
+
+- Round 2 re-ran the three mutations itself and confirmed F1 to F8 as dispositioned; F4 is resolved by `9e9c8f9`.
+- Full harness after the remediation (`ad6e64c`): **1520 passed, 0 failed** (1478 baseline + 42 = 21 new cases at two assertions each).
+- T001 and T005 asked for a throwaway FitForge-shaped branch with no marker, before and after. It was **not built**: the existing 024
+  fixtures `CRIT-R01/fail-field-shaped-final`, `pass-field-shaped-mid-feature` and
+  `fail-out-of-order-final-phase-lands-early` are that branch, and all 34 feature 024 cases pass unchanged in both full runs, which is
+  the byte-identical claim (SC-001) as the harness measures it.
+- **Plan D5 and the merge-commit limit:** D5's reading that the amendment check grades every plan change holds for non-merge commits only;
+  the check skips merge commits (feature 014, D7), so a `pending` added inside a merge carries no approver check. The code and the script
+  header say so; the approved documents do not yet (F9, below). **No fixture pins the limit (F12):** the fixture library can only build merges
+  with no content of their own, so the evil-merge case cannot be written without a recipe field; accepted, and the round 2 reviewer's manual
+  reproduction stands in for it.
+- **F9, owner decision pending:** plan D3 (the old warning text), D5, D2 line 85, the Summary and Risks, and spec FR-006 still describe the
+  pre-route-2 design. Each needs an amendment with the owner's approver record before merge, and before phase 2 writes guidance from them.
+- **F11:** the T004 amendment note in `tasks.md` sits directly after T003 with no blank line and so renders as part of it; fix it at the next
+  approved tasks amendment.
