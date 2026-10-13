@@ -15,6 +15,13 @@
   Micro lane) — and a Critical feature declaring
   ci-held fails scripts/enforcement-pack.ps1. Declare BEFORE the first phase it governs;
   never retroactively. An absent line means user-run. -->
+<!-- OPTIONAL, Critical features only: to tell scripts/enforcement-pack.ps1 outright whether the
+  independence review is owed yet, add a header line `**Merge Readiness**: pending` (the
+  feature is mid-flight: the check warns, not fails, for the missing review) and, when the
+  final phase is done, change it to `ready` (the review is owed now). This line is NOT
+  declared here: an absent line leaves the kit's commit-subject heuristic in charge.
+  Changing it on an approved plan is an amendment and needs an approver record. `pending`
+  is a claim the owner makes; gate 6, the human review at merge, stands behind it. -->
 
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.

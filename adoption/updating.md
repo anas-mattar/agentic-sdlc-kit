@@ -1113,6 +1113,63 @@ before. If you have a Critical branch that stays on the warning at its last comm
 <!-- digest: A Critical branch now warns, not fails, for a not-yet-due independence artifact while evidently mid-feature. -->
 <!-- digest: An early-committed Critical independence artifact is graded at once, red until valid; name the last commit phase N. -->
 
+### Flow-down note: the 2026-10-14 merge-readiness declaration for a Critical feature (kit feature 025 — no constitution amendment)
+
+**What was wrong.** Feature 024 stopped a Critical branch being red from its first commit by reading, from commit subjects, whether the
+final phase had landed. Measured on a real adopted Critical feature, that guess reaches only part of its history: phases that land out of
+order, or are never named, defeat it (the second limit of the 024 note above). The question the check cannot answer from subjects, "has
+the work finished?", is one the owner can answer in one line.
+
+**What it does now.** A Critical feature's `plan.md` may carry one header line, `**Merge Readiness**: pending` or
+`**Merge Readiness**: ready`. `scripts/enforcement-pack.ps1` reads it from the committed `plan.md` (a comment, a fence or a code span
+hides it) before it consults the subjects, so it needs no history. `pending`: one
+`WARNING: CriticalEvidence: <artifact> is not yet due - specs/NNN/plan.md declares **Merge Readiness**: pending (...)` line and no failure
+for the missing artifact, whatever the subjects, headings or clone depth say (the run still exits 1 in a shallow clone, because the amendment check cannot grade one); an artifact that is committed is still graded by its arm.
+`ready`: the arm grades the artifact exactly as for a merge-ready branch, so a missing one fails ("owed now", not "approved"). Two marker
+lines, a value other than lower-case `pending` or `ready` (including `Pending`), or an empty value: strict, with the
+`not treated as mid-feature` line saying why. No marker, or a hidden one: feature 024's behaviour, byte for byte. A Standard, Lite or
+Micro feature ignores the line. On a branch feature 024 already reads as mid-feature, `pending` gives the same verdict with different
+warning text.
+
+**What flows down.** Five verbatim files: `scripts/enforcement-pack.ps1`, `docs/sdlc/critical-delivery.md`,
+`docs/sdlc/definition-of-done.md`, `.specify/templates/plan-template.md` (an optional, commented-out `**Merge Readiness**` line, declared
+nowhere) and this document. The kit's own test fixtures stay in the kit. Nothing surgical and nothing in your constitution. Run
+`scripts/build-digests.ps1` after the update: until you do, the digests member of `scripts/ritual-checks.ps1` reports the affected digests
+as stale.
+
+**What an owner may newly see.** Nothing, until a plan declares the line. Adding it to an **existing approved plan is an amendment**, so
+it needs `**Amendment approved by**: <name>, <YYYY-MM-DD>` in the amended section and the same name in the commit message, and so does
+flipping `pending` to `ready` (constitution I). On a branch that declares `pending`, a `WARNING: CriticalEvidence ... declares
+**Merge Readiness**: pending` line where there was a failure or the 024 warning.
+
+**What does NOT change.** The messages and conditions of both arms, the requirement that the artifact exist and be valid before merge,
+the human review at merge, feature 024's heuristic for a plan that declares nothing, and everything a Standard, Lite or Micro feature sees.
+
+**Known limits, stated rather than hidden.** (1) `pending` is a claim. An owner who sets it and never flips it merges with only the
+warning on this check; gate 6, the human review at merge, stands behind it, and the warning prints on every run. (2) The approver on the
+flip is a recorded name, a written claim a reviewer can falsify and not proof of who approved. (3) The amendment check skips merge commits
+(feature 014, D7), so a `pending` added inside a merge commit carries no approver check at all; this feature states that rather than
+changing the check, and no fixture pins it. (4) `ready` is "owed now": it demands the artifact, it does not certify the work.
+
+**What was measured.** On FitForge 002's real history (a scratch clone made from the project's local directory; nothing in place touched,
+nothing pushed), this kit's scripts were run at each of the branch's 43 commits. **That is a simulation:** the marker does not exist in
+that history, so a throwaway commit injects it, which shows the mechanism on real shapes and not that an owner will use it. With no marker
+the current kit gives what feature 024 gave: `WARN` at 17 of 43, a failure at 22, strict with a printed reason at 4. With
+`**Merge Readiness**: pending` injected into the plan at every commit that has one, the check warns at **41 of 43** and the run exits 0 at
+each of those 41 (none of the branch's 43 commits carries the amendment check in its own committed scripts, so the injected, unapproved
+plan amendments were never graded; in an updated project the same unapproved addition fails AmendmentAuthority); the other two are the first two commits, which precede `plan.md` and so cannot carry the line. With `ready` injected at
+the tip, the arm demands the missing review and fails, as intended. On the non-Critical branches of FlowBoard (`main`) and ExpenseTracker
+(`main`, `003-expense-entry`), cloned the same way, the kit's `enforcement-pack.ps1` before and after this feature printed byte-identical
+output and exit codes. Not exercised: a Critical branch in the solo arm on a real project, and any run in an adopted project's own CI.
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. On a Critical feature in
+flight whose phases land out of order, or whose commits do not name phases, add `**Merge Readiness**: pending` to the plan as an
+amendment with its approver, and flip it to `ready` (another amendment) when the final phase is done, before you commit the independence
+artifact. A plan that declares nothing behaves as it did.
+
+<!-- digest: A Critical plan may declare Merge Readiness pending or ready, overriding the subject heuristic; it needs no history. -->
+<!-- digest: Merge Readiness pending is the owner's claim, not proof; adding or flipping it on an approved plan is an amendment. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

@@ -1,0 +1,110 @@
+{
+  "description": "pending, and a human review is committed with no Review Provenance section: pending never suppresses the arm's grading of an artifact that exists (FR-002, plan D1), so the arm fails it.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Critical",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "**Merge Readiness**: pending",
+          "",
+          "## Summary",
+          "",
+          "Three phases."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: step 1",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/step1.ps1`",
+          "",
+          "- [ ] T001 Do step 1.",
+          "",
+          "## Phase 2: step 2",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/step2.ps1`",
+          "",
+          "- [ ] T002 Do step 2.",
+          "",
+          "## Phase 3: step 3",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/step3.ps1`",
+          "",
+          "- [ ] T003 Do step 3.",
+          "",
+          "## Phase 1 amendment requests (awaiting an approver)",
+          "",
+          "- A1: pending",
+          "",
+          "## Phase 3 amendment request",
+          "",
+          "- A2: pending"
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "tasks: phase 1 done - step 1",
+      "write": {
+        "src/step1.ps1": "Write-Host 'step 1'\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "tasks: phase 3 done - step 3",
+      "write": {
+        "src/step3.ps1": "Write-Host 'step 3'\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "evidence: a review with no provenance",
+      "write": {
+        "specs/001-thing/human-pr-review.md": [
+          "# Human PR Review — 001 Thing",
+          "",
+          "## Provenance Of The Review",
+          "",
+          "- **Reviewer**: grace",
+          "- **Owner**: ada",
+          "",
+          "## Verdict",
+          "",
+          "APPROVE."
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}
