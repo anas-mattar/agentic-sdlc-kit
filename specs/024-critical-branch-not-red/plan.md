@@ -132,9 +132,11 @@ strict, with a `not treated as mid-feature` line when the cause is one the check
 (option 1, 2026-10-13):** "final landed" is read as "a token at or above the highest declared phase", which assumes phases land in
 roughly ascending order. On FitForge 002, the one real Critical feature, phase 11 was done before phases 4 to 10 (its own
 tasks.md says so), and phases 14 to 16 are never named in any subject; the pack run at all 43 commits of the branch warned at 17,
-was wrongly strict at 19 (phases 4 to 9, after phase 11 landed early), strict with a printed reason at 4, and strict at 3. A rule
+was wrongly strict at 19 (the stretch in phases 4 to 9, after phase 11 landed early), strict with a printed reason at 4, and strict
+at 3 others (two near the end, one early at "declare phase 17"). A rule
 that required every declared phase to be named instead would wrongly warn at the tip, so none is adopted; a better merge-ready
 signal is a separate piece of work (a roadmap row).
+**Amendment approved by**: anas.m, 2026-10-13
 **Amendment approved by**: anas.m, 2026-10-13
 
 **D4 — The `WARN` is an entry in the existing `$warnings` list (FR-001).** It prints as `WARNING: CriticalEvidence: …`,
@@ -227,8 +229,9 @@ phase grammar is read, not changed (D2, D3).
 - **Mid-feature and final are read with one token.** A token `\bphases?\s*(\d+)` anywhere in a subject below `N` shows
   the branch is mid-feature, and one at or above `N` (`feat: phase 4`, `Phase 4 —`, `phase4`) counts as the final phase having
   landed (this replaces the anchored mid-feature form, after the phase 2 measurement). A subject that mentions the final phase early makes the branch strict early:
-  noisy, and the safe direction. A committed artifact also ends the pending state, so committing it early turns the branch
-  red for the rest of the feature, and an uncommitted artifact leaves the branch on the WARN where the parent failed; the
+  noisy, and the safe direction. A committed artifact also ends the pending state, so committing it early puts it under
+  the arm's grading from that commit on (the branch is red until the artifact is valid in team mode, or 24 hours old in solo mode,
+  and passes once it is), and an uncommitted artifact leaves the branch on the WARN where the parent failed; the
   phase 2 guidance says so. An unparsable `kit-adoption.json` resolves to solo mode, so a committed team artifact does not end
   the pending state there (round 2, F3).
 - **Phases that land out of order, or are never named, defeat the heuristic in both directions (measured, owner-accepted).** On
@@ -241,6 +244,7 @@ phase grammar is read, not changed (D2, D3).
   show or hide a heading. Contiguity (D2) turns most such misreads into strict.
 - **The recall sweep may report more than the one warning.** Every reported line is classified; none is left unclassified.
 
+**Amendment approved by**: anas.m, 2026-10-13
 **Amendment approved by**: anas.m, 2026-10-13
 
 ## Needs the owner
