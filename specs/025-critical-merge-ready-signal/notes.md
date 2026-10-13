@@ -114,3 +114,10 @@ The owner approved the drafted amendments as written: plan Summary, D2, D3 (the 
 merge-commit limit) and Risks; spec FR-006 and the "Why this is not a new honour system" paragraph; the `tasks.md` T004 note moved onto
 its own paragraph (F11). Each document carries `**Amendment approved by**: anas.m, 2026-10-14` and the commit message names anas.m.
 `ritual-checks.ps1`: RESULT OK; `enforcement-pack.ps1`: AmendmentAuthority graded 11 of 11, OK.
+
+### Gate certification, phase 1 (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `ad2e084` (the phase 1 commit `003c96a`, its review remediation, the F4 and F9
+amendments and the notes), exit code **0**, confirmed by the owner (anas.m, 2026-10-14).
+
+Awaiting: the owner's go-ahead for phase 2. The AI review (rounds 1 and 2) is filed; the human review at merge is still to come.
