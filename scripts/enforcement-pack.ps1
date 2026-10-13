@@ -338,6 +338,9 @@ function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 # owner makes: an owner who sets it and never flips it merges with only the deferral WARN on this
 # check, and gate 6 stands behind it. Flipping it is a plan amendment, so it carries a recorded
 # approver (constitution I), a written claim a reviewer can falsify, not proof of who approved.
+#   LIMIT (accepted by the owner, review F1): AmendmentAuthority skips merge commits (feature 014, D7), so a
+#   'pending' added inside a merge commit carries no approver check. The warning therefore calls the
+#   declaration a claim, not a recorded amendment; gate 6 stands behind it.
 function ConvertTo-PhaseNumber {
     # A number too large to parse is not an error: it is "beyond any declared phase" (review F2).
     param([string]$Text)
@@ -452,9 +455,9 @@ function Invoke-CriticalEvidenceCheck {
     $readiness = Get-CriticalMergeReadiness -Branch $Branch -Base $Base -Artifact $artifact
     if ($readiness.Pending -and $readiness.Declared) {
         if ($mode.Mode -eq 'team') {
-            $script:warnings += "CriticalEvidence: $dir/human-pr-review.md is not yet due - $dir/plan.md declares **Merge Readiness**: pending (the owner's declaration, a recorded plan amendment) and the independent human review is owed once it is set to ready (team mode ($($mode.Why)); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+            $script:warnings += "CriticalEvidence: $dir/human-pr-review.md is not yet due - $dir/plan.md declares **Merge Readiness**: pending (the owner's declaration in the plan, a claim and not a verified approval; gate 6 stands behind it) and the independent human review is owed once it is set to ready (team mode ($($mode.Why)); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
         } else {
-            $script:warnings += "CriticalEvidence: $dir/second-model-review.md is not yet due - $dir/plan.md declares **Merge Readiness**: pending (the owner's declaration, a recorded plan amendment) and the second-model review is owed once it is set to ready (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+            $script:warnings += "CriticalEvidence: $dir/second-model-review.md is not yet due - $dir/plan.md declares **Merge Readiness**: pending (the owner's declaration in the plan, a claim and not a verified approval; gate 6 stands behind it) and the second-model review is owed once it is set to ready (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
         }
         return
     }
