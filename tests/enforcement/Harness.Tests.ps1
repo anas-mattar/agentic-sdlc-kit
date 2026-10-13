@@ -275,6 +275,118 @@ Describe 'originPushUrl fixtures (feature 023, plan D2 as amended)' {
     }
 }
 
+Describe 'merge commits that carry content (feature 026, plan D8)' {
+    # A merge could be built, but only with no content of its own, so the rule that grades what a
+    # merge AUTHORED (feature 026) had no fixture: review finding F12 of feature 025. These tests pin
+    # the fields that let a recipe describe it, and the library's rule that a field it cannot honour
+    # fails loud instead of being ignored.
+
+    BeforeAll {
+        function New-MergeRecipe {
+            param([string]$MergeJson, [string]$FeatLine = '', [string]$MainLine = '')
+            # main: init. feat: branched from main, then main moves on, then feat merges main.
+            $json = @"
+{
+  "defaultBranch": "main",
+  "commits": [
+    { "branch": "main", "message": "init", "write": { "a.txt": "one\n", "x.txt": "base\n" } },
+    { "branch": "feat", "message": "feat work", "write": { "b.txt": "feat\n"$FeatLine } },
+    { "branch": "main", "message": "main work", "write": { "c.txt": "main\n"$MainLine } },
+    { "branch": "feat", $MergeJson }
+  ],
+  "checkout": "feat"
+}
+"@
+            return ($json | ConvertFrom-Json)
+        }
+        function Get-Blob { param($Root, $Rev, $Path) ((& git -C $Root show "${Rev}:${Path}" 2>$null) -join "`n") }
+        function Get-ParentCount { param($Root) (@((& git -C $Root rev-list --parents -n 1 HEAD) -join '' -split '\s+') | Where-Object { $_ }).Count - 1 }
+    }
+
+    It 'leaves a plain merge exactly as it was: two parents and no content of its own' {
+        $root = New-FixtureRepo -Recipe (New-MergeRecipe -MergeJson '"merge": "main", "message": "merge main"')
+        try {
+            Get-ParentCount -Root $root | Should -Be 2
+            (Get-Blob $root 'HEAD' 'a.txt') | Should -Be (Get-Blob $root 'HEAD^1' 'a.txt')
+            (Test-Path (Join-Path $root 'c.txt')) | Should -BeTrue
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'writes content into the merge result so it differs from both parents (mergeWrite)' {
+        $root = New-FixtureRepo -Recipe (New-MergeRecipe -MergeJson '"merge": "main", "message": "merge main", "mergeWrite": { "a.txt": "authored in the merge\n" }')
+        try {
+            Get-ParentCount -Root $root | Should -Be 2
+            (Get-Blob $root 'HEAD' 'a.txt') | Should -Be 'authored in the merge'
+            (Get-Blob $root 'HEAD^1' 'a.txt') | Should -Be 'one'
+            (Get-Blob $root 'HEAD^2' 'a.txt') | Should -Be 'one'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'removes a file from the merge result only (mergeDelete)' {
+        $root = New-FixtureRepo -Recipe (New-MergeRecipe -MergeJson '"merge": "main", "message": "merge main", "mergeDelete": ["b.txt"]')
+        try {
+            (Test-Path (Join-Path $root 'b.txt')) | Should -BeFalse
+            (Get-Blob $root 'HEAD^1' 'b.txt') | Should -Be 'feat'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'lands the content named by resolve for a conflicting merge' {
+        $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n"' -MainLine ', "x.txt": "main side\n"' -MergeJson '"merge": "main", "message": "merge main", "resolve": { "x.txt": "combined by hand\n" }'
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            Get-ParentCount -Root $root | Should -Be 2
+            (Get-Blob $root 'HEAD' 'x.txt') | Should -Be 'combined by hand'
+            (Get-Blob $root 'HEAD^1' 'x.txt') | Should -Be 'feat side'
+            (Get-Blob $root 'HEAD^2' 'x.txt') | Should -Be 'main side'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'builds an octopus merge when merge names several branches' {
+        $json = @'
+{
+  "defaultBranch": "main",
+  "commits": [
+    { "branch": "main", "message": "init", "write": { "a.txt": "one\n" } },
+    { "branch": "feat", "message": "feat work", "write": { "b.txt": "feat\n" } },
+    { "branch": "left", "message": "left work", "write": { "l.txt": "left\n" } },
+    { "branch": "main", "message": "main work", "write": { "c.txt": "main\n" } },
+    { "branch": "feat", "merge": ["main", "left"], "message": "octopus", "mergeWrite": { "a.txt": "authored\n" } }
+  ],
+  "checkout": "feat"
+}
+'@
+        $root = New-FixtureRepo -Recipe ($json | ConvertFrom-Json)
+        try {
+            Get-ParentCount -Root $root | Should -Be 3
+            (Get-Blob $root 'HEAD' 'a.txt') | Should -Be 'authored'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses a conflicting merge with no resolve instead of leaving it half done' {
+        $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n"' -MainLine ', "x.txt": "main side\n"' -MergeJson '"merge": "main", "message": "merge main", "mergeWrite": { "a.txt": "edit\n" }'
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*conflict*resolve*"
+    }
+
+    It 'refuses a resolve that names a merge with nothing to resolve' {
+        $recipe = New-MergeRecipe -MergeJson '"merge": "main", "message": "merge main", "resolve": { "a.txt": "x\n" }'
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'resolve'*nothing to resolve*"
+    }
+
+    It 'refuses a resolve that leaves a conflicted file unnamed' {
+        $recipe = New-MergeRecipe -FeatLine ', "x.txt": "feat side\n"' -MainLine ', "x.txt": "main side\n"' -MergeJson '"merge": "main", "message": "merge main", "resolve": { "other.txt": "x\n" }'
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*conflict in x.txt*'resolve' does not name it*"
+    }
+
+    It 'refuses mergeWrite, mergeDelete and resolve on a commit that is not a merge' {
+        foreach ($field in '"mergeWrite": { "a.txt": "x\n" }', '"mergeDelete": ["a.txt"]', '"resolve": { "a.txt": "x\n" }') {
+            $json = @"
+{ "defaultBranch": "main", "commits": [ { "branch": "main", "message": "init", "write": { "a.txt": "one\n" }, $field } ] }
+"@
+            { New-FixtureRepo -Recipe ($json | ConvertFrom-Json) } | Should -Throw -ExpectedMessage "*applies only to a merge*"
+        }
+    }
+}
+
 Describe 'output normalisation' {
     # A third substitution joined <ROOT> and <SHA> in T029. scope-check-repos.ps1's
     # anti-retroactivity message quotes the code commit's own committer date back to the reader,
