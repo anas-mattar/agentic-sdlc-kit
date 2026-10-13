@@ -55,9 +55,9 @@ consistent kit.
 ## Decisions
 
 **D1 — The change lives in `Invoke-CriticalEvidenceCheck`, as a gate in front of the two arms (FR-001, FR-002).** The
-function already resolves the level and the arm. A new `Get-CriticalMergeReadiness` returns `@{ Ready = bool; Why = string;
-FinalPhase = int }`; the function calls the arm unchanged when `Ready` and otherwise adds one entry to `$script:warnings`
-and returns. The two arms (`Invoke-CriticalSoloEvidence`, `Invoke-CriticalTeamEvidence`) are not edited, so their messages
+function already resolves the level and the arm. A new `Get-CriticalMergeReadiness` returns `@{ Pending = bool; Why = string; Final; Tip }`; when `Pending` the
+function adds one entry to `$script:warnings` and returns, and otherwise calls the arm unchanged (adding a `WARNING` naming
+`Why` first when the branch could not be shown mid-feature). The two arms (`Invoke-CriticalSoloEvidence`, `Invoke-CriticalTeamEvidence`) are not edited, so their messages
 and order cannot drift (FR-002). The signature gains `-Base`, the diff base the dispatch already computes, as the other
 members that read history take it.
 
@@ -92,6 +92,13 @@ phase having landed, so `feat: phase 3` is seen; the anchored `^phase\s+k` form 
 mid-feature at all (`k` below `N`). The cost, accepted: a subject that merely mentions the final phase early (`phase 2: prepare
 for phase 3`) makes the branch strict early, which is the safe direction and merely noisy. Phase numbers are parsed with
 `[long]::TryParse` and an unparseable or overflowing number is treated as strict, never as a crash (review F2).
+**Amendment approved by**: anas.m, 2026-10-13
+
+*Amended again after the round 2 review (F2).* The token of (b) is widened from `\bphase\s+(\d+)\b` to
+`\bphases?\s*(\d+)`: it is read with no space (`phase3`), with a suffix (`phase 3a`) and in the plural (`phases 3`), all of which
+name a phase and none of which the first form saw. Still any position, still case-insensitive, still `[long]`-safe. The
+anchored mid-feature form is unchanged. The cost is the same accepted one, noise in the safe direction: `phases` also
+matches a subject such as `phases 3 and 4 reordered`, which makes the branch strict early.
 **Amendment approved by**: anas.m, 2026-10-13
 
 **D4 — The `WARN` is an entry in the existing `$warnings` list (FR-001).** It prints as `WARNING: CriticalEvidence: …`,
@@ -178,11 +185,17 @@ phase grammar is read, not changed (D2, D3).
 
 - **A branch can stay in `WARN` by never naming its final phase commit.** The relaxation's one real hole, narrowed again after the phase 1 review by D3's two added signals (an artifact already committed ends the pending state; a phase token anywhere in a subject counts as the final phase) and not closed: a final commit that names no phase and a branch with no artifact yet still reads as mid-feature. D3 narrows it
   (only a branch that already carries phase commits `1..k`, `k < N`, qualifies; contiguity D2 blocks an invented phase) but
-  does not close it: a final commit that does not begin `phase N` is not seen as final. What still stands behind it is gate 6,
+  does not close it: a final commit that names no phase (no `phase N`, `phaseN`, `phase Na` or `phases N` token anywhere in its subject) is not seen as final. What still stands behind it is gate 6,
   the human review at merge, which is held by a person and is not a machine check; the `WARN` is printed on every run so the
   artifact cannot be forgotten silently. Disclosed in the script header and in the flow-down note, as 013 disclosed its limit.
-- **Anchoring is narrower than scope-check.** A final-phase commit written `Phase 4 — …` is read (case-insensitive); one
-  written `feat: phase 4` is not. That keeps strict, the safe direction, and is documented.
+- **Mid-feature is anchored, final is not.** Only a subject that BEGINS with `phase k` shows the branch is mid-feature at all
+  (narrower than scope-check, on purpose); a final-phase token anywhere in a subject (`feat: phase 4`, `Phase 4 —`, `phase4`)
+  counts as the final phase having landed. A subject that mentions the final phase early makes the branch strict early:
+  noisy, and the safe direction. A committed artifact also ends the pending state, so committing it early turns the branch
+  red for the rest of the feature, and an uncommitted artifact leaves the branch on the WARN where the parent failed; the
+  phase 2 guidance says so. An unparsable `kit-adoption.json` resolves to solo mode, so a committed team artifact does not end
+  the pending state there (round 2, F3).
+**Amendment approved by**: anas.m, 2026-10-13
 - **A mid-feature `tasks.md` amendment moves the final phase.** The branch goes back to `WARN`; correct, and the amendment
   is already graded by the amendment-authority check.
 - **`Get-VisibleFromText` is not a markdown parser.** It hides comments, fences and code spans; an exotic construct could
