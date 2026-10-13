@@ -251,3 +251,15 @@ three-project update measurement or the full harness.
 | F3 MINOR | "3 strict at the end" became "3 other strict (two near the end, one early at `declare phase 17`)" in the roadmap (twice) and the flow-down note. **Plan D3's "strict at 3" and its "phases 4 to 9" / "4 to 10" wording wait for the owner's approval of the amendment.** |
 | F4 MINOR | The decisions log said "green at 1470 cases"; those are test results (two per case) and not the state where the failure was found. Now "1460 test results, two per case, when the measurement ran; 1478 as shipped". |
 | F5 cosmetic | A blank line before `## 3. Other surgical files` in `adoption/updating.md`. |
+
+### T010 — final run on an isolated checkout
+
+A detached `git worktree` outside the repository at `dc7ad52` (the phase 2 commit), removed afterwards. **Full harness: 1478 passed, 0 failed,
+0 skipped** (1261 s), exit 0. `ritual-checks.ps1 -Branch 024-critical-branch-not-red`: doc-lint OK, enforcement-pack OK, scope-check
+OK, digests OK (105 markers), roadmap-claims OK, scope-repos and verify-kit n/a, `RESULT OK`, exit 0. `scope-check.ps1` on every phase
+commit: PASS for `dc7ad52` (8 files), `2b9c24b` (14), `76879f2` (17), `20855f5` (14), `4c8fe99` (35) and `2300e44` (33).
+
+What the run does not cover, said plainly: the commits after `dc7ad52` (the phase 2 review file, its remediation `949e563`, and a plan
+wording amendment approved by the owner) change documents, `notes.md` and `plan.md` only (`git diff --stat dc7ad52 HEAD`: no script, no
+test), so the harness result carries over by the diff and was not re-run on them; `ritual-checks` was re-run on each, `RESULT OK`.
+The owner's phase 2 gate and the human review at merge are still to come.
