@@ -44,7 +44,7 @@ re-runs it as part of the feature (FR-009).
 
 | | Shape | What it does | Cost |
 |---|---|---|---|
-| A (recommended) | Grade a merge commit for each spec document of its own feature whose merged result differs from **every** parent | A clean merge, a pull-request merge, and a conflict resolved by taking one side's file whole are not graded (the file equals a parent's). Content the merge authored (a hand-merged conflict, an edit made while merging) needs the usual record: `**Amendment approved by**` in the amended section of the merged file and the approver named in the merge commit message. | A hand-merged conflict in a spec document needs an approver, which is correct and rare (0 of 131 in the field data). A merge that takes a file wholesale from a parent is not graded, so content that already sat in a parent is only as graded as that parent's own commits were. |
+| A (recommended) | Grade a merge commit for each spec document of its own feature whose merged result differs from **every** parent and from git's own automatic merge of the parents | A clean merge, a pull-request merge, a clean automatic merge of two parents that each amended the document in different places, and a conflict resolved by taking one side's file whole are not graded (the file equals a parent's, or equals what git itself would produce). Content the merge authored (a hand-merged conflict, an edit made while merging) needs the usual record: `**Amendment approved by**` in the amended section of the merged file and the approver named in the merge commit message. | A hand-merged conflict in a spec document needs an approver, which is correct and rare (0 of 131 in the field data). A merge that takes a file wholesale from a parent is not graded, so content that already sat in a parent is only as graded as that parent's own commits were. |
 | B | Grade every merge against its first parent | Catches everything the merge changes relative to the branch | Flags the ordinary merge of `main` into a branch (45 of the kit's 101 merges change some spec document relative to the first parent): the over-grading D7 exists to avoid, and it would make team-workflow rule 8 unobeyable. Rejected on the data. |
 | C | Leave the check alone; state the limit | Nothing built | The gap stays: a `pending` (or any amendment) can be added in a merge with no approver, and 025's `pending` bypass is only as honest as the merges are. The known limit stays on the record in five places. |
 
@@ -111,7 +111,7 @@ the roadmap) are updated by this feature to say what is closed and what stays op
 
 ### Edge Cases
 
-- A merge with more than two parents (an octopus merge): graded the same way, against every parent; where the merge's own change cannot be computed the
+- A merge with more than two parents (an octopus merge): graded against every parent, without the automatic-merge comparison (git computes it for two parents); where the merge's own change cannot be computed the
   run reports it UNGRADED with the reason, never as a silent skip.
 - `git merge -s ours` (the result equals the first parent): not graded for any file; what the merge discarded from the second parent is not an authored change.
 - A merge made through a hosting service's pull-request merge button on `main`: outside the branch range the check grades (`<base>..HEAD`), as today.
@@ -135,8 +135,8 @@ the roadmap) are updated by this feature to say what is closed and what stays op
 ### Functional Requirements
 
 - **FR-001**: `Invoke-AmendmentAuthorityCheck` MUST, for a commit with more than one parent on a numbered branch, grade each of the feature's `spec.md`,
-  `plan.md`, `tasks.md` and `contracts/**` files whose merged content differs from **every** parent's version, as the merge's own change.
-- **FR-002**: A merge commit whose result for a document equals any parent's version of it MUST NOT be graded for that document, and a branch whose
+  `plan.md`, `tasks.md` and `contracts/**` files whose merged content differs from **every** parent's version **and** from the tree git itself would produce by merging the parents, as the merge's own change. Where git's automatic merge cannot be computed (a merge of more than two parents, a git without `merge-tree --write-tree`), the document is graded when it differs from every parent.
+- **FR-002**: A merge commit whose result for a document equals any parent's version of it, or equals what git's automatic merge of the parents produces, MUST NOT be graded for that document, and a branch whose
   merges authored no content MUST produce byte-identical output to today's.
 - **FR-003**: The approver-record rule MUST be unchanged for a merge's own change: `**Amendment approved by**: <name>, <YYYY-MM-DD>` in the amended section
   of the merged file, the approver named in the merge commit message, and the same exemptions (first appearance, pure rename, task ticks, a `**Status**`
@@ -160,7 +160,7 @@ the roadmap) are updated by this feature to say what is closed and what stays op
 
 ### Key Entities
 
-- **Merge's own change**: the content of a merge commit's result for a document that equals no parent's version of it (git's combined diff).
+- **Merge's own change**: the content of a merge commit's result for a document that equals no parent's version of it and is not what git's automatic merge of the parents would produce.
 
 ## Success Criteria *(mandatory)*
 
@@ -178,6 +178,9 @@ the roadmap) are updated by this feature to say what is closed and what stays op
   definition the measurement used, and the plan confirms it on the fixture shapes.
 - A merge that takes a file whole from a parent inherits that parent's grading: the content was authored in the parent's own commits, on whatever branch,
   and is graded wherever those commits are in a graded range.
+- The automatic-merge comparison needs `git merge-tree --write-tree` (git 2.38 or newer, which writes unreferenced objects and changes no ref or working-tree file); without it the check falls back to "differs from every parent", which fails closed and is satisfied by a record.
 - `**Amendment approved by**` and the commit-message rule are unchanged, so no constitution amendment is expected; the plan confirms by reading
   constitution I.
 - The kit's feature 014 documents are history and are not edited; this spec records the narrowing of D7.
+
+**Amendment approved by**: anas.m, 2026-10-14
