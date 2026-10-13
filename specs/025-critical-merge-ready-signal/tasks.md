@@ -55,9 +55,13 @@ declares nothing, a non-Critical branch and every pre-existing `CRIT-*` case are
       `tests/enforcement/rules.json` with its law, and the new warning's entry to `tests/enforcement/emission-idioms.json` the way
       feature 024's warning is; run the recall sweep first and classify anything else it reports (a rule with a pair, an
       exemption, or a not-a-rule with a reason).
+T004 grammar follows plan D1 as amended (an empty value is strict).
+
+**Amendment approved by**: anas.m, 2026-10-14
+
 - [ ] T004 Edit `scripts/enforcement-pack.ps1` (plan D1–D4): in `Get-CriticalMergeReadiness`, after the "artifact committed at
       `HEAD`" step and before the history-dependent steps, read the committed plan with `git show "HEAD:./specs/$Branch/plan.md"`
-      through `Get-VisibleFromText`, grammar `^\*\*Merge Readiness\*\*:\s*(\S.*?)\s*$`, value compared exactly; `ready` returns
+      through `Get-VisibleFromText`, grammar `^\*\*Merge Readiness\*\*:\s*(.*?)\s*$` (an empty value is a malformed marker, strict), value compared exactly; `ready` returns
       `Pending = $false` with no reason, `pending` returns `Pending = $true` with `Declared = $true` (bypassing the
       history-dependent states), any other value or two lines returns `Pending = $false` with a reason, absent or unreadable falls
       through unchanged. Add the declared-`pending` warning text at the two emission sites of `Invoke-CriticalEvidenceCheck`

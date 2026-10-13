@@ -60,11 +60,15 @@ function already returns `@{ Pending; Why; Final; Tip }`. The new step sits afte
 `HEAD` ends the pending state) and before the history-dependent steps (diff base, shallow clone, `tasks.md`, subjects), so an explicit
 declaration does not depend on history. The plan is read from the committed blob (`git show "HEAD:./specs/$Branch/plan.md"`, the `./`
 rule of 013 phase 5) through `Get-VisibleFromText`, the visibility reader the amendment check trusts, so a line inside a comment, a fence
-or a code span declares nothing. The grammar is the one the other plan header fields use, `^\*\*Merge Readiness\*\*:\s*(\S.*?)\s*$`, value
+or a code span declares nothing. The grammar is the one the other plan header fields use, `^\*\*Merge Readiness\*\*:\s*(.*?)\s*$`, so a line with no value is a malformed marker and not an absent one (D8: an empty value is strict, with a reason); value
 compared exactly (`pending` or `ready`, lower case). The spec said "through the visibility reader the pack already uses for plan headers";
 that reader, `Get-VisiblePlanLines`, takes a working-tree path, and 024 deliberately reads the committed blob, so this reads the blob
 through `Get-VisibleFromText`. The function's signature is unchanged and `Invoke-CriticalEvidenceCheck` is not edited except to print the
 new warning text for a declared `pending`.
+
+Amended after the phase 1 AI review (F4): the D1 grammar is `(.*?)` in place of `(\S.*?)`, so an empty value is strict, as D8 lists it.
+
+**Amendment approved by**: anas.m, 2026-10-14
 
 **D2 — What each value does, and what `pending` bypasses (FR-002, FR-003, FR-004).**
 
