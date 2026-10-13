@@ -309,20 +309,29 @@ function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 # commit on it behaves exactly as before, and wherever mid-feature cannot be shown it stays strict
 # and says why. The two arms below are not edited, so their messages cannot drift.
 #
-# Mid-feature means: tasks.md (committed) declares phases whose DISTINCT numbers are exactly 1..N
-# (a duplicate such as '## Phase 1 amendment requests' invents no phase and is allowed), some
-# commit subject carries a phase token below N ANYWHERE in it ('tasks: phase 4 done' counts: real
-# branches are mostly bookkeeping commits and almost none begin 'phase k'), no subject carries a
-# token naming phase N or beyond (so 'feat: phase 3' is seen as final), and the active arm's
-# artifact is not yet committed. One token reads both evidence and finality (plan D3 as amended). An artifact already committed ends the pending state: whoever produced it
-# has said the work is ready whatever the last commit was called, and the arm then grades it as
-# it always did (review F1, F3). Anything else - no diff base, a shallow clone, tasks.md
-# unreadable, no phase heading, a gap, a number too large to read, no phase commit yet - is
-# strict, with the reason. KNOWN LIMIT, disclosed rather than hidden: a final commit that names no
-# phase, on a branch with no artifact committed yet, still reads as mid-feature, so a branch can
-# stay on the WARN by not naming it. What stands behind that is gate 6, the human review at merge,
-# which a person holds; the WARN is printed on every run so the pending artifact cannot be
-# forgotten silently.
+# Mid-feature means ALL of: the active arm's artifact is not committed at HEAD (one that is ends the
+# pending state: whoever produced it has said the work is ready whatever the last commit was
+# called, and the arm then grades it as it always did - review F1, F3); a diff base resolves and
+# the clone is not shallow; the committed tasks.md has phase headings whose DISTINCT numbers are
+# exactly 1..N (a repeated number such as '## Phase 1 amendment requests' invents no phase and is
+# allowed; a gap is not); some commit subject carries a phase token below N ANYWHERE in it
+# ('tasks: phase 4 done' counts: real branches are mostly bookkeeping commits and almost none
+# begin 'phase k'); and no subject carries a token naming phase N or beyond (so 'feat: phase 3'
+# is seen as final). One token reads both evidence and finality (plan D3, current reading).
+# Anything else - no diff base, a shallow clone, tasks.md unreadable, no phase heading, a gap, a
+# number too large to read, no phase token yet - is strict, with the reason.
+#
+# LIMITS, disclosed rather than hidden:
+#   1. A final commit that names no phase (or one this token does not read: 'phase-3',
+#      'phase: 3', 'phase 1 and 3'), on a branch with no artifact committed yet, still reads as
+#      mid-feature, so a branch can stay on the WARN by not naming it.
+#   2. Phases that land OUT OF ORDER, or are never named, defeat the heuristic. Measured on a real
+#      Critical feature (FitForge 002): a token at or above the highest declared phase reads as
+#      "final landed", so phase 11 done before phases 4 to 9 kept the branch strict for that
+#      stretch; phases 14 to 16 were never named at all, so requiring every phase would have
+#      wrongly warned at the tip. Strict is the safe direction: it costs relief, not safety.
+# What stands behind both is gate 6, the human review at merge, which a person holds; the WARN is
+# printed on every run so the pending artifact cannot be forgotten silently.
 function ConvertTo-PhaseNumber {
     # A number too large to parse is not an error: it is "beyond any declared phase" (review F2).
     param([string]$Text)

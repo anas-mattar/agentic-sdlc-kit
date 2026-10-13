@@ -190,3 +190,20 @@ third in both) fail on exit code and output; `fail-field-shaped-final` fails on 
 `CRIT-R02/fail-gap-with-duplicate-headings` passes on the old code, as a control should. Full harness after the change:
 **1470 passed, 0 failed** (1460 + 5 cases); every pre-existing case unchanged, including `CRIT-R02/fail-no-phase-commit`
 (subjects with no phase token stay strict); coverage unchanged (`enforcement-pack.ps1` 70 of 75 fixtured, exempt count 3).
+
+### Round 4 review remediation (owner decision of 2026-10-13: option 1, ship with the limit said plainly)
+
+Review: `ai-code-review-phase-1-round-4.md` (fresh-context, APPROVE with follow-ups), filed verbatim. It found no code regression and
+confirmed the measurement independently by running the pack at all 43 commits of FitForge 002: 17 `WARN` (8 early, 9 after the
+amendment that raised the declared phases to 17), 19 strict in the stretch after phase 11 ran ahead of phases 4 to 9, 4 strict at the
+start with a printed reason, 3 strict at the end of which one (`declare phase 17`) is early and noisy.
+
+| Round 4 finding | What was done |
+|---|---|
+| F1 CONFIRM (the measurement) | **Owner decision: option 1.** Ship as measured; the limit is stated in plan D3 (current reading), Risks, the script header, `critical-delivery.md`, the flow-down note and the roadmap, with the numbers. A new `idea` row asks for a better merge-ready signal. No code change. |
+| F2 DOC DRIFT | `plan.md` D3 and Risks tidied: the stale "superseded" note replaced, the earlier amended paragraphs marked as withdrawn where they are, the wrong "`1..k`" wording fixed, and a "current reading" paragraph added that governs. Committed with the approver. The script-header paragraph rewritten (comment only; diff outside comments is empty). |
+| F3 MINOR (accepted) | The mid-feature evidence is weak by design (incidental subjects, merge subjects, `phases 1-3` earn the WARN); recorded in plan D3. |
+| F4 MINOR | Fixtures added that pin existing behaviour (they pass on the code as it stands, by design, and guard against wrong implementations): `CRIT-R02/fail-heading-starts-at-two`, `fail-heading-starts-at-zero`, `CRIT-R01/fail-single-phase-duplicate-headings`, `fail-out-of-order-final-phase-lands-early` (the last asserts the measured limit). |
+
+Runs (agent-run, feedback only): full harness **1478 passed, 0 failed** (1470 + 4 cases); every pre-existing case unchanged; coverage
+unchanged (`enforcement-pack.ps1` 70 of 75 fixtured, exempt count 3).
