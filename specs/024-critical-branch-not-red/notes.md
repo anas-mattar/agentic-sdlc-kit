@@ -67,3 +67,26 @@ and 15 files, constitution X). 30 of the 33 files are fixtures (ten cases of thr
 and its proof), and the fixtures-first rule puts them in the same phase as the behaviour.
 
 Awaiting: the fresh-context AI review (Reviewer Provenance) and the owner's decision on the two-rule layout (deviation above).
+
+### Phase 1 review remediation (review F1–F7, owner decisions of 2026-10-13)
+
+Owner decisions, in the owner's words in the session: approve both F1 options; fix F1 to F5 in phase 1. The D3 change is
+recorded in `plan.md` with the approver line (commit "plan: 024 D3 amended after the first AI review").
+
+| Finding | What was done |
+|---|---|
+| F1 (CONFIRM) | Both options built: an artifact already committed at `HEAD` ends the pending state (the arm grades it as today, no WARN), and a phase token anywhere in a subject, naming the final phase or beyond, counts as the final phase having landed. The anchored form is kept only to show the branch is mid-feature at all. The residual limit (a final commit naming no phase, with no artifact committed) is **asserted by a fixture** (`CRIT-R01/pass-limit-final-commit-names-no-phase`), not hidden. |
+| F2 | `ConvertTo-PhaseNumber` uses `[long]::TryParse`; a number too large to read is "beyond any phase" in a subject and a strict reason in a heading. Fixtures: `CRIT-R01/fail-phase-number-overflow-in-subject`, `CRIT-R02/fail-heading-number-overflow`. |
+| F3 | Falls out of F1 option (a): a committed artifact, valid or not, is graded now. Fixture: `CRIT-R01/fail-artifact-committed-invalid-mid-feature`. |
+| F4 | Solo cooling-off fixtures, mid-feature: `pass-solo-artifact-old-mid-feature` (25 h) and `fail-solo-artifact-young-mid-feature` (23.5 h), differing only in the review's age. |
+| F5 | `fail-comment-heading-not-counted`, `pass-two-digit-phases`, `fail-two-digit-final`. **Not done:** a fixture for `git log` failing, which the code handles as a strict reason; no recipe field makes `git log` fail while the rest of the pack still runs, and inventing one for a one-line branch was judged out of proportion. It is read in review, not proved by a case; say so rather than count it. |
+| F6 | Recorded above (the two-rule layout). Owner's confirmation is still outstanding. |
+| F7 | The pre-existing `CRIT-S*` and `CRIT-T*` cases print no new line because their branches are ready (a one-phase `tasks.md`, a `phase 1` commit) or already carry the artifact, and `Why` is then null. `emission-idioms.json` needed no entry: its `enforcement-pack.ps1` entry already lists `$script:warnings +=` as an accumulator, which is why the sweep saw the new sites. |
+
+Failing first on the code as phase 1 left it (`-Case enforcement-pack/CRIT-R`, before the change): the fixtures for F1 (b),
+F2, F3 and the young solo artifact fail (exit code and output), the two artifact-present `pass` variants fail on output (a WARN is
+printed where none should be), and the controls (the limit, comment heading, two-digit phases) pass.
+
+Runs after the remediation (agent-run, feedback only; certification stays with the owner): full harness **1452 passed, 0 failed**
+(1430 + 11 new cases); every pre-existing case unchanged; coverage report unchanged in shape (`enforcement-pack.ps1` 70 of 75
+sites fixtured, 1 exempt, 4 not a rule; overall exempt count still 3; no unowned site).
