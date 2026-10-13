@@ -205,3 +205,9 @@ below when it does. `ritual-checks.ps1 -Branch 025-critical-merge-ready-signal` 
 both phase commits (`003c96a`, 54 files; `ce047ac`, 8 files).
 
 Awaiting: the human review at merge (constitution IX, gate 6). Nothing else is open except what is listed under "Open" in the roadmap entry.
+
+### T011 — the final full harness (recorded after the merge of #74)
+
+Full harness on an isolated detached worktree of the phase 2 commit `ce047ac` (removed afterwards): **1520 passed, 0 failed, 0 skipped**, the same count
+as the phase 1 remediation run (1478 baseline + 42). The phase 2 review remediation (`7363b9a`) and the gate note changed documents only, so this count
+stands for the shipped code. It finished after PR #74 was opened, which is why it is recorded here and not in the PR description.
