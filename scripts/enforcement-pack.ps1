@@ -301,8 +301,70 @@ function Invoke-LiteAndAbuseCheck {
 function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 
 # --- Critical-evidence check (FR-005; modes added by 013) ---
+#
+# MERGE-READINESS (feature 024, GAP-022). The independence artifact cannot exist before the final
+# phase is written and reviewed (definition-of-done.md item 6, "at merge"), so demanding it on
+# every commit made a Critical branch red from its first commit to its last. While the branch is
+# provably MID-FEATURE the check now says so with one WARN and does not fail; from the final-phase
+# commit on it behaves exactly as before, and wherever mid-feature cannot be shown it stays strict
+# and says why. The two arms below are not edited, so their messages cannot drift.
+#
+# Mid-feature means: tasks.md (committed) declares phases 1..N with no gap, and the branch already
+# carries a commit whose subject BEGINS 'phase k' for some k < N and none for N or beyond.
+# Anything else - no diff base, a shallow clone, tasks.md unreadable, no phase heading, a gap, no
+# phase commit yet - is strict. KNOWN LIMIT, disclosed rather than hidden: a final commit whose
+# subject does not begin 'phase N' is not seen as final, so a branch can stay on the WARN by not
+# naming it. What stands behind that is gate 6, the human review at merge, which a person holds;
+# the WARN is printed on every run so the pending artifact cannot be forgotten silently.
+function Get-CriticalMergeReadiness {
+    param([string]$Branch, [string]$Base)
+    $tasksRel = "specs/$Branch/tasks.md"
+    if (-not $Base) {
+        return @{ Pending = $false; Why = 'there is no diff base to read the branch history against, as in a shallow clone' }
+    }
+    if ("$(git rev-parse --is-shallow-repository 2>$null)".Trim() -eq 'true') {
+        return @{ Pending = $false; Why = 'this is a shallow clone, so the branch history may be incomplete' }
+    }
+    # The './' is the 013 phase 5 rule: resolve against the current directory, not the repository root.
+    $blob = @(git show "HEAD:./$tasksRel" 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        return @{ Pending = $false; Why = "$tasksRel is not committed or cannot be read" }
+    }
+    # Headings are read the way a renderer shows them: comments removed, and a heading inside a
+    # fenced block is example text, not a phase.
+    $visible = @(Get-VisibleFromText -Lines $blob)
+    $fenced = Get-FencedLineMap -Lines $visible
+    $declared = [System.Collections.Generic.List[int]]::new()
+    for ($i = 0; $i -lt $visible.Count; $i++) {
+        if (-not $fenced[$i] -and $visible[$i] -match '^##\s+Phase\s+(\d+)\b') { $declared.Add([int]$matches[1]) }
+    }
+    if ($declared.Count -eq 0) {
+        return @{ Pending = $false; Why = "$tasksRel declares no '## Phase N' heading" }
+    }
+    $final = ($declared | Measure-Object -Maximum).Maximum
+    $contiguous = ($declared.Count -eq $final) -and (@($declared | Sort-Object -Unique).Count -eq $final) -and (@($declared | Sort-Object)[0] -eq 1)
+    if (-not $contiguous) {
+        return @{ Pending = $false; Why = "the '## Phase N' headings of $tasksRel are not numbered 1 to N without a gap (found $((@($declared | Sort-Object)) -join ', '))" }
+    }
+    $subjects = @(git log --format=%s "$Base..HEAD" 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        return @{ Pending = $false; Why = "the commit subjects of '$Branch' cannot be read" }
+    }
+    $tip = 0
+    foreach ($s in $subjects) {
+        if ($s -match '^(?i)phase\s+(\d+)\b' -and [int]$matches[1] -gt $tip) { $tip = [int]$matches[1] }
+    }
+    if ($tip -eq 0) {
+        return @{ Pending = $false; Why = 'no commit on the branch carries a phase subject yet' }
+    }
+    if ($tip -ge $final) {
+        return @{ Pending = $false; Why = $null; Final = $final; Tip = $tip }
+    }
+    return @{ Pending = $true; Why = $null; Final = $final; Tip = $tip }
+}
+
 function Invoke-CriticalEvidenceCheck {
-    param([string]$Branch)
+    param([string]$Branch, [string]$Base)
     if ($Branch -notmatch '^\d{3}-') { return }
     $dir = "specs/$Branch"
     $specPath = Join-Path $dir 'spec.md'
@@ -310,6 +372,18 @@ function Invoke-CriticalEvidenceCheck {
     if ((Get-DeliveryLevel -SpecPath $specPath) -notmatch '^Critical\b') { return }
 
     $mode = Get-EvidenceMode
+    $readiness = Get-CriticalMergeReadiness -Branch $Branch -Base $Base
+    if ($readiness.Pending) {
+        if ($mode.Mode -eq 'team') {
+            $script:warnings += "CriticalEvidence: $dir/human-pr-review.md is not yet due - the branch is at phase $($readiness.Tip) of $($readiness.Final) and the independent human review is owed once the phase $($readiness.Final) commit lands (team mode ($($mode.Why)); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+        } else {
+            $script:warnings += "CriticalEvidence: $dir/second-model-review.md is not yet due - the branch is at phase $($readiness.Tip) of $($readiness.Final) and the second-model review is owed once the phase $($readiness.Final) commit lands (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+        }
+        return
+    }
+    if ($readiness.Why) {
+        $script:warnings += "CriticalEvidence: not treated as mid-feature - $($readiness.Why); the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5)"
+    }
     if ($mode.Mode -eq 'team') {
         Invoke-CriticalTeamEvidence -Dir $dir -Why $mode.Why -Roster $mode.Roster
     } else {
@@ -1643,7 +1717,7 @@ if ($Branch -in @('main', 'master')) {
     Invoke-LevelSurfaceCheck -Branch $Branch
     Invoke-LevelRationaleCheck -Branch $Branch
     Invoke-MicroLaneCheck -Branch $Branch -Base $diffBase
-    Invoke-CriticalEvidenceCheck -Branch $Branch
+    Invoke-CriticalEvidenceCheck -Branch $Branch -Base $diffBase
     Invoke-GateBatchingCheck -Branch $Branch
     Invoke-GateCertificationCheck -Branch $Branch
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase

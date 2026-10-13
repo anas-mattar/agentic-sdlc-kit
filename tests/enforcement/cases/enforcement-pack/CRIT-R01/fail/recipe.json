@@ -1,0 +1,91 @@
+{
+  "description": "The same branch with the phase 3 commit, the declared final phase: merge-ready, so today's failure is back, unchanged (spec FR-002).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Critical",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "Three phases."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: step 1",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/step1.ps1`",
+          "",
+          "- [ ] T001 Do step 1.",
+          "",
+          "## Phase 2: step 2",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/step2.ps1`",
+          "",
+          "- [ ] T002 Do step 2.",
+          "",
+          "## Phase 3: step 3",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/step3.ps1`",
+          "",
+          "- [ ] T003 Do step 3.",
+          ""
+        ],
+        "kit-adoption.json": "{\n  \"developers\": [\"ada\", \"grace\"]\n}\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 1: step 1",
+      "write": {
+        "src/step1.ps1": "Write-Host 'step 1'\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 2: step 2",
+      "write": {
+        "src/step2.ps1": "Write-Host 'step 2'\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "phase 3: step 3",
+      "write": {
+        "src/step3.ps1": "Write-Host 'step 3'\n"
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

@@ -1,0 +1,5 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+AmendmentAuthority: graded 0 of 1 commit(s) in <SHA>..HEAD (1 not graded: 1 made before the check existed (plan D2b))
+WARNING: CriticalEvidence: not treated as mid-feature - no commit on the branch carries a phase subject yet; the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5)
+enforcement-pack: FAIL (1 issue(s)):
+  - CriticalEvidence: specs/001-thing/human-pr-review.md is missing — team mode (2 developers declared in kit-adoption.json) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)

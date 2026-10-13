@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+WARNING: CriticalEvidence: specs/001-thing/second-model-review.md is not yet due - the branch is at phase 2 of 3 and the second-model review is owed once the phase 3 commit lands (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)
+enforcement-pack: OK

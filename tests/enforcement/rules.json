@@ -563,6 +563,25 @@
       "notes": "Found in the phase 3 diff review, and introduced BY phase 3: T020a replaced the inline parser with Get-Territory, whose Invalid field the caller did not read, so an absolute or '..' entry stopped counting toward the cap and was reported by nobody - while scope-check.ps1 FAILed the same entry in the same block. Demonstrated failing first (D11): before the fix the fail recipe exited 0 printing 'enforcement-pack: OK'. A regression a task's own success criteria would not have caught, because T020a's criterion was 'the copy is gone'."
     },
     {
+      "id": "CRIT-R01",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalEvidenceCheck",
+      "summary": "a Critical feature that is provably mid-feature is warned that its independence artifact is pending, and not failed for it",
+      "law": "docs/sdlc/definition-of-done.md item 6 (the human review is once per feature, at merge); feature 024 spec FR-001, FR-002",
+      "emitAnchor": "is not yet due",
+      "siteCount": 2,
+      "notes": "GAP-022. Two emission sites, declared: the team arm names human-pr-review.md and the solo arm names second-model-review.md, and both say the same thing - which artifact is owed once the final phase lands. Mid-feature means tasks.md declares phases 1..N with no gap and the branch carries a phase commit below N and none at N. The pass is the WARN with exit 0; the fail is the same branch once the final phase commit lands, where today's failure is back unchanged. Variants: the solo arm (the cooling-off is not demanded while mid-feature either), and a final phase heading that exists only inside a fenced block, which declares nothing. The parent exits 1 on every pass here."
+    },
+    {
+      "id": "CRIT-R02",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalEvidenceCheck",
+      "summary": "a Critical feature that cannot be shown to be mid-feature stays strict, and says why",
+      "law": "feature 024 spec FR-003 (undeterminable merge-readiness keeps today's failure); the GAP-027 lesson that a relaxation must not be silent",
+      "emitAnchor": "not treated as mid-feature",
+      "notes": "One site, several reasons, each a variant: no phase heading in tasks.md (the fail), a gap in the heading numbers (so an invented high phase cannot hold a branch in WARN), no phase commit yet, and a depth-1 clone with no diff base. The failure itself is the unchanged CriticalEvidence message; what is new is the WARNING line naming the reason, so a branch held strict is never quiet about it. Recorded in 024's notes: the plan named six rules (CRIT-R01 to CRIT-R06) and the coverage sweep owns one rule per emission site, of which there are two, so the six conditions became variants of these two."
+    },
+    {
       "id": "CRIT-S01",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-CriticalSoloEvidence",
