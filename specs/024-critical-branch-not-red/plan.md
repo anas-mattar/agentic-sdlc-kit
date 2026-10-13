@@ -81,6 +81,19 @@ skipped phase naming; it stays strict, so the relaxation applies only to a branc
 carrying phase commits `1..k` with `k < N` (FR-003). This is the owner's decision: the alternative, WARN when merely
 "no final-phase commit", is simpler and is exactly the shape that lets a branch avoid the artifact by never naming a phase.
 
+*Amended after the phase 1 AI review (F1, F3).* Two tighter signals, both approved by the owner, close most of the disclosed hole
+and leave the rest named. (a) **An artifact already committed ends the pending state**: if the active arm's artifact file
+(`human-pr-review.md` in team mode, `second-model-review.md` in solo mode) is committed on the branch at `HEAD`, the branch is
+treated as owing the evidence now, the arm grades it exactly as it does today, and no `WARN` is printed. Someone who has produced
+the artifact has said the work is ready, whatever the last commit was called, and it also means a committed but invalid artifact is
+no longer left ungraded mid-feature (review F3). (b) **Final-phase detection reads a phase token anywhere in a subject**: a
+subject matching `\bphase\s+N\b` (case-insensitive, any position) for the declared final phase `N` or beyond counts as the final
+phase having landed, so `feat: phase 3` is seen; the anchored `^phase\s+k` form is kept only to establish that the branch is
+mid-feature at all (`k` below `N`). The cost, accepted: a subject that merely mentions the final phase early (`phase 2: prepare
+for phase 3`) makes the branch strict early, which is the safe direction and merely noisy. Phase numbers are parsed with
+`[long]::TryParse` and an unparseable or overflowing number is treated as strict, never as a crash (review F2).
+**Amendment approved by**: anas.m, 2026-10-13
+
 **D4 — The `WARN` is an entry in the existing `$warnings` list (FR-001).** It prints as `WARNING: CriticalEvidence: …`,
 before the verdict, like `PhaseSizeWarning`, and does not change the exit code or the final `OK`. The message names the
 artifact of the active arm, the phase that makes the branch merge-ready, and the phase the tip is at. One line per run.
@@ -163,7 +176,7 @@ phase grammar is read, not changed (D2, D3).
 
 ## Risks
 
-- **A branch can stay in `WARN` by never naming its final phase commit.** The relaxation's one real hole. D3 narrows it
+- **A branch can stay in `WARN` by never naming its final phase commit.** The relaxation's one real hole, narrowed again after the phase 1 review by D3's two added signals (an artifact already committed ends the pending state; a phase token anywhere in a subject counts as the final phase) and not closed: a final commit that names no phase and a branch with no artifact yet still reads as mid-feature. D3 narrows it
   (only a branch that already carries phase commits `1..k`, `k < N`, qualifies; contiguity D2 blocks an invented phase) but
   does not close it: a final commit that does not begin `phase N` is not seen as final. What still stands behind it is gate 6,
   the human review at merge, which is held by a person and is not a machine check; the `WARN` is printed on every run so the
@@ -175,6 +188,8 @@ phase grammar is read, not changed (D2, D3).
 - **`Get-VisibleFromText` is not a markdown parser.** It hides comments, fences and code spans; an exotic construct could
   show or hide a heading. Contiguity (D2) turns most such misreads into strict.
 - **The recall sweep may report more than the one warning.** Every reported line is classified; none is left unclassified.
+
+**Amendment approved by**: anas.m, 2026-10-13
 
 ## Needs the owner
 
