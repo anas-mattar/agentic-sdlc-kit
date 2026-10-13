@@ -54,3 +54,16 @@ Agent-run, feedback only; none of this certifies (the owner holds the gate).
   257 owned, **exempt count unchanged at 3**, no unowned site.
 - `ritual-checks.ps1`: doc-lint OK, enforcement-pack OK, digests OK, roadmap-claims OK; scope-check UNGRADED until a phase
   commit exists (re-run after the commit, below); scope-repos and verify-kit n/a.
+
+### Gate 3 certification (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on the phase 1 commit `2300e44`, exit code **0**, confirmed by the
+owner (anas.m, 2026-10-13). The owner's own run showed doc-lint, enforcement-pack, scope-check, digests and roadmap-claims OK;
+scope-repos and verify-kit n/a.
+
+That run carried one non-blocking `PhaseSizeWarning`: commit `2300e44` changes 1015 lines across 33 files (guideline: 400 lines
+and 15 files, constitution X). 30 of the 33 files are fixtures (ten cases of three files each); the rest are
+`scripts/enforcement-pack.ps1` (about 75 lines), `tests/enforcement/rules.json` and this file. It is one coherent slice (the gate
+and its proof), and the fixtures-first rule puts them in the same phase as the behaviour.
+
+Awaiting: the fresh-context AI review (Reviewer Provenance) and the owner's decision on the two-rule layout (deviation above).
