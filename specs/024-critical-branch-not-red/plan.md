@@ -66,9 +66,17 @@ members that read history take it.
 committed blob at `HEAD` (`git show "HEAD:./specs/$Branch/tasks.md"`, the `./` rule of 013 phase 5), through
 `Get-VisibleFromText`, the visibility reader the amendment check already trusts, so a heading inside a comment, a fence or a
 code span declares nothing. The grammar is the one `Get-Territory` reads, `^##\s+Phase\s+(\d+)\b`, reused rather than
-re-invented. Headings must number `1..N` without a gap; a gap, a duplicate, no heading, or a missing or unreadable blob
+re-invented. Headings must number `1..N` without a gap; a gap, no heading, or a missing or unreadable blob
 leaves the branch **not-proven-pending**, i.e. strict (D3). Contiguity is what makes an invented high phase number visible
 as a gap, the one way to hold a branch in `WARN` forever.
+
+*Amended after the phase 2 measurement (FitForge 002).* A **duplicate** is no longer a failure: the DISTINCT numbers must be
+exactly `1..N`. Real `tasks.md` files carry headings such as `## Phase 1 amendment requests (awaiting an approver)` and
+`## Phase 10 amendment request` beside the `## Phase N: ...` ones; read by the grammar above they are a second phase 1 and a
+second phase 10, which failed the old test on the one real Critical feature the kit has run and kept it strict at every point
+of its history. A duplicate invents no phase beyond `N`, which is what the contiguity rule exists to prevent; a gap or an
+invented high number still goes strict. The message still lists every number found, duplicates included.
+**Amendment approved by**: anas.m, 2026-10-13
 
 **D3 — Merge-ready means the branch carries a commit for the final phase; anything undeterminable is strict (FR-001,
 FR-003).** The commit list is `git log --format=%s <base>..HEAD`. A subject counts as phase N when it matches
@@ -98,6 +106,15 @@ phase having landed, so `feat: phase 3` is seen; the anchored `^phase\s+k` form 
 mid-feature at all (`k` below `N`). The cost, accepted: a subject that merely mentions the final phase early (`phase 2: prepare
 for phase 3`) makes the branch strict early, which is the safe direction and merely noisy. Phase numbers are parsed with
 `[long]::TryParse` and an unparseable or overflowing number is treated as strict, never as a crash (review F2).
+**Amendment approved by**: anas.m, 2026-10-13
+
+*Amended after the phase 2 measurement (FitForge 002).* **Mid-feature evidence is read with the same token as the final
+phase.** A subject carrying a token `\bphases?\s*(\d+)` with a number below `N` shows the branch is mid-feature, wherever the token
+sits; the anchored `^phase\s+k` form is withdrawn. On the one real Critical feature the kit has run, 0 of 43 branch commits begin
+`phase k` while 34 of 43 carry a phase token (`tasks: phase 4 done - credentials`, `docs: phase 13 web gate exits 0`), so the
+anchored form kept the branch strict at every point of its history. The cost, accepted by the owner: a branch earns the `WARN` a
+little more easily, by any subject that mentions an earlier phase; the artifact is still owed, is demanded once a subject names the
+final phase or beyond or once the artifact is committed, and zero phase tokens still stays strict.
 **Amendment approved by**: anas.m, 2026-10-13
 
 *Amended again after the round 2 review (F2).* The token of (b) is widened from `\bphase\s+(\d+)\b` to
@@ -194,9 +211,9 @@ phase grammar is read, not changed (D2, D3).
   does not close it: a final commit whose subject carries no token that `\bphases?\s*(\d+)` reads as the final number is not seen as final: no phase word at all, a separator the pattern does not read (`phase-3`, `phase: 3`, `phase #3`, `Phase III`), or a list or range whose first number is lower (`phase 1 and 3`, `phases 2-3`, `phase 2/3`). What still stands behind it is gate 6,
   the human review at merge, which is held by a person and is not a machine check; the `WARN` is printed on every run so the
   artifact cannot be forgotten silently. Disclosed in the script header and in the flow-down note, as 013 disclosed its limit.
-- **Mid-feature is anchored, final is not.** Only a subject that BEGINS with `phase k` shows the branch is mid-feature at all
-  (narrower than scope-check, on purpose); a final-phase token anywhere in a subject (`feat: phase 4`, `Phase 4 —`, `phase4`)
-  counts as the final phase having landed. A subject that mentions the final phase early makes the branch strict early:
+- **Mid-feature and final are read with one token.** A token `\bphases?\s*(\d+)` anywhere in a subject below `N` shows
+  the branch is mid-feature, and one at or above `N` (`feat: phase 4`, `Phase 4 —`, `phase4`) counts as the final phase having
+  landed (this replaces the anchored mid-feature form, after the phase 2 measurement). A subject that mentions the final phase early makes the branch strict early:
   noisy, and the safe direction. A committed artifact also ends the pending state, so committing it early turns the branch
   red for the rest of the feature, and an uncommitted artifact leaves the branch on the WARN where the parent failed; the
   phase 2 guidance says so. An unparsable `kit-adoption.json` resolves to solo mode, so a committed team artifact does not end

@@ -32,6 +32,7 @@ non-Critical branch and every pre-existing `CRIT-*` case are unchanged.
 - `tests/**`
 
 **Amendment approved by**: anas.m, 2026-10-13
+**Amendment approved by**: anas.m, 2026-10-13 (T004 reworded after the phase 2 measurement)
 
 - [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, the coverage report's
       exempt-rule count and site counts, and the exact enforcement-pack output and exit on a throwaway Critical branch at
@@ -51,8 +52,9 @@ non-Critical branch and every pre-existing `CRIT-*` case are unchanged.
       recall sweep first and classify anything else it reports (a rule with a pair, an exemption, or a not-a-rule with a reason).
 - [ ] T004 Edit `scripts/enforcement-pack.ps1` (plan D1–D4): add `Get-CriticalMergeReadiness` (final phase from the committed
       `tasks.md` through `Get-VisibleFromText`, headings `^##\s+Phase\s+(\d+)\b` contiguous from 1; commit subjects
-      anchored at `^(?i)phase\s+k\b` only to show the branch is mid-feature, and a final-phase token `\bphases?\s*N`
-      anywhere in a subject counting as final, plan D3 as amended; an artifact already committed ending the pending state;
+      read with one token `\bphases?\s*(\d+)` anywhere in a subject: below the final phase it shows the branch is
+      mid-feature, at or above it the final phase has landed (plan D3 as amended, twice); distinct heading numbers exactly 1 to
+      N, duplicates allowed (plan D2 as amended); an artifact already committed ending the pending state;
       the D3 precondition; every undeterminable state strict with its reason), give
       `Invoke-CriticalEvidenceCheck` a `-Base` parameter and the gate in front of the two arms, and pass `-Base $diffBase`
       from the dispatch. The two arms are not edited. State the residual limit (plan Risks) in the script header.
