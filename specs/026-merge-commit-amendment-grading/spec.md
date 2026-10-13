@@ -2,7 +2,8 @@
 
 **Feature Branch**: `026-merge-commit-amendment-grading`
 **Created**: 2026-10-14
-**Status**: Draft — awaiting owner approval (the shape in "Decision for the owner" is the owner's)
+**Status**: Approved (anas.m, 2026-10-14) — option A chosen, with the sub-decision as recommended (a hand-merged conflict counts as authored)
+**Amendment approved by**: anas.m, 2026-10-14
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-032: grade a merge commit's own change to a spec document in the amendment-authority check. The check skips every commit with more than one parent (feature 014, D7: a merge commit authored nothing), but a merge commit can author content, and since feature 025 a `**Merge Readiness**: pending` added inside a merge turns a strict failure into a warning. Feature 025 accepted the gap as a stated limit and recorded it."
