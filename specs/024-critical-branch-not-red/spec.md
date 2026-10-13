@@ -2,7 +2,8 @@
 
 **Feature Branch**: `024-critical-branch-not-red`
 **Created**: 2026-10-13
-**Status**: Draft — awaiting owner approval (the shape decision in "Decision for the owner" is the owner's)
+**Status**: Approved (anas.m, 2026-10-13) — shape B chosen
+**Amendment approved by**: anas.m, 2026-10-13
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-022: a Critical feature's branch is red from its first commit to its last, because Invoke-CriticalEvidenceCheck demands the independence artifact (human-pr-review.md in team mode, second-model-review.md plus the cooling-off in solo mode) on every commit, though that artifact cannot legitimately exist until the final phase is written and reviewed. Decide the shape at spec: gate on merge-ready, WARN until the final phase and FAIL at the merge commit, or move to a merge-time check."
@@ -167,5 +168,5 @@ project's non-Critical branches grades identically before and after.
   confirms the exact heading and subject grammar against the existing readers and reuses them rather than adding a third.
 - Whether the merge-time run (a PR into `main`) is distinguishable from a branch push is a plan question; if it is not,
   the final-phase commit is the only signal and the check is strict from there, which is the safe direction.
-- The shape is B (WARN, then FAIL) pending the owner's decision above. If A or C is chosen the spec's FR-001 changes and
-  is re-approved before `plan.md` is written, with the approver recorded (constitution I, Amendment authority).
+- The shape is B (WARN, then FAIL), approved by the owner on 2026-10-13. A change to A or C would change FR-001 and
+  need a recorded re-approval before further work (constitution I, Amendment authority).
