@@ -1,0 +1,5 @@
+enforcement-pack: branch 'docs/x', diff base '<SHA>', 1 changed file(s)
+AmendmentAuthority: graded 1 of 1 commit(s) in <SHA>..HEAD
+enforcement-pack: 'docs/x' is the lightweight docs/ lane — review-provenance and amendment-authority are the scripted checks that apply
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: commit <SHA> amends specs/001-a/contracts/api.md after approval with no conforming approver record. Add '**Amendment approved by**: <name>, <YYYY-MM-DD>' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt — in either direction — but rewriting a task's text while ticking it is not: record what was done in notes.md, and leave the task saying what was agreed (plan D3c); the amended file(s) (specs/001-a/contracts/api.md) belong to feature(s) 001-a, and a document is amended where it lives: the record goes in that document

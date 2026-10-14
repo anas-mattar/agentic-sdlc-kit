@@ -175,6 +175,7 @@ $warnings = @()
 # RAN AND FORMED NO OPINION - not a pass, not a warning, and not 'does not apply'. See the
 # verdict vocabulary in scripts/ritual-checks.ps1. It never changes the exit code (plan D6).
 $ungraded = @()
+$script:AmendRollupPrinted = $false   # feature 027: set when AmendmentAuthority printed its roll-up line
 
 function Get-CurrentBranch {
     param([string]$Override)
@@ -1853,6 +1854,11 @@ function Get-OtherFeatureNote {
     param([string[]]$Paths, [string]$Dir)
     $other = @($Paths | Where-Object { (Get-GradedDocFeature -Path $_) -ne $Dir } | Sort-Object -Unique)
     if ($other.Count -eq 0) { return '' }
+    if (-not $Dir) {
+        # A Lite branch has no own directory to be outside of; the document lives in its own feature.
+        $lnames = (@($other | ForEach-Object { (Get-GradedDocFeature -Path $_).Substring(6) } | Sort-Object -Unique)) -join ', '
+        return "; the amended file(s) ($($other -join ', ')) belong to feature(s) $lnames, and a document is amended where it lives: the record goes in that document"
+    }
     $names = (@($other | ForEach-Object { (Get-GradedDocFeature -Path $_).Substring(6) } | Sort-Object -Unique)) -join ', '
     return "; the amended file(s) outside this branch's own directory ($($other -join ', ')) belong to feature(s) $names, and a document is amended where it lives: the record goes in that document, not in this branch's own files"
 }
@@ -1865,15 +1871,51 @@ function Get-OtherFeatureNote {
 # a Draft counts as approved); a document moved OUT of the branch's own directory is not graded, as
 # before; a whole feature directory moved inside a MERGE is graded as the removal of its documents
 # (026: a rename is not detected inside a merge), so the move belongs in an ordinary commit; the Lite
-# lane (fix/, chore/, docs/) does not run this check yet; a document of another feature moved INTO
+# lane (fix/, chore/, docs/) runs this check only when its diff touches a spec document (plan D6), and
+# names a condition it cannot compute UNGRADED instead of failing (plan D8), so a Lite branch whose diff
+# cannot be read, or which has no diff base (GAP-034: Get-ChangedFiles returns an empty list when git
+# diff fails), is not graded and says nothing for want of a gate; the gate list is read a second time
+# without rename detection, so a spec document moved off specs/ is seen; a document of another feature moved INTO
 # the branch's own directory IS graded, as the removal of the old path (review F1), except that a sole
 # graded document moved in and edited in the same commit is not (the renumbering exemption compares no
 # content; second review F2); and the record is still a written claim. Cost: a merge reads `ls-tree -r` of specs per parent and for the base (about
 # 100-200 ms per merge measured), growing with the number of features (review F5).
 function Invoke-AmendmentAuthorityCheck {
-    param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary,
+    param([string]$Branch, [string]$Base, [string[]]$ChangedFiles, [switch]$IgnoreAmendmentBoundary,
           [string]$ReplayBase, [string]$ReplayTip)
-    if ($Branch -notmatch '^\d{3}-') { return }
+    $lite = $Branch -match '^(fix|chore|docs)/'
+    if ($Branch -notmatch '^\d{3}-' -and -not $lite) { return }
+    if ($lite) {
+        # Feature 027 (plan D6): a Lite branch has no feature directory and no reason to be graded
+        # unless its diff touches a spec document, so the gate is the changed-file list and not the
+        # lane. Silence on a branch that touches none is what keeps FR-009 true, including in a
+        # shallow clone or with no base. The list is read again WITHOUT rename detection, because
+        # git reports a moved document by its new path only, and a spec document moved to a path
+        # outside specs/ would otherwise never reach the gate.
+        $gate = @($ChangedFiles)
+        if ($Base) { $gate += @(git -c core.quotepath=off diff --name-only --no-renames $Base HEAD 2>$null) }
+        if (-not @($gate | Where-Object { $_ -and (Get-GradedDocFeature -Path $_) })) { return }
+    }
+    $failuresBefore = @($script:failures).Count
+    Invoke-AmendmentAuthorityCore -Branch $Branch -Base $Base -Lite:$lite -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary -ReplayBase $ReplayBase -ReplayTip $ReplayTip
+    if ($lite -and @($script:failures).Count -gt $failuresBefore) {
+        # Plan D8 (014 FR-009): a Lite branch is never NEWLY failed on a condition it cannot compute.
+        # Each refusal of the numbered lane (a shallow clone, no base, an unreadable commit, tree or
+        # merge, unparsed metadata) names itself UNGRADED here and leaves the exit code alone; a
+        # failure that grades an amendment (no record, approver not in the message) stays a failure.
+        $all = @($script:failures)
+        $kept = @(); if ($failuresBefore -gt 0) { $kept = @($all[0..($failuresBefore - 1)]) }
+        foreach ($f in @($all[$failuresBefore..($all.Count - 1)])) {
+            if ($f -match '^AmendmentAuthority: (cannot grade|could not parse commit metadata) ') { $script:ungraded += $f }
+            else { $kept += $f }
+        }
+        $script:failures = $kept
+    }
+}
+
+function Invoke-AmendmentAuthorityCore {
+    param([string]$Branch, [string]$Base, [switch]$Lite, [switch]$IgnoreAmendmentBoundary,
+          [string]$ReplayBase, [string]$ReplayTip)
     # Silence is not compliance (phase 4 review F1). Two conditions make the boundary
     # uncomputable, and both used to `return` bare — printing nothing, exiting 0, and looking
     # exactly like a branch that is legitimately pre-boundary. Ask git directly rather than
@@ -1887,7 +1929,8 @@ function Invoke-AmendmentAuthorityCheck {
         $script:failures += "AmendmentAuthority: cannot grade '$Branch' — no integration branch to diff against. Either neither 'origin/main' nor 'main' resolves here, or one of them resolves but shares no commit with HEAD (a truncated clone, or unrelated histories) — this check does not distinguish them, and says so rather than naming a cause it did not test. Fetch the full history ('git fetch origin main', 'fetch-depth: 0' on actions/checkout), or run the check where it is reachable (constitution I, Amendment authority)"
         return
     }
-    $dir = "specs/$Branch"
+    # A Lite branch has no own directory (plan D6): every graded document is another feature's.
+    $dir = if ($Lite) { '' } else { "specs/$Branch" }
     $range = if ($ReplayTip) { "$ReplayBase..$ReplayTip" } else { "$Base..HEAD" }
     # Plan D2: where another feature's documents are tested for existence. The merge base moves
     # forward when main is merged in, so a document that arrived by that merge exists at it.
@@ -1910,6 +1953,7 @@ function Invoke-AmendmentAuthorityCheck {
         # An empty range is a check that ran and graded nothing - GAP-027's shape, and until the
         # phase 6 review (F6) it ended the run on OK. It is named, not failed: a branch with no
         # commits of its own yet is lawful, it is only not evidence (FR-010, plan D6).
+        if ($Lite) { return }                                       # plan D7: an empty range on a Lite branch prints nothing
         $script:ungraded += "AmendmentAuthority: no commits in $range — nothing to grade, so no amendment on '$Branch' was checked for its approval record"
         return
     }
@@ -1928,6 +1972,7 @@ function Invoke-AmendmentAuthorityCheck {
     # Counted per reason, so the count line reports what actually happened instead of naming
     # causes it never established (review N3, and B1's action on the same string).
     $skipMerge = 0; $skipRoot = 0; $skipBoundary = 0
+    $touchedApproved = $false        # plan D6: did any commit touch a document that exists at the base?
 
     # D2b. The boundary is evaluated PER COMMIT against that commit's own parent. An earlier
     # version short-circuited on HEAD^ alone to save blob reads (SC-006); that failed open,
@@ -1954,6 +1999,7 @@ function Invoke-AmendmentAuthorityCheck {
             # D1-D3). One that cannot be read is refused (D7), never skipped on a wrong reason.
             $mp = Get-MergeAuthoredPaths -Merge $commit -Parents $parents -Dir $dir -LoadBase $loadBase
             if ($mp.BaseUnreadable) { $script:failures += $baseUnreadable; return }
+            if (@($mp.Paths).Count -gt 0) { $touchedApproved = $true }
             if ($mp.Unreadable) {
                 $script:failures += "AmendmentAuthority: cannot grade '$Branch' — $($mp.Unreadable.Substring(0, 7)) (the merge $($commit.Substring(0, 7)) or one of its parents) is not readable in this clone, so what the merge authored is unknown; skipping it would pass a merge on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow'; if the history is complete, an object is damaged (constitution I, Amendment authority)"
                 return
@@ -1997,6 +2043,7 @@ function Invoke-AmendmentAuthorityCheck {
                 if (-not ((Get-GradedDocFeature -Path $path) -or $status -match '^[RC]')) { continue }
                 $atBase = & $loadBase
                 if ($null -eq $atBase) { $script:failures += $baseUnreadable; return }
+                if ($atBase.ContainsKey($path) -or $atBase.ContainsKey($oldPath)) { $touchedApproved = $true }
                 $subject = Get-OtherFeatureSubject -Commit $commit -Parent $parent -Dir $dir -Status $status -Path $path -OldPath $oldPath -AtBase $atBase
                 if ($subject) { $amended += $subject }
                 continue
@@ -2084,6 +2131,10 @@ function Invoke-AmendmentAuthorityCheck {
     if ($skipRoot -gt 0)     { $reasons += "$skipRoot root commit(s)" }
     if ($skipBoundary -gt 0) { $reasons += "$skipBoundary made before the check existed (plan D2b)" }
     $why = if ($skipped -gt 0) { " ($skipped not graded: $($reasons -join '; '))" } else { '' }
+    # Plan D6: a Lite branch whose spec changes are all creations has nothing to report; the roll-up
+    # is printed only when a commit touched a document that exists at the base.
+    if ($Lite -and -not $touchedApproved) { return }
+    $script:AmendRollupPrinted = $true
     Write-Host "AmendmentAuthority: graded $gradedCount of $($commits.Count) commit(s) in $range$why"
 }
 
@@ -2132,9 +2183,13 @@ if ($Branch -in @('main', 'master')) {
     }
     Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
+    Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase -ChangedFiles $changedFiles -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary -ReplayBase $ReplayBase -ReplayTip $ReplayTip
 } elseif ($Branch -match '^docs/') {
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
-    Write-Host "enforcement-pack: '$Branch' is the lightweight docs/ lane — review-provenance is the only scripted check that applies"
+    Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase -ChangedFiles $changedFiles -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary -ReplayBase $ReplayBase -ReplayTip $ReplayTip
+    # The line names what ran: both checks when AmendmentAuthority printed its roll-up, so it is never false.
+    $docsChecks = if ($script:AmendRollupPrinted) { 'review-provenance and amendment-authority are the scripted checks that apply' } else { 'review-provenance is the only scripted check that applies' }
+    Write-Host "enforcement-pack: '$Branch' is the lightweight docs/ lane — $docsChecks"
 } else {
     $script:failures += "Branch naming: '$Branch' does not match a known taxonomy (NNN-*, fix/*, chore/*, docs/*) — see docs/sdlc/branch-strategy.md"
 }

@@ -1,0 +1,4 @@
+enforcement-pack: branch 'docs/x', diff base '<SHA>', 2 changed file(s)
+enforcement-pack: 'docs/x' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+UNGRADED: AmendmentAuthority: cannot grade 'docs/x' — parent commit <SHA> of <SHA> is not readable in this clone, so whether it predates the check is unknown; treating it as pre-boundary would skip a commit on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' (constitution I, Amendment authority)
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

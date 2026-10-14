@@ -73,3 +73,49 @@ Each applied to a copy of the script (the working script was never edited; `cmp`
 ### D5 amendment (review F2 closed)
 
 The owner (anas.m) approved the D5 amendment on 2026-10-14: plan.md D5 now carries a "D5 as built" paragraph with the record `**Amendment approved by**: anas.m, 2026-10-14`, describing the per-document grouping and the clause as built. Decision 1 above is therefore settled; the implementer did not approve it.
+
+## Phase 2: the Lite lane
+
+### Baseline (T007)
+
+- Parent of this phase: `4982b51` (the phase 1 tip, pushed, CI green). Full harness on it: **1631 passed, 0 failed** (run on `91f88af`; `4982b51` only ticks checkboxes). The Lite and docs/ cases hold their expectations unchanged: `LITE-001/pass` prints `enforcement-pack: OK` after its header line; `LITE-002/*` and `LITE-003/*` print their `LiteAndAbuse` lines only; the docs/ lane line (`GAP27-001/*`, `PACK-004/fail`) reads "review-provenance is the only scripted check that applies".
+- The gap this phase closes, reproduced on the unchanged script with the fixtures below (a throwaway `docs/x` branch off a base holding approved `001-a`): `docs/x` amending `001-a/plan.md` with no record printed `enforcement-pack: OK` and exited **0** with no `AmendmentAuthority` line at all; the same on `fix/x` and `chore/x`; and `docs/x` removing `001-a/contracts/api.md` also exited 0. Measured by running all 28 Lite-relevant cases against the parent script (`4982b51`): 11 differ, 17 are byte-identical. Five differ in the verdict, exiting 0 where 1 is expected: `fail-lite-docs-no-record`, `fail-lite-fix-no-record`, `fail-lite-chore-no-record`, `fail-lite-docs-removal`, `fail-lite-docs-moved-off-specs`. Four differ only by the new roll-up line, with the same exit: the three record twins (`pass-lite-docs-record`, `pass-lite-fix-record`, `pass-lite-chore-record`) and `fail-lite-fix-contract-refused-first` (the same single LiteAndAbuse failure as before). Two differ because the parent says OK where this phase says UNGRADED: `AMEND-009/fail` and `fail-lite-unreadable-parent`. The other 17 are the controls and the pre-existing `LITE-*`, `PACK-004` and `GAP27-001` cases, unchanged.
+
+### What was built (T008-T010)
+
+- `scripts/enforcement-pack.ps1`: `Invoke-AmendmentAuthorityCheck` is now a thin entry point and the body is `Invoke-AmendmentAuthorityCore` (same name kept on the entry because the boundary asks a parent tree whether it defines that function). The entry: the Lite arm runs only when the diff holds a graded path (plan D6, read from the dispatch's changed-file list plus a second read without rename detection); it calls the core with `-Lite` (no own directory, `$dir = ''`); and a refusal text the numbered lane fails on is moved to `$ungraded` (plan D8). The core: an empty range prints nothing on a Lite branch (D7), the roll-up prints only when a commit touched a document that exists at the base (D6), and the other-feature clause reads without an "own directory" on a Lite branch. The dispatch calls the entry from the `fix|chore` arm (after LiteAndAbuse) and the `docs` arm; the `docs/` lane line names both checks when the roll-up printed. The numbered arm and the own-directory block are not edited.
+- 19 new fixtures: 14 under `AMEND-001` (the Lite variants), 1 under `AMEND-006` (`pass-lite-docs-empty-range`), 4 under the new rule `AMEND-009`; expectations written by hand from the numbered fixtures' wording, then checked against the run (the first twelve matched on the first run; the rest were written after the shallow and unreadable-parent states were measured). Plus one recipe field, `shallowAllBranches`, in `tests/enforcement/lib/FixtureRepo.psm1` with two harness self-tests: a plain shallow fixture has no diff base, so the Lite shallow condition (a clone that is shallow and still has a base) could not be built without it. It sits in `tests/**`, the phase's territory.
+
+### Decisions taken at implementation, for the owner to see
+
+1. **One conversion site, not one site per condition.** Plan D8 says "one `ungraded` per condition". I did not touch the numbered lane's emission sites (each `$script:failures +=` keeps its rule and count): the Lite arm moves the refusal text from the failures to `$ungraded` after the core returns, matching on the texts' stable prefixes (`cannot grade`, `could not parse commit metadata`). The behaviour is D8's (each condition appends one UNGRADED line with its reason and no failure); the mechanism is a single `$script:ungraded += $f` site, owned by `AMEND-009`. If the owner wants per-condition sites, that is a plan amendment; I have made none.
+2. **The gate list is read twice.** `Get-ChangedFiles` reports a renamed file by its new path only, so a spec document moved off `specs/` would never reach the gate. The entry reads `git diff --name-only --no-renames <base> HEAD` as well; `fail-lite-docs-moved-off-specs` and its control pin it.
+3. **Reachable UNGRADED fixtures: the shallow clone and the unreadable parent** (the latter by `truncateBlob` of the script copy, AMEND-005's damage mode; truncating a parent TREE does not work: `git log --name-status` then returns nothing and the walk ends on `graded N of N` and OK, the same blind spot `AMEND-010` records for the base tree). That empty-batch behaviour is pre-existing on the numbered lane too and is not addressed here.
+4. **`AMEND-009` uses the directory names `pass` and `fail` for the shallow pair** (the coverage check requires them); the `pass` direction is the numbered twin, which exits 1 because the numbered lane keeps its refusal, as `GAP27-001/pass` already does.
+
+### Mutations (T011)
+
+Each applied to a copy of the script placed beside it, run over the 28 Lite-relevant cases (all Lite fixtures, `LITE-*`, `PACK-004`, `GAP27-001`), then removed; the working script was never edited. Unmutated: 28 checked, 0 differing.
+
+| Mutation | Fixtures that failed |
+|---|---|
+| M11 drop the changed-file gate | `AMEND-001/pass-lite-docs-readme-only-shallow`, `GAP27-001/fail` |
+| M12 fail instead of UNGRADED on the Lite lane | `AMEND-009/fail`, `AMEND-009/fail-lite-unreadable-parent` |
+| M13 print the roll-up unconditionally | `pass-lite-docs-claim-creation`, `pass-lite-fix-creation-only` |
+| M14 drop the rename-blind second read of the gate | `fail-lite-docs-moved-off-specs` |
+| M15 own-directory clause on a Lite branch | the 5 Lite fail fixtures that print the clause |
+| M16 move amendment failures to UNGRADED too | the same 5 |
+| M17 the docs/ line never names both checks | `fail-lite-docs-no-record`, `fail-lite-docs-removal`, `fail-lite-docs-moved-off-specs`, `pass-lite-docs-record` |
+| M18 an empty range on a Lite branch names itself | `AMEND-006/pass-lite-docs-empty-range` |
+
+The task's fourth mutation, "call the check on `main`", cannot be caught by any fixture: on the trunk the diff base is `HEAD` itself, so the changed-file list is empty and the gate is silent whatever the dispatch calls. Recorded as degenerate rather than papered over with a fixture that would pass either way.
+
+### Limits stated (and in the LIMITS comment)
+
+- A Lite branch with no diff base is not graded and prints nothing from this check (the dispatch's existing warning stands); `Get-ChangedFiles` returns an empty list when `git diff` fails (plan D6, GAP-034).
+- The Lite shallow UNGRADED fixture needs a clone that is shallow and still has a base; a plain depth-1 checkout has no base, so the gate is silent there, as the control `pass-lite-docs-readme-only-shallow` shows.
+
+### Results (T012)
+
+- Full harness on the working tree: **1671 passed, 0 failed, 0 skipped** (1631 + 19 new fixtures x 2 tests + 2 harness self-tests = 1671), coverage with no unowned site. Every pre-existing case is unchanged except the intended `docs/` line variant, which only appears where the roll-up printed.
+- Re-run of T007's reproduction on the new script: `docs/x`, `fix/x` and `chore/x` amending `001-a/plan.md` with no record now exit **1** and name the file and its feature; with a record and the approver in the message they exit 0 and print the roll-up (SC-002).
