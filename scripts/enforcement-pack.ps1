@@ -1875,7 +1875,13 @@ function Get-OtherFeatureNote {
 # names a condition it cannot compute UNGRADED instead of failing (plan D8), so a Lite branch whose diff
 # cannot be read, or which has no diff base (GAP-034: Get-ChangedFiles returns an empty list when git
 # diff fails), is not graded and says nothing for want of a gate; the gate list is read a second time
-# without rename detection, so a spec document moved off specs/ is seen; a document of another feature moved INTO
+# without rename detection, so a spec document moved off specs/ is seen. Two more limits of the Lite gate: it reads
+# the NET diff, so a branch that amends an approved document with no record and then reverts it, or a
+# replay over a range whose net diff is empty, is silent (phase 2 review F2); and a branch that only CREATES a
+# spec document, in a clone that is shallow but still has a base, prints an UNGRADED refusal where it used to
+# print nothing, because the gate sees a spec path before the walk can tell a creation from an amendment (exit
+# code unchanged; phase 2 review F1, accepted by the owner). The docs/ lane line names both checks only when the
+# roll-up printed, so a run that ended on a refusal still reads "only review-provenance"; a document of another feature moved INTO
 # the branch's own directory IS graded, as the removal of the old path (review F1), except that a sole
 # graded document moved in and edited in the same commit is not (the renumbering exemption compares no
 # content; second review F2); and the record is still a written claim. Cost: a merge reads `ls-tree -r` of specs per parent and for the base (about

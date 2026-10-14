@@ -119,3 +119,20 @@ The task's fourth mutation, "call the check on `main`", cannot be caught by any 
 
 - Full harness on the working tree: **1671 passed, 0 failed, 0 skipped** (1631 + 19 new fixtures x 2 tests + 2 harness self-tests = 1671), coverage with no unowned site. Every pre-existing case is unchanged except the intended `docs/` line variant, which only appears where the roll-up printed.
 - Re-run of T007's reproduction on the new script: `docs/x`, `fix/x` and `chore/x` amending `001-a/plan.md` with no record now exit **1** and name the file and its feature; with a record and the approver in the message they exit 0 and print the roll-up (SC-002).
+
+### After the Phase 2 AI review (`ai-code-review-phase2.md`, APPROVE with follow-ups on 8c52853)
+
+- **F1 accepted as a limit by the owner.** A branch that only CREATES a spec document, in a clone that is shallow but still has a base, prints an UNGRADED refusal where it used to print nothing (exit code unchanged): the gate sees a spec path before the walk can tell a creation from an amendment. Stated in the LIMITS comment.
+- **F2 recorded as a limit.** The gate reads the net diff, so amend-then-revert with no record, or a replay over a range whose net diff is empty, is silent. Stated in the LIMITS comment.
+- **F3 fixed.** The conversion is coupled to the text of the refusals. A guard now holds the two sides apart (`Coverage.Tests.ps1`, "the Lite lane converts refusals by their text"): every refusal literal of the core matches the conversion pattern, and no grading failure does. Fixtures added under `AMEND-009`: `fail-lite-unreadable-merge-parent` (the merge refusal, with the damage on a side branch because AMEND-008's placement on main, the diff base, empties the gate's diff) and `fail-lite-failure-kept-beside-refusal` (its twin with no record: a real amendment failure stays a failure, the refusal beside it is UNGRADED). The no-base refusal is dead on Lite (a null base keeps the gate silent), and the base-tree and metadata refusals stay exemptions (`AMEND-010`, `AMEND-007`); the guard covers their text.
+- **F4 fixed.** Lite merge pair under `AMEND-001`: `fail-lite-merge-hand-merged-no-record` and `pass-lite-merge-hand-merged-record`, whose roll-up line can only come from the merge-path `touchedApproved` line.
+- **F5 fixed.** The literal `\n` in a comment in `Harness.Tests.ps1`. The `AMEND-009/pass` direction is the numbered twin and exits 1, as already disclosed.
+- **A line the review did not raise, found while building F3's fixture:** on a Lite branch that ends on a refusal, the docs/ lane line still reads "review-provenance is the only scripted check that applies", because the plan words the rule as "names both checks when the roll-up printed" and the core returns before printing it. Stated in the LIMITS comment; changing it would be a plan amendment.
+
+Mutations for the new guards, same method as T011 (copy beside the script, or the real script restored by `finally`; the working script ends with no diff):
+
+| Mutation | Caught by |
+|---|---|
+| M19 drop the merge-path `touchedApproved` line | `fail-lite-merge-hand-merged-no-record`, `pass-lite-merge-hand-merged-record` |
+| M20 drop the `could not parse commit metadata` branch of the conversion pattern | the Coverage guard |
+| M21 widen the conversion pattern to every `AmendmentAuthority:` text | the Coverage guard, and the Lite fail fixtures (their exit and output) |

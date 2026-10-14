@@ -1,0 +1,4 @@
+enforcement-pack: branch 'docs/x', diff base '<SHA>', 2 changed file(s)
+AmendmentAuthority: graded 2 of 2 commit(s) in <SHA>..HEAD
+enforcement-pack: 'docs/x' is the lightweight docs/ lane — review-provenance and amendment-authority are the scripted checks that apply
+enforcement-pack: OK

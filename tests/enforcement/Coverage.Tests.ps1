@@ -274,6 +274,40 @@ Describe 'rule inventory integrity' {
     }
 }
 
+Describe 'the Lite lane converts refusals by their text (feature 027, plan D8)' {
+    # On a Lite branch the amendment check never fails a condition it cannot compute: after the core
+    # returns, every failure whose text matches one pattern is moved to the UNGRADED list. The coupling
+    # is to the TEXT of the refusals, so a new refusal written with other words would stay a failure on
+    # a Lite branch (014 FR-009 forbids that) with nothing to say so. This holds the two sides apart:
+    # every refusal literal in the core matches the pattern, and no grading failure does (a grading
+    # failure moved to UNGRADED would be a fail-open).
+
+    It 'every refusal of the core matches the Lite conversion pattern, and no grading failure does' {
+        $text = [IO.File]::ReadAllText((Join-Path $script:ScriptsDir 'enforcement-pack.ps1'))
+        $pattern = [regex]::Match($text, '\$f -match ''(?<re>\^AmendmentAuthority: [^'']+)''')
+        $pattern.Success | Should -BeTrue -Because 'the Lite arm of Invoke-AmendmentAuthorityCheck declares its conversion pattern in one place'
+        $re = $pattern.Groups['re'].Value
+        $core = [regex]::Match($text, '(?ms)^function Invoke-AmendmentAuthorityCore \{.*?^\}')
+        $core.Success | Should -BeTrue
+        $messages = @()
+        foreach ($m in [regex]::Matches($core.Value, '\$script:failures \+= "(?<t>AmendmentAuthority: [^"]*)"')) { $messages += $m.Groups['t'].Value }
+        foreach ($m in [regex]::Matches($core.Value, '\$baseUnreadable = "(?<t>AmendmentAuthority: [^"]*)"')) { $messages += $m.Groups['t'].Value }
+        $messages = @($messages | ForEach-Object { $_.Replace('$Branch', 'docs/x') })
+        $grading = @($messages | Where-Object { $_ -match '^AmendmentAuthority: commit ' })
+        $refusals = @($messages | Where-Object { $_ -notmatch '^AmendmentAuthority: commit ' })
+        $grading.Count | Should -BeGreaterOrEqual 2 -Because 'the check has two grading failures (no record, approver not in the message)'
+        $refusals.Count | Should -BeGreaterOrEqual 6 -Because 'a count this low means the scan stopped seeing the refusals'
+        $unconverted = @($refusals | Where-Object { $_ -notmatch $re })
+        if ($unconverted.Count -gt 0) {
+            throw ("these refusals would FAIL a Lite branch instead of naming it UNGRADED (plan D8, 014 FR-009):`n  " + (($unconverted | ForEach-Object { $_.Substring(0, [Math]::Min(120, $_.Length)) }) -join "`n  "))
+        }
+        $converted = @($grading | Where-Object { $_ -match $re })
+        if ($converted.Count -gt 0) {
+            throw ("these grading failures would be moved to UNGRADED on a Lite branch (a fail-open):`n  " + (($converted | ForEach-Object { $_.Substring(0, [Math]::Min(120, $_.Length)) }) -join "`n  "))
+        }
+        $unconverted.Count + $converted.Count | Should -Be 0
+    }
+}
 Describe 'emission-idiom declaration' {
 
     It 'declares an idiom entry for every grading script' {

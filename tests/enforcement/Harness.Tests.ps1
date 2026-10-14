@@ -471,7 +471,8 @@ Describe 'merge commits that carry content (feature 026, plan D8)' {
 
 Describe 'shallow fixtures that keep a diff base (feature 027, shallowAllBranches)' {
     # A shallow fixture clones only the checked-out branch, so origin/main does not resolve and the pack
-    # has no base. A rule about a branch that is shallow AND has a base needs the other branches kept; main\n    # has three commits so that a depth-2 clone is still shallow after it keeps main's tip.
+    # has no base. A rule about a branch that is shallow AND has a base needs the other branches kept; main
+    # has three commits so that a depth-2 clone is still shallow after it keeps main's tip.
 
     BeforeAll {
         $script:Shallow = [pscustomobject]@{

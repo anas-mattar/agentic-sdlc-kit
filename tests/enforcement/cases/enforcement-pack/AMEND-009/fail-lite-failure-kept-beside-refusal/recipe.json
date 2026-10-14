@@ -1,0 +1,116 @@
+{
+  "description": "The twin of fail-lite-unreadable-merge-parent with the record left out: the amending commit is graded before the merge is reached, so its failure stays a failure and the merge refusal is named UNGRADED beside it. The merge cannot be read, which a numbered branch refuses (AMEND-008, plan D7); the Lite lane names it UNGRADED (plan D8). The side branch is not the diff base (AMEND-008 puts the damage on main, which is the base, so the gate sees no diff there), so the base stays readable and the gate sees the amendment. Only the refusal is converted (exit 1 from the real amendment failure).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init: the kit, and approved feature 001-a",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ],
+        "specs/004-d/spec.md": [
+          "# Feature Specification: 004-d",
+          "",
+          "**Feature Branch**: `004-d`",
+          "**Status**: Draft",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-a/spec.md": [
+          "# Feature Specification: 001-a",
+          "",
+          "**Feature Branch**: `001-a`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-a/plan.md": [
+          "# Implementation Plan: 001-a",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None."
+        ],
+        "specs/001-a/tasks.md": [
+          "# Tasks: 001-a",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "specs/001-a/contracts/api.md": [
+          "# API contract",
+          "returns 200"
+        ]
+      },
+      "hoursAgo": 9.0
+    },
+    {
+      "branch": "docs/x",
+      "message": "docs: amend 001-a plan",
+      "write": {
+        "specs/001-a/plan.md": [
+          "# Implementation Plan: 001-a",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "Two phases.",
+          "",
+          "## Risks",
+          "",
+          "None."
+        ]
+      },
+      "hoursAgo": 8.0
+    },
+    {
+      "branch": "main",
+      "message": "main: a second commit",
+      "write": {
+        "README.md": "fixture kit\nsecond\n"
+      },
+      "hoursAgo": 7.0
+    },
+    {
+      "branch": "side",
+      "message": "docs: a side note",
+      "write": {
+        "docs/side.md": "side"
+      },
+      "hoursAgo": 6.0
+    },
+    {
+      "branch": "docs/x",
+      "message": "Merge branch 'side' into docs/x",
+      "merge": "side"
+    }
+  ],
+  "checkout": "docs/x",
+  "truncateCommit": "HEAD^2^{tree}"
+}
