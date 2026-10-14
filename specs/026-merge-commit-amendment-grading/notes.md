@@ -100,3 +100,8 @@ exactly their intended test) and found five more. Owner instruction, in the owne
 
 Runs after this remediation: `-Case NOTHING` (the harness self-tests): 61 passed, 0 failed (58 before, 3 added); `-Case AMEND-`: 129 passed; `SCOPE-014`, `SCOPE-026`,
 `REPOS-016`, `REPOS-018`, `REPOS-034` (every existing recipe that merges): all passed. The full-harness count for this tree is recorded below when its run finishes.
+
+### Gate certification, phase 1 after the round 2 remediation (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `78bf472` (the phase 1 commit, its review remediation and the round 2 remediation), exit code **0**, confirmed
+by the owner (anas.m, 2026-10-14).
