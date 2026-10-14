@@ -346,3 +346,8 @@ Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `71c1189` (
 keeping this branch's version whole: `docs/roadmap.md` (the row stays `shipped`) and `specs/026-merge-commit-amendment-grading/spec.md` (the approved, amended spec).
 The merge result equals the first parent for every file (`git diff HEAD^1 HEAD` is empty), so this feature's own check counts it as a merge that authored nothing:
 `AmendmentAuthority: graded 23 of 24 commit(s) ... (1 not graded: 1 merge commit(s))`, `ritual-checks.ps1` RESULT OK. Nothing was pushed.
+
+### Gate certification, after the merge of `main` (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `47b8031` (the branch with `main` merged in), exit code **0**, confirmed by the owner (anas.m,
+2026-10-14). Everything the feature changed is certified; what remains is the owner's human review at merge (gate 6) and the pull request.
