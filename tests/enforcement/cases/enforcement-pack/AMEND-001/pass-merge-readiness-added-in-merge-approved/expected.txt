@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 6 changed file(s)
+AmendmentAuthority: graded 2 of 3 commit(s) in <SHA>..HEAD (1 not graded: 1 made before the check existed (plan D2b))
+WARNING: CriticalEvidence: specs/001-thing/human-pr-review.md is not yet due - specs/001-thing/plan.md declares **Merge Readiness**: pending (the owner's declaration in the plan, a claim and not a verified approval; gate 6 stands behind it) and the independent human review is owed once it is set to ready (team mode (2 developers declared in kit-adoption.json); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)
+enforcement-pack: OK

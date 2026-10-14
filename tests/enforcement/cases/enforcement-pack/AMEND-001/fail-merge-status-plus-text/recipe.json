@@ -1,0 +1,112 @@
+{
+  "description": "The same merge, but the approved result also rewrites a requirement. It is no longer Status-only against either parent, so the merge authored an amendment of spec.md and fails for want of a record.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "side",
+      "message": "spec: a draft of 001-thing from the side",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Draft - awaiting review",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ]
+      },
+      "hoursAgo": 7.0
+    },
+    {
+      "branch": "main",
+      "message": "main: a second commit",
+      "write": {
+        "README.md": "fixture kit\nsecond\n"
+      },
+      "hoursAgo": 6.0
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001-thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Draft - awaiting owner",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "## Notes",
+          "",
+          "Nothing."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ]
+      },
+      "hoursAgo": 5.0
+    },
+    {
+      "branch": "001-thing",
+      "message": "merge: side into 001-thing",
+      "merge": "side",
+      "resolve": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing, and more."
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing"
+}

@@ -105,3 +105,89 @@ Runs after this remediation: `-Case NOTHING` (the harness self-tests): 61 passed
 
 Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `78bf472` (the phase 1 commit, its review remediation and the round 2 remediation), exit code **0**, confirmed
 by the owner (anas.m, 2026-10-14).
+
+## Phase 2
+
+### T005 — baseline on the parent commit (`2977ca5`)
+
+- Full harness on an isolated detached worktree of the parent: recorded below ("Full harness, parent and phase 2").
+- Feature 025's reproduction inside a merge (a Critical branch, an approved `plan.md` gaining `**Merge Readiness**: pending` in a merge that has a second
+  parent of its own, no record), built with the phase 1 field `mergeWrite`: on the parent the run prints
+  `AmendmentAuthority: graded 1 of 3 commit(s) ... (2 not graded: 1 merge commit(s); 1 made before the check existed (plan D2b))`, the CriticalEvidence
+  deferral WARNING, and `enforcement-pack: OK`, **exit 0**. That is the gap this phase closes (fixture
+  `AMEND-001/fail-merge-readiness-added-in-merge-unapproved`).
+
+### T006 — fixtures first (plan D9), and how each behaves on the parent
+
+Nineteen cases, built by a generator kept outside the repository (its expectations are literal text written by hand in it, never computed from the script
+under test). Each pair differs in one condition. Run against the unmodified `scripts/enforcement-pack.ps1` before the change:
+
+| Case | On the parent | Why |
+|---|---|---|
+| `AMEND-001/pass-merge-main-into-branch` | PASS (control, by design) | a `Merge branch 'main' into 001-thing` after main brought another feature's documents, a roadmap change and a script; authored nothing, output byte-identical |
+| `AMEND-001/pass-merge-conflict-take-branch-side`, `pass-merge-conflict-take-side-whole` | PASS (controls, by design) | both sides amended `plan.md`, each with its own record; the conflict is resolved by taking one side whole |
+| `AMEND-001/pass-merge-clean-automatic` | PASS (control, by design) | two parents amended different places, git merges cleanly (plan D2) |
+| `AMEND-001/pass-merge-tick-only-both-parents`, `pass-merge-status-only` | PASS (controls, by design) | the exemptions hold against every parent (plan D3) |
+| `AMEND-001/fail-merge-readiness-added-in-merge-unapproved` | FAIL: observed `OK`, exit 0 | feature 025's reproduction (SC-002) |
+| `AMEND-001/pass-merge-readiness-added-in-merge-approved` | FAIL: graded 1 of 3, not 2 of 3 | the merge was skipped, so the count differs |
+| `AMEND-002/fail-merge`, `AMEND-002/pass-merge` | FAIL (count line) | the merge was skipped |
+| `AMEND-001/fail-merge-hand-merged-conflict`, `pass-merge-hand-merged-conflict-record` | FAIL: observed `OK` / count line | a conflict resolved by hand |
+| `AMEND-001/fail-merge-combines-approved-amendments` | FAIL: observed `OK`, exit 0 | two approved amendments combined, no fresh record (D4) |
+| `AMEND-001/fail-merge-octopus-clean-combination`, `pass-merge-octopus-record`, `fail-merge-octopus-authors-plan` | FAIL | an octopus merge (the fail-closed fallback, D2) |
+| `AMEND-001/fail-merge-tick-vs-rewrite`, `fail-merge-status-plus-text` | FAIL: observed `OK`, exit 0 | an exemption that fails against one parent (D3) |
+| `AMEND-001/fail-merge-deletes-approved-document` | FAIL: count line differs | a deleted contract; the first draft deleted `tasks.md`, which also fails Structure, so it deletes a contract instead |
+
+Six controls pass and thirteen fail on the parent, as written. **Two fixture mistakes the work found, both mine:** the deleted-document case (above), and
+`pass-merge-status-only`, whose first version passed the status text into the `readiness` parameter of the generator, so the first parent already held the
+approved status and the merge equalled it: the control passed for the wrong reason. The mutation below exposed it (dropping the exemption failed only the
+tick control); it is fixed, and the same mutation now fails both.
+
+**`AMEND-008` has no fixture, and is an inventoried exemption** (the plan and tasks named a depth-1 clone). A depth-1 clone is refused first by AMEND-003 (the
+shallow guard). Truncating the second parent of a merge (`truncateCommit: HEAD^2`, measured) makes `git merge-base` fail, so the run prints an empty diff base
+and ends on AMEND-004 before any merge is read; `rev-list` over the range fails the same way. No recipe state reaches the new refusal with the earlier guards
+intact, so a case would pin AMEND-003 or AMEND-004 under this rule's name. It is exempted in `rules.json` with that reasoning, the way AMEND-007 is (feature
+015 FR-004), and the site stays inventoried so it cannot be reworded away.
+
+### T007 — the inventory
+
+`AMEND-008` added (an exemption, as above); the `AMEND-001` and `AMEND-002` notes describe the merge variants. The coverage report names no unowned site
+and the recall sweep reports no new unclassified candidate: the `$script:failures +=` form it already knows is the one the new site uses.
+
+### T008 — the change (`scripts/enforcement-pack.ps1`)
+
+- `Get-FeatureDocMap`: one `git ls-tree -r -z` per commit gives path to blob id for the feature's graded documents (D1).
+- `Get-AutoMergeTree`: `git merge-tree --write-tree --no-messages` of the two parents; exit 0 and exit 1 (a conflict, markers in the tree) both name a tree, any
+  other exit (an old git's unknown option, any failure) returns nothing and the merge falls back to the unrefined rule (D2).
+- `Get-MergeAuthoredPaths`: per candidate document, not authored if absent in every parent (first appearance), equal to any parent's blob (absence counts as a
+  value), or equal to git's automatic merge; otherwise exempt only if the tick-only or Status-only test holds against **every** parent (D3); otherwise authored.
+  A parent or tree that cannot be read comes back as unreadable.
+- `Get-MergeRecordLines`: a record line is new when its visible count in the merged file exceeds its count in **every** parent (D4). It counts occurrences in
+  the file directly rather than through `git diff -U0`: a line whose count rose against a parent is necessarily a line that parent's diff added, so it is the
+  same set as `Get-AddedRecordLines` applied per parent and intersected, with no combined-diff output to parse. `Get-AddedRecordLines` is not edited.
+- The loop: the unconditional merge skip becomes the grading branch. A merge that authored nothing is skipped and counted under `merge commit(s)` exactly as
+  before (D6); one that authored something goes through the same boundary test, record test and approver-in-the-message test as any commit, and the two failure
+  sentences gain one appended clause for a merge (D5). An unreadable merge or parent is refused with the existing "fetch the full history" shape (D7).
+- The `LIMIT` comment above `ConvertTo-PhaseNumber` (feature 025's limit) says what is now graded and what stays open.
+
+One behaviour to know: a merge whose first parent predates the check and that authored something is counted under "made before the check existed", as an
+ordinary commit would be; a merge that authored nothing is counted as a merge whether it is before or after the boundary, so no existing count line moves.
+
+### T009 — mutations, each failing exactly the fixtures meant to catch it, the script restored byte for byte (`cmp`)
+
+| Mutation | Fixtures that fail (`-Case merge`) |
+|---|---|
+| drop the exemptions (`$exempt = $false`) | `pass-merge-status-only`, `pass-merge-tick-only-both-parents` |
+| the exemption against the first parent only | `fail-merge-tick-vs-rewrite` |
+| a record new against the first parent only | `fail-merge-combines-approved-amendments`, `fail-merge-hand-merged-conflict`, `fail-merge-octopus-clean-combination` |
+| skip the automatic-merge comparison | `pass-merge-clean-automatic` |
+| compare with the first parent only | `pass-merge-conflict-take-side-whole` |
+| compare with the last parent only | `pass-merge-conflict-take-branch-side` |
+| never accept equality with a parent | `fail-merge-octopus-authors-plan`, `fail-merge-octopus-clean-combination`, `pass-merge-conflict-take-branch-side`, `pass-merge-conflict-take-side-whole` |
+
+The "record new against the first parent only" mutation fails those three through the other failure sentence (the record counted, so the message half failed
+instead): each is pinned by its text.
+
+### T010 — runs on the working tree
+
+`-Case AMEND-`: 167 passed, 0 failed (54 cases). `-Case CRIT-`: 225 passed, 0 failed (83 cases). `ritual-checks.ps1`: RESULT OK. Every pre-existing `AMEND-*`
+case is unchanged. The coverage report names no unowned site (enforcement-pack.ps1: 72 of 78 sites fixtured, 2 exempt, 4 not a rule) and prints no unclassified candidate. The full-harness count for the phase 2 commit is recorded below when its run finishes.
