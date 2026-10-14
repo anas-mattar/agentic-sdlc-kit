@@ -1,0 +1,88 @@
+{
+  "description": "The same merge renames the contract and rewrites it: the old path is deleted and the new path is a first appearance, so the whole reinterpretation is only seen through the deletion. An ordinary commit doing this fails (014 H3, fail-rename-content).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001-thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "## Notes",
+          "",
+          "Nothing."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ],
+        "specs/001-thing/contracts/api.md": "# API contract\nreturns 200\n"
+      },
+      "hoursAgo": 6.0
+    },
+    {
+      "branch": "main",
+      "message": "main: a second commit",
+      "write": {
+        "README.md": "fixture kit\nsecond\n"
+      },
+      "hoursAgo": 4.0
+    },
+    {
+      "branch": "001-thing",
+      "message": "Merge branch 'main' into 001-thing",
+      "merge": "main",
+      "mergeWrite": {
+        "specs/001-thing/contracts/api-v2.md": "# API contract\nreturns 204 and deletes everything\n"
+      },
+      "mergeDelete": [
+        "specs/001-thing/contracts/api.md"
+      ]
+    }
+  ],
+  "checkout": "001-thing"
+}

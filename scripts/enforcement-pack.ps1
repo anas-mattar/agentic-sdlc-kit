@@ -340,11 +340,15 @@ function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 # approver (constitution I), a written claim a reviewer can falsify, not proof of who approved.
 #   A 'pending' added inside a merge commit IS graded since feature 026: AmendmentAuthority asks of a
 #   merge whether its result equals what a parent already had, or what git's automatic merge of two
-#   parents makes, and grades the documents it authored like any amendment. What stays open: a merge
-#   that takes a document whole from a parent inherits that parent's grading (a branch never graded
-#   stays ungraded), an octopus merge, a git older than 2.38, or a failing merge-tree is graded
-#   fail-closed (a record satisfies it), and the record is still a written claim, not proof of who
-#   approved. The warning therefore still calls the declaration a claim; gate 6 stands behind it.
+#   parents makes, and grades the documents it authored like any amendment. What stays open:
+#   a merge that keeps a document whole from one parent is trusted on that parent's content, EVEN
+#   when the only grading that content ever had was an exemption (the commit that created the
+#   file is a first appearance, or predates the check), so a conflict resolved by taking the other
+#   side's version of an approved plan replaces it with no record (feature 026 review F2, recorded
+#   as a limit, not a regression: before 026 every merge was skipped); an octopus merge, a git
+#   older than 2.38, or a failing merge-tree is graded fail-closed (a record satisfies it); and the
+#   record is still a written claim, not proof of who approved. The warning therefore still calls
+#   the declaration a claim; gate 6 stands behind it.
 function ConvertTo-PhaseNumber {
     # A number too large to parse is not an error: it is "beyond any declared phase" (review F2).
     param([string]$Text)
@@ -1690,8 +1694,12 @@ function Get-MergeAuthoredPaths {
         foreach ($pm in $parentMaps) { $inParents.Add($(if ($pm.ContainsKey($path)) { $pm[$path] } else { '' })) }
         # D2 (014): a document absent in every parent is created by the merge, a first appearance.
         if ($m -ne '' -and @($inParents | Where-Object { $_ -ne '' }).Count -eq 0) { continue }
-        # D1: the merged result equals what a parent already had (absence counts as a value).
-        if ($inParents.Contains($m)) { continue }
+        # D1: the merged result equals what a parent already had. Only a document the merge KEEPS can
+        # equal a parent's: a removal is not "equal" to a parent that never had the file (a main
+        # merged into the branch never holds the feature directory, so every deletion, and the old
+        # path of a rename, would otherwise be exempt, review F1). A removal is silent only when git's
+        # own automatic merge removes it too, below, so a deletion on one side stays a non-event.
+        if ($m -ne '' -and $inParents.Contains($m)) { continue }
         # D2: or what git's own automatic merge of two parents makes.
         if ($Parents.Count -eq 2) {
             if (-not $autoTried) { $autoTried = $true; $autoTree = Get-AutoMergeTree -ParentA $Parents[0] -ParentB $Parents[1] }
@@ -1730,14 +1738,20 @@ function Get-MergeRecordLines {
     param([string]$Merge, [string[]]$Parents, [string[]]$Paths)
     $result = @()
     foreach ($path in ($Paths | Sort-Object -Unique)) {
+        # A candidate is a RAW line of the merged file, trimmed, that is the record pattern as
+        # written (Get-AddedRecordLines reads the raw added line the same way: a record with a
+        # trailing inline comment is no record), and it must also be visible (H1).
+        $mergedRaw = Get-BlobLines -Ref $Merge -Path $path
+        $candidates = @($mergedRaw | ForEach-Object { $_.Trim() } |
+            Where-Object { $_ -match $script:AmendmentRecordPattern } | Sort-Object -Unique)
+        if ($candidates.Count -eq 0) { continue }
         $visCount = @{}
-        foreach ($l in (Get-VisibleFromText -Lines (Get-BlobLines -Ref $Merge -Path $path))) {
-            $t = $l.Trim()
-            if ($t -and $t -match $script:AmendmentRecordPattern) { $visCount[$t] = 1 + [int]$visCount[$t] }
+        foreach ($l in (Get-VisibleFromText -Lines $mergedRaw)) {
+            $t = $l.Trim(); if ($t) { $visCount[$t] = 1 + [int]$visCount[$t] }
         }
-        if ($visCount.Count -eq 0) { continue }
         $newAgainst = @{}
-        foreach ($t in $visCount.Keys) { $newAgainst[$t] = $true }
+        foreach ($t in $candidates) { if ($visCount.ContainsKey($t)) { $newAgainst[$t] = $true } }
+        if ($newAgainst.Count -eq 0) { continue }
         foreach ($p in $Parents) {
             $before = @{}
             foreach ($l in (Get-VisibleFromText -Lines (Get-BlobLines -Ref $p -Path $path))) {
@@ -1827,7 +1841,7 @@ function Invoke-AmendmentAuthorityCheck {
             # D1-D3). One that cannot be read is refused (D7), never skipped on a wrong reason.
             $mp = Get-MergeAuthoredPaths -Merge $commit -Parents $parents -Dir $dir
             if ($mp.Unreadable) {
-                $script:failures += "AmendmentAuthority: cannot grade '$Branch' — $($mp.Unreadable.Substring(0, 7)) (the merge $($commit.Substring(0, 7)) or one of its parents) is not readable in this clone, so what the merge authored is unknown; skipping it would pass a merge on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' (constitution I, Amendment authority)"
+                $script:failures += "AmendmentAuthority: cannot grade '$Branch' — $($mp.Unreadable.Substring(0, 7)) (the merge $($commit.Substring(0, 7)) or one of its parents) is not readable in this clone, so what the merge authored is unknown; skipping it would pass a merge on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow'; if the history is complete, an object is damaged (constitution I, Amendment authority)"
                 return
             }
             if ($mp.Paths.Count -eq 0) { $skipMerge++; continue }     # authored nothing: counted as before
