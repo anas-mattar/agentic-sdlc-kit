@@ -311,3 +311,10 @@ RESULT OK, and `scope-check` PASS on every phase commit (phase 1: `15a0e6f`, `61
 `22ac126`, `e661139`, `fa23d5b`; phase 3: `3fd1b2e`, `c64348c`). The full-harness count of that tree is recorded below when its run finishes.
 
 Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `c64348c`, exit code **0**, confirmed by the owner (anas.m, 2026-10-14).
+
+### Full harness, final tree (T017)
+
+Isolated detached worktree of `c64348c` (removed afterwards): **1585 passed, 0 failed, 0 skipped**. Over the phase 2 commit `bb08af7` (1575) the difference is 10, the five
+cases added by the phase 2 review remediation (`fail-merge-deletes-contract-main-into-branch`, `fail-merge-renames-and-rewrites-contract`,
+`fail-merge-record-with-inline-comment`, `AMEND-008/fail`, `AMEND-008/pass`), two tests each. Over the parent of the feature (`fad21b7`, 1520) the total is 65 more tests:
+the phase 1 self-tests and the 24 merge cases of phase 2.
