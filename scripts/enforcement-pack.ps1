@@ -1865,7 +1865,10 @@ function Get-OtherFeatureNote {
 # a Draft counts as approved); a document moved OUT of the branch's own directory is not graded, as
 # before; a whole feature directory moved inside a MERGE is graded as the removal of its documents
 # (026: a rename is not detected inside a merge), so the move belongs in an ordinary commit; the Lite
-# lane (fix/, chore/, docs/) does not run this check yet; and the record is still a written claim.
+# lane (fix/, chore/, docs/) does not run this check yet; a document of another feature moved INTO
+# the branch's own directory IS graded, as the removal of the old path (review F1); and the record is
+# still a written claim. Cost: a merge reads `ls-tree -r` of specs per parent and for the base (about
+# 100-200 ms per merge measured), growing with the number of features (review F5).
 function Invoke-AmendmentAuthorityCheck {
     param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary,
           [string]$ReplayBase, [string]$ReplayTip)
@@ -1985,9 +1988,11 @@ function Invoke-AmendmentAuthorityCheck {
             $status = $parts[0]
             $path = $parts[$parts.Count - 1]                          # renames: the NEW path
             $oldPath = if ($status -match '^[RC]' -and $parts.Count -ge 3) { $parts[1] } else { $path }
-            if ((Get-GradedDocFeature -Path $path) -ne $dir) {
-                # Plan D3: another feature's document, or a graded document moved away. The own
-                # directory's block below is not edited.
+            $oldDocFeature = if ($status -match '^R') { Get-GradedDocFeature -Path $oldPath } else { $null }
+            if ((Get-GradedDocFeature -Path $path) -ne $dir -or ($oldDocFeature -and $oldDocFeature -ne $dir)) {
+                # Plan D3: another feature's document, a graded document moved away, or (review F1)
+                # another feature's document moved INTO the own directory, which removes it from
+                # where it was approved. The own directory's block below is not edited.
                 if (-not ((Get-GradedDocFeature -Path $path) -or $status -match '^[RC]')) { continue }
                 $atBase = & $loadBase
                 if ($null -eq $atBase) { $script:failures += $baseUnreadable; return }
