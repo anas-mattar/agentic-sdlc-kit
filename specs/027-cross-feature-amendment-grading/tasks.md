@@ -77,26 +77,26 @@ what it prints today, including in a shallow clone; a Lite branch the machine ca
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T007 Record the baseline in `notes.md`: the full harness count on the parent of this phase, the exact output of `LITE-001/pass`, `LITE-002/*`, `LITE-003/*`
+- [x] T007 Record the baseline in `notes.md`: the full harness count on the parent of this phase, the exact output of `LITE-001/pass`, `LITE-002/*`, `LITE-003/*`
       and `AMEND-006/*` (the `docs/` lane line), and a throwaway `docs/x` branch amending another feature's approved plan with no record showing exit 0 with no
       amendment line: the gap this phase closes.
-- [ ] T008 Write the fixtures first (plan D9, Lite lane), as `LITE-*` variants and the new `AMEND-009`, each shown failing on the parent or named as a control:
+- [x] T008 Write the fixtures first (plan D9, Lite lane), as `LITE-*` variants and the new `AMEND-009`, each shown failing on the parent or named as a control:
       the same cross-feature change on `docs/x`, `fix/x` and `chore/x` without a record (fail) and with one (pass; never a contract path, which LiteAndAbuse
       refuses first, and a fixture saying so); a `docs/x` branch that changes only `README.md` and the roadmap (control, output byte-identical, **in a depth-1
       clone as well**); a `docs/claim-*` branch that adds a feature directory and edits it in a second commit (control); a Lite branch that changes a spec
       document in a shallow clone, and one whose parent tree is unreadable (`AMEND-009`: an `UNGRADED` line, exit 0), each with its numbered-lane twin (the
       existing refusal); the `docs/` lane line when the roll-up printed (it names both checks) and when it did not (unchanged); a Lite branch whose only spec
       change is a creation (control, prints nothing). Expectations by hand.
-- [ ] T009 Inventory the rules: add `AMEND-009` to `tests/enforcement/rules.json` with its anchor and law (014 FR-009, plan D8), update the `AMEND-006` and
+- [x] T009 Inventory the rules: add `AMEND-009` to `tests/enforcement/rules.json` with its anchor and law (014 FR-009, plan D8), update the `AMEND-006` and
       `LITE-*` notes for the changed `docs/` line and the Lite variants, and run the recall sweep first.
-- [ ] T010 Edit `scripts/enforcement-pack.ps1` (plan D6, D7, D8 Lite arm): a Lite-lane call in the dispatch passing the changed-file list; the check returns
+- [x] T010 Edit `scripts/enforcement-pack.ps1` (plan D6, D7, D8 Lite arm): a Lite-lane call in the dispatch passing the changed-file list; the check returns
       silently on a Lite branch unless the list contains a graded path (D1); no own directory; the refusals append `UNGRADED` instead of failing; an empty range
       prints nothing; the roll-up prints only when a commit changed a document that exists at the base; the `docs/` lane line names both checks when the roll-up
       printed. Update the `LIMIT` paragraph written in T004. The numbered arm and the own-directory block are not edited.
-- [ ] T011 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: drop the changed-file gate; fail instead of
+- [x] T011 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: drop the changed-file gate; fail instead of
       UNGRADED on the Lite lane; print the roll-up unconditionally; call the check on `main`. Each must fail exactly the fixture meant to catch it; restore byte for
       byte.
-- [ ] T012 Run `-Case AMEND-`, `-Case LITE-`, `-Case PACK-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged except
+- [x] T012 Run `-Case AMEND-`, `-Case LITE-`, `-Case PACK-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged except
       the intended `docs/` line variant, every new fixture as written, no unowned site. Re-run T007's reproduction: the `docs/x` branch now fails, and passes with a
       conforming record (SC-002).
 
