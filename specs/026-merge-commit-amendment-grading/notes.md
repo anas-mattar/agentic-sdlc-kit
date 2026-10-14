@@ -191,3 +191,8 @@ instead): each is pinned by its text.
 
 `-Case AMEND-`: 167 passed, 0 failed (54 cases). `-Case CRIT-`: 225 passed, 0 failed (83 cases). `ritual-checks.ps1`: RESULT OK. Every pre-existing `AMEND-*`
 case is unchanged. The coverage report names no unowned site (enforcement-pack.ps1: 72 of 78 sites fixtured, 2 exempt, 4 not a rule) and prints no unclassified candidate. The full-harness count for the phase 2 commit is recorded below when its run finishes.
+
+### Gate certification, phase 2 (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `bb08af7` (the phase 2 commit), exit code **0**, confirmed by the owner (anas.m,
+2026-10-14).
