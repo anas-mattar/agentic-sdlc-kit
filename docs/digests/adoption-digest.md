@@ -33,6 +33,8 @@
 - An early-committed Critical independence artifact is graded at once, red until valid; name the last commit phase N. (`adoption/updating.md`)
 - A Critical plan may declare Merge Readiness pending or ready, overriding the subject heuristic; it needs no history. (`adoption/updating.md`)
 - Merge Readiness pending is the owner's claim, not proof; adding or flipping it on an approved plan is an amendment. (`adoption/updating.md`)
+- A merge commit is graded for the spec documents it authored; one that only combines two histories is skipped as before. (`adoption/updating.md`)
+- A graded merge needs the approver record new against every parent and the approver named in the merge message. (`adoption/updating.md`)
 - Surgical files carry project-filled content: re-apply by hand only what applies — an ordinary governance edit. (`adoption/updating.md`)
 - verify-kit.ps1 is the adoption doctor: read-only, runs at init end, update end, and in adopted-project CI. (`adoption/updating.md`)
 - kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. (`adoption/updating.md`)
