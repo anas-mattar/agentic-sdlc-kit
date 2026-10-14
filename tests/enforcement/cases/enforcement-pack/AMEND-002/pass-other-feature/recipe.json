@@ -1,0 +1,139 @@
+{
+  "description": "A record in another feature's amended plan and the approver named in the message: the pair of fail-other-feature, which differs only in the commit message.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init: the kit, and approved feature 001-a",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ],
+        "specs/004-d/spec.md": [
+          "# Feature Specification: 004-d",
+          "",
+          "**Feature Branch**: `004-d`",
+          "**Status**: Draft",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-a/spec.md": [
+          "# Feature Specification: 001-a",
+          "",
+          "**Feature Branch**: `001-a`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-a/plan.md": [
+          "# Implementation Plan: 001-a",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None."
+        ],
+        "specs/001-a/tasks.md": [
+          "# Tasks: 001-a",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "specs/001-a/contracts/api.md": [
+          "# API contract",
+          "returns 200"
+        ]
+      },
+      "hoursAgo": 9.0
+    },
+    {
+      "branch": "002-b",
+      "message": "spec: 002-b",
+      "write": {
+        "specs/002-b/spec.md": [
+          "# Feature Specification: 002-b",
+          "",
+          "**Feature Branch**: `002-b`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/002-b/plan.md": [
+          "# Implementation Plan: 002-b",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None."
+        ],
+        "specs/002-b/tasks.md": [
+          "# Tasks: 002-b",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      },
+      "hoursAgo": 8.0
+    },
+    {
+      "branch": "002-b",
+      "message": "amend 001-a plan: widen the summary - approved by ada",
+      "write": {
+        "specs/001-a/plan.md": [
+          "# Implementation Plan: 001-a",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "Two phases.",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "**Amendment approved by**: ada, 2026-01-02"
+        ]
+      },
+      "hoursAgo": 5.0
+    }
+  ],
+  "checkout": "002-b"
+}
