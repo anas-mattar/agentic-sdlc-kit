@@ -196,3 +196,9 @@ case is unchanged. The coverage report names no unowned site (enforcement-pack.p
 
 Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `bb08af7` (the phase 2 commit), exit code **0**, confirmed by the owner (anas.m,
 2026-10-14).
+
+### Full harness, parent and phase 2 (isolated detached worktrees, removed afterwards)
+
+- Parent `2977ca5`: **1537 passed, 0 failed, 0 skipped**.
+- Phase 2 commit `bb08af7`: **1575 passed, 0 failed, 0 skipped**.
+- Difference: 38 = the 19 new cases, two tests each (exit code, output). No pre-existing test changed.
