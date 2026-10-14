@@ -222,3 +222,8 @@ say which of the two F2 options; the one taken is stated in the table.
 
 Runs after the remediation: `-Case AMEND-`: 177 passed, 0 failed (24 cases added over the phase). The full-harness count for the remediated tree is recorded
 below when its run finishes.
+
+### Gate certification, phase 2 after the review remediation (user-run)
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `e661139` (the phase 2 commit and its review remediation), exit code **0**, confirmed by
+the owner (anas.m, 2026-10-14). The full-harness count for this tree has not been run; the gate and `-Case AMEND-` (177 passed) are the evidence so far.
