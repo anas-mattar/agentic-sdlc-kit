@@ -338,9 +338,17 @@ function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 # owner makes: an owner who sets it and never flips it merges with only the deferral WARN on this
 # check, and gate 6 stands behind it. Flipping it is a plan amendment, so it carries a recorded
 # approver (constitution I), a written claim a reviewer can falsify, not proof of who approved.
-#   LIMIT (accepted by the owner, review F1): AmendmentAuthority skips merge commits (feature 014, D7), so a
-#   'pending' added inside a merge commit carries no approver check. The warning therefore calls the
-#   declaration a claim, not a recorded amendment; gate 6 stands behind it.
+#   A 'pending' added inside a merge commit IS graded since feature 026: AmendmentAuthority asks of a
+#   merge whether its result equals what a parent already had, or what git's automatic merge of two
+#   parents makes, and grades the documents it authored like any amendment. What stays open:
+#   a merge that keeps a document whole from one parent is trusted on that parent's content, EVEN
+#   when the only grading that content ever had was an exemption (the commit that created the
+#   file is a first appearance, or predates the check), so a conflict resolved by taking the other
+#   side's version of an approved plan replaces it with no record (feature 026 review F2, recorded
+#   as a limit, not a regression: before 026 every merge was skipped); an octopus merge, a git
+#   older than 2.38, or a failing merge-tree is graded fail-closed (a record satisfies it); and the
+#   record is still a written claim, not proof of who approved. The warning therefore still calls
+#   the declaration a claim; gate 6 stands behind it.
 function ConvertTo-PhaseNumber {
     # A number too large to parse is not an error: it is "beyond any declared phase" (review F2).
     param([string]$Text)
@@ -1617,6 +1625,147 @@ function Get-ConformingRecord {
     return $result
 }
 
+# --- Merge commits (feature 026) --------------------------------------------------------------
+# A merge commit used to be skipped outright (feature 014 D7: "a merge authored nothing"). That is
+# true of a merge that only brings two histories together and false of one that resolves a conflict
+# by hand or edits a document while merging: the content it carries is in no parent, so no commit
+# granted it (feature 025's review reproduction put '**Merge Readiness**: pending' into an approved
+# plan inside a merge and the run ended on OK). The question asked of a merge is per document: does
+# the merged result equal what a parent already had, or what git's own automatic merge of the
+# parents makes? If so nothing was authored. If not, the merge authored that document and it is
+# graded like any amendment (plan D1-D5).
+
+# path -> blob id of the feature's graded documents in one commit, in one git call (plan D1). $null
+# means the commit's tree could not be read, which the caller refuses rather than skips (D7).
+function Get-FeatureDocMap {
+    param([string]$Commit, [string]$Dir)
+    $raw = (@(git ls-tree -r -z $Commit -- $Dir 2>$null) -join "`n")
+    if ($LASTEXITCODE -ne 0) { return $null }
+    $map = @{}
+    foreach ($rec in ($raw -split "`0")) {
+        if ($rec -notmatch '(?s)^\d+ blob ([0-9a-f]{40,64})\t(.+)$') { continue }
+        $path = $matches[2]
+        if ($path -notlike "$Dir/*") { continue }
+        $leaf = $path.Substring($Dir.Length + 1)
+        if ($leaf -notin @('spec.md', 'plan.md', 'tasks.md') -and $leaf -notlike 'contracts/*') { continue }
+        $map[$path] = $matches[1]
+    }
+    return $map
+}
+
+# The tree git itself would make by merging two parents (plan D2), or $null when it cannot say: an
+# old git (no --write-tree: an unknown-option exit, never assumed), a failure other than a conflict.
+# A conflict (exit 1) still names a tree, with the conflict markers in it, so a hand resolution
+# differs from it and is graded. Side effect, stated: this writes tree and blob objects into the
+# object database (unreferenced, collected by gc); no ref and no working-tree file changes.
+function Get-AutoMergeTree {
+    param([string]$ParentA, [string]$ParentB)
+    $out = @(git merge-tree --write-tree --no-messages $ParentA $ParentB 2>$null)
+    if ($LASTEXITCODE -gt 1 -or $out.Count -eq 0) { return $null }
+    $tree = "$($out[0])".Trim()
+    if ($tree -notmatch '^[0-9a-f]{40,64}$') { return $null }
+    return $tree
+}
+
+# The feature documents a merge authored. Returns @{ Unreadable = <what could not be read> ; Paths }.
+function Get-MergeAuthoredPaths {
+    param([string]$Merge, [string[]]$Parents, [string]$Dir)
+    $result = @{ Unreadable = $null; Paths = @() }
+    # D7: each parent must be readable. A skipped merge on a wrong reason is GAP-027's shape.
+    foreach ($p in $Parents) {
+        git cat-file -e "${p}^{commit}" *> $null
+        if ($LASTEXITCODE -ne 0) { $result.Unreadable = $p; return $result }
+    }
+    $mergeMap = Get-FeatureDocMap -Commit $Merge -Dir $Dir
+    if ($null -eq $mergeMap) { $result.Unreadable = $Merge; return $result }
+    $parentMaps = @()
+    foreach ($p in $Parents) {
+        $pm = Get-FeatureDocMap -Commit $p -Dir $Dir
+        if ($null -eq $pm) { $result.Unreadable = $p; return $result }
+        $parentMaps += , $pm
+    }
+    $candidates = @($mergeMap.Keys)
+    foreach ($pm in $parentMaps) { $candidates += @($pm.Keys) }
+    $autoTree = $null; $autoTried = $false
+    $paths = @()
+    foreach ($path in ($candidates | Sort-Object -Unique)) {
+        $m = if ($mergeMap.ContainsKey($path)) { $mergeMap[$path] } else { '' }
+        $inParents = [System.Collections.Generic.List[string]]::new()
+        foreach ($pm in $parentMaps) { $inParents.Add($(if ($pm.ContainsKey($path)) { $pm[$path] } else { '' })) }
+        # D2 (014): a document absent in every parent is created by the merge, a first appearance.
+        if ($m -ne '' -and @($inParents | Where-Object { $_ -ne '' }).Count -eq 0) { continue }
+        # D1: the merged result equals what a parent already had. Only a document the merge KEEPS can
+        # equal a parent's: a removal is not "equal" to a parent that never had the file (a main
+        # merged into the branch never holds the feature directory, so every deletion, and the old
+        # path of a rename, would otherwise be exempt, review F1). A removal is silent only when git's
+        # own automatic merge removes it too, below, so a deletion on one side stays a non-event.
+        if ($m -ne '' -and $inParents.Contains($m)) { continue }
+        # D2: or what git's own automatic merge of two parents makes.
+        if ($Parents.Count -eq 2) {
+            if (-not $autoTried) { $autoTried = $true; $autoTree = Get-AutoMergeTree -ParentA $Parents[0] -ParentB $Parents[1] }
+            if ($autoTree) {
+                $a = @(git rev-parse --verify --quiet "${autoTree}:${path}" 2>$null)
+                $autoBlob = if ($LASTEXITCODE -eq 0 -and $a.Count -gt 0) { "$($a[0])".Trim() } else { '' }
+                if ($autoBlob -eq $m) { continue }
+            }
+        }
+        # D3: the exemptions are asked of EVERY parent; held against one only, a merge could carry a
+        # substantive edit that happens to be tick-only relative to the other.
+        if ($m -ne '') {
+            $leaf = $path.Substring($Dir.Length + 1)
+            $exempt = $true
+            foreach ($p in $Parents) {
+                $ok = if ($leaf -eq 'tasks.md') { Test-CheckboxOnlyChange -Commit $Merge -Parent $p -Path $path }
+                      elseif ($leaf -in @('spec.md', 'plan.md')) { Test-StatusOnlyChange -Commit $Merge -Parent $p -Path $path }
+                      else { $false }
+                if (-not $ok) { $exempt = $false; break }
+            }
+            if ($exempt) { continue }
+        }
+        $paths += $path
+    }
+    $result.Paths = $paths
+    return $result
+}
+
+# The record lines a merge added (plan D4): visible in the merged file, matching the record
+# pattern, and counted MORE times there than in EVERY parent. A record a parent already carried
+# approved that parent's change, not the merge's. Get-AddedRecordLines reads `git show -U0` of a
+# commit, which for a merge is a combined diff, so it is not reused (and is not edited): the
+# occurrence count it applies to the lines a commit added is applied to the file directly, which
+# is the same set (a line whose count rose in the file was added by any diff against a parent).
+function Get-MergeRecordLines {
+    param([string]$Merge, [string[]]$Parents, [string[]]$Paths)
+    $result = @()
+    foreach ($path in ($Paths | Sort-Object -Unique)) {
+        # A candidate is a RAW line of the merged file, trimmed, that is the record pattern as
+        # written (Get-AddedRecordLines reads the raw added line the same way: a record with a
+        # trailing inline comment is no record), and it must also be visible (H1).
+        $mergedRaw = Get-BlobLines -Ref $Merge -Path $path
+        $candidates = @($mergedRaw | ForEach-Object { $_.Trim() } |
+            Where-Object { $_ -match $script:AmendmentRecordPattern } | Sort-Object -Unique)
+        if ($candidates.Count -eq 0) { continue }
+        $visCount = @{}
+        foreach ($l in (Get-VisibleFromText -Lines $mergedRaw)) {
+            $t = $l.Trim(); if ($t) { $visCount[$t] = 1 + [int]$visCount[$t] }
+        }
+        $newAgainst = @{}
+        foreach ($t in $candidates) { if ($visCount.ContainsKey($t)) { $newAgainst[$t] = $true } }
+        if ($newAgainst.Count -eq 0) { continue }
+        foreach ($p in $Parents) {
+            $before = @{}
+            foreach ($l in (Get-VisibleFromText -Lines (Get-BlobLines -Ref $p -Path $path))) {
+                $t = $l.Trim(); if ($t) { $before[$t] = 1 + [int]$before[$t] }
+            }
+            foreach ($t in @($newAgainst.Keys)) {
+                if ([int]$visCount[$t] -le [int]$before[$t]) { $newAgainst.Remove($t) }
+            }
+        }
+        $result += @($newAgainst.Keys | Sort-Object)
+    }
+    return $result
+}
+
 function Invoke-AmendmentAuthorityCheck {
     param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary,
           [string]$ReplayBase, [string]$ReplayTip)
@@ -1685,7 +1834,19 @@ function Invoke-AmendmentAuthorityCheck {
 
     foreach ($commit in $commits) {
         $parents = @($meta[$commit].Parents)
-        if ($parents.Count -gt 1) { $skipMerge++; continue }         # D7: merge commit authored nothing
+        $isMerge = $parents.Count -gt 1
+        $mergePaths = @()
+        if ($isMerge) {
+            # Feature 026: a merge is skipped only when it authored nothing for this feature (plan
+            # D1-D3). One that cannot be read is refused (D7), never skipped on a wrong reason.
+            $mp = Get-MergeAuthoredPaths -Merge $commit -Parents $parents -Dir $dir
+            if ($mp.Unreadable) {
+                $script:failures += "AmendmentAuthority: cannot grade '$Branch' — $($mp.Unreadable.Substring(0, 7)) (the merge $($commit.Substring(0, 7)) or one of its parents) is not readable in this clone, so what the merge authored is unknown; skipping it would pass a merge on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow'; if the history is complete, an object is damaged (constitution I, Amendment authority)"
+                return
+            }
+            if ($mp.Paths.Count -eq 0) { $skipMerge++; continue }     # authored nothing: counted as before
+            $mergePaths = @($mp.Paths)
+        }
         if ($parents.Count -eq 0) { $skipRoot++; continue }           # a root commit creates; D2
         $parent = $parents[0]
         if (-not $graded) {
@@ -1704,7 +1865,10 @@ function Invoke-AmendmentAuthorityCheck {
         $short = $commit.Substring(0, 7)
 
         $amended = @()
-        foreach ($row in @($nameStatus[$commit])) {
+        # A merge has no name-status rows (it is a combined diff): its amended set is what
+        # Get-MergeAuthoredPaths decided above. An ordinary commit's comes from its rows.
+        if ($isMerge) { $amended = $mergePaths }
+        foreach ($row in $(if ($isMerge) { @() } else { @($nameStatus[$commit]) })) {
             if (-not $row) { continue }
             $parts = $row -split "`t"
             if ($parts.Count -lt 2) { continue }
@@ -1746,13 +1910,15 @@ function Invoke-AmendmentAuthorityCheck {
         # H4: the record must be added to a file this commit actually AMENDED — a record in
         # notes.md cannot approve a silent change to plan.md, and the failure message says
         # "on the amended section", which this now means.
-        $recordLines = Get-AddedRecordLines -Commit $commit -Parent $parent -Paths $amended
+        $recordLines = if ($isMerge) { Get-MergeRecordLines -Merge $commit -Parents $parents -Paths $amended }
+                       else          { Get-AddedRecordLines -Commit $commit -Parent $parent -Paths $amended }
+        $mergeNote = if ($isMerge) { ' (this commit is a merge: its own change is what is graded, because no parent holds this content)' } else { '' }
         $record = Get-ConformingRecord -AddedLines $recordLines -CommitDay $commitDay
         $files = ($amended | Sort-Object -Unique) -join ', '
 
         if (-not $record.Name) {
             $why = if ($record.Malformed.Count -gt 0) { " Rejected record(s): $($record.Malformed -join '; ')." } else { '' }
-            $script:failures += "AmendmentAuthority: commit $short amends $files after approval with no conforming approver record.$why Add '$script:AmendmentRecordExample' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt — in either direction — but rewriting a task's text while ticking it is not: record what was done in notes.md, and leave the task saying what was agreed (plan D3c)"
+            $script:failures += "AmendmentAuthority: commit $short amends $files after approval with no conforming approver record.$why Add '$script:AmendmentRecordExample' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt — in either direction — but rewriting a task's text while ticking it is not: record what was done in notes.md, and leave the task saying what was agreed (plan D3c)$mergeNote"
             continue
         }
         # Whole-word match over the message with git's OWN trailers removed — a mandated
@@ -1764,7 +1930,7 @@ function Invoke-AmendmentAuthorityCheck {
         $trailers = @($meta[$commit].Trailers)
         $message = (@($full | Where-Object { $trailers -notcontains $_ })) -join "`n"
         if ($message -notmatch ('(?<![\w-])' + [regex]::Escape($record.Name) + '(?![\w-])')) {
-            $script:failures += "AmendmentAuthority: commit $short records '$($record.Name)' as the approver of its change to $files, but its commit message does not name them — the message is fixed at commit time and is the half a later edit cannot fake (constitution I; plan D5)"
+            $script:failures += "AmendmentAuthority: commit $short records '$($record.Name)' as the approver of its change to $files, but its commit message does not name them — the message is fixed at commit time and is the half a later edit cannot fake (constitution I; plan D5)$mergeNote"
         }
     }
     $skipped = $commits.Count - $gradedCount

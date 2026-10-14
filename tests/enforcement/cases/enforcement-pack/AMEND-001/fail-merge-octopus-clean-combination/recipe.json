@@ -1,0 +1,138 @@
+{
+  "description": "The same clean combination as pass-merge-clean-automatic, but an octopus merge (a third parent). git merge-tree takes two parents, so the automatic-merge comparison is unavailable and the check falls back to the unrefined rule, on purpose and fail-closed: a result that differs from every parent is graded (feature 026 D2). The twin differs in one condition: the third parent.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001-thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "## Notes",
+          "",
+          "Nothing."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ]
+      },
+      "hoursAgo": 6.0
+    },
+    {
+      "branch": "side",
+      "message": "amend 001 plan: two phases - approved by ada",
+      "write": {
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "Two phases.",
+          "",
+          "**Amendment approved by**: ada, 2026-01-02",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "## Notes",
+          "",
+          "Nothing."
+        ]
+      },
+      "hoursAgo": 5.0
+    },
+    {
+      "branch": "001-thing",
+      "message": "amend 001 plan: notes - approved by grace",
+      "write": {
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "## Notes",
+          "",
+          "Updated.",
+          "",
+          "**Amendment approved by**: grace, 2026-01-02"
+        ]
+      },
+      "hoursAgo": 4.0
+    },
+    {
+      "branch": "extra",
+      "message": "extra: an unrelated document",
+      "write": {
+        "docs/extra.md": "extra\n"
+      },
+      "hoursAgo": 3.0
+    },
+    {
+      "branch": "001-thing",
+      "message": "merge: side and extra into 001-thing",
+      "merge": [
+        "side",
+        "extra"
+      ]
+    }
+  ],
+  "checkout": "001-thing"
+}

@@ -1,0 +1,110 @@
+{
+  "description": "Control, shaped like the kit's own history: a branch with an approved amendment merges main, which brought another feature's documents, a roadmap change and a script. The merge authored nothing for this feature (its documents equal the first parent's), so it is skipped and counted exactly as before (feature 026 US2, FR-002); the output is byte-identical to the parent commit's by design.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001-thing",
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "## Notes",
+          "",
+          "Nothing."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ]
+      },
+      "hoursAgo": 6.0
+    },
+    {
+      "branch": "001-thing",
+      "message": "amend 001 plan: widen the summary - approved by ada",
+      "write": {
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "Two phases.",
+          "",
+          "**Amendment approved by**: ada, 2026-01-02",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "## Notes",
+          "",
+          "Nothing."
+        ]
+      },
+      "hoursAgo": 5.0
+    },
+    {
+      "branch": "main",
+      "message": "main: other feature, roadmap and flow-down",
+      "write": {
+        "specs/002-other/spec.md": "# Other\n",
+        "docs/roadmap.md": "# Roadmap\n",
+        "scripts/other.ps1": "# other\n"
+      },
+      "hoursAgo": 4.0
+    },
+    {
+      "branch": "001-thing",
+      "message": "Merge branch 'main' into 001-thing",
+      "merge": "main"
+    }
+  ],
+  "checkout": "001-thing"
+}

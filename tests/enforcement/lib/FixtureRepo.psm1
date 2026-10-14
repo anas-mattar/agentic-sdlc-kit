@@ -55,7 +55,20 @@
       no-merge-base state, which a corrupt object only imitates (feature 018 phase 3 review, F3).
     - "merge" makes the commit a MERGE of the named branch into this one, with two parents and
       no content of its own. It is the one commit a recipe cannot describe with files, and the
-      rule that skips merge commits (a merge authored nothing) had no fixture without it.
+      rule that skips merge commits (a merge authored nothing) had no fixture without it. It may
+      be an ARRAY of branch names, which makes an octopus merge (more than two parents).
+    - "mergeWrite", "mergeDelete" and "resolve" (feature 026, plan D8) give a merge CONTENT OF ITS
+      OWN, the thing the rule that grades what a merge authored needs and a plain merge cannot
+      be: "mergeWrite" is the shape of "write" and lands in the merge result, so the result
+      differs from both parents; "mergeDelete" removes files from the merge result only;
+      "resolve" is the content taken for each file a conflicting merge leaves conflicted. A
+      conflict with no "resolve" naming it, a "resolve" naming a file that did not conflict (or a merge
+      that did not conflict at all), the same file named by both "resolve" and "mergeWrite", a merge
+      that starts no merge because the named branch is already merged in (git says "Already up to date"
+      and the result would be an ordinary one-parent commit), and any of the three fields on a commit that
+      is not a merge are all REFUSED, never ignored. NOT expressible: an octopus merge with a conflict (git
+      itself refuses one), a conflict resolved by DELETING the file ("resolve" always writes content), and
+      "hoursAgo" on a merge, which is ignored (as it always was; the REPOS-016, 018 and 034 cases carry it).
     - "uncommittedDelete" removes files from the working tree after the last commit without
       staging the removal — the mirror of "uncommitted", and the state the fail-closed rules
       refuse from the other side: the commit-to-commit diff still names the file, so a check
@@ -123,6 +136,21 @@ function Write-FixtureFile {
     [IO.File]::WriteAllText($full, $text, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+function Assert-FixtureMergeShape {
+    # A merge the recipe names must be the merge it builds. Git quietly leaves a branch out when it is
+    # already merged into the current one ("Already up to date"), so a plain merge can make no commit
+    # at all, and an octopus can shrink to fewer parents than it names. Either is a fixture that is not
+    # the merge its recipe describes, and a rule graded against it would pass or fail for the wrong
+    # reason (feature 026 phase 1 review, F1, F11 and F12).
+    param([string]$Root, [string]$HeadBefore, [string[]]$Names, [string]$Branch)
+    $headAfter = ((& git -C $Root rev-parse HEAD) -join '').Trim()
+    $parents = @(((& git -C $Root rev-list --parents -n 1 HEAD) -join '') -split '\s+' | Where-Object { $_ }).Count - 1
+    $expected = 1 + @($Names | Sort-Object -Unique).Count
+    if ($headAfter -eq $HeadBefore -or $parents -ne $expected) {
+        $moved = if ($headAfter -eq $HeadBefore) { ' and HEAD did not move' } else { '' }
+        throw "fixture merge of '$($Names -join ' ')' into '$Branch' did not build the merge it names: HEAD has $parents parent(s) where $expected were expected$moved. Git leaves a branch out of a merge when it is already merged into the current one ('Already up to date'). Refused rather than silently building a fixture that is not the merge the recipe describes."
+    }
+}
 function New-FixtureRepo {
     <#
     .SYNOPSIS
@@ -198,12 +226,83 @@ function New-FixtureRepo {
             }
         }
 
-        # A merge has two parents and no content of its own, so it takes none of the write /
+        $isMerge = $commit.PSObject.Properties.Name -contains 'merge' -and $commit.merge
+        $mergeFields = @('mergeWrite', 'mergeDelete', 'resolve' | Where-Object { $commit.PSObject.Properties.Name -contains $_ -and $commit.$_ })
+        if ($mergeFields.Count -gt 0 -and -not $isMerge) {
+            # Refused rather than ignored: a field that silently did nothing would give a case that passes
+            # for the wrong reason (the rule applied to 'orphan' and 'rename' before it).
+            throw "fixture '$($mergeFields[0])' applies only to a merge commit, and this commit has no 'merge'. Refused rather than silently ignored."
+        }
+        # A plain merge has two parents and no content of its own, so it takes none of the write /
         # delete / commit path below. D7 skips merge commits because a merge authored nothing;
         # until this existed, no recipe could produce a second parent and that skip was untested.
-        if ($commit.PSObject.Properties.Name -contains 'merge' -and $commit.merge) {
-            $mergeMessage = if ($commit.PSObject.Properties.Name -contains 'message' -and $commit.message) { $commit.message } else { "merge $($commit.merge)" }
-            Invoke-FixtureGit -RepoPath $root -Arguments @('merge', '--quiet', '--no-ff', '--no-edit', '-m', $mergeMessage, $commit.merge) | Out-Null
+        if ($isMerge) {
+            $mergeMessage = if ($commit.PSObject.Properties.Name -contains 'message' -and $commit.message) { $commit.message } else { "merge $(@($commit.merge) -join ' ')" }
+            $mergeNames = @($commit.merge)
+            $headBefore = ((& git -C $root rev-parse HEAD) -join '').Trim()
+            if ($mergeFields.Count -eq 0) {
+                # Exactly the command a plain merge has always run.
+                Invoke-FixtureGit -RepoPath $root -Arguments (@('merge', '--quiet', '--no-ff', '--no-edit', '-m', $mergeMessage) + $mergeNames) | Out-Null
+                Assert-FixtureMergeShape -Root $root -HeadBefore $headBefore -Names $mergeNames -Branch $branch
+                continue
+            }
+            # A merge with content of its own (feature 026): merge without committing, put the content
+            # in, then commit, so the result is a two-parent commit that differs from its parents.
+            $mergeOut = & git -C $root merge --quiet --no-ff --no-commit @mergeNames 2>&1
+            $mergeExit = $LASTEXITCODE
+            $conflicted = @((& git -C $root diff --name-only --diff-filter=U 2>$null) | Where-Object { $_ })
+            if ($mergeExit -eq 0) {
+                & git -C $root rev-parse -q --verify MERGE_HEAD 2>$null | Out-Null
+                if ($LASTEXITCODE -ne 0) {
+                    throw "fixture merge of '$($mergeNames -join ' ')' started no merge: the branch is already merged into '$branch' (git says 'Already up to date'), so committing would make an ordinary one-parent commit that carries the merge's own content. Refused rather than silently building a fixture that is not a merge."
+                }
+            }
+            $resolveNames = @()
+            if ($commit.PSObject.Properties.Name -contains 'resolve' -and $commit.resolve) {
+                $resolveNames = @($commit.resolve.PSObject.Properties.Name)
+            }
+            if ($mergeExit -ne 0 -and $conflicted.Count -eq 0) {
+                throw "fixture git failed: git merge $($mergeNames -join ' ')`n$($mergeOut -join "`n")"
+            }
+            $both = @($resolveNames | Where-Object { $commit.PSObject.Properties.Name -contains 'mergeWrite' -and $commit.mergeWrite -and (@($commit.mergeWrite.PSObject.Properties.Name) -contains $_) })
+            if ($both.Count -gt 0) {
+                & git -C $root merge --abort 2>&1 | Out-Null
+                throw "fixture names '$($both -join ', ')' in both 'resolve' and 'mergeWrite'. Say which one the merge result takes: refused rather than letting one silently win."
+            }
+            if ($conflicted.Count -gt 0) {
+                $stray = @($resolveNames | Where-Object { $conflicted -notcontains $_ })
+                if ($stray.Count -gt 0) {
+                    & git -C $root merge --abort 2>&1 | Out-Null
+                    throw "fixture 'resolve' names '$($stray -join ', ')', which did not conflict in the merge of '$($mergeNames -join ' ')'. Use 'mergeWrite' for content the merge authors: refused rather than silently treated as a write."
+                }
+                $unnamed = @($conflicted | Where-Object { $resolveNames -notcontains $_ })
+                if ($unnamed.Count -gt 0) {
+                    & git -C $root merge --abort 2>&1 | Out-Null
+                    throw "fixture merge of '$($mergeNames -join ' ')' leaves a conflict in $($unnamed -join ', ') and 'resolve' does not name it. Say what the merge takes for each conflicted file: refused rather than left half done."
+                }
+            } elseif ($resolveNames.Count -gt 0) {
+                & git -C $root merge --abort 2>&1 | Out-Null
+                throw "fixture 'resolve' names $($resolveNames -join ', ') but the merge of '$($mergeNames -join ' ')' did not conflict: there is nothing to resolve. Use 'mergeWrite' for content the merge authors. Refused rather than silently ignored."
+            }
+            if ($resolveNames.Count -gt 0) {
+                foreach ($prop in $commit.resolve.PSObject.Properties) {
+                    Write-FixtureFile -RepoPath $root -RelativePath $prop.Name -Content $prop.Value
+                }
+            }
+            if ($commit.PSObject.Properties.Name -contains 'mergeWrite' -and $commit.mergeWrite) {
+                foreach ($prop in $commit.mergeWrite.PSObject.Properties) {
+                    Write-FixtureFile -RepoPath $root -RelativePath $prop.Name -Content $prop.Value
+                }
+            }
+            if ($commit.PSObject.Properties.Name -contains 'mergeDelete' -and $commit.mergeDelete) {
+                foreach ($rel in @($commit.mergeDelete)) {
+                    $full = Join-Path $root $rel
+                    if (Test-Path $full) { Remove-Item $full -Recurse -Force }
+                }
+            }
+            Invoke-FixtureGit -RepoPath $root -Arguments @('add', '-A') | Out-Null
+            Invoke-FixtureGit -RepoPath $root -Arguments @('commit', '--quiet', '--allow-empty', '-m', $mergeMessage) | Out-Null
+            Assert-FixtureMergeShape -Root $root -HeadBefore $headBefore -Names $mergeNames -Branch $branch
             continue
         }
 

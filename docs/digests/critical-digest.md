@@ -17,5 +17,6 @@
 - Critical 5: the artifact is a WARN until the final phase lands, it is committed or the plan says ready; then FAIL. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: when mid-feature cannot be shown (no base, shallow clone, bad tasks.md) the check stays strict and says why. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: plan.md may declare Merge Readiness pending or ready, overriding the heuristic; no history needed. (`docs/sdlc/critical-delivery.md`)
-- Critical 5: Merge Readiness pending is a claim, not proof; changing it is an amendment, ungraded in a merge commit. (`docs/sdlc/critical-delivery.md`)
+- Critical 5: Merge Readiness pending is a claim, not proof; changing it is an amendment, also inside a merge. (`docs/sdlc/critical-delivery.md`)
+- Critical 5: a merge is graded for what it authored; taking one parent's plan whole is trusted on that parent. (`docs/sdlc/critical-delivery.md`)
 - Critical adds nothing beyond the five items — protection comes from evidence and independence, not volume. (`docs/sdlc/critical-delivery.md`)

@@ -201,8 +201,15 @@ not give it to itself, and a machine can check only that it is well formed.
    plan is an amendment: a commit with a single parent must carry `**Amendment approved by**: <name>, <YYYY-MM-DD>` and name the
    approver (constitution I). **Limits, stated rather than hidden:** `pending` is a claim. An owner who sets it and never flips it merges
    with only the warning on this check, and gate 6, the human review at merge, is what stands behind it. The approver is a recorded name,
-   a written claim a reviewer can falsify and not proof of who approved. The amendment check does not grade merge commits (feature 014,
-   D7), so a `pending` added inside a merge commit carries no approver check at all.
+   a written claim a reviewer can falsify and not proof of who approved. **A merge commit is graded for what it authored** (feature 026,
+   which retires the earlier limit that the amendment check skipped merges): a `pending` added inside a merge is an amendment the merge
+   wrote, and needs the same `**Amendment approved by**` line in the merged file and the approver named in the merge message, unless the
+   merged result equals what a parent already had or what git's own automatic merge of the two parents makes (then the merge authored
+   nothing and is skipped, counted as before). **What stays open:** a merge that keeps one parent's version of the plan whole is trusted
+   on that parent's content, even when that content's only grading was a creation exemption, so taking the other side's plan in a
+   conflict replaces it with no record (gate 6 stands behind it); an octopus merge, a git older than 2.38 or a failing `git merge-tree`
+   is graded the strict way, where a record satisfies it; a document removed or renamed inside a merge is graded and no record can satisfy it
+   (make the move in an ordinary commit); and the record is still a written claim.
 
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->
@@ -210,7 +217,8 @@ not give it to itself, and a machine can check only that it is well formed.
    <!-- digest: Critical 5: the artifact is a WARN until the final phase lands, it is committed or the plan says ready; then FAIL. -->
    <!-- digest: Critical 5: when mid-feature cannot be shown (no base, shallow clone, bad tasks.md) the check stays strict and says why. -->
    <!-- digest: Critical 5: plan.md may declare Merge Readiness pending or ready, overriding the heuristic; no history needed. -->
-   <!-- digest: Critical 5: Merge Readiness pending is a claim, not proof; changing it is an amendment, ungraded in a merge commit. -->
+   <!-- digest: Critical 5: Merge Readiness pending is a claim, not proof; changing it is an amendment, also inside a merge. -->
+   <!-- digest: Critical 5: a merge is graded for what it authored; taking one parent's plan whole is trusted on that parent. -->
 
 ## What this addendum is NOT
 
