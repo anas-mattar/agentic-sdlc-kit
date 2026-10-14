@@ -33,11 +33,11 @@ Each state is proved by a fixture pair built from real shapes.
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, and the exact output and exit of `AMEND-001/pass`, `AMEND-001/pass-merge`
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, and the exact output and exit of `AMEND-001/pass`, `AMEND-001/pass-merge`
       and `AMEND-001/pass-renumber`. Reproduce the gap on a throwaway branch: an unapproved line appended to another feature's approved `plan.md` on a numbered
       branch prints `enforcement-pack: OK` (the shape 026's phase 3 review found). Confirm from a recipe that nothing is needed from the fixture library (a base
       holding another feature's documents, a numbered branch, a merge that carries content); if a shape cannot be expressed, add a task for it here.
-- [ ] T002 Write the fixtures first (plan D9, numbered lane), as variants of `AMEND-001` and `AMEND-002`, each pair differing in one condition and each shown
+- [x] T002 Write the fixtures first (plan D9, numbered lane), as variants of `AMEND-001` and `AMEND-002`, each pair differing in one condition and each shown
       failing on the parent or named as a control that passes there by design: another feature's `plan.md` amended with no record (fail) and with the record in
       that document plus the approver in the message (pass); the record in the branch's own `notes.md`, and in its own plan (fail: it approves nothing); the
       record present and the approver missing from the message (`AMEND-002` pair); a contract of another feature amended; two documents of another feature
@@ -48,9 +48,9 @@ Each state is proved by a fixture pair built from real shapes.
       as a removal); an approved document of another feature removed (fail, no passing path); a merge of `main` into the branch where `main` changed another
       feature's `plan.md`, with the shape of the kit's real merges (control, byte-identical); a merge that hand-resolves another feature's `plan.md` without and
       with a record; a merge that deletes another feature's contract while merging. Expectations by hand. Record, for each, how it behaves on the parent.
-- [ ] T003 Inventory the rules in `tests/enforcement/rules.json`: update the notes of `AMEND-001` and `AMEND-002` for the cross-feature variants, and run the
+- [x] T003 Inventory the rules in `tests/enforcement/rules.json`: update the notes of `AMEND-001` and `AMEND-002` for the cross-feature variants, and run the
       recall sweep first, classifying anything else it reports (a rule with a pair, an exemption, or a not-a-rule with a reason).
-- [ ] T004 Edit `scripts/enforcement-pack.ps1` (plan D1–D5, D7, D8 numbered arm): the graded-path pattern and a helper returning a path's feature directory
+- [x] T004 Edit `scripts/enforcement-pack.ps1` (plan D1–D5, D7, D8 numbered arm): the graded-path pattern and a helper returning a path's feature directory
       (D1); the base set of graded paths read once per run, `$existBase` being `$Base` or `$ReplayBase` (D2); the row loop keeps its existing block for a path in
       `$dir` and gains the parallel arm for another feature's directory in the order of D3 (creation, subject, graded-and-at-the-base, whole-directory
       renumbering, the two existing exemptions); `Get-FeatureDocMap` and `Get-MergeAuthoredPaths` read the graded paths of every feature directory and ask D2
@@ -58,10 +58,10 @@ Each state is proved by a fixture pair built from real shapes.
       an unreadable base tree is a failure on a numbered branch (D8). Replace the script header's `LIMIT` paragraph with what is now graded and what stays open
       (the Lite lane arrives in phase 2, so the paragraph says so and phase 2 updates it). The own-directory row block, `Get-AddedRecordLines`,
       `Get-MergeRecordLines` and the exemption helpers are not edited.
-- [ ] T005 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: drop the exists-at-the-base test; test existence
+- [x] T005 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: drop the exists-at-the-base test; test existence
       in the commit's parent instead of the base; drop the whole-directory test; read the record from the branch's own files; drop the clause. Each must fail
       exactly the fixture meant to catch it, and the script is restored byte for byte (`cmp`).
-- [ ] T006 Run `-Case AMEND-`, `-Case CRIT-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged (FR-013), every new
+- [x] T006 Run `-Case AMEND-`, `-Case CRIT-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged (FR-013), every new
       fixture as written, the coverage report with no unowned site. Re-run T001's reproduction: it now fails AmendmentAuthority, and with a conforming record
       passes it (SC-001). Time the new merge reading on a real merge of this repository and record it against 026's 170 ms.
 
