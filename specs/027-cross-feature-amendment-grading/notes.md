@@ -62,3 +62,10 @@ Each applied to a copy of the script (the working script was never edited; `cmp`
   - Cost grows with the number of features: a merge does `ls-tree -r` of `specs` per parent and for the base. Now stated in the function's LIMITS comment together with the move-in rule; phase 3's real-history replay is where it is measured at scale.
 - **F2 is not mine to close:** the per-document regrouping of the tail departs from plan D5 ("the tail is not changed"). It needs the owner's amendment record or a redirect; no amendment is made here.
 - **F4:** the task ticks and the CRIT-/LITE-/ritual-checks results wait for the gate run.
+
+### After the second AI review (`ai-code-review-f1-fix.md`, APPROVE with follow-ups on 26a356c)
+
+- **F1 (label):** the pass fixture's rename commit message said "to 003-c" while the rename goes into 002-b; corrected. The expected output does not carry the message.
+- **F2 (limit, recorded not fixed):** a sole graded document of another feature moved into the own directory AND edited in the same commit stays ungraded: `Get-OtherFeatureSubject` returns `$null` for a move that empties the old directory before any content comparison, as the whole-directory renumbering exemption always has (D3 step 4). Derived from the code by the reviewer, not reproduced. Now in the LIMITS comment.
+- **F3 (pre-existing):** a removal's failure text asks for an approver record that cannot pass (FR-007); the text belongs to `fail-other-feature-removal` and `fail-other-feature-single-doc-moved` and predates this fix. To be considered with phase 3's guidance.
+- **F4:** the missing trailing newline in one `command.json` is cosmetic; left.

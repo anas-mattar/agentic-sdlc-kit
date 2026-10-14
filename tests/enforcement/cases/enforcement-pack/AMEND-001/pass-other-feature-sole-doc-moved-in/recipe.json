@@ -87,7 +87,7 @@
     },
     {
       "branch": "002-b",
-      "message": "move 001-a plan to 003-c",
+      "message": "move 001-a plan into 002-b",
       "rename": {
         "specs/001-a/plan.md": "specs/002-b/contracts/moved.md"
       }

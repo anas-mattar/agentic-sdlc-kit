@@ -1866,8 +1866,9 @@ function Get-OtherFeatureNote {
 # before; a whole feature directory moved inside a MERGE is graded as the removal of its documents
 # (026: a rename is not detected inside a merge), so the move belongs in an ordinary commit; the Lite
 # lane (fix/, chore/, docs/) does not run this check yet; a document of another feature moved INTO
-# the branch's own directory IS graded, as the removal of the old path (review F1); and the record is
-# still a written claim. Cost: a merge reads `ls-tree -r` of specs per parent and for the base (about
+# the branch's own directory IS graded, as the removal of the old path (review F1), except that a sole
+# graded document moved in and edited in the same commit is not (the renumbering exemption compares no
+# content; second review F2); and the record is still a written claim. Cost: a merge reads `ls-tree -r` of specs per parent and for the base (about
 # 100-200 ms per merge measured), growing with the number of features (review F5).
 function Invoke-AmendmentAuthorityCheck {
     param([string]$Branch, [string]$Base, [switch]$IgnoreAmendmentBoundary,
