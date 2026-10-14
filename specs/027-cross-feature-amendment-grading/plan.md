@@ -4,7 +4,7 @@
 **Input**: Feature specification (approved, anas.m, 2026-10-14; option B, removal accepted) + decisions D1–D11 below
 **Gate Batching**: none
 **Gate Certification**: user-run
-**Status**: Draft — awaiting the owner's approval of decisions D1–D11 and the three phases
+**Status**: Approved 2026-10-14 (owner: anas.m)
 
 ## Summary
 
