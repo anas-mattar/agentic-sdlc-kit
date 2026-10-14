@@ -2,7 +2,7 @@
 
 **Feature Branch**: `027-cross-feature-amendment-grading`
 **Created**: 2026-10-14
-**Status**: Draft
+**Status**: Approved 2026-10-14 (owner: anas.m)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-033: the amendment-authority check reads only `specs/<branch>/`, so an amendment of another feature's approved `spec.md`, `plan.md`, `tasks.md` or `contracts/*`, made on a later feature's branch or on a `docs/`, `fix/` or `chore/` branch, is graded by no machine rule. Reproduced by feature 026's phase 3 review (finding F2): an unapproved line appended to `specs/025-critical-merge-ready-signal/plan.md` on the 026 branch printed `enforcement-pack: OK`, while the same line in 026's own plan failed."
