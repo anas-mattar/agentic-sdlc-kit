@@ -303,3 +303,11 @@ Owner approval, in the owner's words: "yes, approve both and apply them" (anas.m
   closing the drift the phase 2 review found (F6). Its own record follows the amended decision.
 
 Both commits name the approver. The amendment check grades them like any amendment (`ritual-checks.ps1` RESULT OK).
+
+### T017 and gate certification, phase 3 (user-run)
+
+On an isolated detached worktree of `c64348c` (the phase 3 commit with the plan amendments): `ritual-checks.ps1 -Branch 026-merge-commit-amendment-grading`
+RESULT OK, and `scope-check` PASS on every phase commit (phase 1: `15a0e6f`, `61bd6ed`, `8d3badf`, `a7868d2`, `78bf472`, `2977ca5`; phase 2: `bb08af7`, `9d899c9`,
+`22ac126`, `e661139`, `fa23d5b`; phase 3: `3fd1b2e`, `c64348c`). The full-harness count of that tree is recorded below when its run finishes.
+
+Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `c64348c`, exit code **0**, confirmed by the owner (anas.m, 2026-10-14).
