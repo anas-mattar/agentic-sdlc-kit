@@ -291,3 +291,15 @@ agent never approves its own amendment). The wording is put to the owner in the 
 ### T017 — final run on an isolated checkout
 
 Not yet run: it needs the final commit, which needs T013.
+
+### T013 — the plan amendments (done, on the owner's approval)
+
+Owner approval, in the owner's words: "yes, approve both and apply them" (anas.m, 2026-10-14), given after the wording was put to the owner in the session.
+
+- **Feature 025's `plan.md`:** the Summary sentence ("not graded") now says a merge is graded since feature 026 when it authored the change; a "Retired by feature 026"
+  paragraph follows the D5 limit paragraph (the original text stays as history) with what remains; the Risks bullet is replaced. One record, `**Amendment approved
+  by**: anas.m, 2026-10-14`, closes the new D5 paragraph and covers the Summary and Risks changes it names.
+- **Feature 026's own `plan.md`, D11:** the script header `LIMIT` comment is stated as updated in phase 2 (task T008, with the code), the other four in phase 3,
+  closing the drift the phase 2 review found (F6). Its own record follows the amended decision.
+
+Both commits name the approver. The amendment check grades them like any amendment (`ritual-checks.ps1` RESULT OK).

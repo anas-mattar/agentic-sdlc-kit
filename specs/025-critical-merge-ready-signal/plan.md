@@ -12,7 +12,7 @@
 A Critical feature's `plan.md` may declare `**Merge Readiness**: pending` or `ready`. `scripts/enforcement-pack.ps1` reads the line from
 the committed plan and lets it override feature 024's commit-subject heuristic: `pending` is the not-yet-due warning, `ready` is the arm's
 own grading, absent is feature 024 byte for byte. The declaration needs no new approval machinery: a change to an approved plan is
-an amendment that, in a commit with a single parent, must name an approver, which is what makes flipping to `ready` a recorded human act; a change made inside a merge commit is not graded (D5, Risks). Two phases, each
+an amendment that, in a commit with a single parent, must name an approver, which is what makes flipping to `ready` a recorded human act; a change made inside a merge commit is graded since feature 026, when the merge authored it (D5, Risks). Two phases, each
 independently revertible. First the check and its proof, fixtures first, including a fixture shaped like the real FitForge 002. Then
 the guidance, the plan template, the flow-down note, the roadmap and a measurement that replays FitForge 002's real history.
 
@@ -110,6 +110,10 @@ not reach the line, extending it is in scope** (FR-006), and the plan is amended
 
 **Amendment approved by**: anas.m, 2026-10-14
 
+**Retired by feature 026 (2026-10-14):** the limit above no longer holds. The amendment check grades a merge commit for the spec documents it authored: a document equal to a parent's, to git's own automatic merge of the two parents, or absent in every parent is not authored and the merge is skipped as before; one that is authored needs the `**Amendment approved by**` record, new against every parent, and the approver named in the merge message, so a `pending` or `ready` change inside a merge is graded like any amendment. What remains, as feature 026 states it: a merge that keeps one parent's version whole is trusted on that parent's content, even when its only grading was a creation exemption; an octopus merge, a git older than 2.38 or a failing `git merge-tree` is graded the strict way; the record is a written claim. This amendment also changes the Summary and Risks to say so; the text above is left as the history of the decision.
+
+**Amendment approved by**: anas.m, 2026-10-14
+
 **D6 — No constitution amendment, and the template is a kit file (FR-008).** `.specify/templates/**` is classed `verbatim` in
 `kit-manifest.json`, so the plan template flows down by `update-kit.ps1`. The field is optional and its absence is the default; the
 constitution names `**Gate Batching**` and `**Gate Certification**` and their legal values as constants but fixes neither the set of plan
@@ -189,7 +193,7 @@ not reach a plan header line.
 
 ## Risks
 
-- **The amendment record does not cover a merge commit.** A `pending` added inside a merge carries no approver check (D5). It is the same shape as the cost of `pending` itself, a claim an owner can leave in place, and gate 6 stands behind it. The guidance and the flow-down note say so (phase 2).
+- **The amendment record covers a merge commit only for what the merge authored (feature 026 retired the limit of D5).** A `pending` added inside a merge is graded like any amendment. What remains: a merge that takes one parent's version whole is trusted on that parent's content, an octopus merge or a git older than 2.38 is graded the strict way, and the record is a written claim an owner can leave in place; gate 6 stands behind it. The guidance and the flow-down notes say so.
 
 - **`pending` is a claim an owner can leave in place.** The honest cost of the whole feature, and feature 024's hole in a new place. It
   is visible (a warning on every run, the declaration and its approver in the diff gate 6 reads) and not closed: after `pending` the

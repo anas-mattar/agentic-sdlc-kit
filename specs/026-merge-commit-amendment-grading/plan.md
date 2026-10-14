@@ -156,10 +156,13 @@ combined-diff measurement in the spec already found for 131 of 131; it is not ev
 
 **D11 — No constitution amendment, and the documents that state the limit (FR-008).** The amendment record and the approver-in-the-message rule are
 unchanged, so constitution I needs no amendment; T012 re-reads it for any sentence about merge commits and records the answer in `notes.md`. The limit is
-stated in five places, each updated in phase 3: the script header's `LIMIT` comment, feature 025's `plan.md` (D5's limit and Risks) **by an approved
-amendment of that plan with its approver record**, `docs/sdlc/critical-delivery.md`, the 025 flow-down note in `adoption/updating.md` (a new note for 026
-is added; the 025 note's limit paragraph is left as history), and `docs/roadmap.md` (GAP-032). Feature 014's FR-010 is not edited; the 026 flow-down note
-records the narrowing of D7.
+stated in five places: the script header's `LIMIT` comment, updated in **phase 2** (task T008) with the code it describes, and in phase 3 feature 025's `plan.md` (D5's
+limit, its Summary and Risks) **by an approved amendment of that plan with its approver record**, `docs/sdlc/critical-delivery.md`, the 025 flow-down note in
+`adoption/updating.md` (a new note for 026 is added; the 025 note's limit paragraph is left as history), and `docs/roadmap.md` (GAP-032). Feature 014's FR-010 is
+not edited; the 026 flow-down note records the narrowing of D7. *(Amended 2026-10-14: this decision first placed the `LIMIT` comment in phase 3; tasks T008
+placed it in phase 2 with the code, and the phase 2 review (F6) found the two documents disagreeing. The placement in tasks T008 is what was built.)*
+
+**Amendment approved by**: anas.m, 2026-10-14
 
 ## Phases
 
