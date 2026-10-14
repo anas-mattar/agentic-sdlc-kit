@@ -339,3 +339,10 @@ Owner decision, in the owner's words: "yes, option A, apply all of those and com
 
 Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `71c1189` (phase 3 and its review remediation), exit code **0**, confirmed by the owner (anas.m,
 2026-10-14). The remediation changed documents only (no script, no fixture), so the full-harness count of `c64348c` (1585 passed) stands for the code.
+
+### Merge of `main` into the branch (`910b3ca`)
+
+`main` had gained the claim PR (#77): a flip of the GAP-032 row to `in progress` and a scaffold `spec.md` for 026 (the unfilled template). Two conflicts, both resolved by
+keeping this branch's version whole: `docs/roadmap.md` (the row stays `shipped`) and `specs/026-merge-commit-amendment-grading/spec.md` (the approved, amended spec).
+The merge result equals the first parent for every file (`git diff HEAD^1 HEAD` is empty), so this feature's own check counts it as a merge that authored nothing:
+`AmendmentAuthority: graded 23 of 24 commit(s) ... (1 not graded: 1 merge commit(s))`, `ritual-checks.ps1` RESULT OK. Nothing was pushed.
