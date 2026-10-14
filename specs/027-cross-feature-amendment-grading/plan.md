@@ -105,6 +105,9 @@ gains one clause, **only** when an amended path is outside `$dir`: ` Of these, <
 so the record goes in that document` (both failure messages, the missing record and the approver missing from the message). A failure about the own
 directory alone reads as it does today.
 
+**D5 as built (amendment, after the phase 1 AI review, finding F2)**: the tail IS changed in one respect. A record in the branch's own files would otherwise approve another feature's amendment (`fail-other-feature-record-in-own-plan`), contradicting FR-005, so the amended paths are grouped: the branch's own amended files are one group, read as before, and each amended document of another feature is its own group needing its own conforming record in that document. The clause is appended to the failure as built: `; the amended file(s) outside this branch's own directory (<files>) belong to feature(s) <NNN-name>, and a document is amended where it lives: the record goes in that document, not in this branch's own files`, and only when an amended path is outside ``; a failure about the own directory alone is byte-identical to today's.
+**Amendment approved by**: anas.m, 2026-10-14
+
 **D6 — The Lite lane runs the check only when its diff touches a spec document (FR-003, FR-009).** `fix/`, `chore/` and `docs/` branches have no own
 directory. The dispatch passes the changed-file list it already computes (`Get-ChangedFiles`, the base-to-`HEAD` diff) and the check returns silently unless
 a changed file matches D1's pattern. A branch that changes no spec document therefore prints exactly what it prints today, **including in a shallow clone or

@@ -91,3 +91,5 @@ Concentrated in F1: a trivially expressible bypass of the removal rule on the nu
 | F3 | **Deferred, recorded as a gap** in `notes.md` (the unmutated branches are listed). |
 | F4 | **Deferred to the gate run**: ticks and CRIT-/LITE-/ritual-checks results are recorded after the owner runs it. |
 | F5 | **Recorded as a limit** in the LIMITS comment of `scripts/enforcement-pack.ps1`; measured at scale in phase 3's replay. |
+
+**F2 update (appended):** closed. The owner approved the D5 amendment (anas.m, 2026-10-14); the record is in `plan.md` D5 and the amendment commit names the approver.

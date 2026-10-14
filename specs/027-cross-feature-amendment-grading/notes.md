@@ -69,3 +69,7 @@ Each applied to a copy of the script (the working script was never edited; `cmp`
 - **F2 (limit, recorded not fixed):** a sole graded document of another feature moved into the own directory AND edited in the same commit stays ungraded: `Get-OtherFeatureSubject` returns `$null` for a move that empties the old directory before any content comparison, as the whole-directory renumbering exemption always has (D3 step 4). Derived from the code by the reviewer, not reproduced. Now in the LIMITS comment.
 - **F3 (pre-existing):** a removal's failure text asks for an approver record that cannot pass (FR-007); the text belongs to `fail-other-feature-removal` and `fail-other-feature-single-doc-moved` and predates this fix. To be considered with phase 3's guidance.
 - **F4:** the missing trailing newline in one `command.json` is cosmetic; left.
+
+### D5 amendment (review F2 closed)
+
+The owner (anas.m) approved the D5 amendment on 2026-10-14: plan.md D5 now carries a "D5 as built" paragraph with the record `**Amendment approved by**: anas.m, 2026-10-14`, describing the per-document grouping and the clause as built. Decision 1 above is therefore settled; the implementer did not approve it.
