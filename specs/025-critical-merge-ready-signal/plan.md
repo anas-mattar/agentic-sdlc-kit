@@ -193,7 +193,9 @@ not reach a plan header line.
 
 ## Risks
 
-- **The amendment record covers a merge commit only for what the merge authored (feature 026 retired the limit of D5).** A `pending` added inside a merge is graded like any amendment. What remains: a merge that takes one parent's version whole is trusted on that parent's content, an octopus merge or a git older than 2.38 is graded the strict way, and the record is a written claim an owner can leave in place; gate 6 stands behind it. The guidance and the flow-down notes say so.
+- **The amendment record covers a merge commit only for what the merge authored (feature 026 retired the limit of D5).** A `pending` added inside a merge is graded like any amendment. What remains: a merge that takes one parent's version whole is trusted on that parent's content, an octopus merge, a git older than 2.38 or a failing `git merge-tree` is graded the strict way, and the record is a written claim an owner can leave in place; gate 6 stands behind it. The guidance and the flow-down notes say so.
+
+  **Amendment approved by**: anas.m, 2026-10-14
 
 - **`pending` is a claim an owner can leave in place.** The honest cost of the whole feature, and feature 024's hole in a new place. It
   is visible (a warning on every run, the declaration and its approver in the diff gate 6 reads) and not closed: after `pending` the

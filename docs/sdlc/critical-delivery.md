@@ -208,7 +208,8 @@ not give it to itself, and a machine can check only that it is well formed.
    nothing and is skipped, counted as before). **What stays open:** a merge that keeps one parent's version of the plan whole is trusted
    on that parent's content, even when that content's only grading was a creation exemption, so taking the other side's plan in a
    conflict replaces it with no record (gate 6 stands behind it); an octopus merge, a git older than 2.38 or a failing `git merge-tree`
-   is graded the strict way, where a record satisfies it; and the record is still a written claim.
+   is graded the strict way, where a record satisfies it; a document removed or renamed inside a merge is graded and no record can satisfy it
+   (make the move in an ordinary commit); and the record is still a written claim.
 
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->

@@ -1183,10 +1183,11 @@ something a parent already had. A document is **not** authored by the merge when
 version, or when it equals what git's own automatic merge of the two parents produces (`git merge-tree --write-tree`; a conflict leaves marker text in that
 result, so a hand-resolved conflict differs from it and is graded). If nothing is authored the merge is skipped and counted under `merge commit(s)` exactly as
 before. If a document is authored, the merge is graded like any amendment: the document must carry `**Amendment approved by**: <name>, <YYYY-MM-DD>` that is
-new against **every** parent, and the merge commit message must name the approver. The failure text is the existing one with one clause appended for a
-merge. The task-tick and `**Status**` exemptions apply to a merge only when the change is of that kind against **every** parent. A document the merge
-**removes** is graded unless git's automatic merge removes it too (a deletion on one side stays a non-event), so a main merged into a branch cannot delete or
-rename-and-rewrite an approved contract unseen. A merge whose parent or tree cannot be read is refused, with the same "fetch the full history" wording as an
+new against **every** parent, and the merge commit message must name the approver. Both failure texts (no record; approver not named in the message) are the existing ones with one
+clause appended for a merge. The task-tick and `**Status**` exemptions apply to a merge only when the change is of that kind against **every** parent; in the
+usual merge of `main` into a branch, `main` holds no copy of the feature's documents, so no exemption applies there (tick tasks in an ordinary commit). A
+document the merge **removes** is graded unless git's automatic merge removes it too (a deletion on one side stays a non-event), so a main merged into a branch
+cannot delete or rename-and-rewrite an approved contract unseen. A merge whose parent or tree cannot be read is refused, with the same "fetch the full history" wording as an
 unreadable commit, never skipped on a wrong reason.
 
 **What flows down.** Three verbatim files: `scripts/enforcement-pack.ps1`, `docs/sdlc/critical-delivery.md` (its limits paragraph for the merge-readiness
@@ -1195,15 +1196,17 @@ declaration) and this document. The kit's own test fixtures stay in the kit. Not
 `git merge-tree` fails for any reason other than a conflict, the check does not skip, it grades the merge the strict way (below).
 
 **What an owner may newly see.** On a branch whose merges only combine histories: nothing. On a branch with a merge that wrote a spec document (a conflict
-resolved by hand, a document edited while merging, a deletion or rename-and-rewrite of a contract, an octopus merge): an
+resolved by hand, a document edited while merging, an octopus merge): an
 `AmendmentAuthority: commit <sha> amends <files> after approval with no conforming approver record ... (this commit is a merge: its own change is what is
 graded, because no parent holds this content)` line, fixed the way any such line is fixed: add the record to the merged file and name the approver in the
 merge message. **A merge that combines two parents that were each approved on their own branch needs a fresh record when it had to be hand-merged:** a record
-a parent already carried approved that parent's change, not the merge's.
+a parent already carried approved that parent's change, not the merge's. **A document removed or renamed inside a merge is graded too, and no record can
+satisfy it:** the record is read from the merged file, where a removed path does not exist and a renamed document's new path is a creation. Make the move in
+an ordinary commit instead, where a pure rename passes (deleting an approved document has no passing path in an ordinary commit either, feature 014).
 
 **What does NOT change.** The record and the approver-in-the-message rule (constitution I), the grading of every ordinary commit (its code path and its
-messages), the roll-up line for a branch whose merges authored nothing (byte-identical), the shallow-clone refusal, and everything on the Lite, Micro and
-Critical lanes except that a merge-readiness flip made inside a merge is no longer exempt from the approver rule.
+messages), the roll-up line for a branch whose merges authored nothing (byte-identical), the shallow-clone refusal, and the Lite lane (`fix/`, `chore/` and `docs/` branches do not run this check). Micro and Critical `NNN-*` branches are
+graded for merge-authored documents exactly as Standard ones are, not only for a merge-readiness flip.
 
 **Known limits, stated rather than hidden.** (1) **A merge that keeps one parent's version of a document whole is trusted on that parent's content,** even
 when the only grading that content ever had was an exemption (the commit that created the file is a first appearance, or predates the check). So taking the
@@ -1212,15 +1215,19 @@ This is not new (before this feature every merge was skipped) and was weighed an
 a git older than 2.38, or a failing `git merge-tree` is graded the strict way, which grades a clean combination of two amended parents as authored; a record
 satisfies it. (3) The record is still a written claim, not proof of who approved. (4) `git merge-tree --write-tree` writes tree and blob objects into the
 repository's object database (unreferenced, collected by `git gc`); it changes no ref and no working-tree file, and where a CI forbids the write the call
-fails and the merge is graded the strict way. (5) Each merge costs a few extra git calls, about 170 ms on the Windows machine this was measured on; a branch
-with dozens of merges takes seconds longer.
+fails and the merge is graded the strict way. (5) Each merge costs a few extra git calls, about 170 ms on the Windows machine where a review measured it (the replay below was not timed per merge); a
+branch with dozens of merges takes seconds longer. (6) **A document removed or renamed inside a merge cannot be made to pass** (see above): a removal has no
+record to read, and a rename's new path is a creation, so even a pure rename (which passes in an ordinary commit) is graded as the removal of the old path. The
+feature's spec lists a pure rename among the exemptions that apply to a merge while its plan decided that a rename is not detected inside a merge; the plan was
+followed and the disagreement is recorded for the owner.
 
 **What was measured.** Clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (nothing in place touched, nothing pushed), and of
 the kit's own repository, were replayed merge commit by merge commit in the shape CI grades a pull request: the range from the merge's first parent to the
 merge, the branch being each `specs/NNN-*` feature the merged side touched, the boundary lifted (an analysis switch no gate passes), the previous version of
-`scripts/enforcement-pack.ps1` against this one, each run against the clone as its project root. Across the four histories there are **133 merge commits**
-(FitForge 10, FlowBoard 10, ExpenseTracker 10, the kit 103); 87 of them merged a side that touched no feature directory (docs, claims and kit updates) and
-the other 46 gave **46 feature runs**, with **72 merge commits inside those ranges**. **No merge was newly graded, no run printed a new failure, and every
+`scripts/enforcement-pack.ps1` against this one, each run against the clone as its project root. Across the four histories there are **131 merge commits**
+(FitForge 10, FlowBoard 10, ExpenseTracker 10, the kit 101 in the clone, which holds the source's local branches and not its remote-tracking refs; counting
+those too, a review found 102 in the kit and 132 in all); 87 of them merged a side that touched no feature directory (docs, claims and kit updates) and the
+other 44 gave **46 feature runs** (one merge touched three features), with **72 merge commits inside those ranges**, summed over the runs. **No merge was newly graded, no run printed a new failure, and every
 run's output was byte-identical between the two versions.** The slowest run, 49 commits, took 5.3 s against 5.0 s. **What that does and does not show:**
 history before this feature carries no approver record for a merge, so "none newly failed" is true because every one of those merges authored nothing for
 its feature, which an earlier combined-diff count over 131 merges had also found; it is not evidence that an owner will find a newly failing merge easy to
@@ -1229,7 +1236,7 @@ satisfy, and it cannot say how often a hand-merged conflict will occur from now 
 
 **What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. If a merge of yours is graded, add the record
 to the merged document and name the approver in the merge message (or avoid the hand-merge: take one side's version whole, or merge so that git's own
-automatic merge produces the result). On a git older than 2.38 expect the strict grading of any merge whose result matches no parent.
+automatic merge produces the result; neither helps a removed or renamed document, which needs an ordinary commit). On a git older than 2.38 expect the strict grading of any merge whose result matches no parent.
 
 <!-- digest: A merge commit is graded for the spec documents it authored; one that only combines two histories is skipped as before. -->
 <!-- digest: A graded merge needs the approver record new against every parent and the approver named in the merge message. -->
