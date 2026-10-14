@@ -351,3 +351,7 @@ The merge result equals the first parent for every file (`git diff HEAD^1 HEAD` 
 
 Gate certified (user-run): `pwsh -File scripts/ritual-checks.ps1` on `47b8031` (the branch with `main` merged in), exit code **0**, confirmed by the owner (anas.m,
 2026-10-14). Everything the feature changed is certified; what remains is the owner's human review at merge (gate 6) and the pull request.
+
+### FR-003 reconciled with plan D3 (2026-10-14)
+
+The open disagreement from the phase 3 review (F1) is closed by amending FR-003: a pure rename is no longer listed as an exemption inside a merge, matching plan D3 and the built behaviour. Owner decision: "go with your recommendation" (anas.m, 2026-10-14), the recommendation being to amend the spec rather than change the code. No code or fixture changed.

@@ -139,8 +139,11 @@ the roadmap) are updated by this feature to say what is closed and what stays op
 - **FR-002**: A merge commit whose result for a document equals any parent's version of it, or equals what git's automatic merge of the parents produces, MUST NOT be graded for that document, and a branch whose
   merges authored no content MUST produce byte-identical output to today's.
 - **FR-003**: The approver-record rule MUST be unchanged for a merge's own change: `**Amendment approved by**: <name>, <YYYY-MM-DD>` in the amended section
-  of the merged file, the approver named in the merge commit message, and the same exemptions (first appearance, pure rename, task ticks, a `**Status**`
-  line alone).
+  of the merged file, the approver named in the merge commit message, and the same exemptions (first appearance, task ticks, a `**Status**`
+  line alone). A pure rename is **not** an exemption inside a merge: a rename is not detected there (plan D3), so a document removed or renamed inside a
+  merge is graded as a removal and the move belongs in an ordinary commit, where a pure rename passes.
+
+  **Amendment approved by**: anas.m, 2026-10-14
 - **FR-004**: The roll-up line MUST keep counting what it grades and what it skips, and MUST distinguish a merge skipped because it authored nothing from
   a merge graded because it authored content.
 - **FR-005**: Where a merge's own change cannot be computed (an unreadable parent, more than two parents the machine cannot resolve), the check MUST report
