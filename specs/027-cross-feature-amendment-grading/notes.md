@@ -136,3 +136,56 @@ Mutations for the new guards, same method as T011 (copy beside the script, or th
 | M19 drop the merge-path `touchedApproved` line | `fail-lite-merge-hand-merged-no-record`, `pass-lite-merge-hand-merged-record` |
 | M20 drop the `could not parse commit metadata` branch of the conversion pattern | the Coverage guard |
 | M21 widen the conversion pattern to every `AmendmentAuthority:` text | the Coverage guard, and the Lite fail fixtures (their exit and output) |
+
+## Phase 3: guidance, retirement of the limit, flow-down and replay
+
+### T013 — what the documents say
+
+- **Constitution I, Amendment authority** (`.specify/memory/constitution.md`, the clause at "Amendment authority"): it already says "that feature's `spec.md`, `plan.md`,
+  `tasks.md` or `contracts/`" for every approved feature, and the record and the approver in the commit message are unchanged by this feature. **No constitution amendment is
+  needed** (plan D11, as expected).
+- **`docs/sdlc/critical-delivery.md`:** no sentence says the Lite lane runs no amendment check. Its merge-readiness limits paragraph speaks of the branch's own plan and merges
+  and stays true. **Not edited.**
+- **`docs/sdlc/branch-strategy.md`:** the Lite lane text ("skips spec.md/plan.md/tasks.md, but still requires the user-run gate, the scope check and human review") is true
+  about creating spec documents, but read alone it implies a Lite branch owes nothing about an approved spec document, which is the premise the spec quoted. It is incomplete
+  rather than false, and FR-014 asks for the guidance to say what is now graded, so **one sentence and one digest marker were added to it** (no existing sentence changed).
+  This is a small step past T014's "only the false sentences"; it is flagged for the owner.
+- **`docs/sdlc/flow.md`** (Lite bullet) and the critical-delivery level table row for Lite list the gate, scope check and human review; neither says no amendment check, and
+  neither is in this phase's Territory. Left.
+- **`adoption/updating.md`, feature 026's note** says "the Lite lane (`fix/`, `chore/` and `docs/` branches do not run this check)" and its edge case "a document the merge
+  changes for another feature: not graded". Both are superseded by this feature for documents that exist at the base; 026's note is history and is not edited, the new note says so.
+
+### T017 — replay on real history (plan D10, FR-010, SC-004)
+
+Method: clones of FitForge, FlowBoard and ExpenseTracker made from their local directories and of this repository (`git clone --local --no-hardlinks`, `core.autocrlf=false`; the
+real projects untouched, nothing pushed). For every merge commit reachable from any ref whose subject names a merged branch (`Merge pull request #N from <owner>/<branch>`, or
+`Merge branch '<branch>'` not followed by `into`), taking the branch name from the subject: the clone is checked out detached at the merge, `main` and `origin/main` are set to
+the merge's first parent, so the run has the shape CI grades a pull request (`<merge>^1..<merge>`); each run passes `-Branch <name> -ReplayBase <merge>^1 -ReplayTip <merge>
+-IgnoreAmendmentBoundary`. The parent kit's `enforcement-pack.ps1` (`25bb263`, the parent of the first script change `0d876a6`) against this one (`c94bac1`), each taken with
+its own `scripts/` from a scratch directory outside every clone with `-Root` the clone (a deviation from T017's wording "placed inside the clone": placing them inside would have
+dirtied the tree being checked out per merge; each version reads the clone as its project either way, as in 026's method). The driver and its JSON are kept outside the
+repository. Merges whose subject names no branch (a `main` merged into a branch, `governance:` merges) were not replayed: the first are inside their branch's range, the rest have no
+branch name to grade.
+
+| History | Merge commits | Replayed | Numbered | Lite | Newly graded | Newly failing | Newly failing with a record in the amended document | Outputs that differ | Largest run, old (new) |
+|---|---|---|---|---|---|---|---|---|---|
+| FitForge | 10 | 5 | 1 | 4 | 0 | 0 | 0 | 0 | 26 commits, 9.2 s (8.9 s) |
+| FlowBoard | 10 | 8 | 4 | 4 | 0 | 0 | 0 | 0 | 23 commits, 5.5 s (4.5 s) |
+| ExpenseTracker | 10 | 8 | 3 | 5 | 0 | 0 | 0 | 0 | 9 commits, 4.0 s (3.5 s) |
+| this kit | 107 | 88 | 28 | 60 | 2 | 2 | 1 | 3 | 50 commits, 7.2 s (6.9 s) |
+| **Total** | **137** | **109** | **36** | **73** | **2** | **2** | **1** | **3** | |
+
+**106 of 109 runs are byte-identical** (output and exit code), including every run on the three adopted projects. The three that differ, all in this kit's history:
+
+- **`59deae2`, `docs/026-fr-003-rename-amendment`: exit 0 to 1, newly graded.** Commit `c6f383d` amends 026's `spec.md`, **carries** `**Amendment approved by**: anas.m, 2026-10-14` in
+  that document, but its commit message does not name the approver. This is the "PR #81" shape the spec cites. An honest owner would have been blocked, by the missing approver
+  in the message and not by a missing record.
+- **`c28a867`, `fix/enforcement-pack-main-branch`: exit 0 to 1, newly graded.** Commit `40142f2` edits 002's `spec.md` (an Edge Cases line) with no record and no approver; it predates
+  feature 014, so there was nothing to comply with. **Carries no record.**
+- **`22f2af4`, `007-adoption-doctor`: exit 1 to 1** (the 007 branch already fails on its own directory under the old script, the shape 026 reported). The new run adds the
+  cross-feature clause to three more lines (commits `2462b41`, `dddcf1f`, `1fe7b9b` also amend 006's and 004's contracts). Not newly failing, no commit newly failing.
+
+**What it shows:** no unrelated branch would have changed: 106 of 109 runs are byte-identical, the adopted projects' histories are untouched, and per-run time is unchanged within noise
+(the new run is no slower on any of the four largest runs). **What it does not show:** how easy a newly failing branch is to satisfy (two cases, one of them predating the rule), how
+often a Lite branch will amend a spec document from now on, anything about a run in an adopted project's own CI, a shallow clone (a clone from a local directory is complete) or
+an octopus merge (none exists in these histories). A run grades the documents as they stood, with the version of the script under test and the clone's own files.

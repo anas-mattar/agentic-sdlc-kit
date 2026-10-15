@@ -8,6 +8,7 @@
 - Flip a new claim's roadmap row to in progress in a main-side docs commit — ritual-checks fails while a claim reads idea. (`docs/sdlc/branch-strategy.md`)
 - Claim with scripts/claim-feature.ps1: remote-aware number allocation and an immediate push — the remote is the ledger. (`docs/sdlc/branch-strategy.md`)
 - Lite lane (fix/, chore/, docs/): no spec directory, but the gate, scope check, and human review before merge remain. (`docs/sdlc/branch-strategy.md`)
+- A Lite branch amending an approved spec document owes the amendment record and the approver in the message. (`docs/sdlc/branch-strategy.md`)
 - Four delivery levels in ascending ceremony: Lite < Micro < Standard < Critical; chosen per feature, declared in spec.md. (`docs/sdlc/branch-strategy.md`)
 - Micro: single-page mini-spec, exactly one phase, at most 5 territory files and 400 changed lines, machine-enforced. (`docs/sdlc/branch-strategy.md`)
 - Behavior change is at least Micro; a Micro feature that outgrows a bound promotes in place to Standard, never stretches. (`docs/sdlc/branch-strategy.md`)

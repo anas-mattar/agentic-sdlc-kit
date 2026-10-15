@@ -76,9 +76,13 @@ The rest of the multi-developer rules live in `docs/sdlc/team-workflow.md`.
 **Lightweight lane** (`fix/`, `chore/`, `docs/`): skips spec.md/plan.md/tasks.md, but still
 requires the user-run gate, the `git diff --stat` scope check, and human review before merge.
 If a "fix" grows into behavior change or schema change, stop and promote it to a numbered
-feature.
+feature. A Lite branch has no spec directory of its own, but if it changes an **approved**
+`spec.md`, `plan.md`, `tasks.md` or `contracts/` file of any feature, that change is an
+amendment and owes the record and the approver in the commit message (constitution I,
+Amendment authority); a branch that changes no such file is not asked for anything.
 
 <!-- digest: Lite lane (fix/, chore/, docs/): no spec directory, but the gate, scope check, and human review before merge remain. -->
+<!-- digest: A Lite branch amending an approved spec document owes the amendment record and the approver in the message. -->
 
 **Delivery levels**: the kit has four, in ascending ceremony — **Lite < Micro < Standard <
 Critical**. **Lite** is the lightweight lane above (`fix/`, `chore/`, `docs/` — no spec

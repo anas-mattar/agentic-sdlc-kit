@@ -115,19 +115,19 @@ Lite branches included. No script changes.
 - `docs/sdlc/critical-delivery.md`
 - `docs/digests/**`
 
-- [ ] T013 Read constitution I's Amendment authority clause and the Lite-lane text of `docs/sdlc/branch-strategy.md` and `docs/sdlc/critical-delivery.md`;
+- [x] T013 Read constitution I's Amendment authority clause and the Lite-lane text of `docs/sdlc/branch-strategy.md` and `docs/sdlc/critical-delivery.md`;
       record in `notes.md` whether a constitution amendment is needed (expected: none, plan D11) and which sentences are now false.
-- [ ] T014 Edit only the sentences T013 found false in `docs/sdlc/branch-strategy.md` and `docs/sdlc/critical-delivery.md` (the Lite lane runs no amendment
+- [x] T014 Edit only the sentences T013 found false in `docs/sdlc/branch-strategy.md` and `docs/sdlc/critical-delivery.md` (the Lite lane runs no amendment
       check), with their digest markers within 120 characters; never hand-edit `docs/digests/**`.
-- [ ] T015 Add a flow-down note to `adoption/updating.md` shaped like 026's (what was wrong, what it does now, what flows down, what an owner may newly see on a
+- [x] T015 Add a flow-down note to `adoption/updating.md` shaped like 026's (what was wrong, what it does now, what flows down, what an owner may newly see on a
       numbered and on a Lite branch, what does not change, the known limits — "exists at the base" as a proxy for approved, a move out of the own directory, a
       whole directory moved inside a merge, GAP-034's weakness behind the Lite gate, the record as a written claim — what was measured, what to do), stating that
       026's edge case "a document the merge changes for another feature: not graded" is superseded for documents that exist at the base. Every path in it
       resolves in an adopted project (doc-lint).
-- [ ] T016 Update `docs/roadmap.md`: the GAP-033 inventory row and its roadmap row to `shipped` (drop the brackets from the Spec cell), and a decisions-log
+- [x] T016 Update `docs/roadmap.md`: the GAP-033 inventory row and its roadmap row to `shipped` (drop the brackets from the Spec cell), and a decisions-log
       entry dated the day the feature ships (recording the owner's decisions: option B, the removal sub-decision, D1–D11 and the phase count). Run
       `pwsh -File scripts/build-digests.ps1` and commit the regenerated `docs/digests/**`.
-- [ ] T017 Replay (plan D10, FR-010, SC-004): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (never the real projects,
+- [x] T017 Replay (plan D10, FR-010, SC-004): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (never the real projects,
       nothing pushed) and the kit's own repository; run the parent kit's `enforcement-pack.ps1` and the new one with the analysis replay (`-ReplayBase`,
       `-ReplayTip`, `-IgnoreAmendmentBoundary`) over each merged `NNN-*` branch **and** each merged `fix/`, `chore/` and `docs/` branch, per merge in the shape CI
       grades (`<merge>^1..<merge>`), each version placed inside the clone; report per history the commits newly graded, newly failing, **how many of the newly
