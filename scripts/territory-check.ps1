@@ -94,13 +94,23 @@ $ownRef = if ($checkingCurrent) { 'HEAD' } else {
 $ownFiles = @(git diff --name-only "$BaseBranch...$ownRef" 2>$null)
 if ($LASTEXITCODE -ne 0) { Stop-Refused "Cannot diff $BaseBranch...$ownRef — does '$BaseBranch' exist?" }
 if ($checkingCurrent) {
-    $ownFiles += @(git diff --name-only HEAD 2>$null)   # tracked, uncommitted
+    # Feature 029 phase 4 (G13a): a failed read is not "no uncommitted files". The committed diff above needs
+    # trees only; this one compares file content, so an unreadable object fails here alone, and reading the
+    # failure as an empty list let the branch's own dirty files drop out of the overlap check.
+    $dirty = @(git diff --name-only HEAD 2>$null)   # tracked, uncommitted
+    $dirtyExit = $LASTEXITCODE
+    if ($dirtyExit -ne 0) { Stop-Refused "Cannot read the uncommitted changes of '$Branch' — git diff --name-only HEAD failed (git exited $dirtyExit), so the branch's own uncommitted files would drop out of the overlap check." }
+    $ownFiles += $dirty
 }
 $ownFiles = @($ownFiles | Sort-Object -Unique)
 
 # --- Compare against every other open remote feature branch ----------------------------
 $openBranches = @()
-foreach ($line in (git ls-remote --heads origin 2>$null)) {
+# Feature 029 phase 4 (G13b): a failed listing is not "no open branches".
+$remoteHeads = @(git ls-remote --heads origin 2>$null)
+$remoteHeadsExit = $LASTEXITCODE
+if ($remoteHeadsExit -ne 0) { Stop-Refused "Cannot list the open feature branches — git ls-remote --heads origin failed (git exited $remoteHeadsExit), so no open claim would be compared." }
+foreach ($line in $remoteHeads) {
     if ($line -match 'refs/heads/(\d{3,}-\S+)$' -and $matches[1] -ne $Branch) { $openBranches += $matches[1] }
 }
 
@@ -225,8 +235,16 @@ foreach ($other in $openBranches) {
         $ungraded += [PSCustomObject]@{ repo = 'governance'; feature = $other; cause = 'claim-skipped'; detail = $why }
     } elseif ($commitCount -gt 0) {
         $hasWork = $true
-        $latestEpoch = [long](git log -1 --format=%ct "origin/$other" 2>$null)
+        # Feature 029 phase 4 (G14): neither read may fail into "no overlap". An unreadable last commit
+        # leaves the branch's status unknown (an epoch of 0 would call it stale), so it is not compared;
+        # an unreadable diff is named and the branch's code repositories are still compared below.
+        $epochRead = @(git log -1 --format=%ct "origin/$other" 2>$null)
+        $epochExit = $LASTEXITCODE
+        if ($epochExit -ne 0) { Add-Ungraded 'governance' $other 'last-commit-failed' "git log of origin/$other failed (git exited $epochExit)"; continue }
+        $latestEpoch = [long]$epochRead[0]
         $otherFiles = @(git diff --name-only "$BaseBranch...origin/$other" 2>$null)
+        $otherFilesExit = $LASTEXITCODE
+        if ($otherFilesExit -ne 0) { Add-Ungraded 'governance' $other 'diff-failed' "git diff of $BaseBranch...origin/$other failed, git exited $otherFilesExit"; $otherFiles = @() }
         $shared = @($ownFiles | Where-Object { $otherFiles -contains $_ })
     }
 

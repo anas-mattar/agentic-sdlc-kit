@@ -264,3 +264,49 @@ the count that counts is the full harness on an isolated checkout of the commit,
 - **Owner's gate** (anas.m, 2026-10-16), run once on the current tip of `029-unchecked-git-reads-named-state` (`4aa9b45`, which contains `92c2371` for phase 2 and `1554148` for phase 3): `tests/enforcement/Run-Tests.ps1` exit **0** and
   `scripts/ritual-checks.ps1` exit **0**, as reported by the owner. This certifies phase 2 in its final state (the earlier report of exit 0 predated the fix and is not the certifying one) and, with the isolated full-harness
   count below once recorded, phase 3. T013 is ticked on it; T019 awaits the isolated count of `1554148`.
+
+### Phase 3 close-out (T019)
+
+- Full harness on an isolated checkout of `1554148`: **1736 passed, 0 failed, 0 skipped** (1732 on `92c2371` plus the two new `GITREAD-001` cases at two expectations each). The owner's gate for phases 2 and 3 is recorded above (both exit 0, on `4aa9b45`).
+
+## Phase 4: `scripts/territory-check.ps1` (G13, G14)
+
+### Baseline (T020)
+
+- Parent of the phase: `a82fa24` (documents on top of phase 3's `1554148`); full harness **1736 passed, 0 failed**. The territory cases are under `tests/enforcement/cases/territory-check/` (confirmed).
+- Reproduced on the unchanged script by the new fixtures: (a) an open branch whose diff cannot be read (`TERR-025/fail`: the tree of `src` on `012-other` truncated, the two branches sharing `src/shared.txt`) prints **CLEAN**, a missed
+  real overlap; (b) a branch under check whose working-tree diff cannot be read (`TERR-023/fail`) prints **CLEAN**.
+- **Two things the first fixture design got wrong, found by running it** (not predicted): `truncateBlob` silently does nothing when the object is not loose (it has no error branch), so `truncateCommit` naming `HEAD:src/shared.txt` is used
+  to prove the damage lands; and `git diff --name-only HEAD` reads the committed blob only when the working copy is stat-dirty AND the same length as it (`diffcore_skip_stat_unmatch`) and the fixtures run with `core.autocrlf false` (this machine's
+  global config is `true`, under which git reads the blob in more states, which is why a scratch probe failed where the fixture did not). So the fixture edits the working copy to the same length (`mine\n` to `mind\n`).
+
+### The four exit paths (T021, plan D6)
+
+| Read | On failure | Output | Exit |
+|---|---|---|---|
+| own committed diff `main...HEAD` (existing, TERR-011) | refusal | `Cannot diff main...HEAD ...` | 1 |
+| own uncommitted diff `git diff --name-only HEAD` (G13a, new) | refusal | `Cannot read the uncommitted changes of '<b>' - git diff --name-only HEAD failed (git exited N), so the branch's own uncommitted files would drop out of the overlap check.` | 1 |
+| `git ls-remote --heads origin` (G13b, new) | refusal | `Cannot list the open feature branches - git ls-remote --heads origin failed (git exited N), so no open claim would be compared.` | 1 |
+| another branch's `git diff main...origin/<other>` (G14b, new) | an `ungraded` record, cause `diff-failed`, the branch still compared in the code repositories | `UNGRADED: governance: cannot compare <other> (git diff of main...origin/<other> failed, git exited N)`, then the run-level UNGRADED line | 0 (2 if a live overlap is found elsewhere) |
+| another branch's `git log -1 --format=%ct` (G14a, new) | an `ungraded` record, cause `last-commit-failed`, the branch NOT compared (an epoch of 0 would call it stale) | `UNGRADED: governance: cannot compare <other> (git log of origin/<other> failed (git exited N))` | 0 (2 on a live overlap) |
+
+No exit code is new and no kit verdict word is added (GAP-029 stays open).
+
+### What was built (T022-T024)
+
+- `scripts/territory-check.ps1`: the four reads above check their exit codes (the file's working copy was CRLF while the repository stores LF, hidden by a stale stat cache; it was normalised to LF so the commit diff is the 21 lines of the change). `Read-CodeRef` and the other named paths are not edited.
+- Fixtures (hand-written expectations): `TERR-023/{fail,pass}` (G13a; the twin is readable, CLEAN) and `TERR-025/{fail,pass}` (G14b; the twin is readable and finds the overlap, exit 2). Rules in `rules.json`: `TERR-023` and `TERR-025` with fixtures, and `TERR-024` (G13b) and `TERR-026` (G14a) as written exemptions.
+- **Open for the owner (Amendment 3):** G13b (`ls-remote`) is NOT among the reads plan Amendments 1 and 2 name. It has no reachable state either: it fails only after `git fetch origin --prune` succeeded against the same remote, and a fixture that broke it
+  would break the fetch (TERR-010) first. It is guarded by an injected failure (below) and `TERR-024` carries the written exemption, but the author cannot approve that exemption: it needs the owner's approval as a short Amendment 3 (G14a is covered by Amendment 1).
+
+### Mutations and injection (T025)
+
+| Mutation | Caught by |
+|---|---|
+| U1 the uncommitted-diff failure ignored (G13a) | `TERR-023/fail` |
+| U2 the other-branch diff failure not recorded (G14b) | `TERR-025/fail` |
+| U3 a diff failure also drops the branch's code-repository comparison (`continue`) | **not caught**: no fixture declares code repositories alongside a damaged governance diff, so "the code repositories are still compared" is not shown |
+| E10 injected: `ls-remote` made to fail (G13b), on `TERR-002/fail` | `Cannot list the open feature branches - git ls-remote --heads origin failed (git exited 128), ...`, exit 1 |
+| E11 injected: the tip's `git log -1` made to fail (G14a), on `TERR-002/fail` | `UNGRADED: governance: cannot compare 012-other (git log of origin/012-other failed (git exited 128))`, exit 0 |
+
+Script restored byte for byte after each (hash compared). Before the commit, on the working tree (the families run before it was stopped to commit): `TERR-` 208 passed, `RIT-` 264, `REPOS-` 204, 0 failed. The full harness on an isolated checkout of the commit is recorded below when it finishes.

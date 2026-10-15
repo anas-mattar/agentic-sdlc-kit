@@ -2298,6 +2298,44 @@
       "law": "feature 029 spec FR-002 to FR-004, FR-006 and plan D2, D3, D4 (Decision 2: the lane split of 027 D8, so the refusal is a failure on the numbered lane and UNGRADED on the Lite lane, 014 FR-009)",
       "emitAnchor": "), so what the branch's commits changed is unknown",
       "notes": "Feature 029 phase 2. ONE emission site: the refusal printed once at the first failed read of the walk (Read-AmendmentGit records it; Test-AmendmentReadFailed prints it at the next boundary). The numbered lane fails; the Lite lane converts it to UNGRADED by the existing prefix rule ('AmendmentAuthority: cannot grade '). Reached by fixtures for three reads: the name-status batch (G5, a middle commit's subtree truncated by truncateCommit naming a subtree), the blob read of an amended plan.md (G7, a truncated blob, exit 255: the status-only check reads the blob before git show -U0 does; also a Lite twin, where the parent FAILED the branch with 'no conforming approver record', a new hard failure on a condition the check could not compute) and the blob read of a tick-only tasks.md (G7). Each has a readable twin. The metadata batch (G4), the range rev-list (G6), git show -U0 (G8, which only runs after the blob read that already failed), the rename same-content compare (G9) and the renumbering ls-tree (G10) have no reachable data state (they read the same objects a successful read has just read) and are guarded by injected-failure mutations recorded in notes.md, not by fixtures (plan Amendment 1)."
+    },
+    {
+      "id": "TERR-023",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a branch under check whose uncommitted-tree diff cannot be read is refused by name instead of reading no uncommitted files",
+      "law": "feature 029 spec FR-002, FR-007 and plan D6 (the own-tree reads refuse, as the committed-diff read does at TERR-011)",
+      "emitAnchor": "Cannot read the uncommitted changes of",
+      "notes": "Feature 029 phase 4 (G13a). The committed diff needs trees only; git diff --name-only HEAD compares content, and reads the committed blob when the working copy is stat-dirty and the same length as it (diffcore_skip_stat_unmatch), so a damaged blob fails THIS read alone and the branch's own dirty files used to drop out of the overlap check. 'fail' truncates the blob (truncateCommit naming HEAD:path: truncateBlob silently does nothing when the object is not loose) and edits the working copy to the same length; 'pass' is the readable twin (CLEAN). Reproduced only with core.autocrlf false, which the fixtures set; with autocrlf true git reads the blob in more states."
+    },
+    {
+      "id": "TERR-024",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "a failed git ls-remote --heads origin is refused by name instead of reading no open branches",
+      "law": "feature 029 spec FR-002, FR-007 and plan D6",
+      "emitAnchor": "Cannot list the open feature branches",
+      "exemption": "Reaching it needs git ls-remote --heads origin to fail AFTER git fetch origin --prune succeeded against the same remote, a few lines earlier (a failed fetch is refused first, TERR-010). In a fixture the remote is the repository itself or a path, and ls-remote exited 0 in every damage mode probed (blob, tree, commit); a fixture that made it fail would also make the fetch fail and test TERR-010 instead. Exempted rather than faked, and guarded by an injected failure recorded in notes.md.",
+      "notes": "Feature 029 phase 4 (G13b). The site stays inventoried so it cannot be reworded away unnoticed."
+    },
+    {
+      "id": "TERR-025",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "an open branch whose diff against the base cannot be read is listed UNGRADED instead of reading no overlap",
+      "law": "feature 029 spec FR-002, FR-007 and plan D6 (the other-branch reads are ungraded records, never an overlap and never 'no overlap')",
+      "emitAnchor": "'diff-failed'",
+      "notes": "Feature 029 phase 4 (G14b). 'fail' truncates the tree of src on the OTHER branch (truncateCommit naming 012-other:src): git diff of main...origin/012-other exits 128, and the check used to print CLEAN while the two branches share src/shared.txt, a missed real overlap. It now lists the comparison UNGRADED and the run ends UNGRADED (exit 0, TERR-013's wording). 'pass' is the readable twin and finds the overlap (exit 2)."
+    },
+    {
+      "id": "TERR-026",
+      "script": "territory-check.ps1",
+      "function": "(top level)",
+      "summary": "an open branch whose last commit cannot be read is listed UNGRADED, not judged stale",
+      "law": "feature 029 spec FR-002, FR-007 and plan D6, plan Amendment 1 (G14a)",
+      "emitAnchor": "'last-commit-failed'",
+      "exemption": "git log -1 of origin/<other> fails only when the tip COMMIT object is damaged, and a damaged tip breaks git rev-list --count (read just before it, checked since feature 003) first, which is TERR-012's 'claim-skipped'. No data state reaches this read with the count succeeding (plan Amendment 1, G14a). Guarded by an injected failure recorded in notes.md.",
+      "notes": "Feature 029 phase 4 (G14a). An unreadable tip leaves the branch's status unknown, and an epoch of 0 would have called it stale (reclaimable), so the branch is not compared."
     }
   ]
 }

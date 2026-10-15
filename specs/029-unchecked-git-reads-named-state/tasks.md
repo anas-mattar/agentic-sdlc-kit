@@ -105,7 +105,7 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
 - [x] T017 Edit `scripts/enforcement-pack.ps1` (plan D3): the two reads through `Read-GitLines`; G11 keeps its failure and names the true cause; G12 keeps the author's-day-else-clock rule
       only when git succeeds and prints no date. `LIMITS` comments updated.
 - [x] T018 Show a mutation for each fixture that guards a branch of the new code and record it; restore byte for byte.
-- [ ] T019 Run `-Case GITREAD-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`; record the numbers. Then stop and ask the owner to run the gate.
+- [x] T019 Run `-Case GITREAD-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`; record the numbers. Then stop and ask the owner to run the gate.
 
 ---
 
@@ -118,18 +118,18 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
 - `scripts/territory-check.ps1`
 - `tests/**`
 
-- [ ] T020 Record the baseline in `notes.md`: the territory-check cases' count on the parent of this phase (the first step confirms the directory the existing cases use; plan says
+- [x] T020 Record the baseline in `notes.md`: the territory-check cases' count on the parent of this phase (the first step confirms the directory the existing cases use; plan says
       `tests/enforcement/cases/territory-check/`, to be confirmed), and the exact output and exit of a clean run. Reproduce on the parent: an open branch whose diff cannot be read is
       reported as no overlap.
-- [ ] T021 State, at the top of this phase's section in `notes.md`, the exit code and output shape of each of the four paths (plan D6): own committed diff (already `Stop-Refused`),
+- [x] T021 State, at the top of this phase's section in `notes.md`, the exit code and output shape of each of the four paths (plan D6): own committed diff (already `Stop-Refused`),
       own uncommitted diff (new refusal), `ls-remote` (new refusal), other-branch diff and last-commit reads (new `ungraded` record with cause `diff-failed`). No exit code is new; if one
       would be, stop and report.
-- [ ] T022 Write the fixtures first: `GITREAD-013` (G13: the uncommitted diff fails; `ls-remote` fails: each a refusal), `GITREAD-014` (G14: an open branch's diff fails: an `ungraded`
+- [x] T022 Write the fixtures first: `GITREAD-013` (G13: the uncommitted diff fails; `ls-remote` fails: each a refusal), `GITREAD-014` (G14: an open branch's diff fails: an `ungraded`
       record, not an overlap and not "no overlap"; control: readable, byte-identical). Each shown failing on the parent or named a control.
-- [ ] T023 Inventory the rules: `GITREAD-013`, `-014` with anchor and law; run the recall sweep first.
-- [ ] T024 Edit `scripts/territory-check.ps1` (plan D6): the four reads check their exit codes; no kit verdict word is added (GAP-029 stays open); `Read-CodeRef` and the other named
+- [x] T023 Inventory the rules: `GITREAD-013`, `-014` with anchor and law; run the recall sweep first.
+- [x] T024 Edit `scripts/territory-check.ps1` (plan D6): the four reads check their exit codes; no kit verdict word is added (GAP-029 stays open); `Read-CodeRef` and the other named
       paths are not edited. Update the script's `LIMITS` wording.
-- [ ] T025 Show a mutation for each fixture that guards a branch of the new code and record it; restore byte for byte.
+- [x] T025 Show a mutation for each fixture that guards a branch of the new code and record it; restore byte for byte.
 - [ ] T026 Run the territory-check cases, `-Case GITREAD-`, the full harness and `ritual-checks.ps1`; record the numbers. Then stop and ask the owner to run the gate.
 
 ---

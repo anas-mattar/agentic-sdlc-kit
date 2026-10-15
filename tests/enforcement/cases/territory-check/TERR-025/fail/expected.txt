@@ -1,0 +1,2 @@
+UNGRADED: governance: cannot compare 012-other (git diff of main...origin/012-other failed, git exited 128)
+UNGRADED — '011-thing' was NOT fully compared (1 comparison(s) not made, listed above), so this is not a clean result.
