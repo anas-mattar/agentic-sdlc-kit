@@ -1,0 +1,22 @@
+{
+  "description": "A docs/ branch whose diff cannot be read (the notes subtree of its commit is unreadable). Its two scripted checks, review-provenance and the Lite amendment gate, each graded nothing and must say so: UNGRADED, exit 0, never OK silently.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "docs/x",
+      "message": "docs: x",
+      "write": {
+        "notes/a.md": "notes\n"
+      }
+    }
+  ],
+  "checkout": "docs/x",
+  "truncateBlob": "notes"
+}

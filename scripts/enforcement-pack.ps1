@@ -1222,7 +1222,15 @@ function Invoke-ReviewProvenanceCheck {
     # AR filter: rename TARGETS are inspected like additions — moving a grandfathered
     # review into the feature is not legitimate grandfathering (phase 2 review, F3).
     # quotepath=off so non-ASCII filenames cannot dodge the pattern (phase 2 review, F2).
-    $rows = git -c core.quotepath=off diff --name-status --diff-filter=AR $Base HEAD 2>$null
+    # Feature 028 (plan D5): read through the shared reader. A diff git could not compute is a named
+    # state (a failure on the numbered lane, once per run; UNGRADED on the Lite lane), never an empty
+    # list in which no review file exists to grade.
+    $read = Read-DiffLines -GitArguments @('-c', 'core.quotepath=off', 'diff', '--name-status', '--diff-filter=AR', $Base, 'HEAD')
+    if (-not $read.Ok) {
+        Add-DiffUnreadable -Reader 'ReviewProvenance' -Branch $Branch -Base $Base -Exit $read.Exit -Consequence 'no review file added on this branch was inspected - the machine half of DoD gate 5 formed no opinion'
+        return
+    }
+    $rows = $read.Lines
     $candidates = @()
     foreach ($row in $rows) {
         if (-not $row) { continue }
@@ -1910,12 +1918,12 @@ function Get-OtherFeatureNote {
 # before; a whole feature directory moved inside a MERGE is graded as the removal of its documents
 # (026: a rename is not detected inside a merge), so the move belongs in an ordinary commit; the Lite
 # lane (fix/, chore/, docs/) runs this check only when its diff touches a spec document (plan D6), and
-# names a condition it cannot compute UNGRADED instead of failing (plan D8), so a Lite branch whose diff
-# cannot be read, or which has no diff base (GAP-034, feature 028: a failing git diff is now a named
-# state for the changed-file list - the count line, a failure on the numbered lane, UNGRADED for
-# LiteAndAbuse - but THIS gate still says nothing for want of a list until feature 028 phase 2 moves it
-# onto the same reader), is not graded and says nothing for want of a gate; the gate list is read a second time
-# without rename detection, so a spec document moved off specs/ is seen. Two more limits of the Lite gate: it reads
+# names a condition it cannot compute UNGRADED instead of failing (plan D8), so a Lite branch which has
+# no diff base is not graded and says nothing for want of a gate (the dispatch's no-base warning and the
+# other members' UNGRADED lines name it); a Lite branch whose diff cannot be READ is named (GAP-034,
+# feature 028: either read of the gate's list failing prints an UNGRADED line for this check through
+# Add-DiffUnreadable and the check returns, instead of reading as "no spec document changed"); the gate
+# list is read a second time without rename detection, so a spec document moved off specs/ is seen. Two more limits of the Lite gate: it reads
 # the NET diff, so a branch that amends an approved document with no record and then reverts it, or a
 # replay over a range whose net diff is empty, is silent (phase 2 review F2); and a branch that only CREATES a
 # spec document, in a clone that is shallow but still has a base, prints an UNGRADED refusal where it used to
@@ -1939,7 +1947,19 @@ function Invoke-AmendmentAuthorityCheck {
         # git reports a moved document by its new path only, and a spec document moved to a path
         # outside specs/ would otherwise never reach the gate.
         $gate = @($ChangedFiles)
-        if ($Base) { $gate += @(git -c core.quotepath=off diff --name-only --no-renames $Base HEAD 2>$null) }
+        # Feature 028 (plan D4): a gate that cannot be computed names itself, instead of reading as
+        # "no spec document changed". Either read failing enters the state: the dispatch's list
+        # (carried in $script:ChangedFilesRead) or this second read, taken through the shared reader.
+        $gateExit = $null
+        if (-not $script:ChangedFilesRead.Ok) { $gateExit = $script:ChangedFilesRead.Exit }
+        elseif ($Base) {
+            $second = Read-DiffLines -GitArguments @('-c', 'core.quotepath=off', 'diff', '--name-only', '--no-renames', $Base, 'HEAD')
+            if ($second.Ok) { $gate += $second.Lines } else { $gateExit = $second.Exit }
+        }
+        if ($null -ne $gateExit) {
+            Add-DiffUnreadable -Reader 'AmendmentAuthority' -Branch $Branch -Base $Base -Exit $gateExit -Consequence 'no spec document changed on this branch could be graded'
+            return
+        }
         if (-not @($gate | Where-Object { $_ -and (Get-GradedDocFeature -Path $_) })) { return }
     }
     $failuresBefore = @($script:failures).Count
