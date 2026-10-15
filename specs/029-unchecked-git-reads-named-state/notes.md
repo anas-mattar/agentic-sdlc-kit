@@ -202,3 +202,18 @@ Injected failures (Amendment 1), each read made to fail by pointing it at a miss
 - **Mutations of the new logic** (script restored byte for byte): R1 partial rows discarded: caught by `AMEND-009/fail-lite-failure-kept-beside-refusal`; R2 the after-walk refusal dropped: caught by
   `AMEND-011/fail-name-status`; R3 a missing record never noted: caught by `AMEND-011/fail-name-status`. The earlier mutation P3 (the check after the batch) no longer applies: that check is gone.
 - **Lesson.** Run the families whose fixtures damage a tree or blob (`DIFF-`, `AMEND-`) on the phase code BEFORE committing, and do not stop a run to commit.
+
+### AI review of the phase 2 fix (fresh-context agent, `ai-code-review-phase2-fix.md`) and the close-out count
+
+- **Verdict: APPROVE with follow-ups.** The reviewer ran the families on a detached worktree of `92c2371`: DIFF- 86, AMEND- 288, GITREAD- 74, LITE- 122, CRIT- 228, MICRO- 100, PHASE- 88, PACK- 78,
+  PROV- 86: **1150 passed, 0 failed**. The five fixtures that `02a065d` broke pass on their original expectations (no `expected.txt` is in `git diff 02a065d 92c2371`).
+- **Full harness on an isolated checkout of `92c2371`: 1732 passed, 0 failed, 0 skipped** (parent 1704, +12 for phase 1's six cases, +16 for phase 2's eight: matches the case counts).
+- **F1 (MINOR), closed by a probe**: could a record whose header git printed but whose rows it did not finish be graded as complete? The reviewer probed one damage mode; the implementer probed five on throwaway
+  repositories with auto-maintenance disabled (an earlier probe run had packed the objects and damaged nothing, so it was discarded): the subtree of a middle, the newest and the oldest commit (30 commits of 200 files,
+  6 KB per record, beyond the pipe buffer), a damaged blob hit by rename detection, and a side commit's subtree inside a merge range. In every mode git printed only COMPLETE records (**0 incomplete records
+  in all five**; for example 14 of 30 records printed when commit 15 failed): it builds a commit's whole output before printing it. A damaged commit object breaks the walk before any output. So the
+  "keep the partial rows" claim holds and no further hardening is added.
+- **F2 (ACCEPTED)**: when every commit without a record is a root, merge or pre-boundary commit, nothing is refused; those commits need no rows. **F3 (DOC DRIFT)**: R2 and R3 share one fixture
+  (`AMEND-011/fail-name-status`), so they are not independent guards; recorded, not split. **F4 (MINOR)**: the label changes of the earlier round are cosmetic; the exit code 255 is the one measured in the probe table. **F5 (DOC DRIFT)**: `ai-code-review-phase2.md` approved `02a065d`;
+  this file and the correction section above supersede it for the final state of phase 2.
+- **The owner's gate for phase 2** on `92c2371` (the state the counts above describe) is still to be confirmed; the earlier report ("both exit 0") predates the fix and is not recorded as certifying.
