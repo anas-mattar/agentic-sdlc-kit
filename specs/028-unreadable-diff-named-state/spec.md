@@ -2,7 +2,7 @@
 
 **Feature Branch**: `028-unreadable-diff-named-state`
 **Created**: 2026-10-15
-**Status**: Draft (awaiting owner approval)
+**Status**: Approved 2026-10-15 (owner: anas.m)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-034: `Get-ChangedFiles` in `scripts/enforcement-pack.ps1` swallows a failing `git diff`, so a diff git cannot compute returns an empty list with no error and no message; the pack prints `N changed file(s)` as `0`, the Lite-lane abuse check grades an empty list, and feature 027's Lite amendment gate reads the same list. Make an unreadable diff a named state, not an empty changed-file list."
