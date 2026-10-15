@@ -1,0 +1,28 @@
+{
+  "description": "Control: a fix/ branch whose net diff against the base is empty (a file added, then deleted). git computes it and it is empty: the count line still reads 0 and the run is OK. The state is entered on a non-zero exit, never on an empty result.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/x",
+      "message": "fix: add",
+      "write": {
+        "notes.txt": "x\n"
+      }
+    },
+    {
+      "branch": "fix/x",
+      "message": "fix: remove",
+      "delete": [
+        "notes.txt"
+      ]
+    }
+  ],
+  "checkout": "fix/x"
+}

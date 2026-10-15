@@ -1,0 +1,23 @@
+{
+  "description": "A fix/ branch adds a dependency manifest and a migration; the src subtree of its commit is unreadable, so git diff fails. The Lite lane must name it UNGRADED, never print OK and never newly fail (014 FR-009).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/x",
+      "message": "fix: x",
+      "write": {
+        "package.json": "{ \"name\": \"fixture\" }\n",
+        "src/db/migrations/001.sql": "create table t;\n"
+      }
+    }
+  ],
+  "checkout": "fix/x",
+  "truncateBlob": "src"
+}

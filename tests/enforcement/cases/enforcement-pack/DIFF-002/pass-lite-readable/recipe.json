@@ -1,0 +1,22 @@
+{
+  "description": "Control: the same fix/ branch with a readable diff. The guards grade it and fail it, exactly as before this feature.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "fix/x",
+      "message": "fix: x",
+      "write": {
+        "package.json": "{ \"name\": \"fixture\" }\n",
+        "src/db/migrations/001.sql": "create table t;\n"
+      }
+    }
+  ],
+  "checkout": "fix/x"
+}

@@ -2253,6 +2253,24 @@
       "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003, FR-004 (amended); roadmap GAP-031",
       "emitAnchor": "Lost the allocation race",
       "notes": "Added exempt in feature 023 phase 1 on the premise that only a rival claim appearing between allocation and the check could reach this site. The phase 1 AI review (F1) showed that false: the loop treats a failed push as a lost race, so any push that fails does the same. Fixtured by CLF-007 through the originPushUrl recipe field (a push URL that does not exist, origin reading fine), which the owner approved as a plan amendment (anas.m, 2026-10-12). The fail leaves the local branch and spec directory in place, renumbered twice; only the remote claim is withdrawn, and nothing landed here to withdraw."
+    },
+    {
+      "id": "DIFF-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Add-DiffUnreadable",
+      "summary": "a numbered branch whose diff against the base cannot be read fails once, naming the cause, instead of printing '0 changed file(s)' and passing",
+      "law": "feature 028 spec FR-004 and plan D3 (Decision 1, option B): the numbered lane keeps its refusals as failures, as feature 027's D8 does for the amendment check",
+      "emitAnchor": "DiffUnreadable: git diff against '",
+      "notes": "Feature 028 phase 1. ONE emission site, the numbered arm of Add-DiffUnreadable: a non-zero exit of git diff with a base present is a failure that names the base, the exit code and what graded nothing, once per run (a flag keeps a second reader of the same damage from adding a second line). The damage is truncateBlob naming a DIRECTORY path (rev-parse HEAD:src is a tree object): a truncated commit object breaks git merge-base first and lands in the already-named no-base state. fail is the numbered branch with the src subtree truncated; pass is the same branch readable."
+    },
+    {
+      "id": "DIFF-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Add-DiffUnreadable",
+      "summary": "a Lite-lane branch (fix/, chore/, docs/) whose diff against the base cannot be read is named UNGRADED for each check that graded nothing, and is never newly failed",
+      "law": "feature 014 FR-009 (the Lite lane is never newly failed on a condition it cannot compute); feature 028 spec FR-003 and plan D3, D6",
+      "emitAnchor": "could not be read (git diff exited ",
+      "notes": "Feature 028 phase 1. ONE emission site, the Lite arm of Add-DiffUnreadable, one UNGRADED line per reader that graded nothing, exit 0, the verdict reading 'not graded', never OK. Phase 1 reaches it for LiteAndAbuse (fix/ and chore/); phase 2 adds review-provenance and the Lite amendment gate. fail and fail-chore are the two Lite lanes that run LiteAndAbuse over the src-truncated branch; pass is the numbered twin over the same damage (the lane that keeps its failure), named pass because it is the rule's other direction, and expecting exit 1, as AMEND-009 does. pass-lite-readable and pass-docs-readable are the controls: a readable diff prints exactly what it printed before. A partial list cannot be shown by a fixture: git builds the whole tree diff before it prints, so a failing diff prints nothing (a branch changing a readable a/ and an unreadable z/ printed no row); the helper discards a partial result as a defensive property, recorded in notes.md and guarded by no fixture."
     }
   ]
 }

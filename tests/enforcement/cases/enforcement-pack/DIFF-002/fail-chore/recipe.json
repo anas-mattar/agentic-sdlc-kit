@@ -1,0 +1,23 @@
+{
+  "description": "The same on a chore/ branch.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "chore/x",
+      "message": "fix: x",
+      "write": {
+        "package.json": "{ \"name\": \"fixture\" }\n",
+        "src/db/migrations/001.sql": "create table t;\n"
+      }
+    }
+  ],
+  "checkout": "chore/x",
+  "truncateBlob": "src"
+}
