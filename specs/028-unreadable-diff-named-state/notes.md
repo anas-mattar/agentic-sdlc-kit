@@ -66,3 +66,7 @@ M4 (drop the numbered once-only flag) needs a second reader and is shown in phas
 - **Full harness on an isolated detached worktree of the pre-rebuild `4efabf2`** (content identical to `3f2c287` apart from the two `Status` lines): **1698 passed, 0 failed, 0 skipped** (1204 s), against 1680 on the parent: 18 new tests (9 fixtures, `DIFF-001` and `DIFF-002` rule entries, the empty-diff control, the blob-rename fixture, and the inventory tests those add).
 - **`ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` on the rebuilt `21030a3`:** doc-lint OK, enforcement-pack OK (AmendmentAuthority graded 9 of 10 commits, the merge not graded), scope-check PASS on `e959c71`, `c0109b9`, `3f2c287` and `21030a3`, digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK. (Before the rebuild the same run ended `RESULT FAIL`, one member, for the two Status lines above.)
 - The re-run of the full harness on the rebuilt commit is not made: the tree differs from the run above in two `Status` lines of approved documents, which no fixture reads. T018 runs it on the final commit of the feature.
+
+### Phase 1 gate (user-run, 2026-10-15)
+
+The owner ran the gate on the rebuilt branch at `f2063df` and confirmed both exit codes (anas.m): `pwsh -File tests/enforcement/Run-Tests.ps1`: **1698 passed, 0 failed, 0 skipped**, `HARNESS EXIT: 0` (1207 s); `pwsh -File scripts/ritual-checks.ps1 -Branch 028-unreadable-diff-named-state`: `RESULT OK`, `RITUAL EXIT: 0`. This is the phase 1 baseline for phase 2.
