@@ -4,7 +4,7 @@
 **Input**: Feature specification (approved, anas.m, 2026-10-15; Decision 1 option B, Decision 2 the three readers in `scripts/enforcement-pack.ps1`) + decisions D1–D10 below
 **Gate Batching**: none
 **Gate Certification**: user-run
-**Status**: Draft (awaiting owner approval)
+**Status**: Approved 2026-10-15 (owner: anas.m)
 
 ## Summary
 
