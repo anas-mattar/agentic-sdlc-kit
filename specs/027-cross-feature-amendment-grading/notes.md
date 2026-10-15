@@ -189,3 +189,9 @@ branch name to grade.
 (the new run is no slower on any of the four largest runs). **What it does not show:** how easy a newly failing branch is to satisfy (two cases, one of them predating the rule), how
 often a Lite branch will amend a spec document from now on, anything about a run in an adopted project's own CI, a shallow clone (a clone from a local directory is complete) or
 an octopus merge (none exists in these histories). A run grades the documents as they stood, with the version of the script under test and the clone's own files.
+
+### T018 — final run on an isolated checkout of `bf62122`
+
+A detached `git worktree` outside the repository (removed afterwards): the full harness **1680 passed, 0 failed, 0 skipped** (exit 0; 1671 at the phase 2 build plus the fixtures
+and guard its review added), 1160 s. `ritual-checks.ps1 -Branch 027-cross-feature-amendment-grading`: doc-lint OK, enforcement-pack OK, scope-check OK (PASS on all nine commits of
+phases 1 to 3, the phase 3 commit `bf62122` with 7 files), digests OK (115 markers), roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK. The owner now runs the gate.

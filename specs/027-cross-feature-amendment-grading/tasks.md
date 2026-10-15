@@ -133,7 +133,7 @@ Lite branches included. No script changes.
       grades (`<merge>^1..<merge>`), each version placed inside the clone; report per history the commits newly graded, newly failing, **how many of the newly
       failing carry a record in the amended document**, the byte-identity of every other output and the run time on the largest. Say plainly what it shows and
       does not show (plan D10).
-- [ ] T018 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards): the full harness,
+- [x] T018 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards): the full harness,
       `ritual-checks.ps1 -Branch 027-cross-feature-amendment-grading`, and `scope-check.ps1` on each phase commit. Record the numbers in `notes.md`. The owner then
       runs the gate.
 
