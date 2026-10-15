@@ -121,3 +121,10 @@ Exemption guards (Amendment 1: no reachable data state): each read is made to fa
 phase's intended effect on a damaged repository (the same read, the same lane policy), and it is the only difference: exit codes and every other line are unchanged. The five expectations
 were updated by hand (one inserted line each) in the follow-up commit; every readable, empty, no-base, shallow and trunk case is byte-identical, and the baseline full harness on the
 parent is **1704 passed, 0 failed**. Lesson recorded: the families to run per phase are the ones whose fixtures damage a tree or blob (`DIFF-`, `AMEND-`), not only the rule's own.
+
+### AI review of phase 1 (fresh-context agent, `ai-code-review-phase1.md`): APPROVE with follow-ups
+
+- **F1 (DOC DRIFT), fixed**: the `GITREAD-002` summary in `rules.json` said "a read on a Lite branch"; in phase 1 only the advisory arm is reached (both callers are numbered-only), so the summary now says so and names phase 2 for the Lite path.
+- **F2 (ACCEPTED)**: the per-read dedupe hides a second damaged commit of the same kind; by plan D2, and the verdict still fails.
+- **F3 (MINOR), recorded**: the `rev-list` and `log -1` failure branches and the advisory `rev-list` branch are guarded by the injected-failure checks above (Amendment 1), not by a fixture, so CI does not run them. `tasks.md` T003 still names per-read ids; the implementation uses per-site ids (noted under "What was built"); not amended, because the ids are a label and the text of T003 was written before the harness's per-site rule was met.
+- **F4 (CONFIRM), open**: T007's full-harness count on the isolated phase checkout and the user-run gate are owed before this phase counts as done.

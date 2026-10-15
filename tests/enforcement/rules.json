@@ -2285,7 +2285,7 @@
       "id": "GITREAD-002",
       "script": "enforcement-pack.ps1",
       "function": "Add-GitReadUnreadable",
-      "summary": "a git read whose check is advisory, or a read on a Lite branch, that fails is named UNGRADED for the check that graded nothing, and never newly fails",
+      "summary": "a git read that fails and whose check is advisory (PhaseSizeWarning, phase 1), or, from phase 2, is read on a Lite branch, is named UNGRADED for the check that graded nothing, and never newly fails",
       "law": "feature 014 FR-009 (the Lite lane is never newly failed on a condition it cannot compute); feature 029 spec FR-004 and plan D2, D3 (PhaseSizeWarning is advisory today, so it is UNGRADED, not a failure)",
       "emitAnchor": "could not be read (git exited ",
       "notes": "Feature 029 phase 1. ONE emission site, the UNGRADED arm of Add-GitReadUnreadable. Phase 1 owns PhaseSizeWarning (G3): a Standard phase of 401 lines whose blob is truncated used to print neither the warning nor anything else; it now prints one UNGRADED line naming the commit, the verdict reads UNGRADED, exit 0. 'pass' is the readable twin and prints the WARNING it always did, verdict OK."
