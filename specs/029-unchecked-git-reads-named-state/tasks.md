@@ -155,7 +155,7 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
       cannot tell absent from unreadable; silent corruption; GAP-029).
 - [x] T029 Update `docs/roadmap.md`: GAP-035 shipped (owner, spec path, merge evidence), its idea row under Ideas closed, and any new row the probe or replay produced; fix the `LIMITS`
       comments in the two scripts that still describe the old state.
-- [ ] T030 Regenerate the digests with `pwsh -File scripts/build-digests.ps1`; run `pwsh -File scripts/ritual-checks.ps1` and the full harness on an isolated checkout of the final
+- [x] T030 Regenerate the digests with `pwsh -File scripts/build-digests.ps1`; run `pwsh -File scripts/ritual-checks.ps1` and the full harness on an isolated checkout of the final
       commit; record the numbers in `notes.md`. Then stop and ask the owner to run the gate.
 
 ---

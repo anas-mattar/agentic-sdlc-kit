@@ -356,3 +356,10 @@ refs and grade today's remote, not the merge; its reads are shown by the `TERR-`
 
 The two scripts hold no comment that describes the old state of these reads: the only `LIMITS` block (`enforcement-pack.ps1`, the merge-readiness heuristic) is about something else, and
 `territory-check.ps1` has none (the same finding as phase 4's F2). Nothing edited there.
+
+### T030 — digests, ritual checks and the full harness
+
+- `pwsh -File scripts/build-digests.ps1`: OK (5 digests, 119 markers; `docs/digests/adoption-digest.md` regenerated; two new digest one-liners tightened to the 120-character bound first).
+- `pwsh -File scripts/ritual-checks.ps1` on the working tree before the phase commit: doc-lint OK, enforcement-pack OK, scope-check OK, digests OK, roadmap-claims OK; scope-repos and verify-kit n/a (kit repository). `scope-check`: PASS phase 5 commit `2f00c82` (5 files).
+- **Full harness on an isolated checkout (detached worktree) of `2f00c82`: 1744 passed, 0 failed, 0 skipped** (1360.8 s), the same count as phase 4's close-out: phase 5 adds no case.
+- Phase 5 is not yet AI-reviewed (fresh-context, Reviewer Provenance) and the owner's gate is not yet run.
