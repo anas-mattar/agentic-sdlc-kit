@@ -116,3 +116,7 @@ Same method as phase 1 (script mutated in place, `-Case DIFF-`, `-Case LITE-`, `
 - Full harness on an isolated detached worktree of `7c93b00` (the phase 2 code, the follow-ups F1-F3 and F5, the review file and its addendum): **1704 passed, 0 failed, 0 skipped** (exit 0, 1228 s), against 1700 on the code commit `89bb651`: 4 new tests (the two follow-up fixtures `DIFF-001/fail-with-review-file` and `DIFF-002/pass-docs-readable-review`, two tests each) and 1698 at the phase 1 gate.
 - `ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` on the same commit: doc-lint OK, enforcement-pack OK (AmendmentAuthority graded 14 of 15 commits, the merge not graded), scope-check PASS on all nine phase commits (phase 1: `e959c71`, `c0109b9`, `3f2c287`, `21030a3`, `f2063df`, `088dd0d`; phase 2: `89bb651`, `0f801e0`, `7c93b00`), digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK.
 - The owner now runs the phase 2 gate.
+
+### Phase 2 gate (user-run, 2026-10-15)
+
+The owner ran the gate at `079f3bb` and reported both exit codes as 0 (anas.m): `pwsh -File tests/enforcement/Run-Tests.ps1` (`HARNESS EXIT: 0`) and `pwsh -File scripts/ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` (`RITUAL EXIT: 0`). The owner reported the exit codes, not the output, so the harness count is the agent-run 1704 passed above, not a number the owner confirmed. This is the phase 3 baseline.
