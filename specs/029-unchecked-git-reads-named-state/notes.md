@@ -246,3 +246,15 @@ Injected failures (Amendment 1), each read made to fail by pointing it at a miss
 
 Script restored byte for byte after each (hash compared). Before the commit, on the working tree: `-Case GITREAD-` 78 passed, `-Case CRIT-` 228, `DIFF-` 86, `AMEND-` 288; the rest of the families were stopped to commit (a lesson of phase 2:
 the count that counts is the full harness on an isolated checkout of the commit, recorded below).
+
+### AI review of phase 3 (fresh-context agent, `ai-code-review-phase3.md`): APPROVE with follow-ups
+
+- **Families run by the reviewer** on a detached worktree of `1554148`, one at a time, all exit 0: GITREAD- 78, CRIT- 228, LEVEL- 194, DIFF- 86, AMEND- 288, LITE- 122, MICRO- 100, PHASE- 88, PACK- 78, PROV- 86: **1348 passed, 0 failed**.
+  The reviewer also re-ran S1 (the G11 failure branch disabled: `GITREAD-001` 73 passed, 1 failed, the fail fixture) and made the G12 read fail (all 3 `LEVEL-005` cases fail, so the existing `LEVEL-` fixtures notice any change on that path,
+  which is more than the injected-failure check above claims); the old `has no git history` message for an uncommitted review file is byte-identical (`CRIT-S02/fail` unchanged).
+- **F1 (MINOR)**: the G12 UNGRADED line prints whenever the date read fails, even if the spec has no Surface Exception (the read happens before any exception is looked for); advisory, near-unreachable, kept.
+- **F2 (DOC DRIFT)**: T015 and T017 are ticked but there is no G12 fixture (plan Amendment 1) and no `LIMITS` comment changed (none describes these reads as unchecked); the substance is met, as recorded above.
+- **F3 (ACCEPTED)**: the fail fixture also pins 028's `DiffUnreadable` line and phase 1's `PhaseSizeWarning` UNGRADED line; brittle coupling, but the guard bites and the readable twin is meaningful.
+- **F4 (MINOR)**: both functions read `$Branch` by dynamic scope without declaring it; a future caller without it would downgrade the G11 failure to UNGRADED. Unreachable today (the dispatch always sets it); not changed.
+- **F5 (MINOR)**: the reviewer did not re-run S2 or check the restore hash; the implementer's hash check is recorded above.
+- **Still open for phase 3**: the full-harness count on an isolated checkout of `1554148` (running) and the owner's gate.
