@@ -120,3 +120,30 @@ Same method as phase 1 (script mutated in place, `-Case DIFF-`, `-Case LITE-`, `
 ### Phase 2 gate (user-run, 2026-10-15)
 
 The owner ran the gate at `079f3bb` and reported both exit codes as 0 (anas.m): `pwsh -File tests/enforcement/Run-Tests.ps1` (`HARNESS EXIT: 0`) and `pwsh -File scripts/ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` (`RITUAL EXIT: 0`). The owner reported the exit codes, not the output, so the harness count is the agent-run 1704 passed above, not a number the owner confirmed. This is the phase 3 baseline.
+
+## Phase 3: guidance, retirement of the limit, flow-down and replay
+
+### T013 and T014 — what the documents say
+
+- Grep of `docs/sdlc/`, `adoption/`, `README.md` and the script headers for sentences that treat an unreadable diff as empty: the only sentence that is now false is feature 027's flow-down limit (3) in `adoption/updating.md` ("a Lite branch with an unreadable diff is not graded and prints as before"). It is a historical note and is **not edited**; the new flow-down note supersedes it by name, as 027 did for 026's edge case. Nothing in `docs/sdlc/` says it. The script comments were corrected with the code in phases 1 and 2. **No sentence was edited in this phase (T014).**
+
+### T015 and T016 — the documents
+
+- `adoption/updating.md`: a flow-down note in the shape of 026's and 027's (what was wrong, what it does now, what flows down: two verbatim files, what an owner may newly see, what does not change, seven known limits, what was measured, what to do), with two digest markers within 120 characters; doc-lint resolves every path in it.
+- `docs/roadmap.md`: the GAP-034 inventory row ends "Closed by feature 028 ..." with the same limits; the roadmap row reads `shipped`, owner `anas.m`, the Spec cell unbracketed (`specs/028-unreadable-diff-named-state/`); a decisions-log entry dated 2026-10-15 records the owner's decisions, what the work corrected, the measurement and what stays open. `scripts/build-digests.ps1` regenerated `docs/digests/**` (117 markers).
+
+### T017 — replay on real history (plan D10, FR-010, SC-004)
+
+Method: clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (`git clone --local --no-hardlinks`, `core.autocrlf=false`; the real projects untouched, nothing pushed) and of this repository. For every merge commit reachable from any ref whose subject names a merged branch (`Merge pull request #N from <owner>/<branch>`, `Merge branch '<branch>'` not followed by `into`, or `Merge <NNN-name>` as in `Merge 021-developer-roster: ...`, the pattern the 027 replay missed), taking the branch name from the subject: the clone is checked out detached at the merge, `main` and `origin/main` are set to the merge's first parent, so the run has the shape CI grades a pull request; each run passes `-Branch <name> -ReplayBase <merge>^1 -ReplayTip <merge> -IgnoreAmendmentBoundary`. The parent script (`d4609b8`, before any 028 change) against this one (the phase 2 tip, which phase 3 does not change), each taken with its own `scripts/` from a scratch directory outside every clone with `-Root` the clone. The driver and its JSON are kept outside the repository. The merges whose subject names no branch are listed, not hidden: `main` merged into a branch (`Merge branch 'main' into ...`, `Merge remote-tracking branch 'origin/main' into ...`, `Merge main into ...`, `Merge origin/main into ...`) and `governance:` commits.
+
+| History | Merge commits | Replayed | Numbered | Lite | Named no branch | Outputs that differ | Exit codes that changed | Largest run, old (new) |
+|---|---|---|---|---|---|---|---|---|
+| FitForge | 10 | 5 | 1 | 4 | 5 | 0 | 0 | 26 commits, 7.8 s (6.9 s) |
+| FlowBoard | 10 | 8 | 4 | 4 | 2 | 0 | 0 | 23 commits, 4.4 s (3.4 s) |
+| ExpenseTracker | 10 | 8 | 3 | 5 | 2 | 0 | 0 | 9 commits, 3.2 s (2.7 s) |
+| this kit | 113 | 92 | 30 | 62 | 21 | 0 | 0 | 50 commits, 5.7 s (5.1 s) |
+| **Total** | **143** | **113** | **38** | **75** | **30** | **0** | **0** | |
+
+**All 113 runs are byte-identical** (output and exit code), including every run in the three adopted projects. Over the 92 kit runs the summed time was 116.7 s with the old script and 110.5 s with the new. The zeros in the two "differ" columns are the expected answer, not a surprise: a diff that cannot be read has never occurred in these histories.
+
+**What it shows:** no branch with a readable diff changes, on four real histories, per merge in the shape CI grades. **What it does not show,** said plainly: how the new state reads on a damaged repository (no branch in these histories has an unreadable diff; the fixtures show that), how often it will occur, a shallow clone (a local clone is complete), another platform or a CI of an adopted project, or an octopus merge (none exists in these histories). The timings are one sample per version with the old script run first; they show no cost, not that there is none.

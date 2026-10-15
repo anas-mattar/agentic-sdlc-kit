@@ -37,6 +37,8 @@
 - A graded merge needs the approver record new against every parent and the approver named in the merge message. (`adoption/updating.md`)
 - The amendment check grades any feature's approved spec document, Lite lane too; the record goes in that document. (`adoption/updating.md`)
 - A Lite branch that cannot be graded prints UNGRADED and exits 0; one touching no spec document is unchanged. (`adoption/updating.md`)
+- An unreadable git diff is a named state: count line, a numbered failure, UNGRADED on the Lite lane, never empty. (`adoption/updating.md`)
+- A Lite branch whose diff cannot be read prints UNGRADED per check and exits 0; a numbered branch fails once. (`adoption/updating.md`)
 - Surgical files carry project-filled content: re-apply by hand only what applies — an ordinary governance edit. (`adoption/updating.md`)
 - verify-kit.ps1 is the adoption doctor: read-only, runs at init end, update end, and in adopted-project CI. (`adoption/updating.md`)
 - kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. (`adoption/updating.md`)

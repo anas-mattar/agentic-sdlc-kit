@@ -102,17 +102,17 @@ included. No script changes.
 - `docs/roadmap.md`
 - `docs/digests/**`
 
-- [ ] T013 Grep `docs/sdlc/`, `adoption/`, `docs/roadmap.md` and the script headers for sentences that say an unreadable diff is graded as empty or "prints as before", and record in
+- [x] T013 Grep `docs/sdlc/`, `adoption/`, `docs/roadmap.md` and the script headers for sentences that say an unreadable diff is graded as empty or "prints as before", and record in
       `notes.md` which are now false (expected, from the planning grep: feature 027's flow-down limit (3), a historical note not edited; the script comments edited in phases 1 and 2;
       nothing in `docs/sdlc/`). If a sentence in `docs/sdlc/` is false, add its file to this phase's Territory by an amendment recorded as the owner's.
-- [ ] T014 Edit only the sentences T013 found false in documents inside this phase's Territory, with their digest markers within 120 characters; never hand-edit `docs/digests/**`.
-- [ ] T015 Add a flow-down note to `adoption/updating.md` shaped like 026's and 027's (what was wrong, what it does now, what flows down, what an owner may newly see on a numbered
+- [x] T014 Edit only the sentences T013 found false in documents inside this phase's Territory, with their digest markers within 120 characters; never hand-edit `docs/digests/**`.
+- [x] T015 Add a flow-down note to `adoption/updating.md` shaped like 026's and 027's (what was wrong, what it does now, what flows down, what an owner may newly see on a numbered
       and on a Lite branch, what does not change, the known limits: `scripts/territory-check.ps1`'s two unchecked reads, a non-zero exit as the whole truth, the pack's other `git`
       reads, git's message not shown; what was measured; what to do), stating that 027's limit (3) is superseded. Every path in it resolves in an adopted project (doc-lint).
-- [ ] T016 Update `docs/roadmap.md`: the GAP-034 inventory row and its roadmap row to `shipped` (drop the brackets from the Spec cell), and a decisions-log entry dated the day the
+- [x] T016 Update `docs/roadmap.md`: the GAP-034 inventory row and its roadmap row to `shipped` (drop the brackets from the Spec cell), and a decisions-log entry dated the day the
       feature ships (recording the owner's decisions: Decision 1 option B, Decision 2 the three readers, D1–D10 and Needs-the-owner items 1–4, and the phase count). Run
       `pwsh -File scripts/build-digests.ps1` and commit the regenerated `docs/digests/**`.
-- [ ] T017 Replay (plan D10, FR-010, SC-004): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (never the real projects, nothing pushed) and the kit's
+- [x] T017 Replay (plan D10, FR-010, SC-004): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (never the real projects, nothing pushed) and the kit's
       own repository; run the parent kit's `enforcement-pack.ps1` and the new one with `-ReplayBase`, `-ReplayTip` and `-IgnoreAmendmentBoundary` over each merged `NNN-*`, `fix/`,
       `chore/` and `docs/` branch, per merge in the shape CI grades (the clone detached at the merge, `main` at its first parent), from a scratch directory outside every clone; report
       per history the runs, the outputs that differ (expected none), the merges the subject patterns missed (counted, and any such merge replayed by name) and the run time on the
