@@ -187,3 +187,14 @@ edited. `specs/028-*` is history and is not edited.
 ## Complexity Tracking
 
 No constitution violation to justify.
+
+## Amendment 1 — the probe's finding (T002), 2026-10-15
+
+The phase 1 probe (`notes.md`) showed that seven graded reads (G2a, G2b, G3, G4, G6, G12, G14a) fail only when a **commit object** of the range is damaged, which breaks
+`git merge-base` first and lands in the already-named no-base state; no data state lets a fixture show them swallowing a failure with a base present. **Decision (option A):** they are
+still moved behind `Read-GitLines` and the policy function, in their planned phases (D1, D2, D3 unchanged); their guard is a **mutation** (the read is made to return a failure and the
+site must name it) and not a harness fixture, each recorded in `notes.md` as an *exemption: no reachable data state*, with the probe row as the reason. Consequently `GITREAD-002`, `-003`
+(its G3 half), `-004`, `-006`, `-012` and the G14a half of `-014` are mutation-guarded exemptions; the reachable reads keep fixtures. The phase 4 `ls-remote` fixture uses an unreachable
+`origin` URL (D7's "nearest state"). The class table's "graded here" count is unchanged; no phase is added or removed.
+
+**Amendment approved by**: anas.m, 2026-10-15

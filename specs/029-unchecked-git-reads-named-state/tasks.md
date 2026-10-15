@@ -157,3 +157,13 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
       comments in the two scripts that still describe the old state.
 - [ ] T030 Regenerate the digests with `pwsh -File scripts/build-digests.ps1`; run `pwsh -File scripts/ritual-checks.ps1` and the full harness on an isolated checkout of the final
       commit; record the numbers in `notes.md`. Then stop and ask the owner to run the gate.
+
+---
+
+## Amendment 1 — fixtures versus mutation guards (plan Amendment 1), 2026-10-15
+
+The probe (T002) found seven reads with no reachable data state. The tasks stand as written with one change of guard: where a task above names a fixture for G2a, G2b, G3, G4, G6, G12 or
+G14a (`GITREAD-002`, the G3 half of `-003`, `-004`, `-006`, `-012`, the G14a half of `-014`), that read is guarded by its **mutation** (T006, T012, T018, T025) and recorded in `notes.md`
+as an exemption with the reason; the readable control for each still runs as part of the existing cases.
+
+**Amendment approved by**: anas.m, 2026-10-15
