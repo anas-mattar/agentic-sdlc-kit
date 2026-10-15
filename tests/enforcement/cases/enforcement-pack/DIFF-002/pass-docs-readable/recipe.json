@@ -1,0 +1,21 @@
+{
+  "description": "Control: a docs/ branch that changes only the README, readable. Byte-identical to before this feature.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "docs/x",
+      "message": "docs: x",
+      "write": {
+        "README.md": "fixture kit, edited\n"
+      }
+    }
+  ],
+  "checkout": "docs/x"
+}

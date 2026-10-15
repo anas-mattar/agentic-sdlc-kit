@@ -198,10 +198,51 @@ function Get-DiffBase {
     return $null
 }
 
+# Feature 028 (GAP-034, plan D1): the one place the pack reads a `git diff` it grades. A diff git
+# cannot compute (an unreadable tree or commit on the branch) exits non-zero; reading that as an empty
+# list made a damaged branch look like an empty one. The exit code is captured in the statement that
+# follows the call, before any pipeline can reset it, and a failing diff returns NO lines whatever git
+# printed, so a partial list is never graded.
+function Read-DiffLines {
+    param([string[]]$GitArguments)
+    $lines = @(& git @GitArguments 2>$null)
+    $code = $LASTEXITCODE
+    if ($code -ne 0) { return @{ Ok = $false; Lines = @(); Exit = $code } }
+    return @{ Ok = $true; Lines = @($lines | Where-Object { $_ }); Exit = 0 }
+}
+
+# Feature 028 (plan D3): what an unreadable diff does, by lane. The numbered lane keeps its refusals as
+# failures (once per run: a second reader of the same damage adds no second line); the Lite lane
+# (fix/, chore/, docs/) names each check that graded nothing UNGRADED and is never newly failed on a
+# condition it cannot compute (feature 014 FR-009). git's own message is not shown: the exit code is.
+$script:DiffFailureReported = $false
+# Initialised so a caller that runs before Get-ChangedFiles (none does today) reads "Ok", never an
+# unset value whose .Ok is falsy and would be taken for a failed read (phase 2 review F5).
+$script:ChangedFilesRead = @{ Ok = $true; Exit = 0 }
+function Add-DiffUnreadable {
+    param([string]$Reader, [string]$Branch, [string]$Base, [int]$Exit, [string]$Consequence)
+    if ($Branch -match '^\d{3}-') {
+        if ($script:DiffFailureReported) { return }
+        $script:DiffFailureReported = $true
+        $script:failures += "DiffUnreadable: git diff against '$Base' failed on '$Branch' (exit $Exit), so $Consequence - repair the repository (a damaged object, or fetch the full history: 'fetch-depth: 0' on actions/checkout)"
+    } else {
+        $script:ungraded += "${Reader}: the diff of '$Branch' against '$Base' could not be read (git diff exited $Exit), so $Consequence"
+    }
+}
+
+# The changed-file list, and beside it $script:ChangedFilesRead: Ok is false only when a diff WAS
+# attempted against a base and git failed. No base is a different, already-named state (the dispatch
+# warns and the Lite lane says UNGRADED), so it stays Ok here and nothing is named twice.
 function Get-ChangedFiles {
     param([string]$Base)
+    $script:ChangedFilesRead = @{ Ok = $true; Exit = 0 }
     if (-not $Base) { return @() }
-    (git diff --name-only $Base HEAD 2>$null) | Where-Object { $_ }
+    $read = Read-DiffLines -GitArguments @('diff', '--name-only', $Base, 'HEAD')
+    if (-not $read.Ok) {
+        $script:ChangedFilesRead = @{ Ok = $false; Exit = $read.Exit }
+        return @()
+    }
+    $read.Lines
 }
 
 # Plan-header declarations must be parsed from VISIBLE text only: a declaration hidden in
@@ -1184,7 +1225,15 @@ function Invoke-ReviewProvenanceCheck {
     # AR filter: rename TARGETS are inspected like additions — moving a grandfathered
     # review into the feature is not legitimate grandfathering (phase 2 review, F3).
     # quotepath=off so non-ASCII filenames cannot dodge the pattern (phase 2 review, F2).
-    $rows = git -c core.quotepath=off diff --name-status --diff-filter=AR $Base HEAD 2>$null
+    # Feature 028 (plan D5): read through the shared reader. A diff git could not compute is a named
+    # state (a failure on the numbered lane, once per run; UNGRADED on the Lite lane), never an empty
+    # list in which no review file exists to grade.
+    $read = Read-DiffLines -GitArguments @('-c', 'core.quotepath=off', 'diff', '--name-status', '--diff-filter=AR', $Base, 'HEAD')
+    if (-not $read.Ok) {
+        Add-DiffUnreadable -Reader 'ReviewProvenance' -Branch $Branch -Base $Base -Exit $read.Exit -Consequence 'no review file added on this branch was inspected - the machine half of DoD gate 5 formed no opinion'
+        return
+    }
+    $rows = $read.Lines
     $candidates = @()
     foreach ($row in $rows) {
         if (-not $row) { continue }
@@ -1872,10 +1921,12 @@ function Get-OtherFeatureNote {
 # before; a whole feature directory moved inside a MERGE is graded as the removal of its documents
 # (026: a rename is not detected inside a merge), so the move belongs in an ordinary commit; the Lite
 # lane (fix/, chore/, docs/) runs this check only when its diff touches a spec document (plan D6), and
-# names a condition it cannot compute UNGRADED instead of failing (plan D8), so a Lite branch whose diff
-# cannot be read, or which has no diff base (GAP-034: Get-ChangedFiles returns an empty list when git
-# diff fails), is not graded and says nothing for want of a gate; the gate list is read a second time
-# without rename detection, so a spec document moved off specs/ is seen. Two more limits of the Lite gate: it reads
+# names a condition it cannot compute UNGRADED instead of failing (plan D8), so a Lite branch which has
+# no diff base is not graded and says nothing for want of a gate (the dispatch's no-base warning and the
+# other members' UNGRADED lines name it); a Lite branch whose diff cannot be READ is named (GAP-034,
+# feature 028: either read of the gate's list failing prints an UNGRADED line for this check through
+# Add-DiffUnreadable and the check returns, instead of reading as "no spec document changed"); the gate
+# list is read a second time without rename detection, so a spec document moved off specs/ is seen. Two more limits of the Lite gate: it reads
 # the NET diff, so a branch that amends an approved document with no record and then reverts it, or a
 # replay over a range whose net diff is empty, is silent (phase 2 review F2); and a branch that only CREATES a
 # spec document, in a clone that is shallow but still has a base, prints an UNGRADED refusal where it used to
@@ -1899,7 +1950,23 @@ function Invoke-AmendmentAuthorityCheck {
         # git reports a moved document by its new path only, and a spec document moved to a path
         # outside specs/ would otherwise never reach the gate.
         $gate = @($ChangedFiles)
-        if ($Base) { $gate += @(git -c core.quotepath=off diff --name-only --no-renames $Base HEAD 2>$null) }
+        # Feature 028 (plan D4): a gate that cannot be computed names itself, instead of reading as
+        # "no spec document changed". Either read failing enters the state: the dispatch's list
+        # (carried in $script:ChangedFilesRead) or this second read, taken through the shared reader.
+        $gateExit = $null
+        if (-not $script:ChangedFilesRead.Ok) { $gateExit = $script:ChangedFilesRead.Exit }
+        elseif ($Base) {
+            # This second read cannot fail alone today: with --no-renames git reads no more than the
+            # dispatch's rename-detecting read, so it fails only when that one already has (phase 2
+            # review F2; mutations M10 and M11 are equivalent for that reason). If the dispatch read
+            # ever changes, both branches here become live and are guarded by no fixture.
+            $second = Read-DiffLines -GitArguments @('-c', 'core.quotepath=off', 'diff', '--name-only', '--no-renames', $Base, 'HEAD')
+            if ($second.Ok) { $gate += $second.Lines } else { $gateExit = $second.Exit }
+        }
+        if ($null -ne $gateExit) {
+            Add-DiffUnreadable -Reader 'AmendmentAuthority' -Branch $Branch -Base $Base -Exit $gateExit -Consequence 'no spec document changed on this branch could be graded'
+            return
+        }
         if (-not @($gate | Where-Object { $_ -and (Get-GradedDocFeature -Path $_) })) { return }
     }
     $failuresBefore = @($script:failures).Count
@@ -2149,7 +2216,12 @@ $Branch = Get-CurrentBranch -Override $Branch
 $diffBase = Get-DiffBase
 $changedFiles = Get-ChangedFiles -Base $diffBase
 
-Write-Host "enforcement-pack: branch '$Branch', diff base '$diffBase', $($changedFiles.Count) changed file(s)"
+if ($script:ChangedFilesRead.Ok) {
+    Write-Host "enforcement-pack: branch '$Branch', diff base '$diffBase', $($changedFiles.Count) changed file(s)"
+} else {
+    # Feature 028: a diff git could not compute is not an empty branch, and '0 changed file(s)' said so.
+    Write-Host "enforcement-pack: branch '$Branch', diff base '$diffBase', diff unreadable (git diff exited $($script:ChangedFilesRead.Exit))"
+}
 
 # Silence is not compliance in the other lanes either (review G2). With no computable base the
 # pack still speaks, but nothing it says is a comparison, and the three dispositions differ by
@@ -2169,6 +2241,9 @@ if (-not $diffBase -and $Branch -notin @('main', 'master')) {
 if ($Branch -in @('main', 'master')) {
     Write-Host "enforcement-pack: '$Branch' is the trunk, not a feature/fix/chore/docs branch — no scripted checks apply"
 } elseif ($Branch -match '^\d{3}-') {
+    if (-not $script:ChangedFilesRead.Ok) {
+        Add-DiffUnreadable -Reader 'enforcement-pack' -Branch $Branch -Base $diffBase -Exit $script:ChangedFilesRead.Exit -Consequence 'the changed-file list is unknown and the checks that read it graded nothing'
+    }
     Invoke-StructureCheck -Branch $Branch
     Invoke-LevelSurfaceCheck -Branch $Branch
     Invoke-LevelRationaleCheck -Branch $Branch
@@ -2187,7 +2262,13 @@ if ($Branch -in @('main', 'master')) {
     if (-not $diffBase) {
         $ungraded += "LiteAndAbuse: no diff base, so the prohibited-category and file-count guards graded an EMPTY file list on '$Branch' - every prohibited change this lane forbids would have passed"
     }
-    Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles
+    # Feature 028 (plan D6): a list known not to be the branch's is never handed to the guards; an
+    # EMPTY list graded here is how a damaged fix/ branch carrying a manifest and a migration went green.
+    if (-not $script:ChangedFilesRead.Ok) {
+        Add-DiffUnreadable -Reader 'LiteAndAbuse' -Branch $Branch -Base $diffBase -Exit $script:ChangedFilesRead.Exit -Consequence 'the prohibited-category and file-count guards had no file list to grade - every prohibited change this lane forbids would have passed'
+    } else {
+        Invoke-LiteAndAbuseCheck -Branch $Branch -ChangedFiles $changedFiles
+    }
     Invoke-ReviewProvenanceCheck -Branch $Branch -Base $diffBase
     Invoke-AmendmentAuthorityCheck -Branch $Branch -Base $diffBase -ChangedFiles $changedFiles -IgnoreAmendmentBoundary:$IgnoreAmendmentBoundary -ReplayBase $ReplayBase -ReplayTip $ReplayTip
 } elseif ($Branch -match '^docs/') {

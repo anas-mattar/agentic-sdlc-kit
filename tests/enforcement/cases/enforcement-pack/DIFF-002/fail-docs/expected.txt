@@ -1,0 +1,5 @@
+enforcement-pack: branch 'docs/x', diff base '<SHA>', diff unreadable (git diff exited 128)
+enforcement-pack: 'docs/x' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+UNGRADED: ReviewProvenance: the diff of 'docs/x' against '<SHA>' could not be read (git diff exited 128), so no review file added on this branch was inspected - the machine half of DoD gate 5 formed no opinion
+UNGRADED: AmendmentAuthority: the diff of 'docs/x' against '<SHA>' could not be read (git diff exited 128), so no spec document changed on this branch could be graded
+enforcement-pack: UNGRADED (2 check(s) formed no opinion)

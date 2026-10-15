@@ -1297,6 +1297,59 @@ expect the removal to need the owner's decision rather than a record.
 <!-- digest: The amendment check grades any feature's approved spec document, Lite lane too; the record goes in that document. -->
 <!-- digest: A Lite branch that cannot be graded prints UNGRADED and exits 0; one touching no spec document is unchanged. -->
 
+### Flow-down note: the 2026-10-15 unreadable diff (kit feature 028 — no constitution amendment)
+
+**What was wrong.** `scripts/enforcement-pack.ps1` read the branch's diff in three places with `git diff ... 2>$null`: the changed-file list (feeding the Lite-lane abuse guard and
+feature 027's Lite amendment gate), review-provenance's list of review files added, and the amendment gate's own second read. A diff git cannot compute (an unreadable tree or blob
+on the branch) exits non-zero, and every one of the three read that as an empty list. The run printed `diff base '<sha>', 0 changed file(s)` and, on a `fix/` branch carrying a
+dependency manifest and a migration, `enforcement-pack: OK`, exit 0 (reproduced for this feature's spec on a throwaway repository; the roadmap row had said it was not reproduced on a `fix/` branch). Feature 027's note said so as a limit.
+
+**What it does now.** The three reads go through one reader, and a diff git cannot compute against a **present** base is a named state, never an empty list. The count line reads
+`diff unreadable (git diff exited <n>)` instead of `0 changed file(s)`. On a numbered branch (`NNN-*`) the run fails once with
+`DiffUnreadable: git diff against '<base>' failed on '<branch>' (exit <n>), so the changed-file list is unknown ...`: a second reader of the same damage adds no second line. On a
+`fix/`, `chore/` or `docs/` branch each check that graded nothing prints one `UNGRADED:` line (`LiteAndAbuse` on `fix/` and `chore/`; `ReviewProvenance` and `AmendmentAuthority`, the
+Lite amendment gate, on all three), the run ends `enforcement-pack: UNGRADED (<n> check(s) formed no opinion)` and the exit code is **0**: the Lite lane is never newly failed on a condition the
+machine cannot compute (feature 014, FR-009). A partial list from a failing diff is discarded.
+
+**What flows down.** Two verbatim files: `scripts/enforcement-pack.ps1` and this document; the kit's test fixtures stay in the kit. Nothing surgical and nothing in your
+constitution. Run `scripts/build-digests.ps1` after the update: until you do, the digests member of `scripts/ritual-checks.ps1` reports the affected digests as stale.
+
+**What an owner may newly see.** On any branch whose diff against the base can be read: nothing, byte for byte. On a repository with a damaged object (a truncated or missing tree or blob
+the branch's diff must read): on a numbered branch, one `DiffUnreadable` failure and a count line that says `diff unreadable`; on a Lite branch, `UNGRADED` lines and exit 0. The fix is
+the same either way: repair the repository (a clone with a missing object is re-cloned; a shallow or partial clone is fetched in full: `fetch-depth: 0` on `actions/checkout`). A trunk branch (`main`, `master`) whose diff against its base cannot be read also prints the `diff unreadable` count line where it printed `0 changed file(s)`; its verdict and exit code do not change, because no scripted check applies there.
+A pre-existing case the owner of a numbered branch may recognise: an unreadable **merge parent** (feature 026's refusal) now also prints `DiffUnreadable`, first, because the same damage
+stops the diff; both lines stay, one saying the changed-file list is unknown and the other that the amendment check cannot grade the merge.
+
+**What does NOT change.** The output and exit code of every branch whose diff is readable, empty, has no base (the dispatch's existing `WARNING` and `UNGRADED` lines, printed once and
+not doubled), is in a shallow clone with a base, or is a trunk branch's (apart from that one count line, when its diff is unreadable); the verdict words (no new one); the amendment check's grading; and every other member of the pack. This
+**supersedes** the first sentence of feature 027's flow-down limit (3), "a Lite branch with an unreadable diff is not graded and prints as before"; its second sentence, the silence of a Lite branch with no base at all, is still true. 027's note is history and is not edited.
+
+**Known limits, stated rather than hidden.** (1) `scripts/territory-check.ps1` has two reads of the same kind that stay unchecked (the uncommitted-tree diff and an open branch's diff),
+so an unreadable diff of another open branch is read as "no overlap", and an unreadable uncommitted-tree diff drops the branch's own uncommitted files from the set it checks; both are in roadmap row GAP-035. (2) A non-zero exit of `git diff` is taken as the whole truth: a
+diff that exits 0 with wrong content (silent corruption) is not detectable here. (3) **The pack's other `git` reads are not changed, and at least one swallows a failure the same way.** `git show --numstat` in the Micro lane's phase walk and in `PhaseSizeWarning`
+reads zero lines when a commit's blob is unreadable: a feature 028 review reproduced a Micro-declared branch with a 700-line phase commit whose hard 400-line failure turned into
+`enforcement-pack: OK`, exit 0, and the phase-size warning disappeared. The reads of the same shape that were not probed (`git cat-file` and `git show HEAD:...` of the plan, tasks and
+review blobs, `git log`, `git rev-list`, `git show -U0`, `ls-tree`) are open, with `territory-check.ps1`'s two, as roadmap row GAP-035. (4) git's own message is not shown, only its exit code, so the output is deterministic. (5) A partial result from a
+failing diff is discarded, but no fixture can show it: git builds the whole tree diff before it prints, so a failing diff prints nothing. (6) The state is entered only with a base:
+a missing base keeps the dispatch's existing warning. (7) The `docs/` lane line still says review-provenance is the only scripted check that applies, while the
+UNGRADED lines list the checks that graded nothing.
+
+**What was measured.** Clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (nothing in place touched, nothing pushed), and of the kit's own repository,
+were replayed merge by merge in the shape CI grades a pull request (the clone detached at the merge, `main` at its first parent, `-ReplayBase` and `-ReplayTip` set), the branch being
+the one the merge subject names, `-IgnoreAmendmentBoundary` on (an analysis switch no gate passes), the previous `scripts/enforcement-pack.ps1` against this one. Of **143 merge commits**
+(FitForge 10, FlowBoard 10, ExpenseTracker 10, the kit 113), **113 named a merged branch** (38 numbered, 75 `fix/`, `chore/` or `docs/`) and were replayed; the other 30 are `main`
+merged into a branch or `governance:` commits and have no branch to grade. **No output differed, in any of the 113 runs, and no exit code changed.** Time per run was one sample per
+version, old script first: 92 kit runs took 116.7 s with the old script and 110.5 s with the new, the largest (50 commits) 5.7 s against 5.1 s, so no cost was seen and none can be
+claimed. **That shows** that no branch with a readable diff changes, on four real histories. **It does not show** how the new state reads on a damaged repository (the fixtures show that:
+no branch in these histories has an unreadable diff), how often it will occur, or anything about your own CI, a shallow clone or a platform other than the one the replay ran on.
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1` and `scripts/ritual-checks.ps1`. If a run now prints `diff unreadable` or `UNGRADED` where it printed
+`0 changed file(s)` and `OK`, the repository has a damaged or missing object that the run could not read: repair it (re-clone, or fetch the full history), then re-run. Nothing in
+your code or configuration needs to change.
+
+<!-- digest: An unreadable git diff is a named state: count line, a numbered failure, UNGRADED on the Lite lane, never empty. -->
+<!-- digest: A Lite branch whose diff cannot be read prints UNGRADED per check and exits 0; a numbered branch fails once. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

@@ -1,0 +1,5 @@
+enforcement-pack: branch 'fix/x', diff base '<SHA>', 2 changed file(s)
+enforcement-pack: FAIL (3 issue(s)):
+  - LiteAndAbuse: fix/x touches 'package.json', a prohibited category for the Lite lane (dependency manifest) — promote to a numbered feature (docs/sdlc/critical-delivery.md)
+  - LiteAndAbuse: fix/x touches 'src/db/migrations/001.sql', a prohibited category for the Lite lane (schema/migration) — promote to a numbered feature (docs/sdlc/critical-delivery.md)
+  - LiteAndAbuse: fix/x touches a migration path — migrations are always prohibited on the Lite lane regardless of file count

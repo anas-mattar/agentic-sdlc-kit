@@ -1,0 +1,5 @@
+enforcement-pack: branch 'fix/x', diff base '<SHA>', diff unreadable (git diff exited 128)
+UNGRADED: LiteAndAbuse: the diff of 'fix/x' against '<SHA>' could not be read (git diff exited 128), so the prohibited-category and file-count guards had no file list to grade - every prohibited change this lane forbids would have passed
+UNGRADED: ReviewProvenance: the diff of 'fix/x' against '<SHA>' could not be read (git diff exited 128), so no review file added on this branch was inspected - the machine half of DoD gate 5 formed no opinion
+UNGRADED: AmendmentAuthority: the diff of 'fix/x' against '<SHA>' could not be read (git diff exited 128), so no spec document changed on this branch could be graded
+enforcement-pack: UNGRADED (3 check(s) formed no opinion)
