@@ -237,10 +237,12 @@ function Add-DiffUnreadable {
 # byte-identical; each site applies its own filter. Read-DiffLines is left as it is: it filters empty
 # entries, which the other sites do not.
 function Read-GitLines {
-    param([string[]]$GitArguments)
+    param([string[]]$GitArguments, [switch]$KeepPartial)
     $lines = @(& git @GitArguments 2>$null)
     $code = $LASTEXITCODE
-    if ($code -ne 0) { return @{ Ok = $false; Lines = @(); Exit = $code } }
+    # -KeepPartial (feature 029 phase 2, the per-commit name-status batch only): the rows git printed for
+    # the commits it finished are complete records of those commits, so the caller may grade them.
+    if ($code -ne 0) { return @{ Ok = $false; Lines = $(if ($KeepPartial) { $lines } else { @() }); Exit = $code } }
     return @{ Ok = $true; Lines = $lines; Exit = 0 }
 }
 
@@ -1457,7 +1459,13 @@ function Get-NameStatusBatch {
     # fails the "$dir/*" filter and the document is never graded at all (review B2). The pack
     # already carries this at scripts/scope-lib.ps1 (006 F3) and at line 577 (phase 2 F2); this
     # reader was the one that did not.
-    $nsRead = Read-AmendmentGit -GitArguments @('-c', 'core.quotepath=off', 'log', '--reverse', "--format=$script:GitRS%H", '--name-status', $Range) -Read "git log --name-status of $Range"
+    # The rows of every commit git finished are complete (git builds a commit's whole output before it
+    # prints it, so the commit it failed on prints nothing, measured on AMEND-009's fixture). So the rows
+    # of a failing run are KEPT: the walk grades the commits that have a record (feature 027 pinned that a
+    # genuine failure is kept beside a refusal), and Core refuses at the END of the walk if a graded commit
+    # had none, unless a refusal of its own already ended the walk.
+    $nsRead = Read-GitLines -KeepPartial -GitArguments @('-c', 'core.quotepath=off', 'log', '--reverse', "--format=$script:GitRS%H", '--name-status', $Range)
+    $script:NameStatusRead = @{ Ok = $nsRead.Ok; Exit = $nsRead.Exit; Read = "git log --name-status of $Range" }
     foreach ($line in $nsRead.Lines) {
         # ORDINAL comparison, deliberately. String.StartsWith defaults to a CULTURE-SENSITIVE
         # comparison that treats a control character as ignorable, so every line — including
@@ -2178,8 +2186,9 @@ function Invoke-AmendmentAuthorityCore {
     # history); no gate, no ritual-checks and no CI workflow passes it.
     $graded = $IgnoreAmendmentBoundary.IsPresent
 
+    $script:NameStatusRead = @{ Ok = $true; Exit = 0; Read = '' }
+    $nameStatusMissing = $false
     $nameStatus = Get-NameStatusBatch -Range $range
-    if (Test-AmendmentReadFailed -Branch $Branch) { return }
     # Every first parent in the range, tested in one call. The sticky flag below still decides
     # PER COMMIT whether that commit is graded — the batch changes who is asked, not what for.
     $presence = @{}
@@ -2225,6 +2234,12 @@ function Invoke-AmendmentAuthorityCore {
         # A merge has no name-status rows (it is a combined diff): its amended set is what
         # Get-MergeAuthoredPaths decided above. An ordinary commit's comes from its rows.
         if ($isMerge) { $amended = $mergePaths }
+        # Feature 029 phase 2 (G5): a commit git never reached has no record in the name-status batch; its
+        # changed files are unknown, which is not the same as "changed nothing". Noted here and refused after
+        # the walk, so the commits that do have a record are graded and a refusal of the walk's own wins.
+        elseif (-not $script:NameStatusRead.Ok -and -not $nameStatus.ContainsKey($commit)) {
+            $nameStatusMissing = $true
+        }
         foreach ($row in $(if ($isMerge) { @() } else { @($nameStatus[$commit]) })) {
             if (-not $row) { continue }
             $parts = $row -split "`t"
@@ -2325,6 +2340,11 @@ function Invoke-AmendmentAuthorityCore {
         }
     }
     if (Test-AmendmentReadFailed -Branch $Branch) { return }
+    if ($nameStatusMissing) {
+        Set-AmendmentReadFailure -Read $script:NameStatusRead.Read -Exit $script:NameStatusRead.Exit
+        Test-AmendmentReadFailed -Branch $Branch | Out-Null
+        return
+    }
     $skipped = $commits.Count - $gradedCount
     $reasons = @()
     if ($skipMerge -gt 0)    { $reasons += "$skipMerge merge commit(s)" }

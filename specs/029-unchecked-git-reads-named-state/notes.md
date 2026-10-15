@@ -187,3 +187,18 @@ Injected failures (Amendment 1), each read made to fail by pointing it at a miss
 - **F3 (CONFIRM), resolved by Amendment 2 (approved by anas.m, 2026-10-16)**: the injection-only guards for G8, G9 and G10 are cited to plan Amendment 1, which names G2, G3, G4, G6, G12, G14a. G8, G9 and G10 are the same class found later (no data state reaches them: they read objects a successful read has just read, or run only after the blob read that already failed). They need the owner's approval as a short Amendment 2, or fixtures if the owner prefers; the author does not approve it.
 - **F4 (MINOR)**: P6 (last failure wins) and the `$null -eq $null` arm of G9 have no guard that CI runs; P3 and P5 are equivalent, as stated above.
 - **F5 (MINOR)**: the check after the name-status batch and the amended-stage check are redundant with later ones; harmless, kept for early refusal.
+### Correction to phase 2 after the full harness (the first phase 2 commit `02a065d` was broken)
+
+- **What was wrong.** The full harness on an isolated checkout of `02a065d` gave **1726 passed, 6 failed**, in five pre-existing fixtures: `DIFF-001/fail`, `DIFF-001/fail-with-review-file`, `DIFF-002/pass`,
+  `AMEND-009/fail-lite-failure-kept-beside-refusal` and `AMEND-009/fail-lite-unreadable-merge-parent`. The wider-family run I started before the commit had been stopped after its first family, so
+  `DIFF-` and `AMEND-009` were never run on the phase 2 code before it was committed, and the AI review (which ran `AMEND-011`) did not run them either. The cause was the name-status check: it refused
+  at a boundary BEFORE the walk, so (a) a damaged-subtree branch whose commits are all pre-boundary lost its `graded 0 of N` line, and (b) **027's pinned behaviour, a genuine amendment failure kept
+  beside a refusal on the Lite lane, was lost** (`fail-lite-failure-kept-beside-refusal` exited 0 where it exits 1): a real fail-open on a damaged repository.
+- **The owner's report.** The owner reported "both exit 0" for the phase 2 gate on `da6b16f` or later; the isolated run above says the harness cannot have been green at that state. The discrepancy is not
+  explained here (a gate run on another state, or on a subset, are the possibilities I can name); **that report is not recorded as certifying phase 2**. A new commit follows, and the gate is asked again on it.
+- **The fix.** `Get-NameStatusBatch` keeps the rows git printed before it failed (`Read-GitLines -KeepPartial`; git builds a commit's whole output before printing it, so the commit it fails on prints
+  nothing, shown on `AMEND-009`'s fixture); the walk grades the commits that have a record, notes a graded commit with none, and refuses **after the walk** (`git log --name-status of <range> failed ...`)
+  unless a refusal of its own already ended the walk. All five fixtures pass unchanged (no expectation was edited); `AMEND-009` 74, `AMEND-011` 78, `DIFF-` 86 passed.
+- **Mutations of the new logic** (script restored byte for byte): R1 partial rows discarded: caught by `AMEND-009/fail-lite-failure-kept-beside-refusal`; R2 the after-walk refusal dropped: caught by
+  `AMEND-011/fail-name-status`; R3 a missing record never noted: caught by `AMEND-011/fail-name-status`. The earlier mutation P3 (the check after the batch) no longer applies: that check is gone.
+- **Lesson.** Run the families whose fixtures damage a tree or blob (`DIFF-`, `AMEND-`) on the phase code BEFORE committing, and do not stop a run to commit.
