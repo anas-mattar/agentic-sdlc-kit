@@ -110,3 +110,9 @@ Same method as phase 1 (script mutated in place, `-Case DIFF-`, `-Case LITE-`, `
 - **F4 (information, accepted).** The docs/ lane line still reads "review-provenance is the only scripted check that applies" while that check printed UNGRADED; the UNGRADED lines carry the truth and the line names the checks that apply, not the ones that graded.
 - **F5 fixed.** `$script:ChangedFilesRead` is initialised to `Ok` beside `$script:DiffFailureReported`, so a caller that ran before `Get-ChangedFiles` (none does) cannot read an unset value as a failed read.
 - **F6 (information).** The script's `LIMITS` comment is accurate after the edit.
+
+### Phase 2 final run (after the review follow-ups)
+
+- Full harness on an isolated detached worktree of `7c93b00` (the phase 2 code, the follow-ups F1-F3 and F5, the review file and its addendum): **1704 passed, 0 failed, 0 skipped** (exit 0, 1228 s), against 1700 on the code commit `89bb651`: 4 new tests (the two follow-up fixtures `DIFF-001/fail-with-review-file` and `DIFF-002/pass-docs-readable-review`, two tests each) and 1698 at the phase 1 gate.
+- `ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` on the same commit: doc-lint OK, enforcement-pack OK (AmendmentAuthority graded 14 of 15 commits, the merge not graded), scope-check PASS on all nine phase commits (phase 1: `e959c71`, `c0109b9`, `3f2c287`, `21030a3`, `f2063df`, `088dd0d`; phase 2: `89bb651`, `0f801e0`, `7c93b00`), digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK.
+- The owner now runs the phase 2 gate.
