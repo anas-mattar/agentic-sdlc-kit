@@ -1,0 +1,3 @@
+enforcement-pack: branch 'fix/x', diff base '<SHA>', diff unreadable (git diff exited 128)
+UNGRADED: LiteAndAbuse: the diff of 'fix/x' against '<SHA>' could not be read (git diff exited 128), so the prohibited-category and file-count guards had no file list to grade - every prohibited change this lane forbids would have passed
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

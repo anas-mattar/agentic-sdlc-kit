@@ -1,0 +1,26 @@
+{
+  "description": "A second damage shape: no tree is unreadable, but a blob that rename detection must read is. A manifest is moved to package.json with one line added, so git pairs the delete with the add by similarity and reads both blobs, and the added blob is truncated. git diff exits 128 the same way and the Lite lane must name it UNGRADED.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "deps.json": "{\n  \"name\": \"fixture\",\n  \"version\": \"1.0.0\",\n  \"private\": true\n}\n"
+      }
+    },
+    {
+      "branch": "fix/x",
+      "message": "fix: rename",
+      "write": {
+        "package.json": "{\n  \"name\": \"fixture\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"license\": \"MIT\"\n}\n"
+      },
+      "delete": [
+        "deps.json"
+      ]
+    }
+  ],
+  "checkout": "fix/x",
+  "truncateBlob": "package.json"
+}
