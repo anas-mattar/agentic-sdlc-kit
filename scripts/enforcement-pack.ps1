@@ -599,7 +599,15 @@ function Invoke-CriticalSoloEvidence {
         $script:failures += "CriticalEvidence: $dir/second-model-review.md is missing (required for Critical features — docs/sdlc/critical-delivery.md item 5)"
         return
     }
-    $recorded = (git log --follow --format=%aI -- $reviewPath 2>$null) | Select-Object -Last 1
+    # Feature 029 phase 3 (G11): a failed read is not "no history". The file is committed (the guard above
+    # and the team arm check that), so a failing `git log --follow` is an unreadable object, and the old
+    # message ("has no git history ... commit it") sent the owner to fix the wrong thing.
+    $recordedRead = Read-GitLines -GitArguments @('log', '--follow', '--format=%aI', '--', $reviewPath)
+    if (-not $recordedRead.Ok) {
+        Add-GitReadUnreadable -Reader 'CriticalEvidence' -Read "git log --follow of $Dir/second-model-review.md" -Key 'log-follow' -Branch $Branch -Exit $recordedRead.Exit -Consequence 'the cooling-off period of the independence review could not be verified'
+        return
+    }
+    $recorded = $recordedRead.Lines | Select-Object -Last 1
     if (-not $recorded) {
         $script:failures += "CriticalEvidence: $dir/second-model-review.md has no git history — cannot verify the cooling-off period (commit it to start the clock)"
         return
@@ -1049,7 +1057,15 @@ function Get-FeatureTerritory {
 # the runner's clock would make the same record green locally and red in CI.
 function Get-SurfaceExceptions {
     param([string]$SpecPath)
-    $day = "$(git log -1 --date=format:%Y-%m-%d --format=%ad HEAD 2>$null)".Trim()
+    # Feature 029 phase 3 (G12): the author's day is the ceiling for a Surface Exception's date (H6). A failed
+    # read fell back to the runner's clock without a word, which is the thing the comment above says the
+    # ceiling exists to prevent; the fallback stays (git printing no date is a different, old case) and a
+    # FAILED read now says so, on every lane, as an advisory UNGRADED line.
+    $dayRead = Read-GitLines -GitArguments @('log', '-1', '--date=format:%Y-%m-%d', '--format=%ad', 'HEAD')
+    if (-not $dayRead.Ok) {
+        Add-GitReadUnreadable -Reader 'LevelSurface' -Read 'git log of HEAD' -Key 'surface-day' -Branch $Branch -Exit $dayRead.Exit -Consequence 'a Surface Exception was dated against the runner''s clock, not the author''s day' -Advisory
+    }
+    $day = "$($dayRead.Lines)".Trim()
     if (-not $day) { $day = (Get-Date).ToString('yyyy-MM-dd') }
     $lines = @(Get-VisiblePlanLines -PlanPath $SpecPath)
     $out = @()

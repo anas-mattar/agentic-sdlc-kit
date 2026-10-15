@@ -96,15 +96,15 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T014 Record the baseline in `notes.md`: the full harness count on the parent of this phase; reproduce on the parent: the cooling-off check fails with the wrong cause on a failed
+- [x] T014 Record the baseline in `notes.md`: the full harness count on the parent of this phase; reproduce on the parent: the cooling-off check fails with the wrong cause on a failed
       read (G11), and a surface exception is dated against the runner's clock when the commit date cannot be read (G12).
-- [ ] T015 Write the fixtures first: `GITREAD-011` (G11: a Critical feature whose review file's history cannot be read: the failure names the read, not "no git history"; control: a
+- [x] T015 Write the fixtures first: `GITREAD-011` (G11: a Critical feature whose review file's history cannot be read: the failure names the read, not "no git history"; control: a
       file with history, and an uncommitted file, which keeps its existing message), `GITREAD-012` (G12: an unreadable `HEAD` date: an `UNGRADED` note on every lane; control: readable,
       byte-identical).
-- [ ] T016 Inventory the rules: `GITREAD-011`, `-012` with anchor and law; run the recall sweep first.
-- [ ] T017 Edit `scripts/enforcement-pack.ps1` (plan D3): the two reads through `Read-GitLines`; G11 keeps its failure and names the true cause; G12 keeps the author's-day-else-clock rule
+- [x] T016 Inventory the rules: `GITREAD-011`, `-012` with anchor and law; run the recall sweep first.
+- [x] T017 Edit `scripts/enforcement-pack.ps1` (plan D3): the two reads through `Read-GitLines`; G11 keeps its failure and names the true cause; G12 keeps the author's-day-else-clock rule
       only when git succeeds and prints no date. `LIMITS` comments updated.
-- [ ] T018 Show a mutation for each fixture that guards a branch of the new code and record it; restore byte for byte.
+- [x] T018 Show a mutation for each fixture that guards a branch of the new code and record it; restore byte for byte.
 - [ ] T019 Run `-Case GITREAD-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`; record the numbers. Then stop and ask the owner to run the gate.
 
 ---

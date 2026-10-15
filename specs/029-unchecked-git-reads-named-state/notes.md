@@ -217,3 +217,32 @@ Injected failures (Amendment 1), each read made to fail by pointing it at a miss
   (`AMEND-011/fail-name-status`), so they are not independent guards; recorded, not split. **F4 (MINOR)**: the label changes of the earlier round are cosmetic; the exit code 255 is the one measured in the probe table. **F5 (DOC DRIFT)**: `ai-code-review-phase2.md` approved `02a065d`;
   this file and the correction section above supersede it for the final state of phase 2.
 - **The owner's gate for phase 2** on `92c2371` (the state the counts above describe) is still to be confirmed; the earlier report ("both exit 0") predates the fix and is not recorded as certifying.
+
+## Phase 3: the Critical-arm and surface-exception reads (G11, G12)
+
+### Baseline (T014)
+
+- Parent of the phase: `1d5613a` (documents on top of `92c2371`); the full harness on `92c2371` is **1732 passed, 0 failed**.
+- Reproduced on the parent by the new fixture: a Critical solo feature whose second-model review is committed 24.5 hours ago (past the window) with the tree of its feature directory unreadable
+  (`git log --follow` exits 128) fails with `CriticalEvidence: ... has no git history - cannot verify the cooling-off period (commit it to start the clock)`: a wrong cause (the file IS committed) that sends the owner
+  to commit a file that is committed (G11). The parent output differs from the expectation in exactly that one line.
+
+### What was built (T015-T017)
+
+- `scripts/enforcement-pack.ps1`: `Invoke-CriticalSoloEvidence` reads `git log --follow` through `Read-GitLines`; a failed read is `Add-GitReadUnreadable` (the numbered lane: `GitReadUnreadable: git log --follow of
+  <dir>/second-model-review.md failed on '<b>' (git exited N), so the cooling-off period of the independence review could not be verified - ...`). `Get-SurfaceExceptions` reads `git log -1` through it; a failed read is an
+  advisory `UNGRADED: LevelSurface: git log of HEAD could not be read (git exited N), so a Surface Exception was dated against the runner's clock, not the author's day` on every lane, and the author's-day-else-clock fallback
+  stays for git printing no date. No new emission site: both reuse the two sites of phase 1 (`GITREAD-001`, `GITREAD-002`), so `rules.json` changes only their notes (the plan's `GITREAD-011`/`-012` ids are labels, as in phases 1 and 2).
+- Fixtures: `GITREAD-001/fail-cooling-off-history` and `pass-cooling-off-history` (the readable twin: the review 24.5 h old, OK), expectations hand-written. The fail case also prints 028's `DiffUnreadable` (the damaged tree breaks the diff
+  too) and the phase 1 `PhaseSizeWarning` UNGRADED line; the only new line is the named read. G12 has no fixture (Amendment 1).
+
+### Mutations and injection (T018)
+
+| Mutation | Caught by |
+|---|---|
+| S1 the cooling-off read failure ignored (falls to "no history") | `GITREAD-001/fail-cooling-off-history` |
+| S2 the cooling-off failure printed as an advisory UNGRADED line | `GITREAD-001/fail-cooling-off-history` |
+| E9 injected: `git log` of HEAD made to fail on `LEVEL-005/pass` (G12) | `UNGRADED: LevelSurface: git log of HEAD could not be read (git exited 128), so a Surface Exception was dated against the runner's clock, not the author's day`, verdict UNGRADED |
+
+Script restored byte for byte after each (hash compared). Before the commit, on the working tree: `-Case GITREAD-` 78 passed, `-Case CRIT-` 228, `DIFF-` 86, `AMEND-` 288; the rest of the families were stopped to commit (a lesson of phase 2:
+the count that counts is the full harness on an isolated checkout of the commit, recorded below).
