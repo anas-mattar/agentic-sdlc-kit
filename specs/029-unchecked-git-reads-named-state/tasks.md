@@ -176,3 +176,12 @@ Where a task above names a fixture for G8, G9 or G10 (phase 2: T009's `-008`, `-
 exemption with the reason, as Amendment 1 does for the other unreachable reads.
 
 **Amendment approved by**: anas.m, 2026-10-16
+
+---
+
+## Amendment 3 — G13b is injection-guarded (plan Amendment 3), 2026-10-16
+
+Where a task above names a fixture for G13b (phase 4: T022's `ls-remote` case), that read is guarded by its **injected-failure check** (T025) and written as the exemption of `TERR-024`, as Amendments 1 and 2 do for the other reads
+with no reachable data state.
+
+**Amendment approved by**: anas.m, 2026-10-16

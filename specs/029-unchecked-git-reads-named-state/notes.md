@@ -296,7 +296,7 @@ No exit code is new and no kit verdict word is added (GAP-029 stays open).
 
 - `scripts/territory-check.ps1`: the four reads above check their exit codes (the file's working copy was CRLF while the repository stores LF, hidden by a stale stat cache; it was normalised to LF so the commit diff is the 21 lines of the change). `Read-CodeRef` and the other named paths are not edited.
 - Fixtures (hand-written expectations): `TERR-023/{fail,pass}` (G13a; the twin is readable, CLEAN) and `TERR-025/{fail,pass}` (G14b; the twin is readable and finds the overlap, exit 2). Rules in `rules.json`: `TERR-023` and `TERR-025` with fixtures, and `TERR-024` (G13b) and `TERR-026` (G14a) as written exemptions.
-- **Open for the owner (Amendment 3):** G13b (`ls-remote`) is NOT among the reads plan Amendments 1 and 2 name. It has no reachable state either: it fails only after `git fetch origin --prune` succeeded against the same remote, and a fixture that broke it
+- **Resolved by Amendment 3 (approved by anas.m, 2026-10-16):** G13b (`ls-remote`) is NOT among the reads plan Amendments 1 and 2 name. It has no reachable state either: it fails only after `git fetch origin --prune` succeeded against the same remote, and a fixture that broke it
   would break the fetch (TERR-010) first. It is guarded by an injected failure (below) and `TERR-024` carries the written exemption, but the author cannot approve that exemption: it needs the owner's approval as a short Amendment 3 (G14a is covered by Amendment 1).
 
 ### Mutations and injection (T025)

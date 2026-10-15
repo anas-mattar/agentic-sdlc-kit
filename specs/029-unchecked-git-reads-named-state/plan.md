@@ -208,3 +208,12 @@ site must name it), recorded in `notes.md` as exemptions with the reason, exactl
 beyond those already named.
 
 **Amendment approved by**: anas.m, 2026-10-16
+
+## Amendment 3 — G13b (`git ls-remote`) is injection-guarded (phase 4), 2026-10-16
+
+Phase 4 (`notes.md`) found a read of the class Amendments 1 and 2 name that neither lists: **G13b**, `git ls-remote --heads origin` in `scripts/territory-check.ps1`. It fails only after the `git fetch origin --prune`
+a few lines earlier succeeded against the same remote, and a fixture that made it fail would make the fetch fail first and test TERR-010 instead; it exited 0 in every damage mode probed. **Decision:** it is moved behind an
+exit-code check as built (a refusal, exit 1, as the committed-diff read already is) and guarded by an **injected-failure check** (the read is made to fail and the site must name it), recorded in `notes.md` as an exemption with the
+reason, and written as the exemption of `TERR-024` in `tests/enforcement/rules.json`, exactly as Amendments 1 and 2 do for the other reads with no reachable data state. No phase is added or removed.
+
+**Amendment approved by**: anas.m, 2026-10-16
