@@ -1241,6 +1241,62 @@ automatic merge produces the result; neither helps a removed or renamed document
 <!-- digest: A merge commit is graded for the spec documents it authored; one that only combines two histories is skipped as before. -->
 <!-- digest: A graded merge needs the approver record new against every parent and the approver named in the merge message. -->
 
+### Flow-down note: the 2026-10-15 amendment of another feature's approved document (kit feature 027 — no constitution amendment)
+
+**What was wrong.** The amendment-authority check (feature 014) read one directory, `specs/<branch>/`, and ran only on `NNN-*` branches. Constitution I says a change to "**that
+feature's** `spec.md`, `plan.md`, `tasks.md` or `contracts/`" needs a record and an approver, for every approved feature; the check enforced it for the branch's own feature only.
+A branch that amended an **earlier** feature's approved document, and every `fix/`, `chore/` and `docs/` branch (the Lite lane ran no amendment check), carried no approver
+check at all: one review reproduced an unapproved line in an earlier feature's plan printing `enforcement-pack: OK`, and a real `docs/` branch had carried its record only because the
+owner's process asked for one.
+
+**What it does now.** `scripts/enforcement-pack.ps1` grades a commit's change to a `spec.md`, `plan.md`, `tasks.md` or `contracts/**` file of **any** `specs/NNN-*` directory
+that **exists at the diff base** (approved on the integration branch), on a numbered branch (ordinary commits and merges, by feature 026's authored-content rule) **and** on a
+`fix/`, `chore/` or `docs/` branch **whose diff touches such a document**. The grading is the one you know: `**Amendment approved by**: <name>, <YYYY-MM-DD>` in the amended
+document, the same approver named in the commit message, the task-tick and `**Status**` exemptions, a creation exempt, a whole feature directory renumbered exempt. **The record goes in
+the document that was amended**: a record in the branch's own files approves nothing for another feature's document. A failure about another feature's document appends a clause
+saying so. A Lite branch that changes no spec document prints exactly what it printed before, in a shallow clone too. A Lite branch that touches one and cannot be graded (shallow
+clone, an unreadable commit or tree) prints an `UNGRADED:` line and still exits 0: the Lite lane is never newly failed on a condition the machine cannot compute (feature 014, FR-009).
+When the roll-up line prints on a `docs/` branch, the lane line names both checks.
+
+**What flows down.** Three verbatim files: `scripts/enforcement-pack.ps1`, this document and `docs/sdlc/branch-strategy.md` (one sentence on the Lite lane). The kit's test
+fixtures stay in the kit. Nothing surgical and nothing in your constitution. Run `scripts/build-digests.ps1` after the update: until you do, the digests member of
+`scripts/ritual-checks.ps1` reports the affected digests as stale.
+
+**What an owner may newly see.** On a numbered branch that amended another feature's approved document: the usual `AmendmentAuthority: commit <sha> amends <files> after approval with
+no conforming approver record ...` line, now with `; the amended file(s) outside this branch's own directory (<files>) belong to feature(s) <NNN-name> ...`. On a `fix/`, `chore/` or
+`docs/` branch that edits an approved spec document (a correction to an earlier feature's plan, a spec fix on a docs branch): the same failure, fixed by adding the record to
+that document and naming the approver in the commit message. A branch that only creates a spec document, or changes none, is not asked for anything. This **supersedes** feature
+026's edge case "a document the merge changes for another feature: not graded", and its statement that the Lite lane does not run this check, for documents that exist at the base.
+
+**What does NOT change.** The record and the approver-in-the-message rule (constitution I), the grading of the branch's own directory (the same code, byte-identical output for a
+branch that changes no other feature's document), the exemptions, the shallow-clone and unreadable-commit refusals on a numbered branch, the boundary that grades only commits made
+after the check arrived in your project, and the Lite lane's other checks.
+
+**Known limits, stated rather than hidden.** (1) **"Exists at the base" stands in for "approved":** a document that reached the integration branch as a draft is graded as approved,
+as the own-directory rule already does. (2) A document moved **out of** the branch's own directory in an ordinary commit is not graded; a whole directory moved **inside a merge** is
+graded as a removal (make the move in an ordinary commit). A single document moved between feature directories, and a document removed, are graded and **no record can satisfy
+them**. (3) The Lite gate reads the changed-file list, which is empty when `git diff` fails (roadmap GAP-034): a Lite branch with an unreadable diff is not graded and prints as before. So is a Lite branch with no base at all: this check is silent, and only the lane's existing no-base warning and the review-provenance `UNGRADED` line print.
+(4) A branch that amends a document and reverts it before the merge is silent, because the Lite gate reads the net diff. (5) A branch that only creates a spec document, in a
+shallow clone that still has a base, prints an `UNGRADED` refusal where it printed nothing. (6) The record is still a written claim, not proof of who approved.
+
+**What was measured.** Clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (nothing in place touched, nothing pushed), and of the kit's own
+repository, were replayed merge by merge in the shape CI grades a pull request (`<merge>^1..<merge>`), the branch being the one the merge subject names, `-IgnoreAmendmentBoundary` on
+(an analysis switch no gate passes), the previous `scripts/enforcement-pack.ps1` against this one. Of 137 merge commits, **110 matched the subject patterns that name a merged branch** (37 numbered, 73 `fix/`, `chore/` or
+`docs/`); **107 runs were byte-identical, including every run in the three adopted projects.** Two runs in the kit's history are **newly failing**, both Lite: one amends an
+earlier feature's spec with the record in the document but without the approver named in the commit message, one amends a spec with no record at all, before the rule existed. A
+third run (an `NNN-*` branch that already failed) prints the same 18 lines, three of which now name more documents and carry the cross-feature clause. "Byte-identical" is not
+"not graded": four kit branches amended another feature's approved document; the one that passed with its record (feature 026) prints what it printed before, and the 007 branch already failed. **That shows** that no unrelated
+branch would have changed; per-run time was one sample per version, old script first, and moved by a few per cent either way, so it shows no large cost, not that there is none.
+**It does not show** how easy a newly failing branch is to satisfy, how often a Lite branch will amend a spec from now on, or anything about your own CI, a shallow clone or an
+octopus merge; **and the three adopted projects' histories contain no amendment of another feature's approved document, so their identical runs exercise none of the new path.**
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. If a branch of yours is graded for another feature's document, add
+`**Amendment approved by**: <name>, <YYYY-MM-DD>` to **that** document and name the approver in the commit message; to move or remove an approved document, use an ordinary commit and
+expect the removal to need the owner's decision rather than a record.
+
+<!-- digest: The amendment check grades any feature's approved spec document, Lite lane too; the record goes in that document. -->
+<!-- digest: A Lite branch that cannot be graded prints UNGRADED and exits 0; one touching no spec document is unchanged. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,

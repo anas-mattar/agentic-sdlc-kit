@@ -1,0 +1,4 @@
+enforcement-pack: branch '002-b', diff base '<SHA>', 4 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 002-b (Standard) was not checked against any (adoption/updating.md)
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: cannot grade '002-b' — this is a shallow clone, so the boundary (plan D2b) would be computed from history that is not present, and every commit would report as predating the check. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' on a build agent (constitution I, Amendment authority)

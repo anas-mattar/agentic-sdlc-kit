@@ -469,6 +469,40 @@ Describe 'merge commits that carry content (feature 026, plan D8)' {
     }
 }
 
+Describe 'shallow fixtures that keep a diff base (feature 027, shallowAllBranches)' {
+    # A shallow fixture clones only the checked-out branch, so origin/main does not resolve and the pack
+    # has no base. A rule about a branch that is shallow AND has a base needs the other branches kept; main
+    # has three commits so that a depth-2 clone is still shallow after it keeps main's tip.
+
+    BeforeAll {
+        $script:Shallow = [pscustomobject]@{
+            commits = @(
+                [pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } },
+                [pscustomobject]@{ branch = 'main'; message = 'two'; write = [pscustomobject]@{ 'a.txt' = "a2`n" } },
+                [pscustomobject]@{ branch = 'main'; message = 'three'; write = [pscustomobject]@{ 'a.txt' = "a3`n" } },
+                [pscustomobject]@{ branch = 'topic'; message = 'work'; write = [pscustomobject]@{ 'b.txt' = "b`n" } })
+            checkout = 'topic'; shallow = 2
+        }
+    }
+
+    It 'leaves no origin/main in a plain shallow clone' {
+        $root = New-FixtureRepo -Recipe $script:Shallow
+        try {
+            & git -C $root rev-parse --verify --quiet origin/main *> $null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'keeps origin/main, and stays shallow, when shallowAllBranches is set' {
+        $recipe = $script:Shallow.PSObject.Copy(); $recipe | Add-Member -NotePropertyName shallowAllBranches -NotePropertyValue $true
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            & git -C $root rev-parse --verify --quiet origin/main *> $null
+            $LASTEXITCODE | Should -Be 0
+            ((& git -C $root rev-parse --is-shallow-repository) -join '').Trim() | Should -Be 'true'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+}
 Describe 'output normalisation' {
     # A third substitution joined <ROOT> and <SHA> in T029. scope-check-repos.ps1's
     # anti-retroactivity message quotes the code commit's own committer date back to the reader,

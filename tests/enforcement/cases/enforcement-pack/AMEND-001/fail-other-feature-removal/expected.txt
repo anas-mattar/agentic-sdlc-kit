@@ -1,0 +1,5 @@
+enforcement-pack: branch '002-b', diff base '<SHA>', 4 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 002-b (Standard) was not checked against any (adoption/updating.md)
+AmendmentAuthority: graded 2 of 2 commit(s) in <SHA>..HEAD
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: commit <SHA> amends specs/001-a/contracts/api.md after approval with no conforming approver record. Add '**Amendment approved by**: <name>, <YYYY-MM-DD>' to the amended section and name the same approver in the commit message (constitution I, Amendment authority). Ticking a task off is exempt — in either direction — but rewriting a task's text while ticking it is not: record what was done in notes.md, and leave the task saying what was agreed (plan D3c); the amended file(s) outside this branch's own directory (specs/001-a/contracts/api.md) belong to feature(s) 001-a, and a document is amended where it lives: the record goes in that document, not in this branch's own files

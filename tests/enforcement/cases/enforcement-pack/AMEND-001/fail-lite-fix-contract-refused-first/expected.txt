@@ -1,0 +1,4 @@
+enforcement-pack: branch 'fix/x', diff base '<SHA>', 1 changed file(s)
+AmendmentAuthority: graded 1 of 1 commit(s) in <SHA>..HEAD
+enforcement-pack: FAIL (1 issue(s)):
+  - LiteAndAbuse: fix/x touches 'specs/001-a/contracts/api.md', a prohibited category for the Lite lane (contracts) — promote to a numbered feature (docs/sdlc/critical-delivery.md)

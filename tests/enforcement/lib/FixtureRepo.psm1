@@ -40,6 +40,8 @@
     - "branch" creates the branch from the current HEAD the first time it is named.
     - "shallow" clones the built repository to the given depth and returns the clone, which is
       how a depth-1 CI checkout with no reachable base is reproduced (GAP-027).
+    - "shallowAllBranches": true (with "shallow") also keeps every other branch, shallowly, so origin/main
+      resolves and a diff base exists in a clone that is still shallow (feature 027).
     - "truncateBlob" corrupts the object store copy of a committed file, which is the state that
       separates `cat-file -e` from `cat-file blob` (feature 014 phase 5).
     - "truncateCommit" does the same to a COMMIT object named by a rev ("HEAD~1"), which is the
@@ -449,7 +451,12 @@ function New-FixtureRepo {
         $clone = Join-Path ([IO.Path]::GetTempPath()) ("kit-fixture-" + [guid]::NewGuid().ToString('N').Substring(0, 12))
         $branch = if ($Recipe.PSObject.Properties.Name -contains 'checkout' -and $Recipe.checkout) { $Recipe.checkout } else { $defaultBranch }
         $uri = ConvertTo-FileUri -Path $root
-        & git clone --quiet --depth $Recipe.shallow --branch $branch $uri $clone 2>&1 | Out-Null
+        # "shallowAllBranches" (feature 027): clone every branch shallowly instead of only the checked-out
+        # one, so origin/main resolves and a base can be computed in a clone that is still shallow
+        # (a depth-N CI checkout that also fetched main). Without it a shallow fixture has no base.
+        $cloneArgs = @('clone', '--quiet', '--depth', $Recipe.shallow, '--branch', $branch)
+        if ($Recipe.PSObject.Properties.Name -contains 'shallowAllBranches' -and $Recipe.shallowAllBranches) { $cloneArgs += '--no-single-branch' }
+        & git @cloneArgs $uri $clone 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "fixture shallow clone failed for $root" }
         Invoke-FixtureGit -RepoPath $clone -Arguments @('config', 'user.name', 'Fixture Author') | Out-Null
         Invoke-FixtureGit -RepoPath $clone -Arguments @('config', 'user.email', 'fixture@example.invalid') | Out-Null

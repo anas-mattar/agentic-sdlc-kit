@@ -1,0 +1,4 @@
+enforcement-pack: branch 'docs/x', diff base '<SHA>', 1 changed file(s)
+enforcement-pack: 'docs/x' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+UNGRADED: AmendmentAuthority: cannot grade 'docs/x' — this is a shallow clone, so the boundary (plan D2b) would be computed from history that is not present, and every commit would report as predating the check. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow' on a build agent (constitution I, Amendment authority)
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

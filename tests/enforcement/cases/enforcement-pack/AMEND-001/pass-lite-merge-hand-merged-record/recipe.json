@@ -1,0 +1,112 @@
+{
+  "description": "The twin of fail-lite-merge-hand-merged-no-record: the record is in the plan and the approver is named in the merge message. The roll-up line can only come from the merge, because the branch's other commit touches no document that exists at the base.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init: the kit, and approved feature 001-a",
+      "write": {
+        "README.md": "fixture kit\n",
+        "scripts/enforcement-pack.ps1": [
+          "# Fixture stub, not the kit's script. The boundary (plan D2b) asks a commit's parent tree",
+          "# one question - does its copy of this path define the check? - and this is the whole of",
+          "# the answer. A fixture that omitted it would have every commit report as pre-boundary,",
+          "# which is a green run that graded nothing.",
+          "function Invoke-AmendmentAuthorityCheck { }"
+        ],
+        "specs/004-d/spec.md": [
+          "# Feature Specification: 004-d",
+          "",
+          "**Feature Branch**: `004-d`",
+          "**Status**: Draft",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-a/spec.md": [
+          "# Feature Specification: 001-a",
+          "",
+          "**Feature Branch**: `001-a`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-a/plan.md": [
+          "# Implementation Plan: 001-a",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase.",
+          "",
+          "## Risks",
+          "",
+          "None."
+        ],
+        "specs/001-a/tasks.md": [
+          "# Tasks: 001-a",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `src/thing.ps1`",
+          "",
+          "- [ ] T001 Do the thing."
+        ],
+        "specs/001-a/contracts/api.md": [
+          "# API contract",
+          "returns 200"
+        ]
+      },
+      "hoursAgo": 9.0
+    },
+    {
+      "branch": "docs/x",
+      "message": "docs: a note",
+      "write": {
+        "docs/note.md": "a note"
+      },
+      "hoursAgo": 8.0
+    },
+    {
+      "branch": "main",
+      "message": "main: a second commit",
+      "write": {
+        "README.md": "fixture kit\nsecond\n"
+      },
+      "hoursAgo": 6.0
+    },
+    {
+      "branch": "docs/x",
+      "message": "Merge branch 'main' into docs/x - approved by ada",
+      "merge": "main",
+      "mergeWrite": {
+        "specs/001-a/plan.md": [
+          "# Implementation Plan: 001-a",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "Merged by hand.",
+          "",
+          "## Risks",
+          "",
+          "None.",
+          "",
+          "**Amendment approved by**: ada, 2026-01-02"
+        ]
+      }
+    }
+  ],
+  "checkout": "docs/x"
+}

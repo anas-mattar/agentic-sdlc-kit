@@ -1,0 +1,4 @@
+enforcement-pack: branch 'docs/x', diff base '<SHA>', 2 changed file(s)
+enforcement-pack: 'docs/x' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+UNGRADED: AmendmentAuthority: cannot grade 'docs/x' — <SHA> (the merge <SHA> or one of its parents) is not readable in this clone, so what the merge authored is unknown; skipping it would pass a merge on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow'; if the history is complete, an object is damaged (constitution I, Amendment authority)
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)
