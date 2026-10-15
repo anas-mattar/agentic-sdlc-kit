@@ -32,30 +32,30 @@ the final commit, never in a working directory someone is using.
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, and the exact output and exit of a readable `fix/`
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, and the exact output and exit of a readable `fix/`
       branch carrying `package.json` and a migration, a `docs/` branch changing only `README.md`, an empty-diff branch and `AMEND-009/pass`. Reproduce the gap on a throwaway
       repository (the spec's table): the `src` subtree of the branch's commit truncated prints `0 changed file(s)` and `enforcement-pack: OK`. Confirm from a recipe that
       `truncateBlob` naming a directory path reaches the state (plan Summary); if a shape cannot be expressed, add a task for it here.
-- [ ] T002 Write the fixtures first (plan D9, phase 1 rows), each pair differing in one condition and each shown failing on the parent or named as a control that passes there
+- [x] T002 Write the fixtures first (plan D9, phase 1 rows), each pair differing in one condition and each shown failing on the parent or named as a control that passes there
       by design: a readable `fix/` branch adding `package.json` and a migration (control: three `LiteAndAbuse` failures, exit 1); the same with the `src` subtree truncated
       (count line named, one UNGRADED line for `LiteAndAbuse`, verdict `UNGRADED`, exit 0); `chore/x` likewise; a `docs/` branch changing only `README.md`, readable (control,
       byte-identical); a numbered branch with a truncated subtree (026's shape: the count line named and one `DiffUnreadable` failure, exit 1) and its readable, empty-diff and
       no-base controls; a `fix/` branch with `a/package.json` readable and `z/` truncated, so git prints a row and then fails (UNGRADED, not a failure from the one name printed:
       FR-008); a shallow clone with a base and a trunk branch (controls). Expectations by hand. Record, for each, how it behaves on the parent. (A `docs/` branch with a truncated
       subtree belongs to phase 2: its consumers are the two readers moved there.)
-- [ ] T003 Inventory the rules in `tests/enforcement/rules.json`: `DIFF-001` (the numbered failure site) and `DIFF-002` (the Lite UNGRADED site; its `pass` direction is the
+- [x] T003 Inventory the rules in `tests/enforcement/rules.json`: `DIFF-001` (the numbered failure site) and `DIFF-002` (the Lite UNGRADED site; its `pass` direction is the
       numbered twin and exits 1, as `AMEND-009` does) with anchor and law (014 FR-009, 027 D8, plan D3); run the recall sweep first and classify anything else it reports (a
       rule with a pair, an exemption, or a not-a-rule with a reason).
-- [ ] T004 Edit `scripts/enforcement-pack.ps1` (plan D1, D2, D3, D6, D7, D8): the helper `Read-DiffLines` (runs git, captures the exit code in the next statement, discards a
+- [x] T004 Edit `scripts/enforcement-pack.ps1` (plan D1, D2, D3, D6, D7, D8): the helper `Read-DiffLines` (runs git, captures the exit code in the next statement, discards a
       partial result); `Get-ChangedFiles` through it, keeping its signature and return type and setting `$script:ChangedFilesRead` (success and the no-base early return are `Ok`);
       the count line, in its new text only when the read failed; the policy function `Add-DiffUnreadable` (numbered: one failure per run, flagged; Lite: one UNGRADED line per
       reader); the dispatch: the numbered failure, and on `fix/` and `chore/` the `LiteAndAbuse` UNGRADED line instead of calling the check on an empty list. Replace the
       `LIMITS` wording that says `Get-ChangedFiles` returns an empty list when git diff fails (the header paragraph at the amendment check, and the dispatch comment above the
       no-base warning) with what is now named, and say that the Lite gate and review-provenance arrive in phase 2. `Invoke-LiteAndAbuseCheck` and every other member are not edited.
-- [ ] T005 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: read the exit code a statement late; keep the partial list; drop the
+- [x] T005 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: read the exit code a statement late; keep the partial list; drop the
       no-base early return so a missing base enters the state; drop the numbered once-only flag; call `LiteAndAbuse` on the empty list anyway; enter the state on an empty
       result instead of a non-zero exit; print the old count line on a failed read. Each is shown failing a fixture, then restored byte for byte (the working script ends with no diff).
-- [ ] T006 Run `-Case DIFF-`, `-Case LITE-`, `-Case AMEND-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged (FR-009), every new fixture as
+- [x] T006 Run `-Case DIFF-`, `-Case LITE-`, `-Case AMEND-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged (FR-009), every new fixture as
       written, no unowned emission site. Re-run T001's reproduction: the truncated `fix/` branch is now `UNGRADED`, not `OK`. Record the numbers in `notes.md`. Then stop and ask
       the owner to run the gate.
 
