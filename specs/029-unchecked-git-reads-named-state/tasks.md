@@ -53,7 +53,7 @@ directory someone is using. G-numbers refer to the table in `plan.md`.
 - [x] T006 Show a mutation for each fixture that guards a branch of the new code and record it: read the exit code a statement late; keep partial output; enter the state on empty
       output instead of a non-zero exit; drop the per-read key so a second read is hidden; call the old bare `git show --numstat` in one site. Each is shown failing a fixture, then
       restored byte for byte.
-- [ ] T007 Run `-Case GITREAD-`, `-Case MICRO-`, `-Case DIFF-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, every new fixture as
+- [x] T007 Run `-Case GITREAD-`, `-Case MICRO-`, `-Case DIFF-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, every new fixture as
       written, no unowned emission site. Re-run T001's reproduction: the truncated 700-line Micro branch now fails with a name, not `OK`. Record the numbers. Then stop and ask the
       owner to run the gate.
 

@@ -128,3 +128,11 @@ parent is **1704 passed, 0 failed**. Lesson recorded: the families to run per ph
 - **F2 (ACCEPTED)**: the per-read dedupe hides a second damaged commit of the same kind; by plan D2, and the verdict still fails.
 - **F3 (MINOR), recorded**: the `rev-list` and `log -1` failure branches and the advisory `rev-list` branch are guarded by the injected-failure checks above (Amendment 1), not by a fixture, so CI does not run them. `tasks.md` T003 still names per-read ids; the implementation uses per-site ids (noted under "What was built"); not amended, because the ids are a label and the text of T003 was written before the harness's per-site rule was met.
 - **F4 (CONFIRM), open**: T007's full-harness count on the isolated phase checkout and the user-run gate are owed before this phase counts as done.
+
+### Phase 1 close-out (T007)
+
+- Full harness on an isolated detached checkout of `0595fc5` (the phase code and fixtures; the later commit `98dcf94` adds only the review file and a `rules.json` summary wording): **1716 passed, 0 failed, 0 skipped**
+  (parent baseline 1704: +12 = 6 new cases times two expectations each, the new cases being `GITREAD-001/{fail,pass,fail-two-commits,pass-empty-phase-commit}` and `GITREAD-002/{fail,pass}`).
+- `ritual-checks.ps1` on the branch: doc-lint OK, enforcement-pack OK, scope-check PASS on the phase commits, digests OK, roadmap-claims OK.
+- **The owner's gate** (anas.m, 2026-10-15, run on `029-unchecked-git-reads-named-state` at `98dcf94` or later): `tests/enforcement/Run-Tests.ps1` exit **0** and `scripts/ritual-checks.ps1` exit **0**,
+  as reported by the owner. Phase 1 is certified on that report; phase 2 may start on the owner's go-ahead.
