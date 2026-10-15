@@ -1,5 +1,6 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', diff unreadable (git diff exited 128)
 LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
+UNGRADED: PhaseSizeWarning: git show --numstat of <SHA> could not be read (git exited 128), so that commit was not measured against the phase-size guideline
 enforcement-pack: FAIL (2 issue(s)):
   - DiffUnreadable: git diff against '<SHA>' failed on '001-thing' (exit 128), so the changed-file list is unknown and the checks that read it graded nothing - repair the repository (a damaged object, or fetch the full history: 'fetch-depth: 0' on actions/checkout)
   - AmendmentAuthority: cannot grade '001-thing' — <SHA> (the merge <SHA> or one of its parents) is not readable in this clone, so what the merge authored is unknown; skipping it would pass a merge on a wrong reason. Fetch the full history: 'fetch-depth: 0' on actions/checkout, or 'git fetch --unshallow'; if the history is complete, an object is damaged (constitution I, Amendment authority)

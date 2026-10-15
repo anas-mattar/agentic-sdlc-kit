@@ -112,3 +112,12 @@ Exemption guards (Amendment 1: no reachable data state): each read is made to fa
 - `ritual-checks.ps1` on the working tree: doc-lint OK, digests OK, roadmap-claims OK, enforcement-pack OK after the amendment-message fix (the pre-fix FAIL is the defect above).
 - The wider families (`DIFF-`, `LITE-`, `AMEND-`, `CRIT-`, `PACK-`, `PROV-`), the baseline full-harness count on the parent and the full harness on an isolated checkout of the phase commit were still
   running when the phase was committed; their numbers are recorded below when they finish, and T007 stays open until they do.
+
+### Correction found by the wider families (after the first phase commit `18fc556`)
+
+`-Case DIFF-` and `-Case AMEND-` failed 3 and 2 expectations: five **pre-existing** fixtures (`DIFF-001/fail`, `DIFF-001/fail-with-review-file`, `DIFF-002/pass`, `AMEND-005/fail`,
+`AMEND-008/fail`) damage a subtree of the branch (028's `truncateBlob` on a directory). That damage also makes `git show --numstat` fail, so `PhaseSizeWarning` now names itself once
+(`UNGRADED: PhaseSizeWarning: git show --numstat of <sha> could not be read (git exited 128), so that commit was not measured ...`) where it used to print nothing. The new line is the
+phase's intended effect on a damaged repository (the same read, the same lane policy), and it is the only difference: exit codes and every other line are unchanged. The five expectations
+were updated by hand (one inserted line each) in the follow-up commit; every readable, empty, no-base, shallow and trunk case is byte-identical, and the baseline full harness on the
+parent is **1704 passed, 0 failed**. Lesson recorded: the families to run per phase are the ones whose fixtures damage a tree or blob (`DIFF-`, `AMEND-`), not only the rule's own.
