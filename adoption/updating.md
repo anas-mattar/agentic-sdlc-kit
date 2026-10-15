@@ -1302,7 +1302,7 @@ expect the removal to need the owner's decision rather than a record.
 **What was wrong.** `scripts/enforcement-pack.ps1` read the branch's diff in three places with `git diff ... 2>$null`: the changed-file list (feeding the Lite-lane abuse guard and
 feature 027's Lite amendment gate), review-provenance's list of review files added, and the amendment gate's own second read. A diff git cannot compute (an unreadable tree or blob
 on the branch) exits non-zero, and every one of the three read that as an empty list. The run printed `diff base '<sha>', 0 changed file(s)` and, on a `fix/` branch carrying a
-dependency manifest and a migration, `enforcement-pack: OK`, exit 0, which the review that found it reproduced. Feature 027's note said so as a limit.
+dependency manifest and a migration, `enforcement-pack: OK`, exit 0 (reproduced for this feature's spec on a throwaway repository; the roadmap row had said it was not reproduced on a `fix/` branch). Feature 027's note said so as a limit.
 
 **What it does now.** The three reads go through one reader, and a diff git cannot compute against a **present** base is a named state, never an empty list. The count line reads
 `diff unreadable (git diff exited <n>)` instead of `0 changed file(s)`. On a numbered branch (`NNN-*`) the run fails once with
@@ -1316,18 +1316,20 @@ constitution. Run `scripts/build-digests.ps1` after the update: until you do, th
 
 **What an owner may newly see.** On any branch whose diff against the base can be read: nothing, byte for byte. On a repository with a damaged object (a truncated or missing tree or blob
 the branch's diff must read): on a numbered branch, one `DiffUnreadable` failure and a count line that says `diff unreadable`; on a Lite branch, `UNGRADED` lines and exit 0. The fix is
-the same either way: repair the repository (a clone with a missing object is re-cloned; a shallow or partial clone is fetched in full: `fetch-depth: 0` on `actions/checkout`).
+the same either way: repair the repository (a clone with a missing object is re-cloned; a shallow or partial clone is fetched in full: `fetch-depth: 0` on `actions/checkout`). A trunk branch (`main`, `master`) whose diff against its base cannot be read also prints the `diff unreadable` count line where it printed `0 changed file(s)`; its verdict and exit code do not change, because no scripted check applies there.
 A pre-existing case the owner of a numbered branch may recognise: an unreadable **merge parent** (feature 026's refusal) now also prints `DiffUnreadable`, first, because the same damage
 stops the diff; both lines stay, one saying the changed-file list is unknown and the other that the amendment check cannot grade the merge.
 
 **What does NOT change.** The output and exit code of every branch whose diff is readable, empty, has no base (the dispatch's existing `WARNING` and `UNGRADED` lines, printed once and
-not doubled), is in a shallow clone with a base, or is a trunk branch's; the verdict words (no new one); the amendment check's grading; and every other member of the pack. This
-**supersedes** feature 027's flow-down limit (3), "a Lite branch with an unreadable diff is not graded and prints as before"; 027's note is history and is not edited.
+not doubled), is in a shallow clone with a base, or is a trunk branch's (apart from that one count line, when its diff is unreadable); the verdict words (no new one); the amendment check's grading; and every other member of the pack. This
+**supersedes** the first sentence of feature 027's flow-down limit (3), "a Lite branch with an unreadable diff is not graded and prints as before"; its second sentence, the silence of a Lite branch with no base at all, is still true. 027's note is history and is not edited.
 
 **Known limits, stated rather than hidden.** (1) `scripts/territory-check.ps1` has two reads of the same kind that stay unchecked (the uncommitted-tree diff and an open branch's diff),
-so an unreadable diff of another open branch is read as "no overlap"; they are a separate row if the owner wants one. (2) A non-zero exit of `git diff` is taken as the whole truth: a
-diff that exits 0 with wrong content (silent corruption) is not detectable here. (3) The pack's other `git` reads (`git log`, `git show --numstat`, `ls-tree`) are not changed; none
-was found swallowing a failure, but they were not audited. (4) git's own message is not shown, only its exit code, so the output is deterministic. (5) A partial result from a
+so an unreadable diff of another open branch is read as "no overlap", and an unreadable uncommitted-tree diff drops the branch's own uncommitted files from the set it checks; both are in roadmap row GAP-035. (2) A non-zero exit of `git diff` is taken as the whole truth: a
+diff that exits 0 with wrong content (silent corruption) is not detectable here. (3) **The pack's other `git` reads are not changed, and at least one swallows a failure the same way.** `git show --numstat` in the Micro lane's phase walk and in `PhaseSizeWarning`
+reads zero lines when a commit's blob is unreadable: a feature 028 review reproduced a Micro-declared branch with a 700-line phase commit whose hard 400-line failure turned into
+`enforcement-pack: OK`, exit 0, and the phase-size warning disappeared. The reads of the same shape that were not probed (`git cat-file` and `git show HEAD:...` of the plan, tasks and
+review blobs, `git log`, `git rev-list`, `git show -U0`, `ls-tree`) are open, with `territory-check.ps1`'s two, as roadmap row GAP-035. (4) git's own message is not shown, only its exit code, so the output is deterministic. (5) A partial result from a
 failing diff is discarded, but no fixture can show it: git builds the whole tree diff before it prints, so a failing diff prints nothing. (6) The state is entered only with a base:
 a missing base keeps the dispatch's existing warning. (7) The `docs/` lane line still says review-provenance is the only scripted check that applies, while the
 UNGRADED lines list the checks that graded nothing.
