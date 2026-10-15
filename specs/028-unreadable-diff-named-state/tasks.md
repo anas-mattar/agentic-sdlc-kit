@@ -117,7 +117,7 @@ included. No script changes.
       `chore/` and `docs/` branch, per merge in the shape CI grades (the clone detached at the merge, `main` at its first parent), from a scratch directory outside every clone; report
       per history the runs, the outputs that differ (expected none), the merges the subject patterns missed (counted, and any such merge replayed by name) and the run time on the
       largest. Say plainly what it shows and does not show (plan D10).
-- [ ] T018 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards): the full harness,
+- [x] T018 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards): the full harness,
       `ritual-checks.ps1 -Branch 028-unreadable-diff-named-state`, and `scope-check.ps1` on each phase commit. Record the numbers in `notes.md`. The owner then runs the gate.
 
 ---

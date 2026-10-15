@@ -152,3 +152,10 @@ Method: clones of FitForge, FlowBoard and ExpenseTracker made from their local d
 
 - **F1-F5 fixed** in `adoption/updating.md` and `docs/roadmap.md` (see the dispositions appended to the review): the trunk count line, limit (3) rewritten, the source of the reproduction, the scope of the supersession of 027's limit (3), and the second consequence of `territory-check.ps1`'s unchecked reads. F6 accepted.
 - **GAP-035 opened** (the owner, 2026-10-15): the pack's and `territory-check.ps1`'s other unchecked `git` reads, reproduced by the reviewer with `git show --numstat` on a damaged blob (a Micro-declared branch's hard 400-line failure became `OK`). It is the work plan Risks named ("if the replay or the fixtures show one swallowing a failure, it becomes its own roadmap row, not an edit here"); this feature does not touch those reads.
+
+### T018 — final run on an isolated checkout
+
+- Full harness on a detached `git worktree` outside the repository (removed afterwards) of the phase 3 code commit `593dc67`: **1704 passed, 0 failed, 0 skipped** (exit 0, 1306 s), the same count as the phase 2 final run (phase 3 changes no script and no test).
+- `ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` on the same checkout: doc-lint OK, enforcement-pack OK (AmendmentAuthority graded 17 of 18 commits, the merge not graded), scope-check PASS on all twelve phase commits up to `593dc67` (phase 1: `e959c71`, `c0109b9`, `3f2c287`, `21030a3`, `f2063df`, `088dd0d`; phase 2: `89bb651`, `0f801e0`, `7c93b00`, `079f3bb`, `8de7c30`; phase 3: `593dc67`), digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK.
+- **The run covers `593dc67`, not the branch tip `fcf7d30`.** The two differ only in the phase 3 review follow-ups: `adoption/updating.md` and `docs/roadmap.md` text (F1-F5, GAP-035), the review file and its addendum, and notes. No script or test changed, so the harness count stands; `ritual-checks.ps1` was run again on the tip's working tree after those edits (RESULT OK, scope-check PASS on `fcf7d30`, 4 files), not in an isolated checkout. The harness was not re-run on `fcf7d30`.
+- The owner now runs the phase 3 gate.
