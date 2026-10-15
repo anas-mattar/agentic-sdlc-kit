@@ -69,18 +69,18 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T008 Record the baseline in `notes.md`: the full harness count on the parent of this phase and the exact output of phase 1's `GITREAD-*` cases. Reproduce on the parent: a renamed
+- [x] T008 Record the baseline in `notes.md`: the full harness count on the parent of this phase and the exact output of phase 1's `GITREAD-*` cases. Reproduce on the parent: a renamed
       approved document whose blob is truncated is skipped (no grading, `OK`) — G9; a truncated name-status read leaves every commit with no rows — G5.
-- [ ] T009 Write the fixtures first (plan D7, D4): `GITREAD-004` (G4 `Get-CommitMetaBatch`), `-005` (G5 `Get-NameStatusBatch`), `-006` (G6 the range's `rev-list`: numbered refusal; Lite
+- [x] T009 Write the fixtures first (plan D7, D4): `GITREAD-004` (G4 `Get-CommitMetaBatch`), `-005` (G5 `Get-NameStatusBatch`), `-006` (G6 the range's `rev-list`: numbered refusal; Lite
       `UNGRADED`, where the parent is silent), `-007` (G7 `Get-BlobLines`), `-008` (G8 `Get-AddedRecordLines`), `-009` (G9: a renamed approved document, a blob truncated: graded, not
       skipped; control: intact content, still skipped as today), `-010` (G10 the renumbering `ls-tree`). Each with a readable control; each shown failing on the parent or named a control.
       Where one data state breaks two reads, say so in `notes.md` and guard the second by a mutation only, naming it an exemption with the reason.
-- [ ] T010 Inventory the rules: `GITREAD-004`..`010` with anchor and law; update the notes of the existing `AMEND-*` rules whose sites are now reached through the reader; run the recall
+- [x] T010 Inventory the rules: `GITREAD-004`..`010` with anchor and law; update the notes of the existing `AMEND-*` rules whose sites are now reached through the reader; run the recall
       sweep first.
-- [ ] T011 Edit `scripts/enforcement-pack.ps1` (plan D2, D3, D4): the G4–G10 reads through `Read-GitLines`; each failure uses the amendment check's existing refusal shape (numbered:
+- [x] T011 Edit `scripts/enforcement-pack.ps1` (plan D2, D3, D4): the G4–G10 reads through `Read-GitLines`; each failure uses the amendment check's existing refusal shape (numbered:
       `AmendmentAuthority: cannot grade '<b>' — ...`; Lite: `UNGRADED`), not a new message; G9 grades the rename when either `rev-parse` fails. Reads already named (`Get-GradedDocSet`,
       `Get-FeatureDocMap`, `Get-AutoMergeTree`, `Test-CheckAbsentForReal`, `Get-CheckPresenceSet`) are not edited. Update the amendment check's `LIMITS` comments.
-- [ ] T012 Show a mutation for each fixture that guards a branch of the new code and record it (exit code read late, partial output kept, the `$null -eq $null` arm restored, the
+- [x] T012 Show a mutation for each fixture that guards a branch of the new code and record it (exit code read late, partial output kept, the `$null -eq $null` arm restored, the
       per-read key dropped, the Lite arm made silent). Each restored byte for byte.
 - [ ] T013 Run `-Case GITREAD-`, `-Case AMEND-`, `-Case CRIT-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, every new fixture as written, no
       unowned site. Re-run T008's reproductions. Record the numbers. Then stop and ask the owner to run the gate.

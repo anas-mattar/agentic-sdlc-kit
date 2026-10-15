@@ -136,3 +136,46 @@ parent is **1704 passed, 0 failed**. Lesson recorded: the families to run per ph
 - `ritual-checks.ps1` on the branch: doc-lint OK, enforcement-pack OK, scope-check PASS on the phase commits, digests OK, roadmap-claims OK.
 - **The owner's gate** (anas.m, 2026-10-15, run on `029-unchecked-git-reads-named-state` at `98dcf94` or later): `tests/enforcement/Run-Tests.ps1` exit **0** and `scripts/ritual-checks.ps1` exit **0**,
   as reported by the owner. Phase 1 is certified on that report; phase 2 may start on the owner's go-ahead.
+
+## Phase 2: the amendment and history reads (G4-G10)
+
+### Baseline (T008)
+
+- Parent of the phase: `08b1c49` plus the merge of `main` (the roadmap row only): the full harness count on it is **1716 passed, 0 failed** (phase 1's result; the owner's gate ran it, exit 0).
+- Reproduced on the parent, by the new fixtures run against the unchanged script (each failed there):
+  - `AMEND-011/fail-name-status` (a middle commit's subtree truncated): `git log --name-status` exits 128; the check printed `AmendmentAuthority: graded 1 of 2 commit(s)` and **exit 0**: nothing was graded and the count line did not say so (G5).
+  - `AMEND-011/fail-lite-show-record` (a `docs/` branch, an amendment of another feature's plan WITH a record, the blob unreadable): the parent **failed the Lite branch** (exit 1) with `no conforming approver record`, a wrong cause and a NEW hard failure on a condition the check cannot compute (014 FR-009). Found by the fixture, not predicted by the plan.
+  - `AMEND-011/fail` and `fail-tick-blob` (numbered): the same wrong-cause "no record" failure, for an amendment that carries a record, and for a tick-only change that is exempt.
+
+### What was built (T009-T011)
+
+- `scripts/enforcement-pack.ps1`: `Read-AmendmentGit` (goes through `Read-GitLines`, records the FIRST failure), `Set-AmendmentReadFailure`, `Test-AmendmentReadFailed` (prints the refusal `AmendmentAuthority: cannot grade '<b>' - <read> failed (git exited N), so what the branch's commits changed is unknown; ...` and stops the walk), `Test-SameBlobContent` (G9: a failed read is never "the same", so the path is graded). Reads moved behind them: the metadata batch (G4), the name-status batch (G5), the range `rev-list` (G6), `Get-BlobLines` (G7), `git show -U0` (G8), the rename compare (G9) and the renumbering `ls-tree` (G10). Checks sit at the boundaries of the walk (after each batch, at the top of each commit, after the amended-paths stage, before the verdict, after the loop). The numbered lane fails; the Lite lane converts the refusal to UNGRADED by the existing prefix rule (027 D8), so nothing is newly failed there.
+- **A regression the wider families found before the commit**: `git show <rev>:<path>` exits 128 for a path the commit does not hold (a deleted document), so the first version of `Get-BlobLines` refused four existing merge fixtures (`AMEND-001/fail-merge-deletes-approved-document`, `fail-merge-deletes-contract-main-into-branch`, `fail-merge-other-feature-deletes-contract`, `fail-merge-renames-and-rewrites-contract`). A truncated blob exits 255 and a damaged tree 128, so the exit code cannot separate "absent" from "unreadable"; `Get-BlobLines` now probes a failed show with `git ls-tree <ref> -- <path>` (exit 0 and no output = absent = an empty body, as before). Those four fixtures are the controls that guard the probe.
+- Fixtures: `AMEND-011` (8 cases, hand-written expectations): `fail` and `pass` (a record-bearing amendment of `plan.md` with its blob truncated, and the readable twin), `fail-name-status`/`pass-name-status`, `fail-tick-blob`/`pass-tick`, `fail-lite-show-record`/`pass-lite-show-record`. The plan numbered the rule `AMEND-010`; that id was already an exempted rule (the metadata-parse site), so this rule is `AMEND-011`. **Two predictions of mine were wrong and were corrected by hand from the code's order**: for an amended `plan.md` the first failing read is the BLOB read (`git show <sha>:<path>`, exit **255**) made by the status-only check, not `git show -U0` (128), so `git show -U0` (G8) has no fixture state either.
+- Reachability, as in phase 1's probe: fixtures reach G5 (a subtree of a middle commit, `truncateCommit` naming `HEAD~1:specs/001-thing`) and G7 (blobs of `plan.md` and `tasks.md`). G4, G6, G8, G9 and G10 read objects a successful read has just read, so they are guarded by injected failures (Amendment 1).
+
+### Mutations (T011)
+
+Fixture-caught, over `-Case AMEND-011`, script restored byte for byte (hash compared):
+
+| Mutation | Result |
+|---|---|
+| P1 the failure is never recorded | caught: `fail`, `fail-lite-show-record`, `fail-name-status`, `fail-tick-blob` |
+| P2 the refusal is never printed | caught: the same four |
+| P3 the check after the name-status batch dropped | **not caught**: equivalent for these fixtures (the check at the top of the first commit prints the same refusal from the same flag) |
+| P4 the amended-stage check dropped | **not caught alone**; Q2 below |
+| P5 the flag is not cleared after printing | **not caught**: equivalent (the walk returns right after the refusal; the clear is hygiene for a second invocation) |
+| P6 last failure wins instead of first | **not caught**: no fixture has two failing reads inside one stage |
+| Q2 amended-stage AND verdict-stage checks both dropped | shown by hand: the wrong-cause `no conforming approver record` failure prints beside the refusal, so `AMEND-011/fail` would differ |
+| the `ls-tree` absent probe dropped | caught by the four deleted-document merge fixtures (the regression above) |
+
+Injected failures (Amendment 1), each read made to fail by pointing it at a missing ref, on a real fixture repository, the site must name it:
+
+| Injection | Fixture repository | Result |
+|---|---|---|
+| E4 metadata batch (G4) | `AMEND-001/pass` | `cannot grade '001-thing' - git log of <base>..HEAD failed (git exited 128) ...` |
+| E5 range rev-list (G6) | `AMEND-001/pass` | `... git rev-list of <base>..HEAD failed (git exited 128) ...` |
+| E6 `git show -U0` (G8) | `AMEND-001/pass` | `... git show -U0 of adf7334 -- specs/001-thing/plan.md failed ...` |
+| E7 rename `rev-parse` (G9) | `AMEND-001/fail-rename-content` | `... git rev-parse 8042218:specs/001-thing/contracts/api-v2.md failed ...` |
+| E8 renumbering `ls-tree` (G10) | `AMEND-001/fail-other-feature-single-doc-moved` | `cannot grade '002-b' - git ls-tree of 7338950 -- specs/001-a failed ...` |
+| E6 + verdict-stage check dropped | `AMEND-001/pass` | the wrong-cause failure prints beside the refusal (so the verdict-stage check is what stops it) |

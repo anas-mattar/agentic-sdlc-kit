@@ -2289,6 +2289,15 @@
       "law": "feature 014 FR-009 (the Lite lane is never newly failed on a condition it cannot compute); feature 029 spec FR-004 and plan D2, D3 (PhaseSizeWarning is advisory today, so it is UNGRADED, not a failure)",
       "emitAnchor": "could not be read (git exited ",
       "notes": "Feature 029 phase 1. ONE emission site, the UNGRADED arm of Add-GitReadUnreadable. Phase 1 owns PhaseSizeWarning (G3): a Standard phase of 401 lines whose blob is truncated used to print neither the warning nor anything else; it now prints one UNGRADED line naming the commit, the verdict reads UNGRADED, exit 0. 'pass' is the readable twin and prints the WARNING it always did, verdict OK."
+    },
+    {
+      "id": "AMEND-011",
+      "script": "enforcement-pack.ps1",
+      "function": "Test-AmendmentReadFailed",
+      "summary": "a git read inside the amendment check that fails (non-zero exit) makes the check refuse to grade, by name, instead of reading an empty result as no rows, no added lines or unchanged content",
+      "law": "feature 029 spec FR-002 to FR-004, FR-006 and plan D2, D3, D4 (Decision 2: the lane split of 027 D8, so the refusal is a failure on the numbered lane and UNGRADED on the Lite lane, 014 FR-009)",
+      "emitAnchor": "), so what the branch's commits changed is unknown",
+      "notes": "Feature 029 phase 2. ONE emission site: the refusal printed once at the first failed read of the walk (Read-AmendmentGit records it; Test-AmendmentReadFailed prints it at the next boundary). The numbered lane fails; the Lite lane converts it to UNGRADED by the existing prefix rule ('AmendmentAuthority: cannot grade '). Reached by fixtures for three reads: the name-status batch (G5, a middle commit's subtree truncated by truncateCommit naming a subtree), git show -U0 of an amended path (G8, a truncated blob; also a Lite twin, where the parent FAILED the branch with 'no conforming approver record', a new hard failure on a condition the check could not compute) and the blob read of a tick-only tasks.md (G7). Each has a readable twin. The metadata batch (G4), the range rev-list (G6), the rename same-content compare (G9) and the renumbering ls-tree (G10) have no reachable data state (they read the same objects a successful read has just read) and are guarded by injected-failure mutations recorded in notes.md, not by fixtures (plan Amendment 1)."
     }
   ]
 }

@@ -262,6 +262,33 @@ function Add-GitReadUnreadable {
     }
 }
 
+# Feature 029 phase 2 (plan D2, D3, D4): the amendment check reads git in many places, deep inside
+# helpers that return lists. A failed read there used to be an empty list: no name-status rows, no added
+# lines, no blob content. Read-AmendmentGit goes through Read-GitLines and records the FIRST failure;
+# Test-AmendmentReadFailed turns it into the check's own refusal at the next boundary of the walk, and
+# the walk then stops (grading what could be read would pass an unread amendment on a wrong reason).
+# The refusal begins 'AmendmentAuthority: cannot grade ', so the Lite lane converts it to UNGRADED by the
+# prefix rule in Invoke-AmendmentAuthority (feature 027 D8, 014 FR-009): never a new Lite failure.
+$script:AmendmentReadFailure = $null
+function Set-AmendmentReadFailure {
+    param([string]$Read, [int]$Exit)
+    if (-not $script:AmendmentReadFailure) { $script:AmendmentReadFailure = @{ Read = $Read; Exit = $Exit } }
+}
+function Read-AmendmentGit {
+    param([string[]]$GitArguments, [string]$Read)
+    $r = Read-GitLines -GitArguments $GitArguments
+    if (-not $r.Ok) { Set-AmendmentReadFailure -Read $Read -Exit $r.Exit }
+    return $r
+}
+function Test-AmendmentReadFailed {
+    param([string]$Branch)
+    if (-not $script:AmendmentReadFailure) { return $false }
+    $f = $script:AmendmentReadFailure
+    $script:failures += "AmendmentAuthority: cannot grade '$Branch' — $($f.Read) failed (git exited $($f.Exit)), so what the branch's commits changed is unknown; grading what could be read would pass an unread amendment on a wrong reason. Repair the repository (a damaged object), or fetch the full history: 'fetch-depth: 0' on actions/checkout"
+    $script:AmendmentReadFailure = $null
+    return $true
+}
+
 # The changed-file list, and beside it $script:ChangedFilesRead: Ok is false only when a diff WAS
 # attempted against a base and git failed. No base is a different, already-named state (the dispatch
 # warns and the Lite lane says UNGRADED), so it stays Ok here and nothing is named twice.
@@ -1402,7 +1429,8 @@ $script:GitFS = [string][char]31   # ASCII unit separator
 function Get-CommitMetaBatch {
     param([string]$Range)
     $fmt = "%H$script:GitFS%P$script:GitFS%ad$script:GitFS%B$script:GitFS%(trailers:only)"
-    $raw = (@(git log -z --reverse --date=short --format=$fmt $Range 2>$null) -join "`n")
+    $read = Read-AmendmentGit -GitArguments @('log', '-z', '--reverse', '--date=short', "--format=$fmt", $Range) -Read "git log of $Range"
+    $raw = ($read.Lines -join "`n")
     $meta = [ordered]@{}
     foreach ($rec in ($raw -split "`0")) {
         if (-not $rec.Trim()) { continue }
@@ -1429,7 +1457,8 @@ function Get-NameStatusBatch {
     # fails the "$dir/*" filter and the document is never graded at all (review B2). The pack
     # already carries this at scripts/scope-lib.ps1 (006 F3) and at line 577 (phase 2 F2); this
     # reader was the one that did not.
-    foreach ($line in @(git -c core.quotepath=off log --reverse --format="$script:GitRS%H" --name-status $Range 2>$null)) {
+    $nsRead = Read-AmendmentGit -GitArguments @('-c', 'core.quotepath=off', 'log', '--reverse', "--format=$script:GitRS%H", '--name-status', $Range) -Read "git log --name-status of $Range"
+    foreach ($line in $nsRead.Lines) {
         # ORDINAL comparison, deliberately. String.StartsWith defaults to a CULTURE-SENSITIVE
         # comparison that treats a control character as ignorable, so every line — including
         # the empty ones — "starts with" the record separator and the parse collapses.
@@ -1508,12 +1537,34 @@ function Get-CheckPresenceSet {
 # checkbox comparison all want the same two blobs of the same tasks.md; without this they read
 # each of them twice.
 $script:AmendmentBlobCache = @{}
+# Feature 029 phase 2 (plan D4, G9): "did this path's content come across intact" compares two
+# `git rev-parse` results. When BOTH reads fail the old `$null -eq $null` was true, so a renamed approved
+# document was read as unchanged and escaped grading. A failed read is never "the same": it returns
+# false (so the path is graded) and Read-AmendmentGit records the failure for the walk's refusal.
+function Test-SameBlobContent {
+    param([string]$Commit, [string]$Path, [string]$Parent, [string]$OldPath)
+    $now  = Read-AmendmentGit -GitArguments @('rev-parse', "${Commit}:${Path}") -Read "git rev-parse $($Commit.Substring(0, 7)):$Path"
+    $then = Read-AmendmentGit -GitArguments @('rev-parse', "${Parent}:${OldPath}") -Read "git rev-parse $($Parent.Substring(0, 7)):$OldPath"
+    if (-not $now.Ok -or -not $then.Ok) { return $false }
+    return (@($now.Lines) -join '') -eq (@($then.Lines) -join '')
+}
+
 function Get-BlobLines {
     param([string]$Ref, [string]$Path)
     if (-not $Ref) { return @() }
     $key = "${Ref}:${Path}"
     if ($script:AmendmentBlobCache.ContainsKey($key)) { return $script:AmendmentBlobCache[$key] }
-    $lines = @(git show $key 2>$null)
+    # `git show <rev>:<path>` exits non-zero both for a path the commit does not hold (a deleted document:
+    # an empty body is the right answer) and for a path it holds whose object cannot be read, and a
+    # truncated blob and an absent path do not even exit alike (255 and 128). So a failed show is probed:
+    # `git ls-tree` exits 0 with no output for an absent path, and anything else is an unreadable object.
+    $shown = Read-GitLines -GitArguments @('show', $key)
+    if ($shown.Ok) { $lines = @($shown.Lines) }
+    else {
+        $lines = @()
+        $probe = Read-GitLines -GitArguments @('ls-tree', $Ref, '--', $Path)
+        if (-not ($probe.Ok -and @($probe.Lines | Where-Object { $_ }).Count -eq 0)) { Set-AmendmentReadFailure -Read "git show $key" -Exit $shown.Exit }
+    }
     $script:AmendmentBlobCache[$key] = $lines
     return $lines
 }
@@ -1572,7 +1623,7 @@ function Get-AddedRecordLines {
     if (-not $Paths -or $Paths.Count -eq 0) { return @() }
     $result = @()
     foreach ($path in ($Paths | Sort-Object -Unique)) {
-        $added = @(git show -U0 --format='' $Commit -- $path 2>$null |
+        $added = @((Read-AmendmentGit -GitArguments @('show', '-U0', '--format=', $Commit, '--', $path) -Read "git show -U0 of $($Commit.Substring(0, 7)) -- $path").Lines |
             Where-Object { $_ -match '^\+' -and $_ -notmatch '^\+\+\+' } |
             ForEach-Object { $_.Substring(1) })
         if ($added.Count -eq 0) { continue }
@@ -1935,14 +1986,16 @@ function Get-OtherFeatureSubject {
         if (-not $AtBase.ContainsKey($OldPath)) { return $null }     # never approved on the base
         if ($pathFeature -eq $oldFeature) {
             # Within one feature directory: creation only if the content came across intact (J3, H3).
-            if ((git rev-parse "${Commit}:${Path}" 2>$null) -eq (git rev-parse "${Parent}:${OldPath}" 2>$null)) { return $null }
+            if (Test-SameBlobContent -Commit $Commit -Path $Path -Parent $Parent -OldPath $OldPath) { return $null }
             $subject = $Path
         } else {
             if ($pathFeature) {
                 # Between feature directories: a renumbering only when the old directory holds no
                 # graded document any more (the whole feature moved); otherwise a removal.
-                $left = @(git -c core.quotepath=off ls-tree -r --name-only $Commit -- $oldFeature 2>$null |
-                    Where-Object { $_ -and (Get-GradedDocFeature -Path $_) })
+                $leftRead = Read-AmendmentGit -GitArguments @('-c', 'core.quotepath=off', 'ls-tree', '-r', '--name-only', $Commit, '--', $oldFeature) -Read "git ls-tree of $($Commit.Substring(0, 7)) -- $oldFeature"
+                # A failed read is not "the old directory holds nothing": treat the move as a removal (graded).
+                if (-not $leftRead.Ok) { return $OldPath }
+                $left = @($leftRead.Lines | Where-Object { $_ -and (Get-GradedDocFeature -Path $_) })
                 if ($left.Count -eq 0) { return $null }
             }
             return $OldPath
@@ -2081,11 +2134,15 @@ function Invoke-AmendmentAuthorityCore {
     # Three git calls now answer everything the walk below used to ask commit by commit: the
     # commits and their parents, dates, messages and trailers; every commit's name-status; and
     # which parents already carried the check (T024 — the walk itself is unchanged).
+    $script:AmendmentReadFailure = $null
     $meta = Get-CommitMetaBatch -Range $range
+    if (Test-AmendmentReadFailed -Branch $Branch) { return }
     # The commit SET comes from the object graph, never from the message stream. Taking it from
     # the parsed metadata let a commit delete itself by writing one byte into its own message
     # (review B1); rev-list reads commit objects and cannot be written to from a message.
-    $commits = @(git rev-list --reverse $range 2>$null | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
+    $commitsRead = Read-AmendmentGit -GitArguments @('rev-list', '--reverse', $range) -Read "git rev-list of $range"
+    if (Test-AmendmentReadFailed -Branch $Branch) { return }
+    $commits = @($commitsRead.Lines | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
     if ($commits.Count -eq 0) {
         # An empty range is a check that ran and graded nothing - GAP-027's shape, and until the
         # phase 6 review (F6) it ended the run on OK. It is named, not failed: a branch with no
@@ -2122,12 +2179,15 @@ function Invoke-AmendmentAuthorityCore {
     $graded = $IgnoreAmendmentBoundary.IsPresent
 
     $nameStatus = Get-NameStatusBatch -Range $range
+    if (Test-AmendmentReadFailed -Branch $Branch) { return }
     # Every first parent in the range, tested in one call. The sticky flag below still decides
     # PER COMMIT whether that commit is graded — the batch changes who is asked, not what for.
     $presence = @{}
     if (-not $graded) { $presence = Get-CheckPresenceSet -Refs @($commits | ForEach-Object { @($meta[$_].Parents)[0] }) }
 
     foreach ($commit in $commits) {
+        # Feature 029 phase 2: a read that failed while the previous commit was graded refuses here.
+        if (Test-AmendmentReadFailed -Branch $Branch) { return }
         $parents = @($meta[$commit].Parents)
         $isMerge = $parents.Count -gt 1
         $mergePaths = @()
@@ -2203,7 +2263,7 @@ function Invoke-AmendmentAuthorityCore {
                 # A rename WITHIN the same feature directory is not renumbering. It is creation
                 # only if the content came across intact; otherwise it is an amendment wearing a
                 # new path (H3 — a contract renamed and reinterpreted in one commit).
-                $sameContent = (git rev-parse "${commit}:${path}" 2>$null) -eq (git rev-parse "${parent}:${oldPath}" 2>$null)
+                $sameContent = Test-SameBlobContent -Commit $commit -Path $path -Parent $parent -OldPath $oldPath
                 if ($sameContent) { continue }
             }
             if ($leaf -eq 'tasks.md' -and
@@ -2212,6 +2272,7 @@ function Invoke-AmendmentAuthorityCore {
                 (Test-StatusOnlyChange -Commit $commit -Parent $parent -Path $path -ParentPath $oldPath)) { continue }
             $amended += $path
         }
+        if (Test-AmendmentReadFailed -Branch $Branch) { return }
         if ($amended.Count -eq 0) { continue }
 
         $commitDay = $meta[$commit].Day
@@ -2234,6 +2295,7 @@ function Invoke-AmendmentAuthorityCore {
                      else          { Get-AddedRecordLines -Commit $commit -Parent $parent -Paths $g }
             $verdicts += [pscustomobject]@{ Paths = @($g); Record = (Get-ConformingRecord -AddedLines $lines -CommitDay $commitDay) }
         }
+        if (Test-AmendmentReadFailed -Branch $Branch) { return }
         $bad = @($verdicts | Where-Object { -not $_.Record.Name })
 
         if ($bad.Count -gt 0) {
@@ -2262,6 +2324,7 @@ function Invoke-AmendmentAuthorityCore {
             }
         }
     }
+    if (Test-AmendmentReadFailed -Branch $Branch) { return }
     $skipped = $commits.Count - $gradedCount
     $reasons = @()
     if ($skipMerge -gt 0)    { $reasons += "$skipMerge merge commit(s)" }
