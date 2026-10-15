@@ -146,14 +146,14 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
 - `scripts/enforcement-pack.ps1`
 - `scripts/territory-check.ps1`
 
-- [ ] T027 Run the replay (plan D9) per merge, over real history, in the shape CI grades a pull request: the parent kit's scripts against the new ones over each merged `NNN-*`, `fix/`,
+- [x] T027 Run the replay (plan D9) per merge, over real history, in the shape CI grades a pull request: the parent kit's scripts against the new ones over each merged `NNN-*`, `fix/`,
       `chore/` and `docs/` branch in this kit's history and in clones of the three adopted projects, reporting the runs, the outputs that differ (expected none), the reads each run
       exercised (counted by an instrumented copy of the reader), the merges the branch patterns miss, and what the replay does not show (damaged repositories: the fixtures do).
       Record it in `notes.md`.
-- [ ] T028 Write the flow-down note in `adoption/updating.md`, in the shape of 026, 027 and 028 (what was wrong, what it does now, what flows down, what an owner may newly see, what does
+- [x] T028 Write the flow-down note in `adoption/updating.md`, in the shape of 026, 027 and 028 (what was wrong, what it does now, what flows down, what an owner may newly see, what does
       not change, the known limits, what was measured, what to do), superseding 028's open-limit wording and naming what stays open (`cat-file -e` and `rev-parse --verify --quiet`
       cannot tell absent from unreadable; silent corruption; GAP-029).
-- [ ] T029 Update `docs/roadmap.md`: GAP-035 shipped (owner, spec path, merge evidence), its idea row under Ideas closed, and any new row the probe or replay produced; fix the `LIMITS`
+- [x] T029 Update `docs/roadmap.md`: GAP-035 shipped (owner, spec path, merge evidence), its idea row under Ideas closed, and any new row the probe or replay produced; fix the `LIMITS`
       comments in the two scripts that still describe the old state.
 - [ ] T030 Regenerate the digests with `pwsh -File scripts/build-digests.ps1`; run `pwsh -File scripts/ritual-checks.ps1` and the full harness on an isolated checkout of the final
       commit; record the numbers in `notes.md`. Then stop and ask the owner to run the gate.

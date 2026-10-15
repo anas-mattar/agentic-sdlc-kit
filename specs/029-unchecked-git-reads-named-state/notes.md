@@ -321,3 +321,38 @@ Script restored byte for byte after each (hash compared). Before the commit, on 
 - **F3 (CONFIRM), the owner's choice**: "the code repositories are still compared after a governance diff failure" is shown by no fixture (U3 uncaught, recorded above); correct by reading. The owner may accept it or ask for a fixture (a recipe with `codeRepos`, a damaged governance diff and an overlap in a code repository).
 - **F4 (MINOR)**: the `last-commit-failed` text has nested parentheses where `diff-failed` uses a comma; cosmetic, not changed.
 - **F5 and F6 (DOC DRIFT), fixed**: the diff is 21 insertions and 3 deletions (24 changed lines, not 21), and the repository stores LF on both sides (the CRLF was a working-copy artifact); and the Amendment 3 paragraph now says the approval was given.
+## Phase 5
+
+### T027 — replay on real history (plan D9, FR-010, SC-005)
+
+Method (028's, T017): clones (`git clone --local --no-hardlinks`, `core.autocrlf=false`) of FitForge, FlowBoard, ExpenseTracker and this repository; the real projects untouched, nothing pushed.
+For every merge commit reachable from any ref whose subject names a merged branch (`Merge pull request #N from <owner>/<branch>`, `Merge branch '<branch>'` not followed by `into`, or
+`Merge <NNN-name>`), the clone is detached at the merge, `main` and `origin/main` are set to its first parent, and `scripts/enforcement-pack.ps1` runs with `-Branch <name> -ReplayBase <merge>^1
+-ReplayTip <merge> -IgnoreAmendmentBoundary`. Three copies of `scripts/`, each from a scratch directory outside every clone: the **parent** (`ea1d393`, before any 029 change), the **new**
+(HEAD, `e7ed935`), and an **instrumented copy of the new** whose `Read-GitLines` appends one line to a counter file per call (used for the reads-exercised column and its output compared with the new's).
+The driver and its JSON are kept outside the repository.
+
+| History | Merge commits | Replayed | Numbered | Lite | Named no branch | Outputs that differ | Exit codes that changed | Reads exercised (sum, largest run) | Old / new time (sum) |
+|---|---|---|---|---|---|---|---|---|---|
+| FitForge | 10 | 5 | 1 | 4 | 5 | 0 | 0 | 93 (90) | 27.5 s / 24.9 s |
+| FlowBoard | 10 | 8 | 4 | 4 | 2 | 0 | 0 | 331 (107) | 44.3 s / 39.4 s |
+| ExpenseTracker | 10 | 8 | 3 | 5 | 2 | 0 | 0 | 154 (54) | 31.7 s / 32.3 s |
+| this kit | 115 | 94 | 31 | 63 | 21 | 0 | 0 | 13,457 (1,173) | 782.2 s / 773.7 s |
+| **Total** | **145** | **115** | **39** | **76** | **30** | **0** | **0** | **14,035** | |
+
+**All 115 runs are byte-identical** (output and exit code), old against new, and the instrumented copy matches the new in all 115. The exit codes themselves are mixed (kit: 55 at 0, 39 at 1; the
+1s are the merge-time verdicts of branches that were graded then, identical in both versions). Largest run: 50 commits, 21.5 s old (20.7 s new). Timings are one sample per version, old first, run
+four histories in parallel: they show no cost seen, not that there is none.
+
+**The merges the branch patterns miss:** 30, listed by class, not hidden: `main` merged into a branch (`Merge branch 'main' into ...`, `Merge remote-tracking branch 'origin/main' into ...`,
+`Merge main into ...`) and `governance:` commits; they name no branch to grade.
+
+**What it shows:** on four real histories, per merge in the shape CI grades, no branch whose git reads succeed changes output or exit code, and the reader was exercised 14,035 times. **What it does not
+show,** said plainly: how the new states read on a damaged repository (no branch in these histories has one; the fixtures show that), how often it will occur, a shallow clone, another platform or an
+adopter's CI, or an octopus merge. **`scripts/territory-check.ps1` is not in this replay:** it runs `git fetch origin` and lists the live remote, so a per-merge replay would overwrite the clones'
+refs and grade today's remote, not the merge; its reads are shown by the `TERR-` fixtures and mutations (phase 4).
+
+### T029 — the `LIMITS` comments
+
+The two scripts hold no comment that describes the old state of these reads: the only `LIMITS` block (`enforcement-pack.ps1`, the merge-readiness heuristic) is about something else, and
+`territory-check.ps1` has none (the same finding as phase 4's F2). Nothing edited there.
