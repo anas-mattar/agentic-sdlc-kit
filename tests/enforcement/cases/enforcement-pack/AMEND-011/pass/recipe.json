@@ -1,5 +1,5 @@
 {
-  "description": "The same amendment with every object readable: the record is found, OK. The twin of fail-show-record.",
+  "description": "The same amendment with every object readable: the record is found, OK. The twin of fail: the two differ in one condition, the blob.",
   "defaultBranch": "main",
   "commits": [
     {

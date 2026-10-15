@@ -1,5 +1,5 @@
 {
-  "description": "An amendment that carries a conforming record and whose approver the message names, with the blob of the amended plan unreadable: git show -U0 exits 128. The check used to read no added lines and fail with 'no conforming approver record', a wrong cause that on a Lite branch is a hard failure; it now refuses to grade, by name (feature 029, G8).",
+  "description": "An amendment that carries a conforming record whose approver the commit message names, with the blob of the amended plan unreadable: the blob read (git show <sha>:<path>, made by the status-only check; a truncated blob exits 255) fails. The check used to read an empty body and fail with 'no conforming approver record', a wrong cause that on a Lite branch is a hard failure; it now refuses to grade, by name (feature 029, G7).",
   "defaultBranch": "main",
   "commits": [
     {

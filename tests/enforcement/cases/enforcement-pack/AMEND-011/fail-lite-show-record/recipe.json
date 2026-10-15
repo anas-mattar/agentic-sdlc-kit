@@ -1,5 +1,5 @@
 {
-  "description": "A docs/ branch that amends another feature's approved plan with a conforming record, the blob unreadable: the check used to fail the Lite branch with 'no conforming approver record' (a NEW hard failure on a condition it cannot compute, feature 014 FR-009). It now names itself UNGRADED and exits 0 (feature 029, G8, Lite lane).",
+  "description": "A docs/ branch that amends another feature's approved plan with a conforming record, the blob unreadable: the check used to fail the Lite branch with 'no conforming approver record' (a NEW hard failure on a condition it cannot compute, feature 014 FR-009). It now names itself UNGRADED and exits 0 (feature 029, G7, Lite lane).",
   "defaultBranch": "main",
   "commits": [
     {

@@ -1,5 +1,5 @@
 {
-  "description": "A tick-only change to tasks.md (exempt) with the blob of tasks.md unreadable: git show of the blob exits 128. The check used to read two empty or unequal bodies as a real change and then fail it for want of a record; it now refuses to grade, by name (feature 029, G7).",
+  "description": "A tick-only change to tasks.md (exempt) with the blob of tasks.md unreadable: git show of the blob exits 255. The check used to read two empty or unequal bodies as a real change and then fail it for want of a record; it now refuses to grade, by name (feature 029, G7).",
   "defaultBranch": "main",
   "commits": [
     {
