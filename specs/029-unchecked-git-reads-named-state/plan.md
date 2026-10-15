@@ -198,3 +198,13 @@ site must name it) and not a harness fixture, each recorded in `notes.md` as an 
 `origin` URL (D7's "nearest state"). The class table's "graded here" count is unchanged; no phase is added or removed.
 
 **Amendment approved by**: anas.m, 2026-10-15
+
+## Amendment 2 — three more injection-only reads (phase 2 review F3), 2026-10-16
+
+Phase 2 (`notes.md`, `ai-code-review-phase2.md`) found three further reads of the class Amendment 1 names, with no data state a fixture can reach: **G8** (`git show -U0` of an amended path:
+it runs only after the blob read, which already failed on any damaged blob), **G9** (the rename same-content compare) and **G10** (the renumbering `ls-tree`): the last two read objects that a
+successful `git log --name-status` has just read. **Decision:** they are moved behind `Read-AmendmentGit` as built, and guarded by **injected-failure checks** (the read is made to fail and the
+site must name it), recorded in `notes.md` as exemptions with the reason, exactly as Amendment 1 does for G2, G3, G4, G6, G12 and G14a. No phase is added or removed and no fixture is dropped
+beyond those already named.
+
+**Amendment approved by**: anas.m, 2026-10-16

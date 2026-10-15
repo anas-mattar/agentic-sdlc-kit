@@ -167,3 +167,12 @@ G14a (`GITREAD-002`, the G3 half of `-003`, `-004`, `-006`, `-012`, the G14a hal
 as an exemption with the reason; the readable control for each still runs as part of the existing cases.
 
 **Amendment approved by**: anas.m, 2026-10-15
+
+---
+
+## Amendment 2 — G8, G9, G10 are injection-guarded (plan Amendment 2), 2026-10-16
+
+Where a task above names a fixture for G8, G9 or G10 (phase 2: T009's `-008`, `-009`, `-010`), that read is guarded by its **injected-failure check** (T012) and recorded in `notes.md` as an
+exemption with the reason, as Amendment 1 does for the other unreachable reads.
+
+**Amendment approved by**: anas.m, 2026-10-16
