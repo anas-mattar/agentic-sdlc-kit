@@ -82,7 +82,7 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
       `Get-FeatureDocMap`, `Get-AutoMergeTree`, `Test-CheckAbsentForReal`, `Get-CheckPresenceSet`) are not edited. Update the amendment check's `LIMITS` comments.
 - [x] T012 Show a mutation for each fixture that guards a branch of the new code and record it (exit code read late, partial output kept, the `$null -eq $null` arm restored, the
       per-read key dropped, the Lite arm made silent). Each restored byte for byte.
-- [ ] T013 Run `-Case GITREAD-`, `-Case AMEND-`, `-Case CRIT-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, every new fixture as written, no
+- [x] T013 Run `-Case GITREAD-`, `-Case AMEND-`, `-Case CRIT-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, every new fixture as written, no
       unowned site. Re-run T008's reproductions. Record the numbers. Then stop and ask the owner to run the gate.
 
 ---

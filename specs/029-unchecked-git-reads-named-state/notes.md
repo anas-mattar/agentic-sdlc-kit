@@ -258,3 +258,9 @@ the count that counts is the full harness on an isolated checkout of the commit,
 - **F4 (MINOR)**: both functions read `$Branch` by dynamic scope without declaring it; a future caller without it would downgrade the G11 failure to UNGRADED. Unreachable today (the dispatch always sets it); not changed.
 - **F5 (MINOR)**: the reviewer did not re-run S2 or check the restore hash; the implementer's hash check is recorded above.
 - **Still open for phase 3**: the full-harness count on an isolated checkout of `1554148` (running) and the owner's gate.
+
+### Owner's gate for phases 2 and 3
+
+- **Owner's gate** (anas.m, 2026-10-16), run once on the current tip of `029-unchecked-git-reads-named-state` (`4aa9b45`, which contains `92c2371` for phase 2 and `1554148` for phase 3): `tests/enforcement/Run-Tests.ps1` exit **0** and
+  `scripts/ritual-checks.ps1` exit **0**, as reported by the owner. This certifies phase 2 in its final state (the earlier report of exit 0 predated the fix and is not the certifying one) and, with the isolated full-harness
+  count below once recorded, phase 3. T013 is ticked on it; T019 awaits the isolated count of `1554148`.
