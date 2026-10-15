@@ -1,0 +1,12 @@
+{
+  "description": "A control: a readable Micro branch whose second phase-1 commit is EMPTY. git show --numstat exits 0 with no rows, which is a measurement of zero lines and not a failed read (spec FR-008: a read that exits 0 with empty output prints exactly what it printed).",
+  "defaultBranch": "main",
+  "commits": [
+    { "branch": "main", "message": "init", "write": { "README.md": "fixture kit\n" } },
+    { "branch": "001-thing", "message": "spec: 001 thing",
+      "write": { "specs/001-thing/spec.md": [ "# Micro Spec: Thing", "", "**Feature Branch**: `001-thing`", "**Status**: Approved 2026-01-01 (owner: fixture)", "**Delivery Level**: Micro", "", "## Intent", "", "Do the thing.", "", "**Territory**:", "", "- `src/a.ps1`" ] } },
+    { "branch": "001-thing", "message": "phase 1: the first thing", "write": { "src/a.ps1": "Write-Host 'a'\n" } },
+    { "branch": "001-thing", "message": "phase 1 fixes: an empty marker commit" }
+  ],
+  "checkout": "001-thing"
+}

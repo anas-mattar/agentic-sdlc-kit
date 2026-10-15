@@ -2271,6 +2271,24 @@
       "law": "feature 014 FR-009 (the Lite lane is never newly failed on a condition it cannot compute); feature 028 spec FR-003 and plan D3, D6",
       "emitAnchor": "could not be read (git diff exited ",
       "notes": "Feature 028 phases 1 and 2. ONE emission site, the Lite arm of Add-DiffUnreadable, one UNGRADED line per reader that graded nothing, exit 0, the verdict reading 'not graded', never OK. Three readers reach it: LiteAndAbuse (fix/ and chore/, phase 1), review-provenance and the Lite amendment gate (every Lite lane, phase 2); a fix/ or chore/ branch lists all three, a docs/ branch the last two. fail, fail-chore and fail-blob-rename-detection are the fix/ and chore/ lanes over the src-truncated branch and over a second damage shape (no tree is unreadable, but a blob that rename detection must read is, so git diff exits 128 the same way, and only the dispatch's rename-detecting read fails while the gate's --no-renames read succeeds: that case is what guards the gate's first-read test); fail-docs is the docs/ lane. pass is the numbered twin over the same damage (the lane that keeps its failure), named pass because it is the rule's other direction, and expecting exit 1, as AMEND-009 does. pass-lite-readable, pass-docs-readable, pass-docs-readable-review and pass-lite-empty-diff are the controls: a readable or empty diff prints exactly what it printed before (pass-docs-readable-review: a provenance-less review file is graded and failed when the diff is readable). Not guarded by a fixture, stated: a partial list (git builds the whole tree diff before it prints, so a failing diff prints nothing), the gate's second read failing alone (with --no-renames it reads no more than the dispatch's read, so it fails only when that one already has: mutations M10 and M11 are equivalent), and review-provenance's read failing alone (same trees, same rename detection)."
+    },
+    {
+      "id": "GITREAD-001",
+      "script": "enforcement-pack.ps1",
+      "function": "Add-GitReadUnreadable",
+      "summary": "a numbered branch where a git read the pack grades from fails (non-zero exit) is a failure naming the read and its consequence, instead of an empty result read as nothing",
+      "law": "feature 029 spec FR-002, FR-003, FR-005 and plan D1, D2, D3 (Decision 2: the lane split of 027 D8 and 028 D1)",
+      "emitAnchor": "GitReadUnreadable: ",
+      "notes": "Feature 029 phase 1. ONE emission site, the numbered arm of Add-GitReadUnreadable, once per reader and read per run. Phase 1 owns the Micro lane's git show --numstat (G1): a Micro phase of 401 lines whose blob is truncated exits 128 and used to read as zero lines, so the hard 400-line bound passed and the run said OK. 'pass' is the readable twin and prints the 400-line MicroLane failure it always did (so it exits 1 like fail; the pair differs in one condition, the blob). The Micro walk's rev-list and git log -1 (G2) and the read-failure of each later group are guarded by mutation, not by a fixture: no data state breaks them while the pack still has a base (notes.md, the probe)."
+    },
+    {
+      "id": "GITREAD-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Add-GitReadUnreadable",
+      "summary": "a git read whose check is advisory, or a read on a Lite branch, that fails is named UNGRADED for the check that graded nothing, and never newly fails",
+      "law": "feature 014 FR-009 (the Lite lane is never newly failed on a condition it cannot compute); feature 029 spec FR-004 and plan D2, D3 (PhaseSizeWarning is advisory today, so it is UNGRADED, not a failure)",
+      "emitAnchor": "could not be read (git exited ",
+      "notes": "Feature 029 phase 1. ONE emission site, the UNGRADED arm of Add-GitReadUnreadable. Phase 1 owns PhaseSizeWarning (G3): a Standard phase of 401 lines whose blob is truncated used to print neither the warning nor anything else; it now prints one UNGRADED line naming the commit, the verdict reads UNGRADED, exit 0. 'pass' is the readable twin and prints the WARNING it always did, verdict OK."
     }
   ]
 }

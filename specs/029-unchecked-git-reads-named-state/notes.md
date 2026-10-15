@@ -69,3 +69,46 @@ Per T002, the probe contradicts a prediction and the plan is not amended by the 
 - Q2: G12 (`Get-SurfaceExceptions`'s date) is in this set; it also means phase 3's second fixture (`GITREAD-012`) cannot exist as planned.
 
 *Owner's answer*: option A (anas.m, 2026-10-15) — grade the seven reads anyway, guard them by mutation, record each as an exemption; plan and tasks amended (Amendment 1).
+
+### What was built (T003-T005)
+
+- Fixtures (hand-written expectations), 6 cases in 2 rules: `GITREAD-001/{fail,pass,fail-two-commits,pass-empty-phase-commit}` and `GITREAD-002/{fail,pass}`. The plan's D7 named one rule id per read
+  (`GITREAD-001..014`); the harness inventories **emission sites**, so the ids are per site (`GITREAD-001` the numbered failure arm of `Add-GitReadUnreadable`, `GITREAD-002` its UNGRADED arm) and
+  each read is a variant directory. No behaviour differs from the plan; later phases add variants under these two ids.
+- On the parent commit (a detached worktree at `48ccb8f` with only the new cases and `rules.json` copied in): `GITREAD-001/fail`, `fail-two-commits` and `GITREAD-002/fail` fail (exit code
+  and/or output: the parent prints `enforcement-pack: OK`, exit 0, and no warning); the controls `GITREAD-001/pass`, `pass-empty-phase-commit` and `GITREAD-002/pass` pass there by design.
+- `scripts/enforcement-pack.ps1`: `Read-GitLines` and `Add-GitReadUnreadable` beside the 028 helpers; the Micro walk (`rev-list`, `log -1`, `show --numstat`: G1, G2) and
+  `Invoke-PhaseSizeWarningCheck` (`rev-list`, `show --numstat`: G3, advisory so UNGRADED) read through them. `Read-DiffLines` and every other member are unchanged. No `LIMITS` comment
+  described these reads as unchecked (the statement of the limit is in `adoption/updating.md`, phase 5), so none was edited.
+- Amendment commit: the first message did not carry the approver record, and the kit's own amendment check caught it (`AmendmentAuthority: commit 963e313 records 'anas.m' ... but its commit
+  message does not name them`). The commit was local and unpushed, so it was amended (now `d2482e9`); the pack is `OK` on the branch.
+
+### Mutations (T006)
+
+Each applied to the script, run over `-Case GITREAD-`, restored byte for byte (hash compared).
+
+| Mutation | Caught by |
+|---|---|
+| M1 read the exit code a statement late | 5 failing expectations: `GITREAD-001/fail`, `fail-two-commits`, `GITREAD-002/fail` |
+| M2 keep the partial output on a failed read | **not caught, and no fixture can catch it**: a failing `git show --numstat` prints nothing, so there is no partial output to grade (the same limit as 028's M2) |
+| M3 enter the state on empty output instead of a non-zero exit | `GITREAD-001/pass-empty-phase-commit` |
+| M4 drop the per-read dedupe | `GITREAD-001/fail-two-commits` |
+| M5 an advisory check fails like a numbered one | `GITREAD-001/fail`, `fail-two-commits`, `GITREAD-002/fail` |
+| M6 the numbered lane prints UNGRADED instead of failing | `GITREAD-001/fail`, `fail-two-commits` |
+| M7 the Micro numstat failure ignored | `GITREAD-001/fail`, `fail-two-commits` |
+| M8 the PhaseSize numstat failure ignored | `GITREAD-001/fail`, `fail-two-commits`, `GITREAD-002/fail` |
+
+Exemption guards (Amendment 1: no reachable data state): each read is made to fail by pointing it at a missing ref, and the site must name it. Run on the readable 700-line Micro reproduction.
+
+| Injected failure | Result |
+|---|---|
+| E1 the Micro walk's `rev-list` (G2a) | `GitReadUnreadable: git rev-list of <base>..HEAD failed on '001-thing' (git exited 128), so the phase's size could not be measured ...` |
+| E2 the Micro walk's `git log -1` (G2b) | `GitReadUnreadable: git log of a43d266 failed on '001-thing' (git exited 128) ...` |
+| E3 `PhaseSizeWarning`'s `rev-list` (G3) | `UNGRADED: PhaseSizeWarning: git rev-list of <base>..HEAD could not be read (git exited 128), so no commit on the branch was measured ...` |
+
+### Run results (T007, partial at the time of the phase commit)
+
+- `-Case GITREAD-`: 74 passed, 0 failed. `-Case MICRO-`: 100 passed. `-Case PHASE-`: 86 passed.
+- `ritual-checks.ps1` on the working tree: doc-lint OK, digests OK, roadmap-claims OK, enforcement-pack OK after the amendment-message fix (the pre-fix FAIL is the defect above).
+- The wider families (`DIFF-`, `LITE-`, `AMEND-`, `CRIT-`, `PACK-`, `PROV-`), the baseline full-harness count on the parent and the full harness on an isolated checkout of the phase commit were still
+  running when the phase was committed; their numbers are recorded below when they finish, and T007 stays open until they do.

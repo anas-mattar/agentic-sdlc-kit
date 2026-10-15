@@ -230,6 +230,38 @@ function Add-DiffUnreadable {
     }
 }
 
+# Feature 029 (GAP-035, plan D1): the generic sibling of Read-DiffLines, for every other `git` read
+# the pack grades from. A failing command returns NO lines whatever git printed (a partial result is
+# never graded), and the exit code is captured in the statement after the call, before any pipeline can
+# reset it. On success Lines is the output exactly as the call site received it, so a healthy read is
+# byte-identical; each site applies its own filter. Read-DiffLines is left as it is: it filters empty
+# entries, which the other sites do not.
+function Read-GitLines {
+    param([string[]]$GitArguments)
+    $lines = @(& git @GitArguments 2>$null)
+    $code = $LASTEXITCODE
+    if ($code -ne 0) { return @{ Ok = $false; Lines = @(); Exit = $code } }
+    return @{ Ok = $true; Lines = $lines; Exit = 0 }
+}
+
+# Feature 029 (plan D2): what a failed git read does, by lane. On a numbered branch it is a failure
+# naming the read and what graded nothing, once per reader and read per run (-Key). On the Lite lane
+# (fix/, chore/, docs/), and for a check that is advisory today (-Advisory: PhaseSizeWarning, plan D3),
+# it is one UNGRADED line and the exit code is unchanged (feature 014 FR-009). git's own message is not
+# shown: the exit code is, so the output is deterministic.
+$script:GitReadReported = @{}
+function Add-GitReadUnreadable {
+    param([string]$Reader, [string]$Read, [string]$Key, [string]$Branch, [int]$Exit, [string]$Consequence, [switch]$Advisory)
+    $dedupe = "$Reader|$Key"
+    if ($script:GitReadReported.ContainsKey($dedupe)) { return }
+    $script:GitReadReported[$dedupe] = $true
+    if ($Branch -match '^\d{3}-' -and -not $Advisory) {
+        $script:failures += "GitReadUnreadable: $Read failed on '$Branch' (git exited $Exit), so $Consequence - repair the repository (a damaged object, or fetch the full history: 'fetch-depth: 0' on actions/checkout)"
+    } else {
+        $script:ungraded += "${Reader}: $Read could not be read (git exited $Exit), so $Consequence"
+    }
+}
+
 # The changed-file list, and beside it $script:ChangedFilesRead: Ok is false only when a diff WAS
 # attempted against a base and git failed. No base is a different, already-named state (the dispatch
 # warns and the Lite lane says UNGRADED), so it stays Ok here and nothing is named twice.
@@ -842,13 +874,32 @@ function Invoke-MicroLaneCheck {
     $phaseNums = @{}
     $phaseTotal = 0
     $phaseCommitCount = 0
-    $commits = (git rev-list --no-merges "$Base..HEAD" 2>$null) | Where-Object { $_ }
+    # Feature 029 (plan D3, G1-G2): each read goes through Read-GitLines; a failed read is named
+    # and graded nothing, never read as "no commit" or "zero lines" (a damaged blob once turned the
+    # hard 400-line failure into OK).
+    $walkConsequence = "the phase's size could not be measured and the Micro lane's $($Config.MicroPhaseMaxLines)-line bound graded nothing"
+    $walk = Read-GitLines -GitArguments @('rev-list', '--no-merges', "$Base..HEAD")
+    if (-not $walk.Ok) {
+        Add-GitReadUnreadable -Reader 'MicroLane' -Read "git rev-list of $Base..HEAD" -Key 'rev-list' -Branch $Branch -Exit $walk.Exit -Consequence $walkConsequence
+        return
+    }
+    $commits = $walk.Lines | Where-Object { $_ }
     foreach ($commit in $commits) {
-        $subject = (git log -1 --format=%s $commit 2>$null)
+        $subjectRead = Read-GitLines -GitArguments @('log', '-1', '--format=%s', $commit)
+        if (-not $subjectRead.Ok) {
+            Add-GitReadUnreadable -Reader 'MicroLane' -Read "git log of $($commit.Substring(0, 7))" -Key 'log' -Branch $Branch -Exit $subjectRead.Exit -Consequence $walkConsequence
+            continue
+        }
+        $subject = ($subjectRead.Lines -join "`n")
         if ($subject -notmatch '(?i)\bphase\s+(\d+)\b') { continue }
         $phaseNums[[int]$matches[1]] = $true
         $phaseCommitCount++
-        $numstat = git show --numstat --format='' $commit 2>$null
+        $numstatRead = Read-GitLines -GitArguments @('show', '--numstat', '--format=', $commit)
+        if (-not $numstatRead.Ok) {
+            Add-GitReadUnreadable -Reader 'MicroLane' -Read "git show --numstat of $($commit.Substring(0, 7))" -Key 'numstat' -Branch $Branch -Exit $numstatRead.Exit -Consequence $walkConsequence
+            continue
+        }
+        $numstat = $numstatRead.Lines
         foreach ($row in $numstat) {
             if (-not $row) { continue }
             $parts = $row -split "`t"
@@ -1279,9 +1330,22 @@ function Invoke-PhaseSizeWarningCheck {
         $script:ungraded += "PhaseSizeWarning: no diff base, so no commit on '$Branch' was measured against the phase-size guideline"
         return
     }
-    $commits = (git rev-list "$Base..HEAD" 2>$null) | Where-Object { $_ }
+    # Feature 029 (plan D3, G3): the reads go through Read-GitLines. The check is advisory, so a failed
+    # read is one UNGRADED line (-Advisory), never a failure: the warning that did not print is named.
+    $sizeConsequence = 'that commit was not measured against the phase-size guideline'
+    $walk = Read-GitLines -GitArguments @('rev-list', "$Base..HEAD")
+    if (-not $walk.Ok) {
+        Add-GitReadUnreadable -Reader 'PhaseSizeWarning' -Read "git rev-list of $Base..HEAD" -Key 'rev-list' -Branch $Branch -Exit $walk.Exit -Consequence 'no commit on the branch was measured against the phase-size guideline' -Advisory
+        return
+    }
+    $commits = $walk.Lines | Where-Object { $_ }
     foreach ($commit in $commits) {
-        $numstat = git show --numstat --format='' $commit 2>$null
+        $numstatRead = Read-GitLines -GitArguments @('show', '--numstat', '--format=', $commit)
+        if (-not $numstatRead.Ok) {
+            Add-GitReadUnreadable -Reader 'PhaseSizeWarning' -Read "git show --numstat of $($commit.Substring(0, 7))" -Key 'numstat' -Branch $Branch -Exit $numstatRead.Exit -Consequence $sizeConsequence -Advisory
+            continue
+        }
+        $numstat = $numstatRead.Lines
         $fileCount = 0
         $lineCount = 0
         foreach ($row in $numstat) {

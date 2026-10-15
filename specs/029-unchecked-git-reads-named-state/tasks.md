@@ -33,24 +33,24 @@ directory someone is using. G-numbers refer to the table in `plan.md`.
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, and the exact output and exit of a readable Micro branch
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, and the exact output and exit of a readable Micro branch
       with a 700-line phase commit (the 400-line failure), a readable Micro branch under the bound, and an empty-diff branch. Reproduce the gap on a throwaway repository: the same
       700-line commit with one of its blobs truncated prints `enforcement-pack: OK`.
-- [ ] T002 The probe (plan D8): for **every** unchecked read in the plan's inventory (graded, out of scope and named-already), run it against a damaged repository (a deleted,
+- [x] T002 The probe (plan D8): for **every** unchecked read in the plan's inventory (graded, out of scope and named-already), run it against a damaged repository (a deleted,
       garbage and truncated blob, an unreadable tree) and record in `notes.md` a table: read, site, exit code, whether it returned lines, and the class the probe supports. For each
       read the plan predicted *out of scope* or *named already*, state whether the probe confirms it. **If the probe moves a read into the graded set, or shows a G-read is not
       reachable, stop and report: the plan is amended only with an approver record from the owner, never by the author.** Confirm that `truncateBlob` reaches each read, or name the
       nearest state.
-- [ ] T003 Write the phase 1 fixtures first (plan D7): `GITREAD-001` (G1: Micro, 700 lines, blob truncated: a named `MicroLane` failure, exit 1; control: readable, the 400-line
+- [x] T003 Write the phase 1 fixtures first (plan D7): `GITREAD-001` (G1: Micro, 700 lines, blob truncated: a named `MicroLane` failure, exit 1; control: readable, the 400-line
       failure unchanged), `GITREAD-002` (G2: the rev-list / subject read fails: the walk names itself), `GITREAD-003` (G3: `PhaseSizeWarning`, blob truncated: one `UNGRADED` line,
       exit unchanged; control: readable, byte-identical, and a readable commit with zero changed lines). Each shown failing on the parent or named a control. Record each result.
-- [ ] T004 Inventory the rules in `tests/enforcement/rules.json`: `GITREAD-001`..`003` with anchor and law (027 D8, 028 D1, spec FR-002..FR-005); run the recall sweep first and
+- [x] T004 Inventory the rules in `tests/enforcement/rules.json`: `GITREAD-001`..`003` with anchor and law (027 D8, 028 D1, spec FR-002..FR-005); run the recall sweep first and
       classify anything else it reports.
-- [ ] T005 Edit `scripts/enforcement-pack.ps1` (plan D1, D2, D3): `Read-GitLines` beside `Read-DiffLines` (exit code captured in the next statement; empty `Lines` on a non-zero exit);
+- [x] T005 Edit `scripts/enforcement-pack.ps1` (plan D1, D2, D3): `Read-GitLines` beside `Read-DiffLines` (exit code captured in the next statement; empty `Lines` on a non-zero exit);
       `Add-GitReadUnreadable` beside `Add-DiffUnreadable` (numbered: one failure per distinct read per run; Lite: one `UNGRADED` line per reader); `Invoke-MicroLaneCheck` and
       `Invoke-PhaseSizeWarningCheck` through them. `Read-DiffLines`, `Add-DiffUnreadable` and every other member are not edited. Change the `LIMITS` comments that say these reads are
       unchecked to say what is now named and what stays open.
-- [ ] T006 Show a mutation for each fixture that guards a branch of the new code and record it: read the exit code a statement late; keep partial output; enter the state on empty
+- [x] T006 Show a mutation for each fixture that guards a branch of the new code and record it: read the exit code a statement late; keep partial output; enter the state on empty
       output instead of a non-zero exit; drop the per-read key so a second read is hidden; call the old bare `git show --numstat` in one site. Each is shown failing a fixture, then
       restored byte for byte.
 - [ ] T007 Run `-Case GITREAD-`, `-Case MICRO-`, `-Case DIFF-`, `-Case LITE-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, every new fixture as
