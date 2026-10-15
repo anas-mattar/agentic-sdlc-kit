@@ -130,7 +130,7 @@ read is graded instead of skipped (G9, the `$null -eq $null` shape).
 - [x] T024 Edit `scripts/territory-check.ps1` (plan D6): the four reads check their exit codes; no kit verdict word is added (GAP-029 stays open); `Read-CodeRef` and the other named
       paths are not edited. Update the script's `LIMITS` wording.
 - [x] T025 Show a mutation for each fixture that guards a branch of the new code and record it; restore byte for byte.
-- [ ] T026 Run the territory-check cases, `-Case GITREAD-`, the full harness and `ritual-checks.ps1`; record the numbers. Then stop and ask the owner to run the gate.
+- [x] T026 Run the territory-check cases, `-Case GITREAD-`, the full harness and `ritual-checks.ps1`; record the numbers. Then stop and ask the owner to run the gate.
 
 ---
 

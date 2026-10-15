@@ -310,3 +310,14 @@ No exit code is new and no kit verdict word is added (GAP-029 stays open).
 | E11 injected: the tip's `git log -1` made to fail (G14a), on `TERR-002/fail` | `UNGRADED: governance: cannot compare 012-other (git log of origin/012-other failed (git exited 128))`, exit 0 |
 
 Script restored byte for byte after each (hash compared). Before the commit, on the working tree (the families run before it was stopped to commit): `TERR-` 208 passed, `RIT-` 264, `REPOS-` 204, 0 failed. The full harness on an isolated checkout of the commit is recorded below when it finishes.
+
+### AI review of phase 4 (fresh-context agent, `ai-code-review-phase4.md`): APPROVE with follow-ups, and the close-out count
+
+- **Families run by the reviewer** on a detached worktree of `56ee63b`: TERR- 208, RIT- 264, REPOS- 204, SCOPE- 310, ROADMAP- 170, GITREAD- 78, DIFF- 86, AMEND- 288, CRIT- 228, LITE- 122, PACK- 78, all 0 failed. U1 and U2 re-run and caught
+  (`TERR-023` and `TERR-025`; with the parent script restored they fail 4 and 3). E10 and E11 were not re-run by the reviewer. `verify-kit.ps1` is n/a (kit template); `ritual-checks.ps1` in a detached worktree cannot grade scope-check or the pack (no branch name), so it is not a substitute for the run on the branch.
+- **Full harness on an isolated checkout of `56ee63b`: 1744 passed, 0 failed, 0 skipped** (1736 on `1554148` plus the four new territory cases at two expectations each).
+- **F1 (ACCEPTED)**: the `TERR-024` and `TERR-026` exemption reasons are sound; Amendment 3 (approved by anas.m, 2026-10-16, commit `9324f8f`) covers `TERR-024`. "A fixture is impossible" is slightly strong (a stateful upload-pack shim might reach G13b); not tried; the exemption text stands.
+- **F2 (DOC DRIFT)**: T022 and T023 name `GITREAD-013`/`-014` while the work used `TERR-023`..`TERR-026` (per-site rules, as in phases 1 to 3); T024's "`LIMITS` wording" had nothing to update (the script has no such comment). The task text is not amended; the ids are labels.
+- **F3 (CONFIRM), the owner's choice**: "the code repositories are still compared after a governance diff failure" is shown by no fixture (U3 uncaught, recorded above); correct by reading. The owner may accept it or ask for a fixture (a recipe with `codeRepos`, a damaged governance diff and an overlap in a code repository).
+- **F4 (MINOR)**: the `last-commit-failed` text has nested parentheses where `diff-failed` uses a comma; cosmetic, not changed.
+- **F5 and F6 (DOC DRIFT), fixed**: the diff is 21 insertions and 3 deletions (24 changed lines, not 21), and the repository stores LF on both sides (the CRLF was a working-copy artifact); and the Amendment 3 paragraph now says the approval was given.
