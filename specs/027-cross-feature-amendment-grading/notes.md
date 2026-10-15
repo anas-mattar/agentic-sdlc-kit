@@ -149,7 +149,7 @@ Mutations for the new guards, same method as T011 (copy beside the script, or th
 - **`docs/sdlc/branch-strategy.md`:** the Lite lane text ("skips spec.md/plan.md/tasks.md, but still requires the user-run gate, the scope check and human review") is true
   about creating spec documents, but read alone it implies a Lite branch owes nothing about an approved spec document, which is the premise the spec quoted. It is incomplete
   rather than false, and FR-014 asks for the guidance to say what is now graded, so **one sentence and one digest marker were added to it** (no existing sentence changed).
-  This is a small step past T014's "only the false sentences"; it is flagged for the owner.
+  This is a small step past T014's "only the false sentences"; the owner accepted the sentence as written (anas.m, 2026-10-15, after the phase 3 review F6).
 - **`docs/sdlc/flow.md`** (Lite bullet) and the critical-delivery level table row for Lite list the gate, scope check and human review; neither says no amendment check, and
   neither is in this phase's Territory. Left.
 - **`adoption/updating.md`, feature 026's note** says "the Lite lane (`fix/`, `chore/` and `docs/` branches do not run this check)" and its edge case "a document the merge
@@ -165,28 +165,27 @@ the merge's first parent, so the run has the shape CI grades a pull request (`<m
 its own `scripts/` from a scratch directory outside every clone with `-Root` the clone (a deviation from T017's wording "placed inside the clone": placing them inside would have
 dirtied the tree being checked out per merge; each version reads the clone as its project either way, as in 026's method). The driver and its JSON are kept outside the
 repository. Merges whose subject names no branch (a `main` merged into a branch, `governance:` merges) were not replayed: the first are inside their branch's range, the rest have no
-branch name to grade.
+branch name to grade. One merge the patterns missed (`46ba9bb`, "Merge 021-developer-roster", a real feature merge, found by the phase 3 review F4) was replayed afterwards: output and exit code identical (exit 0), so the replayed total is 110 (37 numbered), not 109.
 
-| History | Merge commits | Replayed | Numbered | Lite | Newly graded | Newly failing | Newly failing with a record in the amended document | Outputs that differ | Largest run, old (new) |
+| History | Merge commits | Replayed | Numbered | Lite | Newly graded and output changed | Newly failing | Newly failing with a record in the amended document | Outputs that differ | Largest run, old (new) |
 |---|---|---|---|---|---|---|---|---|---|
 | FitForge | 10 | 5 | 1 | 4 | 0 | 0 | 0 | 0 | 26 commits, 9.2 s (8.9 s) |
 | FlowBoard | 10 | 8 | 4 | 4 | 0 | 0 | 0 | 0 | 23 commits, 5.5 s (4.5 s) |
 | ExpenseTracker | 10 | 8 | 3 | 5 | 0 | 0 | 0 | 0 | 9 commits, 4.0 s (3.5 s) |
-| this kit | 107 | 88 | 28 | 60 | 2 | 2 | 1 | 3 | 50 commits, 7.2 s (6.9 s) |
-| **Total** | **137** | **109** | **36** | **73** | **2** | **2** | **1** | **3** | |
+| this kit | 107 | 89 | 29 | 60 | 2 | 2 | 1 | 3 | 50 commits, 7.2 s (6.9 s) |
+| **Total** | **137** | **110** | **37** | **73** | **2** | **2** | **1** | **3** | |
 
-**106 of 109 runs are byte-identical** (output and exit code), including every run on the three adopted projects. The three that differ, all in this kit's history:
+**107 of 110 runs are byte-identical** (output and exit code), including every run on the three adopted projects. The three that differ, all in this kit's history:
 
 - **`59deae2`, `docs/026-fr-003-rename-amendment`: exit 0 to 1, newly graded.** Commit `c6f383d` amends 026's `spec.md`, **carries** `**Amendment approved by**: anas.m, 2026-10-14` in
   that document, but its commit message does not name the approver. This is the "PR #81" shape the spec cites. An honest owner would have been blocked, by the missing approver
   in the message and not by a missing record.
 - **`c28a867`, `fix/enforcement-pack-main-branch`: exit 0 to 1, newly graded.** Commit `40142f2` edits 002's `spec.md` (an Edge Cases line) with no record and no approver; it predates
   feature 014, so there was nothing to comply with. **Carries no record.**
-- **`22f2af4`, `007-adoption-doctor`: exit 1 to 1** (the 007 branch already fails on its own directory under the old script, the shape 026 reported). The new run adds the
-  cross-feature clause to three more lines (commits `2462b41`, `dddcf1f`, `1fe7b9b` also amend 006's and 004's contracts). Not newly failing, no commit newly failing.
+- **`22f2af4`, `007-adoption-doctor`: exit 1 to 1** (the 007 branch already fails on its own directory under the old script, the shape 026 reported). The new run prints the same
+  18 lines; three of them now name more documents and carry the cross-feature clause (commits `2462b41`, `dddcf1f`, `1fe7b9b` also amend 006's and 004's contracts). Not newly failing, no commit newly failing.
 
-**What it shows:** no unrelated branch would have changed: 106 of 109 runs are byte-identical, the adopted projects' histories are untouched, and per-run time is unchanged within noise
-(the new run is no slower on any of the four largest runs). **What it does not show:** how easy a newly failing branch is to satisfy (two cases, one of them predating the rule), how
+**What it shows:** no unrelated branch would have changed: 107 of 110 runs are byte-identical, the adopted projects' histories are untouched, and per-run time was one sample per version with the old script run first, and moved by a few per cent either way (FlowBoard's 18-commit run was about 3% slower, the four largest runs in the kit faster), so it shows no large cost and not that there is none. **What it does not show:** how easy a newly failing branch is to satisfy (two cases, one of them predating the rule), how
 often a Lite branch will amend a spec document from now on, anything about a run in an adopted project's own CI, a shallow clone (a clone from a local directory is complete) or
 an octopus merge (none exists in these histories). A run grades the documents as they stood, with the version of the script under test and the clone's own files.
 
@@ -195,3 +194,16 @@ an octopus merge (none exists in these histories). A run grades the documents as
 A detached `git worktree` outside the repository (removed afterwards): the full harness **1680 passed, 0 failed, 0 skipped** (exit 0; 1671 at the phase 2 build plus the fixtures
 and guard its review added), 1160 s. `ritual-checks.ps1 -Branch 027-cross-feature-amendment-grading`: doc-lint OK, enforcement-pack OK, scope-check OK (PASS on all nine commits of
 phases 1 to 3, the phase 3 commit `bf62122` with 7 files), digests OK (115 markers), roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK. The owner now runs the gate.
+
+### After the Phase 3 AI review (`ai-code-review-phase3.md`, APPROVE with follow-ups on e57e619)
+
+- **F1 fixed.** The flow-down note no longer lists "no base" among the UNGRADED conditions (a baseless Lite branch is silent from this check); it is named under limit (3).
+- **F2 fixed.** "Newly graded" is a column of output changes: a newly graded commit that passes prints the same output (the 026 branch, `abb4d47`, amended 025's plan with the record). Four kit
+  branches amended another feature's approved document (007, 026, `docs/026-fr-003-rename-amendment`, `fix/enforcement-pack-main-branch`). The three adopted projects contain none, so
+  their identical runs exercise none of the new path; stated in the note and here.
+- **F3 fixed.** The 007 run prints the same 18 lines under both scripts; three of them now name more documents. "Grows by three lines" is removed everywhere.
+- **F4 fixed.** "109 named a branch" is "matched the subject patterns"; `46ba9bb` replayed (identical, exit 0): 110 replayed, 107 identical. Counts updated in notes, the flow-down note and the roadmap entry.
+- **F5 fixed.** The timing claim is reworded: one sample per version, old first, within a few per cent either way.
+- **F6 fixed and accepted.** "Three verbatim files" (`kit-manifest.json` classes `scripts/*.ps1`, `adoption/**` and `docs/sdlc/branch-strategy.md` verbatim). The owner accepted the
+  `branch-strategy.md` sentence as written (anas.m, 2026-10-15).
+- **F7:** left; feature 026's note is history and the new note supersedes it by name.

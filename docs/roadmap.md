@@ -641,8 +641,9 @@ Status flow: `idea → specified → in progress → shipped → dropped`
   is the changed-file list, D8 UNGRADED on the Lite lane, D11 the documents edited); and **three phases**. **Corrected by the work:** the phase 1 review found the record in the branch's
   own files approving another feature's amendment (the grading tail now groups the amended documents, a **D5 amendment** approved by the owner on 2026-10-14) and a document moved into the
   own directory skipped; the phase 2 review found the Lite-lane refusal conversion coupled to the refusals' text (now guarded by a coverage test). **Measured:** four real histories
-  (FitForge, FlowBoard, ExpenseTracker, the kit), 137 merge commits, 109 replayed in the shape CI grades a pull request: 106 byte-identical (every adopted-project run), two Lite
-  runs in the kit newly failing (one amended a spec with the record in the document and no approver in the message, one before the rule existed), one already failing numbered run
-  grew by three lines. That shows no unrelated branch would have changed; it does not show how easy a newly failing branch is to satisfy. **Open, by decision:** "exists at the base"
+  (FitForge, FlowBoard, ExpenseTracker, the kit), 137 merge commits, 110 matched the subject patterns that name a branch and were replayed in the shape CI grades a pull request: 107
+  byte-identical (every adopted-project run, though those histories contain no cross-feature amendment and so exercise none of the new path), two Lite runs in the kit newly failing
+  (one amended a spec with the record in the document and no approver in the message, one before the rule existed), one already failing numbered run printing the same 18 lines with
+  three now naming more documents. That shows no unrelated branch would have changed; it does not show how easy a newly failing branch is to satisfy. **Open, by decision:** "exists at the base"
   is a proxy for approved, a move out of the own directory and a whole directory moved inside a merge, the Lite gate trusting `Get-ChangedFiles` (GAP-034), an amend-then-revert, and the
   record as a written claim. "Shipped" here means built, reviewed and measured: the owner's gate and the human review at merge are still to come.

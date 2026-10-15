@@ -1255,10 +1255,10 @@ that **exists at the diff base** (approved on the integration branch), on a numb
 document, the same approver named in the commit message, the task-tick and `**Status**` exemptions, a creation exempt, a whole feature directory renumbered exempt. **The record goes in
 the document that was amended**: a record in the branch's own files approves nothing for another feature's document. A failure about another feature's document appends a clause
 saying so. A Lite branch that changes no spec document prints exactly what it printed before, in a shallow clone too. A Lite branch that touches one and cannot be graded (shallow
-clone, no base, an unreadable tree) prints an `UNGRADED:` line and still exits 0: the Lite lane is never newly failed on a condition the machine cannot compute (feature 014, FR-009).
+clone, an unreadable commit or tree) prints an `UNGRADED:` line and still exits 0: the Lite lane is never newly failed on a condition the machine cannot compute (feature 014, FR-009).
 When the roll-up line prints on a `docs/` branch, the lane line names both checks.
 
-**What flows down.** One verbatim file: `scripts/enforcement-pack.ps1`, plus this document and `docs/sdlc/branch-strategy.md` (one sentence on the Lite lane). The kit's test
+**What flows down.** Three verbatim files: `scripts/enforcement-pack.ps1`, this document and `docs/sdlc/branch-strategy.md` (one sentence on the Lite lane). The kit's test
 fixtures stay in the kit. Nothing surgical and nothing in your constitution. Run `scripts/build-digests.ps1` after the update: until you do, the digests member of
 `scripts/ritual-checks.ps1` reports the affected digests as stale.
 
@@ -1275,18 +1275,20 @@ after the check arrived in your project, and the Lite lane's other checks.
 **Known limits, stated rather than hidden.** (1) **"Exists at the base" stands in for "approved":** a document that reached the integration branch as a draft is graded as approved,
 as the own-directory rule already does. (2) A document moved **out of** the branch's own directory in an ordinary commit is not graded; a whole directory moved **inside a merge** is
 graded as a removal (make the move in an ordinary commit). A single document moved between feature directories, and a document removed, are graded and **no record can satisfy
-them**. (3) The Lite gate reads the changed-file list, which is empty when `git diff` fails (roadmap GAP-034): a Lite branch with an unreadable diff is not graded and prints as before.
+them**. (3) The Lite gate reads the changed-file list, which is empty when `git diff` fails (roadmap GAP-034): a Lite branch with an unreadable diff is not graded and prints as before. So is a Lite branch with no base at all: this check is silent, and only the lane's existing no-base warning and the review-provenance `UNGRADED` line print.
 (4) A branch that amends a document and reverts it before the merge is silent, because the Lite gate reads the net diff. (5) A branch that only creates a spec document, in a
 shallow clone that still has a base, prints an `UNGRADED` refusal where it printed nothing. (6) The record is still a written claim, not proof of who approved.
 
 **What was measured.** Clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (nothing in place touched, nothing pushed), and of the kit's own
 repository, were replayed merge by merge in the shape CI grades a pull request (`<merge>^1..<merge>`), the branch being the one the merge subject names, `-IgnoreAmendmentBoundary` on
-(an analysis switch no gate passes), the previous `scripts/enforcement-pack.ps1` against this one. Of 137 merge commits, **109 named a branch** (36 numbered, 73 `fix/`, `chore/` or
-`docs/`); **106 runs were byte-identical, including every run in the three adopted projects.** Two runs in the kit's history are **newly failing**, both Lite: one amends an
+(an analysis switch no gate passes), the previous `scripts/enforcement-pack.ps1` against this one. Of 137 merge commits, **110 matched the subject patterns that name a merged branch** (37 numbered, 73 `fix/`, `chore/` or
+`docs/`); **107 runs were byte-identical, including every run in the three adopted projects.** Two runs in the kit's history are **newly failing**, both Lite: one amends an
 earlier feature's spec with the record in the document but without the approver named in the commit message, one amends a spec with no record at all, before the rule existed. A
-third run (an `NNN-*` branch that already failed) grows by three lines. **That shows** that no unrelated branch would have changed and that the check costs no measurable time; **it
-does not show** how easy a newly failing branch is to satisfy, how often a Lite branch will amend a spec from now on, or anything about your own CI, a shallow clone or an
-octopus merge.
+third run (an `NNN-*` branch that already failed) prints the same 18 lines, three of which now name more documents and carry the cross-feature clause. "Byte-identical" is not
+"not graded": four kit branches amended another feature's approved document; the one that passed with its record (feature 026) prints what it printed before, and the 007 branch already failed. **That shows** that no unrelated
+branch would have changed; per-run time was one sample per version, old script first, and moved by a few per cent either way, so it shows no large cost, not that there is none.
+**It does not show** how easy a newly failing branch is to satisfy, how often a Lite branch will amend a spec from now on, or anything about your own CI, a shallow clone or an
+octopus merge; **and the three adopted projects' histories contain no amendment of another feature's approved document, so their identical runs exercise none of the new path.**
 
 **What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. If a branch of yours is graded for another feature's document, add
 `**Amendment approved by**: <name>, <YYYY-MM-DD>` to **that** document and name the approver in the commit message; to move or remove an approved document, use an ordinary commit and
