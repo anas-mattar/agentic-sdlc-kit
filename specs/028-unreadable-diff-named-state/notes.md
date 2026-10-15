@@ -92,8 +92,8 @@ Same method as phase 1 (script mutated in place, `-Case DIFF-`, `-Case LITE-`, `
 |---|---|
 | M4 drop the numbered once-only flag | 2 failures in `-Case DIFF-` (the numbered fixtures) and 1 in `AMEND-008/fail` (a second `DiffUnreadable` line) |
 | M9 review-provenance never names a failed read (`if ($false)`) | 4 failures in `-Case DIFF-` (the four Lite fixtures that list a `ReviewProvenance` line) |
-| M10 drop the gate's second-read failure (`else { $gateExit = ... }`) | **not caught**: the second read, taken without rename detection, can only fail when the first read (with it) fails first; no data state makes it fail alone |
-| M11 drop the `return` after the gate names itself | **not caught**: the core then runs on the unreadable diff and prints nothing on the Lite shapes in the fixtures, so the `return` is invisible in output |
+| M10 drop the gate's second-read failure (`else { $gateExit = ... }`) | **not caught, an equivalent mutant**: the second read, taken without rename detection, can only fail when the first read (with it) fails first; no data state makes it fail alone |
+| M11 drop the `return` after the gate names itself | **not caught, an equivalent mutant**: the core then runs on the unreadable diff and prints nothing on the Lite shapes in the fixtures, so the `return` is invisible in output |
 | M12 drop the gate's test of the dispatch read | 1 failure in `-Case DIFF-` (`fail-blob-rename-detection`): there only the first read fails, because rename detection reads the damaged blob and the second read, with `--no-renames`, does not. The phase 1 blob fixture is what guards the first-read test |
 
 ### Results (T012)
@@ -101,3 +101,12 @@ Same method as phase 1 (script mutated in place, `-Case DIFF-`, `-Case LITE-`, `
 - Full harness on an isolated detached worktree of the phase 2 code commit `89bb651`: **1700 passed, 0 failed, 0 skipped** (exit 0, 1697 s), against 1698 at the phase 1 gate: 2 new tests (the `fail-docs` fixture).
 - `ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` on the same commit: doc-lint OK, enforcement-pack OK (AmendmentAuthority graded 12 of 13 commits, the merge not graded), scope-check PASS on all seven phase commits including `89bb651` (7 files), digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK.
 - The owner now runs the phase 2 gate.
+
+### After the phase 2 AI review (`ai-code-review-phase2.md`, APPROVE with follow-ups on 89bb651)
+
+- **F1 fixed.** The `DIFF-001` and `DIFF-002` notes in `rules.json` are rewritten for phases 1 and 2 (the docs/ lane is named, the three readers, the fixtures and what no fixture guards); the recall sweep passes.
+- **F2 recorded.** M10 and M11 are **equivalent mutants** (the gate's second read, taken with `--no-renames`, reads no more than the dispatch's rename-detecting read, so it can fail only when that one already has; with both failing the `return` has no visible effect on the Lite shapes), and M12 is caught by `fail-blob-rename-detection`, the one state in which only the first read fails. The mutation table above says so, and a comment at the second read in the script says the read cannot fail alone and that both branches become live and unguarded if the dispatch read ever changes.
+- **F3 fixed.** The two missing T008 fixtures are added: `DIFF-001/fail-with-review-file` (a numbered branch with a provenance-less review file and an unreadable diff: exactly one `DiffUnreadable` line, the once-only flag) and `DIFF-002/pass-docs-readable-review` (a readable `docs/` control: review-provenance grades the same review file and fails it). Both behave identically on the phase 1 script by design: they are controls, and they flip under M4 (the first) and under any change that stops review-provenance grading a readable diff (the second).
+- **F4 (information, accepted).** The docs/ lane line still reads "review-provenance is the only scripted check that applies" while that check printed UNGRADED; the UNGRADED lines carry the truth and the line names the checks that apply, not the ones that graded.
+- **F5 fixed.** `$script:ChangedFilesRead` is initialised to `Ok` beside `$script:DiffFailureReported`, so a caller that ran before `Get-ChangedFiles` (none does) cannot read an unset value as a failed read.
+- **F6 (information).** The script's `LIMITS` comment is accurate after the edit.

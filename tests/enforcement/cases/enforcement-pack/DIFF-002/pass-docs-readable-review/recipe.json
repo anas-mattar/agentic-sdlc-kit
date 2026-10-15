@@ -1,0 +1,21 @@
+{
+  "description": "Control: a docs/ branch adds a review file with no provenance section, diff readable. review-provenance grades it and fails it, exactly as before; the unreadable twin of this state is fail-docs.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "docs/x",
+      "message": "docs: review",
+      "write": {
+        "specs/001-a/ai-code-review.md": "# AI Code Review\n\nLooks fine.\n"
+      }
+    }
+  ],
+  "checkout": "docs/x"
+}

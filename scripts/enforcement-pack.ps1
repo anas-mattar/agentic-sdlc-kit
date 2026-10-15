@@ -216,6 +216,9 @@ function Read-DiffLines {
 # (fix/, chore/, docs/) names each check that graded nothing UNGRADED and is never newly failed on a
 # condition it cannot compute (feature 014 FR-009). git's own message is not shown: the exit code is.
 $script:DiffFailureReported = $false
+# Initialised so a caller that runs before Get-ChangedFiles (none does today) reads "Ok", never an
+# unset value whose .Ok is falsy and would be taken for a failed read (phase 2 review F5).
+$script:ChangedFilesRead = @{ Ok = $true; Exit = 0 }
 function Add-DiffUnreadable {
     param([string]$Reader, [string]$Branch, [string]$Base, [int]$Exit, [string]$Consequence)
     if ($Branch -match '^\d{3}-') {
@@ -1953,6 +1956,10 @@ function Invoke-AmendmentAuthorityCheck {
         $gateExit = $null
         if (-not $script:ChangedFilesRead.Ok) { $gateExit = $script:ChangedFilesRead.Exit }
         elseif ($Base) {
+            # This second read cannot fail alone today: with --no-renames git reads no more than the
+            # dispatch's rename-detecting read, so it fails only when that one already has (phase 2
+            # review F2; mutations M10 and M11 are equivalent for that reason). If the dispatch read
+            # ever changes, both branches here become live and are guarded by no fixture.
             $second = Read-DiffLines -GitArguments @('-c', 'core.quotepath=off', 'diff', '--name-only', '--no-renames', $Base, 'HEAD')
             if ($second.Ok) { $gate += $second.Lines } else { $gateExit = $second.Exit }
         }
