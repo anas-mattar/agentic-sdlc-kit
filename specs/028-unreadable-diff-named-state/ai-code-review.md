@@ -87,3 +87,16 @@ Nine new fixtures, each pair differing in one condition; expectations hand-writt
 ## Residual risk
 
 The state is reached on any damage that `git diff --name-only` must read, so any existing fixture that damages objects on a numbered branch may print differently; `AMEND-008/fail` is the one I found in the `AMEND-`, `GAP27`, `PACK-`, `LITE-` runs, and the author's full harness should be checked for others. Throwaway repositories and worktrees lived under the scratchpad `review1` folder and were removed afterwards. I did not run the full harness or the Linux job.
+
+### Implementer dispositions (appended; the reviewer's text above is unedited)
+
+Fixes are in commit `4efabf2` (the review reviewed `3587912`).
+
+| Finding | Disposition |
+|---|---|
+| F1 | **Fixed, and the owner decided to keep both failure lines** (anas.m, 2026-10-15). `AMEND-008/fail` is re-expected by hand: the count line reads `diff unreadable (git diff exited 128)` and the run ends on two failures, the new `DiffUnreadable` line first and the existing `AmendmentAuthority: cannot grade` refusal second; its exit code stays 1. The first draft of `notes.md` claimed no pre-existing case changed; it now says one does, and why. The full harness on `3587912` was 1695 passed, 1 failed (this case, the only one). Re-run on the fixed tree: `AMEND-` 272, `DIFF-` 80, `GAP27` 78, `PACK-` 78, `LITE-` 118, `CRIT-` 228, all passing. |
+| F2 | **Fixed.** The counts in `notes.md` are corrected (each fixture is two tests; `-Case LITE-` matches the substring `lite-` in fixture names). |
+| F3 | **Stated, not fixed: it is the plan's intermediate state.** A `docs/` branch with an unreadable diff prints the named count line and then `OK` until phase 2 moves its two readers. `notes.md` and the `DIFF-002` note in `rules.json` now say so; phase 2's `docs/` fixture (T008) flips it. |
+| F4 | **Stated as a limit** in `notes.md`: the count line can change on a trunk branch under damage (verdict and exit unchanged); plan D3's "never reaches it" is true of the policy function and not of the count line. No fixture can reach it (on `main` the base is `HEAD`). The approved plan is not edited. |
+| F5 | **Fixed.** `DIFF-002/fail-blob-rename-detection`: a second damage shape (a blob that rename detection must read, a manifest moved with one line added). On the parent it printed `0 changed file(s)` and `OK`; now `UNGRADED`, exit 0. A first draft with byte-identical content was paired by hash, read no blob and did not fail, which is why the content differs by a line. |
+| F6 | **Information.** M2 (keep the partial list) and M5 (call `LiteAndAbuse` on the empty list) are confirmed unobservable by the reviewer; stated in `notes.md` and in `rules.json`. M4 (the numbered once-only flag) is shown in phase 2. |
