@@ -70,3 +70,34 @@ M4 (drop the numbered once-only flag) needs a second reader and is shown in phas
 ### Phase 1 gate (user-run, 2026-10-15)
 
 The owner ran the gate on the rebuilt branch at `f2063df` and confirmed both exit codes (anas.m): `pwsh -File tests/enforcement/Run-Tests.ps1`: **1698 passed, 0 failed, 0 skipped**, `HARNESS EXIT: 0` (1207 s); `pwsh -File scripts/ritual-checks.ps1 -Branch 028-unreadable-diff-named-state`: `RESULT OK`, `RITUAL EXIT: 0`. This is the phase 1 baseline for phase 2.
+
+## Phase 2: the other two readers
+
+### Baseline (T007)
+
+- Parent of the phase: `088dd0d` (the phase 1 tip, certified by the owner's gate: harness 1698 passed, ritual-checks OK).
+- Reproduction on that parent: a `docs/` branch whose `notes` subtree is unreadable prints the named count line (`diff unreadable (git diff exited 128)`), the lane line, and `enforcement-pack: OK`, exit 0: its two checks (review-provenance and the Lite amendment gate) still read an empty list. The three `fix/`/`chore/` unreadable cases print only the `LiteAndAbuse` UNGRADED line.
+
+### What was built (T008-T010)
+
+- One new fixture, `DIFF-002/fail-docs` (a `docs/` branch with an unreadable subtree: two UNGRADED lines, one per check, exit 0), and three updated expectations (`DIFF-002/fail`, `fail-chore`, `fail-blob-rename-detection` now also list `ReviewProvenance` and `AmendmentAuthority`, three checks that formed no opinion). The four failed on the phase 1 script before the code change (fail first). `DIFF-001/fail` and `AMEND-008/fail` are unchanged: the numbered lane still prints exactly one `DiffUnreadable` line because review-provenance's read of the same damage adds none (the once-only flag).
+- `scripts/enforcement-pack.ps1`: `Invoke-ReviewProvenanceCheck` reads its `--name-status` rows through `Read-DiffLines` and, on a failed read, names itself through `Add-DiffUnreadable` and returns; the Lite arm of `Invoke-AmendmentAuthorityCheck` takes either read failing (the dispatch's `$script:ChangedFilesRead`, or its own second `--no-renames` read through the shared reader) into the named state and returns before the core. The `LIMITS` comment now describes the gate as named, not silent.
+- Not done: no fixture can make the review-provenance read fail while the dispatch read succeeds (they read the same trees with the same rename detection), so that branch is guarded by the shared helper and the `DIFF-001/fail` once-only evidence below, not by its own case.
+
+### Mutations (T011)
+
+Same method as phase 1 (script mutated in place, `-Case DIFF-`, `-Case LITE-`, `-Case AMEND-008`, restored byte for byte by a `finally`; the working script ends with no diff).
+
+| Mutation | Caught by |
+|---|---|
+| M4 drop the numbered once-only flag | 2 failures in `-Case DIFF-` (the numbered fixtures) and 1 in `AMEND-008/fail` (a second `DiffUnreadable` line) |
+| M9 review-provenance never names a failed read (`if ($false)`) | 4 failures in `-Case DIFF-` (the four Lite fixtures that list a `ReviewProvenance` line) |
+| M10 drop the gate's second-read failure (`else { $gateExit = ... }`) | **not caught**: the second read, taken without rename detection, can only fail when the first read (with it) fails first; no data state makes it fail alone |
+| M11 drop the `return` after the gate names itself | **not caught**: the core then runs on the unreadable diff and prints nothing on the Lite shapes in the fixtures, so the `return` is invisible in output |
+| M12 drop the gate's test of the dispatch read | 1 failure in `-Case DIFF-` (`fail-blob-rename-detection`): there only the first read fails, because rename detection reads the damaged blob and the second read, with `--no-renames`, does not. The phase 1 blob fixture is what guards the first-read test |
+
+### Results (T012)
+
+- Full harness on an isolated detached worktree of the phase 2 code commit `89bb651`: **1700 passed, 0 failed, 0 skipped** (exit 0, 1697 s), against 1698 at the phase 1 gate: 2 new tests (the `fail-docs` fixture).
+- `ritual-checks.ps1 -Branch 028-unreadable-diff-named-state` on the same commit: doc-lint OK, enforcement-pack OK (AmendmentAuthority graded 12 of 13 commits, the merge not graded), scope-check PASS on all seven phase commits including `89bb651` (7 files), digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; RESULT OK.
+- The owner now runs the phase 2 gate.

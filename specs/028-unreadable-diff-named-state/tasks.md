@@ -71,21 +71,21 @@ their lanes, so a review file cannot pass and a spec document cannot go ungated 
 - `scripts/enforcement-pack.ps1`
 - `tests/**`
 
-- [ ] T007 Record the baseline in `notes.md`: the full harness count on the parent of this phase and the exact output of the phase 1 `DIFF-*` and `LITE-*` cases. Reproduce
+- [x] T007 Record the baseline in `notes.md`: the full harness count on the parent of this phase and the exact output of the phase 1 `DIFF-*` and `LITE-*` cases. Reproduce
       on the parent of this phase: a `docs/` branch with a truncated subtree prints the named count line and nothing else (no UNGRADED line, `OK`), because its two checks still read
       an empty list.
-- [ ] T008 Write the fixtures first (plan D9, phase 2 rows): a `docs/` branch with a truncated subtree (UNGRADED lines for the amendment gate and review-provenance, exit 0, the lane
+- [x] T008 Write the fixtures first (plan D9, phase 2 rows): a `docs/` branch with a truncated subtree (UNGRADED lines for the amendment gate and review-provenance, exit 0, the lane
       line naming only what ran); a numbered branch with a truncated subtree and a review file added on it (the failure is reported once, by the dispatch, and review-provenance adds no
       second line); the readable controls (`docs/` with a review file lacking provenance, byte-identical). If no data state makes a second read fail while the first succeeds (both
       read the same trees), say so in `notes.md` and guard that branch by a mutation only, naming it an exemption with the reason.
-- [ ] T009 Inventory the rules: update the notes of `DIFF-001` and `DIFF-002` for the new emission sites (they own the same two sites, called from three readers); run the recall sweep
+- [x] T009 Inventory the rules: update the notes of `DIFF-001` and `DIFF-002` for the new emission sites (they own the same two sites, called from three readers); run the recall sweep
       first.
-- [ ] T010 Edit `scripts/enforcement-pack.ps1` (plan D4, D5): `Invoke-ReviewProvenanceCheck` reads through the helper and calls the policy function on a failed read; the Lite arm of
+- [x] T010 Edit `scripts/enforcement-pack.ps1` (plan D4, D5): `Invoke-ReviewProvenanceCheck` reads through the helper and calls the policy function on a failed read; the Lite arm of
       `Invoke-AmendmentAuthorityCheck` reads its second list through the helper, names itself through the policy function when either read failed, and returns before the core. Update
       the amendment check's `LIMITS` comment: the Lite gate no longer says nothing for want of a list.
-- [ ] T011 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: keep reading review-provenance's rows through the old bare `git diff`;
+- [x] T011 Show a mutation for each fixture that guards a branch of the new code, and record it in `notes.md`: keep reading review-provenance's rows through the old bare `git diff`;
       drop the Lite gate's second-read check; run the core after an unreadable first read; drop the numbered dedupe flag for the second reader.
-- [ ] T012 Run `-Case DIFF-`, `-Case LITE-`, `-Case AMEND-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged except the outputs phase 1 and this
+- [x] T012 Run `-Case DIFF-`, `-Case LITE-`, `-Case AMEND-`, `-Case CRIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged except the outputs phase 1 and this
       phase intend to change, every new fixture as written, no unowned site. Re-run T007's reproduction: the `docs/` branch now names both checks UNGRADED. Record the numbers. Then
       stop and ask the owner to run the gate.
 
