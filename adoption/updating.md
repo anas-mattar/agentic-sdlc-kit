@@ -1416,11 +1416,11 @@ that fails refuses with the first fetch's message and the state of our branch. A
 
 **What an owner may newly see.** On a claim whose reads and pushes succeed: nothing, byte for byte. On a failed ledger read, the refusal where an error record stood, and **after a push that succeeded, a refusal that says the claim may be
 live**: check `git ls-remote --heads origin` before claiming again, and delete your own branch if it should not stand. On a rejected push, one refusal showing git's error where three renumberings stood; a wrapper that matched the text
-`Lost the allocation race 3 times` to detect a rejected push will no longer see it (that text now means three genuine rivals). Called in-process, as in 023's note, a refusal does not throw: check `$LASTEXITCODE`.
+`Lost the allocation race 3 times` to detect a rejected push will no longer see it (that text now means three genuine rivals). On a lost race whose withdrawal fails, a refusal naming the branch left on `origin` (delete it by hand: `git push origin --delete <branch>`) where the claim used to renumber past it; on one whose re-fetch fails, the first fetch's refusal where the claim used to go on. Git's own reason is not shown for those two (only for a rejected push). Called in-process, as in 023's note, a refusal does not throw: check `$LASTEXITCODE`.
 
 **What does NOT change.** The output and exit code of every successful claim, the `-Json` object and its fields (a refusal is still a message and exit 1 with no object), the seven messages of feature 023, the preflight order, the number
-allocation, the delegation to the stock script, and the genuine lost-race loop (warn, withdraw, renumber, push again, up to three attempts). This **supersedes** the "known limits" paragraph of feature 023's note above, which stands as history
-and is not edited.
+allocation, the delegation to the stock script, and the genuine lost-race loop (warn, withdraw, renumber, push again, up to three attempts), except that a withdrawal or a re-fetch that fails now ends it with a refusal, including on the last attempt where it replaces the lost-race text. This **supersedes** the "known limits" paragraph of feature 023's note above, which stands as history
+and is not edited, with one exception: one digest marker of that note (`claim-feature still dies in a throw if ls-remote fails...`), which this feature makes false, was removed from it to keep the adoption digest within its 40-line bound.
 
 **Known limits, stated rather than hidden.** (1) A push that reports failure but landed (a timeout after the remote accepted it) cannot be told from a rejection by its exit code; the rejected-push message says to check `origin` for the branch. (2) The
 `git for-each-ref` in the number allocation still reads a failure as "no local branches"; the remote ledger and `specs/` still bound the number, so it can lower the choice but not below a number they show. (3) The local `git branch -m` and the
@@ -1439,7 +1439,7 @@ state as before. **Not exercised, and said so:** the withdrawal and re-fetch ref
 that starts the script as a child process, and the push a *rejected-for-permission* remote would answer with (the rejection measured here is an unreachable push URL). Every line that changed is listed in the notes of feature 030 in the kit repository.
 
 **What to do about it.** Take the update, run `scripts/build-digests.ps1` and `scripts/ritual-checks.ps1`. If a wrapper of yours matched `Lost the allocation race 3 times` or the error record of a failed ledger read, match the new messages
-instead. If a claim ends on `the claim may already be live on origin`, check `git ls-remote --heads origin` before you claim again. Nothing in your configuration needs to change.
+instead. If a claim ends on `could not withdraw <branch> from origin`, delete that branch from `origin` and claim again. If a claim ends on `the claim may already be live on origin`, check `git ls-remote --heads origin` before you claim again. Nothing in your configuration needs to change.
 
 <!-- digest: claim-feature names a failed ledger read, rejected push, withdrawal or re-fetch (exit 1); after a push: may be live. -->
 

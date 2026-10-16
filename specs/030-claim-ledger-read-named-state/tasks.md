@@ -67,7 +67,7 @@ feature 023's seven refusals print what they printed before. The withdrawal and 
       captured; the race loop follows the P3 decision table. Lines 140 and 144 and `Get-NextFreeNumber` do not change. Nothing
       else changes: the preflight order, the allocation, the delegation, the genuine lost-race loop, the warnings and the
       `-Json` object.
-- [ ] T007 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
+- [x] T007 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
       unchanged except the one named in plan P6, every new fixture as written, the coverage report lists no unowned site in
       `claim-feature.ps1` and the exempt count is stated. Re-run T001's states under `pwsh -File` and diff against the saved
       text: the seven refusals and the successful claims are byte-identical, and the states that changed say what the plan
@@ -98,7 +98,7 @@ refusals print the same bytes; the roadmap row is closed.
 - [x] T009 Add `CLF-013` and `CLF-014` to `tests/enforcement/rules.json`; run the sweep and classify anything else it reports.
 - [x] T010 Edit `scripts/claim-feature.ps1` (plan P4, P2 rows 6 and 7): the withdrawal at line 140 and the re-fetch at line
       144 are checked and refuse with the P2 messages. Nothing else changes.
-- [ ] T011 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
+- [x] T011 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
       unchanged, every new fixture as written, no unowned site. Record the numbers in `notes.md`.
 - [x] T012 Add a flow-down note to `adoption/updating.md` shaped like feature 023's (what was wrong, what it does now, what
       flows down, what may newly be seen, what does not change, what was measured, what to do). Keep digest markers within 120
@@ -106,12 +106,12 @@ refusals print the same bytes; the roadmap row is closed.
 - [x] T013 Update `docs/roadmap.md`: GAP-036 status text, a decisions-log entry dated the day the feature ships (recording
       D1 A, D2 A, D3 A and what the work corrected, including the `CLF-007` outcome), and this feature's row to `shipped`. Run
       `pwsh -File scripts/build-digests.ps1` and commit the regenerated `docs/digests/**`.
-- [ ] T014 Measurement (plan P8, SC-001): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories
+- [x] T014 Measurement (plan P8, SC-001): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories
       (never the real projects, nothing pushed), the kit as of the parent of this feature applied, then the kit as it stands,
       digests rebuilt; in each state run `claim-feature.ps1 -NoPush -ShortName probe "a probe"` on a fresh clone,
       `doc-lint.ps1` and `ritual-checks.ps1`; list every line that moves in `notes.md` with its cause, and say plainly where
       none moved. Do not edit kit files while `update-kit.ps1` runs.
-- [ ] T015 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed
+- [x] T015 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed
       afterwards): the full harness, `ritual-checks.ps1 -Branch 030-claim-ledger-read-named-state`, and `scope-check.ps1` on
       each phase commit. Record the numbers in `notes.md`. The owner then runs the gate.
 

@@ -92,6 +92,84 @@ ledger. Nothing was claimed.`, exit 1, nothing on `origin`; read fails after the
 001-probe ...`, exit 1, `001-probe` on `origin` and said so; the successful claim and the `-NoPush` claim print the same bytes
 as before; `-Json` keeps the refusal on the error stream with no object.
 
-### Numbers
+### Numbers (T007)
 
-(Filled in after the full harness and `ritual-checks.ps1` run on an isolated checkout of the phase 1 commit.)
+| Measure | Parent `1d5914c` | Phase 1 commit `772a93d` |
+|---|---|---|
+| full harness, isolated detached worktree | 1744 passed, 0 failed | 1774 passed, 0 failed |
+| `claim-feature.ps1` sites fixtured (coverage report) | 7 of 10 (3 not a rule) | 12 of 15 (3 not a rule) |
+| rules exempt from a fixture pair | 6 | 6 (unchanged; `CLF-007` kept its fixture) |
+| `-Case claim-feature` | 94 passed with `-Case CLF-` (the self-tests run too) | 124 passed |
+
+`scope-check.ps1` on `772a93d`: PASS (42 files). `ritual-checks.ps1 -Branch 030-claim-ledger-read-named-state` in the isolated detached checkout: `doc-lint` OK, `digests` OK,
+`roadmap-claims` OK, **`enforcement-pack` and `scope-check` UNGRADED**, result UNGRADED, nothing failed: a detached checkout of a commit already merged to `main` has no commits since the merge base, so those two
+members have nothing to grade there. That is not a pass; their real grading is CI on the pull request (the phase 1 reviewer saw the ubuntu `enforcement-tests` job pass and the windows jobs pending on #92).
+
+## Phase 2: the withdrawal, the re-fetch, guidance and measurement
+
+### T008 Probe of `originDenyDeletes` (plan P5)
+
+`receive.denyDeletes` set on the repository origin points at makes `git push origin --delete <branch>` fail with `remote rejected (deletion prohibited)` while an ordinary push of a new branch still lands. Implemented as the
+`originDenyDeletes` recipe field (set after the nested repositories exist, because origin is usually one of them; refused without `origin`, and when the repository it points at does not exist), with self-tests.
+
+### What was written and shown failing first
+
+Fixtures `CLF-013` (a withdrawal that fails against one that works), `CLF-014` (a re-fetch that fails, call 4, against one that does not) and `CLF-014/fail-unpushed`. Run on the **phase 1 tip** before the script change: `CLF-013/fail` and
+`CLF-014/fail` fail on exit code (expected 1, observed 0) and output (the claim renumbers to `002-probe`, past a stale branch or an unrefreshed ledger); `CLF-014/fail-unpushed` fails on output; the pass twins pass. After the change: `-Case claim-feature` 138 passed, 0 failed.
+
+Two existing anchors were narrowed so the coverage sweep tells the new refusal lines apart from the old ones, which share their words: `CLF-004` (`git fetch origin failed` to `unreachable ledger.'`, the first fetch's closing quote) and `CLF-007`
+(`Lost the allocation race` to `Lost the allocation race $MaxAttempts times`, because `CLF-013`'s message begins `Lost the allocation race but could not withdraw`). Neither rule's fixtures changed.
+
+### T011 and T015: numbers on an isolated checkout of the final code commit
+
+| Measure | Phase 2 final `0e1d252` |
+|---|---|
+| full harness, isolated detached worktree | **1788 passed, 0 failed** |
+| `claim-feature.ps1` sites fixtured | 14 of 17 (3 not a rule), no unowned site |
+| rules exempt from a fixture pair | 6 (unchanged) |
+| `-Case claim-feature` | 138 passed, 0 failed |
+| `scope-check.ps1` | PASS on `772a93d`, `53af25d` and `0e1d252` (42, 20 and 4 files) |
+| `doc-lint.ps1`, `build-digests.ps1` | OK (5 digests, 119 markers) |
+| `ritual-checks.ps1 -Branch 030-claim-ledger-read-named-state`, run on the branch after `main` had been merged in | `doc-lint`, `digests`, `roadmap-claims` OK; `enforcement-pack` and `scope-check` UNGRADED (no commits since the merge base), nothing failed |
+
+As for phase 1, the two UNGRADED members are graded by CI on the pull request, not here.
+
+### T014 The measurement (plan P8, SC-001)
+
+Method: for each project a `git clone` from its local directory into a scratch area (the real projects never touched) and a **bare copy** of the project as that clone's `origin`, so a claim with a push could be run (feature 023's measurement could not
+push). The kit before this feature (`1d5914c`) applied with `update-kit.ps1`, `build-digests.ps1` run, committed ("measure: kit before"); the kit as it stands applied the same way ("measure: kit now"), with an assertion that the clone's
+script has `Stop-Refused`. Probes in each state on a fresh `main` (the clone, its branches and the bare origin's branches reset between runs): a successful claim with `-NoPush` and one with a push; three refusals of feature 023 (an untracked
+file, a checkout of another branch, an `origin` that cannot be fetched); three states this feature names (the first ledger read fails, the read after a push that succeeded fails, a push rejected), each through a counting wrapper on
+`remote.origin.uploadpack` or a push URL that does not exist; `doc-lint.ps1`; `ritual-checks.ps1 -Branch main`. States: S0 installed, S1 kit before, S2 kit now.
+
+| Probe | S0, S1, S2 (all three projects) |
+|---|---|
+| successful claim, `-NoPush`; successful claim with a push | exit 0 in every state; **S1 and S2 byte-identical** in FitForge, FlowBoard and ExpenseTracker |
+| dirty working tree, not on `main`, fetch of origin fails | exit 1 in every state; **S1 and S2 byte-identical** |
+| first ledger read fails | exit 1 in every state; S1: PowerShell error record around the message; S2: `git ls-remote failed — cannot read the remote ledger. Nothing was claimed.` |
+| read after a push that succeeded fails | exit 1 in every state; S1: the error record, **and the claim live on the bare origin**; S2: `git ls-remote failed after pushing <branch> — the claim may already be live on origin. Check origin ...` |
+| push rejected (push URL does not exist) | exit 1 in every state; S1: three concurrent-claim warnings with an empty list, two `Renumbered:` lines, `Lost the allocation race 3 times`; S2: `git push of <branch> was rejected:` and git's five lines, once |
+| `doc-lint.ps1` | exit 0, byte-identical S1 to S2 |
+| `ritual-checks.ps1 -Branch main` | `RESULT OK` in every state of every project; the only line that moved is `verify-kit`'s recorded kit commit |
+
+The three new states are identical across the three projects apart from the allocated number (`002`, `010`, `004`). **Second pass**, run on the committed final documents (`0e1d252`): every probe output of S1 and S2 is the same as
+in the first pass once the scratch directory's name is set aside, and the clones end on "measure: kit now" with the recorded kit commit `0e1d252`. The real projects were checked afterwards: no `probe` branch in any of them and
+the same working-tree state as before (FitForge 1 modified path, FlowBoard 2, ExpenseTracker 0, all there before). Not exercised: the withdrawal and re-fetch refusals (they need a rival to appear between allocation and the
+push; the fixtures prove them), anything run through a wrapper that starts the script as a child process, a push refused for permission by a real remote, and the Linux platform.
+
+### Findings of the two fresh-context AI reviews and what became of them
+
+Reviews: `ai-code-review-phase1.md` (APPROVE with follow-ups) and `ai-code-review-phase2.md` (APPROVE with follow-ups), fresh-context agents, neither wrote the diff.
+
+| Finding | Disposition |
+|---|---|
+| phase 1 F1: a push that exits non-zero but landed is reported as `rejected ... Nothing was claimed` although the ledger just read lists the branch | **Open, the owner's decision.** A one-line ledger check would fix it but is a behaviour change outside the approved plan; the message carries the plan's `check origin` hedge, and the spec lists the case as out of scope |
+| phase 1 F2: `was withdrawn from origin` printed while the withdrawal result was unchecked | Closed by phase 2 (T010) |
+| phase 1 F3, F4: `CLF-010/pass` and `CLF-012/fail` print identical bytes; no fixture measures the withdrawals `CLF-007` and `CLF-011` describe (`CLF-007` also passes on the parent) | Accepted, minor. `CLF-013` now measures a withdrawal; `CLF-007` shows the site is reachable, not new behaviour, as its rule note says |
+| phase 1 F5: the three wording deviations from plan P2 are recorded only here, with no approver | **Open, the owner's decision**: the plan needs an amendment with the owner's approver record |
+| phase 1 F6: `sh '<path>'` breaks on a path with an apostrophe; mixed line endings in some recipe files | Accepted, minor; recorded as a limit |
+| phase 2 F1 (blocking, docs): the note pointed at evidence not in the repository | Closed by this section |
+| phase 2 F2: the note said 023's note is not edited, but one digest marker of it was removed | Closed: the note now says so and why |
+| phase 2 F3: roadmap `shipped` with T011/T014/T015 open | Closed by this section; the roadmap says built and measured, with the reviews, the gate and the human review still to come |
+| phase 2 F4, F5: the note omitted the withdrawal and re-fetch refusals and called the loop unchanged | Closed: both added to the note |
+| phase 2 F6, F7: git's reason is not shown for a failed withdrawal or re-fetch; no fixture covers the last-attempt ordering | Accepted, minor; stated in the note (reason not shown) and here (ordering) |
