@@ -80,14 +80,14 @@ closed.
 - `docs/roadmap.md`
 - `docs/digests/**`
 
-- [ ] T008 Add a flow-down note to `adoption/updating.md` shaped like feature 030's (what was wrong, what it does now, what
+- [x] T008 Add a flow-down note to `adoption/updating.md` shaped like feature 030's (what was wrong, what it does now, what
       flows down, what may newly be seen — the same-name rival warning and the rejected-push text's layout — what does not change,
       what was measured, what to do). Keep digest markers within 120 characters, and every path in it resolving in an adopted
       project (doc-lint).
-- [ ] T009 Update `docs/roadmap.md`: GAP-037 status text, a decisions-log entry dated the day the feature ships (recording D1 B'
+- [x] T009 Update `docs/roadmap.md`: GAP-037 status text, a decisions-log entry dated the day the feature ships (recording D1 B'
       with B's measured failure, D2 A, D3 A, the FR-004 carve-out, FR-005's no-field decision, and what the work corrected), and
       this feature's row to `shipped`. Run `pwsh -File scripts/build-digests.ps1` and commit the regenerated `docs/digests/**`.
-- [ ] T010 Measurement (plan P8, SC-001, SC-002): repeat the throwaway-`origin` race of `notes.md` (a rival pushes the same name
+- [x] T010 Measurement (plan P8, SC-001, SC-002): repeat the throwaway-`origin` race of `notes.md` (a rival pushes the same name
       and sha just before our push, through the `git` shim) against the changed script and say what it prints; then clones of
       FitForge, FlowBoard and ExpenseTracker made from their local directories (never the real projects, nothing pushed), the kit
       as of the parent of this feature applied, then the kit as it stands, digests rebuilt; in each state run

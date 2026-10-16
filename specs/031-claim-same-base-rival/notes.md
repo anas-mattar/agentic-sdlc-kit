@@ -124,3 +124,37 @@ Every pre-existing case passed unchanged except `CLF-017/fail`, re-expected by h
 site in `claim-feature.ps1`; the exempt count is the baseline's (6 rules). The second probe of `--porcelain` on the CI image's git
 is the CI run of this branch. The measurement of the same-base race through the shim, and on clones of the adopted projects, is
 phase 2 (T010).
+
+## Phase 2: guidance, close and measurement
+
+### T010 The measurement (plan P8, SC-001, SC-002)
+
+Method (the one of feature 030): for each project a `git clone` from its local directory into a scratch area (the real projects never
+touched) and a **bare copy** of the clone's own tree as its `origin`, so a claim with a push could be run. The kit before this
+feature (`7d933f4`) applied with `update-kit.ps1`, `build-digests.ps1` run and committed ("measure: kit before"); the kit as it
+stands (`38da677`, whose `scripts/claim-feature.ps1` is the phase 1 file) applied the same way ("measure: kit now"). Probes in each
+state on a fresh copy of the committed clone and its origin: a successful claim with `-NoPush`; one with a push; **the race**, in
+which a `git` shim first on `PATH` pushes the claim's own branch (same name, same commit) to `origin` just before the script's
+push; `doc-lint.ps1`; `ritual-checks.ps1 -Branch main`.
+
+| Probe | FitForge, FlowBoard, ExpenseTracker |
+|---|---|
+| `-NoPush` claim; claim with a push | exit 0; **byte-identical before and after** in all three |
+| `doc-lint.ps1` | exit 0; **byte-identical before and after** |
+| `ritual-checks.ps1 -Branch main` | `RESULT OK`, exit 0, in every state; **two lines moved, and only two:** the enforcement-pack diff base commit (each clone's own commit) and `verify-kit`'s recorded kit commit (`7d933f4...` to `38da677...`) |
+| the race, before | exit 0, `CLAIMED: <n>-probe (pushed to origin — the claim is live)`, one branch on `origin` |
+| the race, now | exit 0, `WARNING: Number <n> was claimed concurrently by a claimant of the same short name (<n>-probe was already on origin; it is theirs and is left alone) — renumbering.`, `Renumbered: <n>-probe -> <n+1>-probe`, `CLAIMED: <n+1>-probe`, **both branches on `origin`** (`002`/`003`, `010`/`011`, `004`/`005`) |
+
+The real projects were checked afterwards: no `probe` branch in any of them, and the same working-tree state as before
+(FitForge: one untracked file; FlowBoard: two; ExpenseTracker: none). Not exercised: a push that exits non-zero beside a simultaneous
+create (stated limit 1 of the flow-down note), anything run through a wrapper that starts the script as a child process, the Linux
+platform (the CI run of the branch), and a real remote's hooks. The measured throwaway-`origin` race of "Pre-spec measurement"
+above is the same state as the shim's, now printing the warning and renumbering instead of `CLAIMED:`.
+
+### T008 and T009 Guidance and close
+
+`adoption/updating.md`: a flow-down note in the shape of feature 030's, with no digest marker (the adoption digest is at its
+40-bullet bound; `build-digests.ps1 -Check` is OK, 5 digests, 119 markers, so nothing regenerates). It states the limit of review
+finding F2 and the one text that moved (the git lines quoted in a rejected-push refusal). `docs/roadmap.md`: GAP-037's status text,
+a decisions-log entry, and the row `shipped`. Note for the merge: PR #97 flips the same row from `idea` to `in progress`; it merges
+first and the row here then conflicts on one line, resolved by taking `shipped`.
