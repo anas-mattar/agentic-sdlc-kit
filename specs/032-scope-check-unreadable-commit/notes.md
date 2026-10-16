@@ -97,7 +97,7 @@ could not be read ... run git fsck.`, exit 1, restored `PASS ... (1 file(s))`.
 ### Phase 1 review follow-ups (`ai-code-review-phase1.md`, APPROVE with follow-ups, no blocking finding)
 
 - **F1 (line endings), fixed in `d02ecc9`:** the phase 1 commit had converted `scripts/scope-lib.ps1` and `scripts/scope-check-repos.ps1` from LF to
-  CRLF (the Edit tool wrote them that way); the real change is 18 and 6 lines, and the diff of those two files against the parent is now 18 and 6
+  CRLF (the cause is not established: both files were edited with the editor tool, and `scope-check.ps1`, edited the same way, had been rewritten to LF by a later script); the real change is 18 and 6 lines, and the diff of those two files against the parent is now 18 and 6
   lines again (`git diff --stat 8f31ab9`: 36 insertions, 2 deletions across the three scripts). `-Case SCOPE-` 344 passed and `-Case REPOS-` 224 passed after the fix.
 - **F6 (numbers):** the 339 and 219 recorded for `-Case SCOPE-` and `-Case REPOS-` were taken before `ScopeLib.Tests.ps1` existed; with the case
   filter the five `ScopeLib` tests also run, so the runs at the tip are **344 and 224**, as the reviewer observed. T006 names `Harness.Tests.ps1`; the
