@@ -2,7 +2,9 @@
 
 **Feature Branch**: `032-scope-check-unreadable-commit`
 **Created**: 2026-10-16
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-16
+**Status**: Approved 2026-10-16 (owner: anas.m) <!-- D1 A, D2 A, D3 A -->
+**Owner decisions**: anas.m, 2026-10-16 — D1 A (an ERROR line and exit 1 for a commit whose changed files cannot be read), D2 A (the path read, the delete guard and the nested-repository call), D3 A (two phases)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-038: the machine scope check names a phase commit whose diff cannot be read instead of passing it with 0 files: Get-CommitPaths in scope-lib.ps1 and the delete-guard in scope-check.ps1 read git show --name-status with 2>$null, so an unreadable commit is an empty path list and scope-check.ps1 prints PASS (0 file(s))."
@@ -153,7 +155,9 @@ that passes on both.
 
 ## Decisions for the owner
 
-Each has a recommendation, given as a recommendation and not a decision.
+**Amendment approved by**: anas.m, 2026-10-16
+
+Each has a recommendation. **Decided by the owner (anas.m, 2026-10-16): D1 A, D2 A, D3 A**, as recommended.
 
 - **D1 - the verdict.** (A, recommended) An `ERROR` line and exit 1 for the commit: the same verdict the script already gives a
   commit that does not resolve (`scope-check: ERROR '<sha>' does not resolve to a commit`), so a branch whose diff cannot be read
