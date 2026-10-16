@@ -91,6 +91,8 @@ until a fixture can plant it.
 
 ### Edge Cases
 
+**Amendment approved by**: anas.m, 2026-10-16
+
 - A claim whose push landed and whose branch of our name on `origin` is at our sha **because we pushed it** (no rival): the
   claim succeeds as today. The new check must not read our own push as a rival's.
 - A same-name branch on `origin` at a **different** sha: feature 030's existing handling (a foreign branch is not ours,
@@ -98,6 +100,10 @@ until a fixture can plant it.
 - A same-name, same-sha branch that appears **between** the ledger read and our push, and one that exists **before** the
   ledger read, are different states: before the read, allocation already sees the name and picks the next number, so the
   race exists only for the window after the read. The plan names which of them each shape covers.
+- **Stated limit.** Two claimants that create the ref at the same moment, where our push then exits non-zero, are not told apart:
+  the same-name test needs an exit 0, and feature 030's landed-by-commit rule sees the same sha and reads the claim as ours, with its
+  warning and exit 0. The window is the push itself; it was traced in the phase 1 review (finding F2), not reproduced, and is not
+  changed here.
 - `-NoPush` and no `origin` never reach the push and are unchanged.
 - `-Json` does not change: there is no JSON error object today and none is added.
 
@@ -114,9 +120,9 @@ until a fixture can plant it.
 
 **Amendment approved by**: anas.m, 2026-10-16
 
-- **FR-001**: When a branch of our own name already on `origin` was pushed by another claimant, whatever its sha (including
-  our own), the script MUST NOT report our claim as made. It MUST say so in its own words, naming the branch, and MUST end as
-  Decision D2 decides.
+- **FR-001**: When a branch of our own name already on `origin` at our own sha was pushed by another claimant, the script MUST
+  NOT report our claim as made. It MUST say so in its own words, naming the branch, and MUST end as Decision D2 decides. A branch
+  of our name at another sha is not this state: it ends as feature 030's rejected-push refusal, unchanged.
 - **FR-002**: The script MUST NOT delete, move or rewrite a branch it did not push, in this state or any other.
 - **FR-003**: A claim with no branch of our name on `origin` before our push, and a claim whose only branch of our name is
   the one we just pushed, MUST print exactly what it prints today and exit 0. The `-Json` object keeps its shape and fields.
