@@ -46,16 +46,20 @@ function Write-Info([string]$Message) {
 # $null, so a failure signalled by returning $null could not be told from a repository with no NNN-* branch
 # (feature 030, plan P1). Every caller checks it before it trusts the list.
 $script:LedgerReadFailed = $false
+# The commit each NNN-* branch on origin points at, from the same read (name -> sha), so a caller can tell our own push
+# from another claimant's branch of the same name without a second call (feature 030, phase 3 review finding F1).
+$script:LedgerShas = @{}
 
 function Get-RemoteFeatureHeads {
     # Returns the NNN-* branch names currently on origin (authoritative ledger). A failed read returns nothing and
     # sets $script:LedgerReadFailed; the caller refuses, in words that depend on what is already on origin.
     $script:LedgerReadFailed = $false
+    $script:LedgerShas = @{}
     $heads = git ls-remote --heads origin 2>$null
     if ($LASTEXITCODE -ne 0) { $script:LedgerReadFailed = $true; return @() }
     $names = @()
     foreach ($line in $heads) {
-        if ($line -match 'refs/heads/(\d{3,}-\S+)$') { $names += $matches[1] }
+        if ($line -match 'refs/heads/(\d{3,}-\S+)$') { $names += $matches[1]; $script:LedgerShas[$matches[1]] = ("$line" -split '\s+')[0] }
     }
     return $names
 }
@@ -150,10 +154,16 @@ if ($hasRemote -and -not $NoPush) {
         }
         $rivals = @($ledger | Where-Object { $_ -match "^$numPrefix-" -and $_ -ne $branch })
 
-        # Did our branch reach origin? Its number was free when it was allocated, so it can only be there if our push
-        # put it there, and a push can exit non-zero after the remote accepted it: the ledger just read is better
-        # evidence than the exit code (feature 030, plan P3 as amended; review finding F1 of phase 1).
-        $landed = $pushOk -or ($ledger -contains $branch)
+        # Did our push reach origin? A push can exit non-zero after the remote accepted it, so the ledger just read is
+        # better evidence than the exit code: but only the COMMIT is ours. Our number was free when it was allocated, our
+        # branch NAME is not (a second claimant with the same number and short name allocates the same one), so a branch
+        # of our name at another commit is theirs: not landed, and never withdrawn (feature 030, plan P3 as amended;
+        # review finding F1 of phase 1, and F1 of phase 3).
+        $landed = $pushOk
+        if (-not $landed -and $script:LedgerShas.ContainsKey($branch)) {
+            $tip = @(git rev-parse --verify --quiet "refs/heads/$branch" 2>$null)
+            $landed = ($LASTEXITCODE -eq 0) -and ("$($tip[0])".Trim() -eq $script:LedgerShas[$branch])
+        }
 
         if ($landed -and $rivals.Count -eq 0) {
             if (-not $pushOk) {

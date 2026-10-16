@@ -79,7 +79,7 @@ The wording of the first line of the re-fetch refusal is the first-fetch refusal
 for the rejected push is captured (the script discards it today) and printed as git wrote it.
 
 **Amendment (2026-10-16): the wordings as built.** **Amendment approved by**: anas.m, 2026-10-16
-The rejected-push row is laid out on several lines (the first line `git push of <branch> was rejected:`, then git's text on its own lines, then the closing sentence), because git's text is five lines; the sentences are as in the row, and the closing sentence also says to check `origin` for the branch (the Risks section's hedge). The re-read row has a second wording, `<branch> never reached origin`, for the state where our own push was rejected and a rival is also on `origin`; the re-fetch row uses the same two wordings. A new row for a push that reports failure but whose branch is on `origin` with no rival (a warning, then the claim is made): `git push of <branch> reported an error, but <branch> is on origin and no rival carries number <NNN> — treating the claim as made. git said:` followed by git's complaint on its own lines: its ``error:``, ``fatal:`` and ``remote:`` lines, or all its text when it has none (git's progress lines reach the capture in an order nothing fixes, so a fixture cannot pin them).
+The rejected-push row is laid out on several lines (the first line `git push of <branch> was rejected:`, then git's text on its own lines, then the closing sentence), because git's text is five lines; the sentences are as in the row, and the closing sentence also says to check `origin` for the branch (the Risks section's hedge). The re-read row has a second wording, `<branch> never reached origin`, for the state where our own push was rejected and a rival is also on `origin`; the re-fetch row uses the same two wordings. A new row for a push that reports failure but whose branch is on `origin` with no rival (a warning, then the claim is made): `git push of <branch> reported an error, but <branch> is on origin and no rival carries number <NNN> — treating the claim as made. git said:` followed by git's complaint on its own lines: its `error:`, `fatal:` and `remote:` lines, or all its text when it has none (git's progress lines reach the capture in an order nothing fixes, so a fixture cannot pin them).
 **Amendment approved by**: anas.m, 2026-10-16
 
 **P3 — The race loop's decision table (FR-003).** With `pushOk` and the rival list as the two inputs: push ok and no rival
@@ -89,7 +89,8 @@ line, whose list is now never empty); push failed and no rival is the rejected p
 renumber. A failed ledger read in the failed-push row is the third row of P2.
 
 **Amendment (2026-10-16): `landed`.** **Amendment approved by**: anas.m, 2026-10-16
-The first input is not `pushOk` alone but `landed`: the push exited 0, **or** the ledger just read lists our branch (our number was free when it was allocated, so the branch can only be there if our push put it there; a push can exit non-zero after the remote accepted it). Landed and no rival is a success, with the new P2 warning when the exit code was non-zero; a rival is the lost race, with the withdrawal whenever the push landed (by either evidence) and `<branch> was withdrawn from origin` in the re-read and re-fetch wordings; not landed and no rival is the rejected push, refused once. When the ledger cannot be read the exit code is the only evidence, as before.
+**Amendment approved by**: anas.m, 2026-10-16
+The first input is not `pushOk` alone but `landed`: the push exited 0, **or** the ledger just read shows `origin`'s branch of our name at our own commit (a push can exit non-zero after the remote accepted it). **The test is the commit, not the name** (phase 3 review finding F1): our number was free when it was allocated, but our branch **name** is not ours alone, because a second claimant with the same number and short name allocates the same name; a branch of that name at another commit is their push's, so it is not landed, is not a rival (the rival filter excludes our own name), and is never withdrawn. The sha comes from the same ledger read (no extra call), compared with our local branch tip. Landed and no rival is a success, with the new P2 warning when the exit code was non-zero; a rival is the lost race, with the withdrawal whenever the push landed (by either evidence) and `<branch> was withdrawn from origin` in the re-read and re-fetch wordings; not landed and no rival is the rejected push, refused once. When the ledger cannot be read the exit code is the only evidence, as before.
 
 **P4 — Withdrawal and re-fetch are checked in phase 2, not phase 1 (D1 A, D3 A).** Phase 1 leaves lines 140 and 144 as
 they are; phase 2 gives each its refusal (P2). This keeps phase 1's diff to the read and the rejected push, so a reviewer
@@ -119,7 +120,7 @@ push that failed), `CLF-011` (read fails after a re-fetch), `CLF-012` (rejected 
 no rival, which today prints three concurrent-claim warnings and the three-times refusal and, after phase 1, prints the
 rejected-push refusal. That fixture moves to `CLF-012`, and `CLF-007` keeps site 142 only if a genuine rival at every
 attempt can be built (P5, the `pre-push` hook); if it cannot, `CLF-007` becomes exempt with a written reason, the exempt count
-rises by one and SC-005 allows it. Amendment (2026-10-16): ``CLF-015`` (a push that reports failure but whose branch is on origin, no rival, is a claim made) and ``CLF-016`` (the same beside a rival is withdrawn and renumbered), each a pair differing in one condition. The re-expectation is recorded in `notes.md` as a pre-existing case changed by the work, in
+rises by one and SC-005 allows it. Amendment (2026-10-16): `CLF-015` (a push that reports failure but whose branch is on origin, no rival, is a claim made) and `CLF-016` (the same beside a rival is withdrawn and renumbered), each a pair differing in one condition. The re-expectation is recorded in `notes.md` as a pre-existing case changed by the work, in
 the way feature 028 recorded `AMEND-008/fail`.
 
 **P7 — A baseline measures the parent before anything changes (spec, Assumptions).** Phase 1's first task records, on the
@@ -150,14 +151,14 @@ Detailed tasks and the per-phase **Territory** blocks are in `tasks.md`.
 
 ### Documentation (this feature)
 
-```text
+``text
 specs/030-claim-ledger-read-named-state/
 ├── spec.md
 ├── plan.md              # this file
 ├── tasks.md
 ├── notes.md             # baseline, probes, the re-expected case, the measurement
 └── checklists/requirements.md
-```
+``
 
 No `research.md`, `data-model.md` or `contracts/`: the script has no data model, and its CLI contract
 (`specs/003-flow-efficiency-pack/contracts/claim-feature-cli.md`) is unchanged: exit codes and the `-Json` object stay, only
@@ -165,7 +166,7 @@ the refusal text of states that previously died in a `throw` or in the three-tim
 
 ### Source Code (repository root)
 
-```text
+``text
 scripts/claim-feature.ps1                 # phase 1: P1, P2, P3; phase 2: P4 (140, 144)
 tests/enforcement/rules.json              # phase 1: CLF-008..CLF-012 and CLF-007; phase 2: CLF-013, CLF-014
 tests/enforcement/lib/FixtureRepo.psm1    # phase 1: originFailCall; phase 2: originDenyDeletes
@@ -175,7 +176,7 @@ tests/enforcement/emission-idioms.json    # only if the sweep reports a new site
 adoption/updating.md                      # phase 2: flow-down note
 docs/roadmap.md                           # phase 2
 docs/digests/**                           # phase 2, if a digest-marked document changes
-```
+``
 
 **Structure Decision**: no new script and no new library file; `scripts/claim-feature.ps1` already ships verbatim, so
 `kit-manifest.json` needs no entry. `scripts/territory-check.ps1` and `scripts/roadmap-claim-check.ps1` are untouched.

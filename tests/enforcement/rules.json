@@ -2335,6 +2335,15 @@
       "notes": "Shares its emission site with CLF-013: the withdrawal is made visible by a remote that refuses the deletion (originDenyDeletes), because with a working deletion the output of a withdrawn branch and of a skipped withdrawal is the same."
     },
     {
+      "id": "CLF-017",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a branch of our own name at another commit (a second claimant with the same number and short name) is not our push: it is not read as landed, so a rejected push is refused as such, and that branch is never withdrawn",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-003 (amended 2026-10-16); roadmap GAP-036",
+      "emitAnchor": "Stop-Refused \"$rejection\"",
+      "notes": "Added after the phase 3 AI review (finding F1): landed was first decided by the branch name alone. Shares its emission site with CLF-012. The stub create-new-feature.ps1 puts the foreign branch on origin as a side effect and switches git's push hints off (they vary by version). fail-rival makes a wrongly attempted withdrawal visible: the remote refuses deletions, so reading the foreign branch as ours would end the claim with the could-not-withdraw refusal instead of the renumbered success."
+    },
+    {
       "id": "DIFF-001",
       "script": "enforcement-pack.ps1",
       "function": "Add-DiffUnreadable",

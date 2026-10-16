@@ -95,10 +95,10 @@ new message and exit 1, and a fixture of a genuine rival still renumbers.
    exactly as it does today (the genuine lost race is unchanged).
 3. **Given** a push that fails and a rival with our number that appears at the same time, **When** it runs, **Then** it is
    treated as the lost race it is (a rival exists), unchanged.
-4. **Given** a push that reports failure but whose branch is on `origin` (the remote accepted it and then the push errored), with no rival carrying our number, **When** it runs, **Then** it warns that git reported an error but the branch is on `origin`, shows git's text, treats the claim as made, prints the `CLAIMED:` lines and exits 0.
+4. **Given** a push that reports failure but whose commit is on `origin` (the remote accepted it and then the push errored: `origin`'s branch of our name is at our own commit), with no rival carrying our number, **When** it runs, **Then** it warns that git reported an error but the branch is on `origin`, shows git's complaint, treats the claim as made, prints the `CLAIMED:` lines and exits 0.
 5. **Given** the same landed push beside a rival with our number, **When** it runs, **Then** it is the lost race: it warns, withdraws our branch from `origin`, renumbers and pushes, as for a push that exited 0.
 
-**Amendment approved by**: anas.m, 2026-10-16 (User Story 2 scenarios 1, 4 and 5, FR-003, the edge case and the assumption on stated limits, for the review finding F1 of phase 1)
+**Amendment approved by**: anas.m, 2026-10-16 (User Story 2 scenarios 1, 4 and 5, FR-003, the edge case and the assumption on stated limits, for the review finding F1 of phase 1; "landed" decided by commit, not by branch name, after the phase 3 review finding F1)
 
 ---
 
@@ -151,7 +151,7 @@ stated reason and a `pass` that differs in one condition.
   (User Story 2) wins over the read failure, because the push is the older fact; the message still says nothing is claimed.
 - The read fails after a push that succeeded **and** the branch was withdrawn by an earlier attempt: the withdrawal happens
   before the re-read, so the state is the same as scenario 3 of User Story 1.
-- A push that reports failure but landed (a timeout, or a remote that errors after accepting it): the ledger read after the push lists our branch, and the script reads the push as landed (FR-003). Only when that ledger cannot be read is the exit code the whole truth, and the refusal then says to check `origin` for our branch before claiming again.
+- A push that reports failure but landed (a timeout, or a remote that errors after accepting it): the ledger read after the push shows `origin`'s branch of our name at our own commit, and the script reads the push as landed (FR-003). A branch of the same name at some other commit (a second claimant with the same number and short name) is not ours: that push is the rejection it reports, and that branch is never withdrawn. Only when that ledger cannot be read is the exit code the whole truth, and the refusal then says to check `origin` for our branch before claiming again.
 - `-Json` does not change the refusals: there is no JSON error object today and none is added.
 
 ## Level Rationale *(mandatory — answers the four Critical triggers, in writing)*
@@ -174,7 +174,7 @@ stated reason and a `pass` that differs in one condition.
   nothing was claimed.
 - **FR-003**: A push that fails, with no rival claim carrying our number on `origin` and with our branch not on `origin`, MUST be refused as a rejected push,
   once, with git's own text, without the concurrent-claim warning, without renumbering and without retrying. A push whose
-  failure is accompanied by a rival, and a push that succeeded beside a rival, MUST behave as they do today. A push that reports failure but whose branch is on `origin` MUST be read as landed (our number was free when it was allocated, so the branch can only be there if our push put it there): with no rival it is a claim made, with a warning that carries git's text, the `CLAIMED:` lines and exit 0; with a rival it is the lost race, and the branch is withdrawn like that of a push that exited 0.
+  failure is accompanied by a rival, and a push that succeeded beside a rival, MUST behave as they do today. A push that reports failure but whose commit is on `origin` MUST be read as landed (the ledger read after the push shows `origin`'s branch of our name at our own commit; a branch of the same name at another commit is a second claimant's, not our push, and is neither read as landed nor withdrawn): with no rival it is a claim made, with a warning that carries git's text, the `CLAIMED:` lines and exit 0; with a rival it is the lost race, and the branch is withdrawn like that of a push that exited 0.
   **Amendment approved by**: anas.m, 2026-10-16
 - **FR-004**: A withdrawal (`git push origin --delete <branch>`) that fails MUST refuse, naming the branch left on `origin`
   and saying to delete it; a re-fetch (line 144) that fails MUST refuse with the existing first-fetch message and MUST say
