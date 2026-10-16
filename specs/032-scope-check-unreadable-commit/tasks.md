@@ -6,8 +6,10 @@ description: "Task list for feature 032 — the scope check names a phase commit
 # Tasks: the scope check names a phase commit whose diff cannot be read
 
 **Input**: `specs/032-scope-check-unreadable-commit/spec.md`, `plan.md` (decisions P1–P8), `notes.md` (the measurements)
-**Prerequisites**: spec.md approved (anas.m, 2026-10-16; D1 A, D2 A, D3 A); no new dependency, no new script file, no new harness
-recipe field.
+**Prerequisites**: spec.md approved (anas.m, 2026-10-16; D1 A, D2 A, D3 A); tasks.md approved (anas.m, 2026-10-16); no new dependency,
+no new script file, no new harness recipe field.
+
+**Amendment approved by**: anas.m, 2026-10-16
 
 **Tests**: the state ships with a passing and a failing harness fixture in the same phase as the behaviour, expectations written by
 hand (feature 015). New fixtures are run against the parent commit before the code changes and must fail there, so each is shown to
