@@ -35,38 +35,38 @@ printed before. Proved by fixtures written first.
 - `scripts/scope-check-repos.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, the
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, the
       coverage report's exempt-rule count and its site counts for `scope-check.ps1`, `scope-check-repos.ps1` and `scope-lib.ps1`,
       and, in purpose-built repositories, the saved output and exit code of a passing phase commit (Standard and Micro), a failing
       one (outside the Territory), a merge commit, a commit with no phase token, a readable empty phase commit and the deletion of
       `tasks.md`, for the byte comparison of T007.
-- [ ] T002 Probe the design (plan P1, Risks) and record it in `notes.md` before a rule depends on it: (a) a throwaway function reading
+- [x] T002 Probe the design (plan P1, Risks) and record it in `notes.md` before a rule depends on it: (a) a throwaway function reading
       `git show --name-status` and the exit code on the next statement, dot-sourced by a script and called from inside
       `Push-Location`/`try`/`finally` as `scope-check-repos.ps1` calls `Get-CommitPaths`, setting `$script:` and read by the caller;
       (b) that `truncateCommit` set to `HEAD^{tree}` makes `git show --name-status` fail in a fixture and leaves `git rev-parse
       --short`, `git rev-list --parents` and `git log -1 --format=%s` working; (c) that a commit at a shallow boundary is readable
       and unchanged; (d) the same probes on the CI image's git (the CI run of the branch is the second git).
-- [ ] T003 Write the fixtures first (plan P5, Testing Strategy), under `tests/enforcement/cases/scope-check/`: a `fail` and a `pass`
+- [x] T003 Write the fixtures first (plan P5, Testing Strategy), under `tests/enforcement/cases/scope-check/`: a `fail` and a `pass`
       for `SCOPE-028` (Standard phase commit; `pass` is `SCOPE-019/pass`'s fixture, `fail` adds `truncateCommit` `HEAD^{tree}`),
       for `SCOPE-029` (Micro phase commit on `SCOPE-016/pass`'s fixture) and for `SCOPE-030` (a commit with no phase token that
       deletes `tasks.md`, unreadable, against the same commit readable and not deleting it), plus `pass-empty` for `SCOPE-028` (a
       phase commit entry with no files: `PASS ... (0 file(s))`). Expectations by hand with the P4 line; remember the harness reads
       stdout and then stderr. Run them on the parent commit and record that each `fail` fails there for the stated reason (it
       prints `PASS ... (0 file(s))` or `not applicable`) and each `pass` passes.
-- [ ] T004 Bring the new rules into the coverage sweep: add `SCOPE-028`, `SCOPE-029` and `SCOPE-030` to `tests/enforcement/rules.json`
+- [x] T004 Bring the new rules into the coverage sweep: add `SCOPE-028`, `SCOPE-029` and `SCOPE-030` to `tests/enforcement/rules.json`
       with each rule's anchor and law, and `REPOS-035` as an exempt rule with its written reason (plan P5: the committer-date read
       fails first on every damaged commit tried); add an entry to `tests/enforcement/emission-idioms.json` only if the sweep reports a
       new site. Run the sweep and classify anything else it reports.
-- [ ] T005 Edit the scripts (plan P1 to P4, P6, P7): `Get-CommitStatusRows` in `scripts/scope-lib.ps1` with the `$script:` flag and
+- [x] T005 Edit the scripts (plan P1 to P4, P6, P7): `Get-CommitStatusRows` in `scripts/scope-lib.ps1` with the `$script:` flag and
       `Get-CommitPaths` calling it with `-Renames`; `scripts/scope-check.ps1` reading the flag after the guard's read (without
       `-Renames`) and after each `Get-CommitPaths` call, and one `Write-UnreadableCommit` function that prints the `ERROR` line,
       each caller returning `$false`; `scripts/scope-check-repos.ps1` reading the flag after its call and ending in
       `<repo>: ERROR cannot read the changed files of <sha7>` and `'FAIL'`. Nothing else changes: the blob reads, the date read,
       the territory grammar, the merge and no-token paths, `-All`.
-- [ ] T006 Add a self-test of `Get-CommitStatusRows` (plan P1, Risks) to `tests/enforcement/Harness.Tests.ps1`: in a fixture repository,
+- [x] T006 Add a self-test of `Get-CommitStatusRows` (plan P1, Risks) to `tests/enforcement/Harness.Tests.ps1`: in a fixture repository,
       a readable commit returns its rows with the flag clear; a readable empty commit returns nothing with the flag clear; a commit
       whose tree is truncated returns nothing with the flag set; the flag is reset by the next call.
-- [ ] T007 Run `-Case SCOPE-`, `-Case REPOS-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
+- [x] T007 Run `-Case SCOPE-`, `-Case REPOS-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
       unchanged, every new fixture as written, the coverage report lists no unowned site in the three scripts and the exempt count
       is stated. Re-run T001's states under `pwsh -File` and diff against the saved text: every readable commit is byte-identical.
       Record the numbers in `notes.md`.

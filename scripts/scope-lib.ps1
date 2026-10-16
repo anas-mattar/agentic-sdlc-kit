@@ -21,12 +21,28 @@
         . (Join-Path $PSScriptRoot 'scope-lib.ps1')
 #>
 
+# The `git show --name-status` rows of a commit, with a failed read reported on a channel of its own:
+# $script:CommitReadFailed, which the caller reads on the very next statement. A commit git cannot read
+# returns no rows, the same as a readable commit that touches nothing, and PowerShell unrolls an empty
+# array to $null, so neither a return value nor a sentinel could tell the two apart (feature 032, GAP-038;
+# the recipe of feature 030's $script:LedgerReadFailed). -Renames adds -M, which Get-CommitPaths reads and
+# the delete guard of scope-check.ps1 does not.
+function Get-CommitStatusRows {
+    param([string]$Sha, [switch]$Renames)
+    $script:CommitReadFailed = $false
+    if ($Renames) { $rows = git -c core.quotepath=off show --name-status --format='' -M $Sha 2>$null }
+    else          { $rows = git -c core.quotepath=off show --name-status --format='' $Sha 2>$null }
+    $script:CommitReadFailed = ($LASTEXITCODE -ne 0)
+    return $rows
+}
+
 # Paths a commit touches: renames contribute both sides, deletes the deleted path.
 # quotepath=off so non-ASCII paths arrive verbatim, not quoted-octal (006 review F3).
+# A failed read leaves $script:CommitReadFailed set and returns no paths: callers read the flag.
 function Get-CommitPaths {
     param([string]$Sha)
     $paths = @()
-    $rows = git -c core.quotepath=off show --name-status --format='' -M $Sha 2>$null
+    $rows = @(Get-CommitStatusRows -Sha $Sha -Renames)
     foreach ($row in $rows) {
         if (-not $row) { continue }
         $parts = $row -split "`t"

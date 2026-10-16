@@ -269,6 +269,12 @@ function Invoke-RepoScopeCheck {
 
     Push-Location $RepoPath
     try { $paths = @(Get-CommitPaths -Sha $Sha) } finally { Pop-Location }
+    # The changed-file read failed: an empty list is not a pass (feature 032, GAP-038). Today the committer-date read
+    # above fails first on every damaged commit tried, so this is defence in depth (REPOS-035 is exempt for that).
+    if ($script:CommitReadFailed) {
+        Write-Line "${RepoName}: ERROR cannot read the changed files of $sha7"
+        return 'FAIL'
+    }
     $prefixed = @($paths | ForEach-Object { "$RepoName/$_" })
     $strays = @($prefixed | Where-Object { -not (Test-InTerritory -Path $_ -Globs $territory.Entries) })
 
