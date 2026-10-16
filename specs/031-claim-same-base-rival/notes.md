@@ -158,3 +158,19 @@ above is the same state as the shim's, now printing the warning and renumbering 
 finding F2 and the one text that moved (the git lines quoted in a rejected-push refusal). `docs/roadmap.md`: GAP-037's status text,
 a decisions-log entry, and the row `shipped`. Note for the merge: PR #97 flips the same row from `idea` to `in progress`; it merges
 first and the row here then conflicts on one line, resolved by taking `shipped`.
+
+### Phase 2 review follow-ups (`ai-code-review-phase2.md`, APPROVE with follow-ups, no blocking finding)
+
+- **F1 to F4 (wording), fixed in the follow-up commit:** the roadmap entry now records the open simultaneous-create limit, the
+  pending gate, human review and Linux CI run, and says the 1809 was measured on a detached worktree of the parent with the
+  changed files copied in; the flow-down note says a third consecutive same-name loss ends in `Lost the allocation race 3 times`
+  (claim again), qualifies "each refusal prints what it printed before" and "nothing, byte for byte" against the moved git text,
+  quotes the `; so did <rivals>` form of the warning, and says it supersedes, for a push that exits 0, feature 030's sentence that
+  two claimants from the same `main` tip "behave as they always did".
+- **F5 (re-check), done:** a clone of FitForge, the kit as it stands (with the new section) applied by `update-kit.ps1`,
+  `build-digests.ps1` run and committed: the section is in the clone's `adoption/updating.md`, `doc-lint.ps1` exit 0 (`OK`),
+  `ritual-checks.ps1 -Branch main` `RESULT OK`, `verify-kit` OK.
+- **F6:** the Linux CI run is the second git; it is not confirmed here and must be green before merge.
+- Two phase 2 commits therefore exist: `c91472e` (the change) and the follow-up. The full harness runs on `c91472e`; the
+  follow-up touches only `adoption/updating.md`, `docs/roadmap.md` and this file, so its count carries, and `scope-check.ps1`
+  is run on both.
