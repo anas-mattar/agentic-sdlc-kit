@@ -33,11 +33,11 @@ the layout of git's own text quoted inside the rejected-push refusal (plan P6, a
 - `scripts/claim-feature.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, the coverage report's exempt-rule
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, the coverage report's exempt-rule
       count and its site counts for `claim-feature.ps1`, and, run as `pwsh -File scripts/claim-feature.ps1 -ShortName probe
       "a probe"` in purpose-built directories, the exit code and output of a successful claim with no origin, with an origin
       that takes the push, with `-NoPush`, and with one genuine renumbering, as saved text for the byte comparison.
-- [ ] T002 Probe `git push --porcelain` (plan P1, P3) and record the result in `notes.md` before any rule depends on it, on
+- [x] T002 Probe `git push --porcelain` (plan P1, P3) and record the result in `notes.md` before any rule depends on it, on
       this machine and on the CI image's git: the status line of a push that creates the ref (`*`), of one whose branch already
       exists at our sha (`=`), of a rejected push, and of a push that lands and then exits non-zero (feature 030's
       `originPushFailsAfterLanding`); whether the flag and the ref are in the same columns on both; and whether
@@ -45,23 +45,23 @@ the layout of git's own text quoted inside the rejected-push refusal (plan P6, a
 
 **Amendment approved by**: anas.m, 2026-10-16
 
-- [ ] T003 Write the fixtures first (plan P5, Testing Strategy), under `tests/enforcement/cases/claim-feature/`: a `fail` and
+- [x] T003 Write the fixtures first (plan P5, Testing Strategy), under `tests/enforcement/cases/claim-feature/`: a `fail` and
       a `pass` for `CLF-018` (the stub `create-new-feature.ps1` pushes `NNN-S` to `origin` at `main`'s sha after the ledger read,
       as `CLF-017`'s stub does, against the same fixture without the rival) with `originDenyDeletes` in both directions, so an attempted withdrawal of the foreign branch would show. Expectations by hand; the warning text of P2 is pinned byte for byte; remember the harness reads stdout and
       then stderr. Run them on the parent commit and record that each `fail` fails there for the stated reason (the parent prints
       `CLAIMED:` for a branch it did not push) and each `pass` passes. List in `notes.md` every existing case whose
       `expected.txt` quotes git's rejection lines, which T006 re-expects.
-- [ ] T004 Bring the new rules into the coverage sweep: add `CLF-018` to `tests/enforcement/rules.json` with each
+- [x] T004 Bring the new rules into the coverage sweep: add `CLF-018` to `tests/enforcement/rules.json` with each
       rule's anchor and law; add an entry to `tests/enforcement/emission-idioms.json` only if the sweep reports a new site. Run
       the sweep and classify anything else it reports.
-- [ ] T005 Edit `scripts/claim-feature.ps1` (plan P1 to P4): push with `--porcelain`, call the push a same-name rival when it
+- [x] T005 Edit `scripts/claim-feature.ps1` (plan P1 to P4): push with `--porcelain`, call the push a same-name rival when it
       exited 0 and the status line for our own branch is `=`, make `$landed` `$pushOk -and -not $sameName`, print P2's warning,
       run `git branch --unset-upstream` (P3), word `$gone` for this state, and leave the withdrawal, the `$rivals` filter and
       feature 030's landed-by-commit rule alone. Nothing else changes: the preflight order, the allocation, the delegation, the
       genuine lost-race loop, the other warnings and the `-Json` object.
-- [ ] T006 Re-expect by hand the cases T003 listed (at least `CLF-012` and `CLF-017`; plan P6): only the git text quoted in the
+- [x] T006 Re-expect by hand the cases T003 listed (at least `CLF-012` and `CLF-017`; plan P6): only the git text quoted in the
       refusal changes layout, the script's own sentences do not. Say in `notes.md` which cases moved and why.
-- [ ] T007 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
+- [x] T007 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
       unchanged except the ones T006 names, every new fixture as written, the coverage report lists no unowned site in
       `claim-feature.ps1` and the exempt count is stated. Re-run T001's states under `pwsh -File` and diff against the saved text:
       successful claims are byte-identical. Record the numbers in `notes.md`.

@@ -54,3 +54,73 @@ A bare `origin` whose `pre-receive` hook exits 1, one push of a new branch:
 So `--porcelain` changes the layout of the git text quoted in feature 030's rejected-push refusal (plan P6). The stub
 `create-new-feature.ps1` of `CLF-017` already plants a same-name branch on `origin` at `main`'s sha (`git -C origin.git branch $b main`),
 after the ledger read and before the push, which is the race window; plan P7 uses it instead of a new harness recipe field.
+
+## Phase 1: tell a same-base rival from our own claim
+
+### T001 Baseline on the parent commit (`53a04eb`)
+
+Four states run as `pwsh -File scripts/claim-feature.ps1 -ShortName probe "a probe"` in purpose-built repositories (a stub
+`create-new-feature.ps1`, a bare `origin` cloned from the repository's own commit, paths normalised to `<REPO>`): no origin,
+an origin that takes the push, `-NoPush`, and one genuine renumbering (the stub pushes `001-other` to origin before the
+script's push). The saved text of each is the byte comparison of T007.
+
+### T002 Probe of `git push --porcelain` (git 2.55.0.windows.5; the CI image's git is the second probe, in T007)
+
+| Push | Status line (stdout) | Exit |
+|---|---|---|
+| creates the ref | `*<TAB>refs/heads/<b>:refs/heads/<b><TAB>[new branch]` | 0 |
+| ref already on origin at our sha | `=<TAB>refs/heads/<b>:refs/heads/<b><TAB>[up to date]` | 0 |
+| rejected by a `pre-receive` hook | `!<TAB>refs/heads/<b>:refs/heads/<b><TAB>[remote rejected] (pre-receive hook declined)` | 1 |
+| `receive-pack` exits 1 after landing (feature 030's wrapper) | `*<TAB>...<TAB>[new branch]` | 1 |
+| the same sha pushed again after that | `=<TAB>...<TAB>[up to date]`, plus `error: failed to push some refs` | 1 |
+
+- A landed push that exits non-zero reads `*` and not `=`, so the same-name test (exit 0 and `=`) never fires for it and
+  feature 030's landed-by-commit rule keeps that state.
+- `git branch --unset-upstream <b>` on a branch with no upstream exits **128** (`fatal: branch '<b>' has no upstream
+  information`): the script discards its output and does not read the exit code (plan P3).
+- stdout and stderr of a push arrive in no fixed order through `2>&1`; the script groups the error records first and the
+  status lines after, so the text quoted in a refusal is the same each run.
+
+### T003 Fixtures written first, shown failing on the parent
+
+`CLF-018/fail` and `CLF-018/pass`. On the parent commit (`scripts/claim-feature.ps1` unchanged) the `pass` passes and the
+`fail` fails for the stated reason: first diff at line 2, expected the same-short-name warning, observed
+`CLAIMED: 001-probe (pushed to origin - the claim is live)`. The rejected-push text is quoted in two existing cases:
+`CLF-017/fail` (re-expected, T006) and `CLF-015/fail` (it quotes only the `error:`, `fatal:` and `remote:` lines, so it did not move).
+
+**Deviation from the plan, approved by the owner (anas.m, 2026-10-16) and recorded as an amendment of plan P5 and tasks T003/T004: `CLF-019` is not built.** The plan lists a fixture in which
+the rival is planted at every attempt so the claim ends in `Lost the allocation race 3 times`. The stub
+`create-new-feature.ps1` runs once per claim, before the first push, so it can plant the first number only; a planted branch
+for a later number is visible to the ledger read and the allocation skips it; and nothing on the server side can plant the
+name of the branch being pushed before the push's advertisement (the name is not known until the client sends it). The loop
+that ends in the three-times refusal is the existing one that `CLF-007` covers with a numeric rival at every attempt, and
+this feature does not change it. `CLF-018/fail` already proves the new state, including that nothing is withdrawn (origin
+refuses deletions in both directions, so an attempted withdrawal of the foreign branch would end the claim with the
+could-not-withdraw refusal instead of the renumbered success).
+
+### T005 and T006 The script and the one re-expected case
+
+`scripts/claim-feature.ps1`: `git push --porcelain -u origin <b>`; `$sameName` is true when the push exited 0 and a status line
+is `=` for our own ref; `$landed` is `$pushOk -and -not $sameName` and feature 030's landed-by-commit read is skipped for it;
+the refusal for a rejected push without a rival is skipped for it; the warning names the other claimant, `git branch
+--unset-upstream` drops the upstream `-u` pointed at their branch, and the next steps are the loop's own (no withdrawal, the
+`$gone` text says the branch is theirs). Four states printed the same text before and after (saved text compared with `diff -r`).
+
+Re-expected by hand: `CLF-017/fail` only. Its refusal quotes git's rejected-push text; under `--porcelain` that text is
+`error: failed to push some refs to '<ROOT>/origin.git'`, `To <ROOT>/origin.git`, the tab-separated `!` status line and `Done`,
+in that order, where it was the human `To`, ` ! [rejected]` and `error:` lines. The script's own sentences did not change.
+
+### T007 Numbers (isolated detached worktrees outside the repository; the changed files copied into the second)
+
+| | Parent `53a04eb` | Phase 1 working tree (code as committed) |
+|---|---|---|
+| full harness | 1805 passed, 0 failed | **1809 passed, 0 failed** (the 4 more are the two cases of `CLF-018`) |
+| `claim-feature.ps1` coverage | 15 of 18 sites fixtured (3 not a rule) | 16 of 19 sites fixtured (3 not a rule) |
+| `-Case CLF-` | not run on its own (inside the full run) | 159 passed, 0 failed |
+| four claim states, saved text | saved | `diff -r` against the parent: byte-identical |
+| `ritual-checks.ps1` (exit code) | n/a | EXIT 0: `doc-lint`, `enforcement-pack`, `digests`, `roadmap-claims` OK; `scope-check` UNGRADED until this commit exists |
+
+Every pre-existing case passed unchanged except `CLF-017/fail`, re-expected by hand (T006). The coverage report lists no unowned
+site in `claim-feature.ps1`; the exempt count is the baseline's (6 rules). The second probe of `--porcelain` on the CI image's git
+is the CI run of this branch. The measurement of the same-base race through the shim, and on clones of the adopted projects, is
+phase 2 (T010).

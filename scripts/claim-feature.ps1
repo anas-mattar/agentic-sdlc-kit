@@ -138,8 +138,17 @@ $renumberedFrom = $null
 $pushed = $false
 if ($hasRemote -and -not $NoPush) {
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-        $pushText = @(git push -u origin $branch 2>&1 | ForEach-Object { "$_" })
+        # Git writes the porcelain status lines to stdout and its errors to stderr, and the two arrive in no fixed order:
+        # the lines it complains on come first, then the status lines, so the text quoted in a refusal is the same each run.
+        $pushAll = @(git push --porcelain -u origin $branch 2>&1)
+        $pushText = @(@($pushAll | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) +
+                      @($pushAll | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) | ForEach-Object { "$_" })
         $pushOk = ($LASTEXITCODE -eq 0)
+        # A push that exits 0 and reports our own branch as up to date created nothing: the name was already on origin
+        # at our sha, which a claim leaves at main's own commit, so another claimant of the same number and short name
+        # pushed first and the branch is theirs. Only the push can tell: the ledger shows the same name at the same sha
+        # either way (feature 031, plan P1; GAP-037).
+        $sameName = $pushOk -and (@($pushText | Where-Object { $_ -match ('^=\s+refs/heads/' + [regex]::Escape($branch) + ':') }).Count -gt 0)
         $rejection = "git push of $branch was rejected:`n$($pushText -join "`n")`nNothing was claimed; the local branch and its spec directory remain. If the push may have landed, check origin (git ls-remote --heads origin $branch) before claiming again."
 
         # Same-number races don't always reject the push (a different slug with the same
@@ -159,8 +168,8 @@ if ($hasRemote -and -not $NoPush) {
         # branch NAME is not (a second claimant with the same number and short name allocates the same one), so a branch
         # of our name at another commit is theirs: not landed, and never withdrawn (feature 030, plan P3 as amended;
         # review finding F1 of phase 1, and F1 of phase 3).
-        $landed = $pushOk
-        if (-not $landed -and $script:LedgerShas.ContainsKey($branch)) {
+        $landed = $pushOk -and -not $sameName
+        if (-not $landed -and -not $sameName -and $script:LedgerShas.ContainsKey($branch)) {
             $tip = @(git rev-parse --verify --quiet "refs/heads/$branch" 2>$null)
             $landed = ($LASTEXITCODE -eq 0) -and ("$($tip[0])".Trim() -eq $script:LedgerShas[$branch])
         }
@@ -176,10 +185,18 @@ if ($hasRemote -and -not $NoPush) {
 
         # A push the remote rejected, with no rival, is the remote's answer and not a lost race: renumbering and
         # pushing again would only repeat it, three times, and end on advice (renumber by hand) that does not apply.
-        if (-not $landed -and $rivals.Count -eq 0) { Stop-Refused "$rejection" }
+        if (-not $landed -and -not $sameName -and $rivals.Count -eq 0) { Stop-Refused "$rejection" }
 
         # Lost the race. Withdraw our remote branch if it landed, then renumber.
-        Write-Warning "Number $numPrefix was claimed concurrently ($($rivals -join ', ')) — renumbering."
+        if ($sameName) {
+            # The branch of our name on origin is the other claimant's: it is never withdrawn, and the upstream that -u
+            # just pointed at it is dropped so the local branch does not track a branch it does not own (plan P2, P3).
+            $also = if ($rivals.Count -gt 0) { "; so did $($rivals -join ', ')" } else { '' }
+            Write-Warning "Number $numPrefix was claimed concurrently by a claimant of the same short name ($branch was already on origin; it is theirs and is left alone$also) — renumbering."
+            git branch --unset-upstream $branch 2>$null | Out-Null
+        } else {
+            Write-Warning "Number $numPrefix was claimed concurrently ($($rivals -join ', ')) — renumbering."
+        }
         # A withdrawal that fails leaves our abandoned number on origin as a live claim, so it is named and not
         # stepped over (feature 030, plan P4).
         if ($landed) {
@@ -189,7 +206,7 @@ if ($hasRemote -and -not $NoPush) {
         if ($attempt -eq $MaxAttempts) {
             Stop-Refused "Lost the allocation race $MaxAttempts times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation)."
         }
-        $gone = if ($landed) { "$branch was withdrawn from origin" } else { "$branch never reached origin" }
+        $gone = if ($landed) { "$branch was withdrawn from origin" } elseif ($sameName) { "$branch on origin is the other claimant's and was left alone" } else { "$branch never reached origin" }
         # The first fetch refuses on failure; this one used to go on and allocate from refs it had not refreshed.
         git fetch origin --prune 2>$null | Out-Null
         if ($LASTEXITCODE -ne 0) { Stop-Refused "git fetch origin failed — cannot claim against an unreachable ledger. $gone." }
