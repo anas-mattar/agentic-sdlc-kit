@@ -160,3 +160,18 @@ Main had already taken the claim flip of PR #101, so `main` was merged into the 
 - **F5 (the 1828):** it was measured on the phase 1 working tree before the follow-up commits (line endings, notes); the number at the tip is the T011 run below.
 - **F6 (the real projects):** the counts recorded after this measurement (FitForge one untracked path, FlowBoard two, ExpenseTracker none; no `probe` branch) are the counts recorded after the
   measurement of feature 031 on the same projects; the measurement only ever worked on clones. The owner's decision "both" for GAP-040 is in this file and in the roadmap's decisions log.
+
+### T011 Final run on an isolated checkout of `8ae5794`, and the CI result of phase 1
+
+A detached `git worktree` of the phase 2 change commit outside the repository, removed afterwards.
+
+| Measure | Result |
+|---|---|
+| full harness (`tests/enforcement/Run-Tests.ps1`) | **1828 passed, 0 failed, exit 0** (the parent's 1809 plus the 19 of phase 1; phase 2 adds no test) |
+| coverage | `scope-check.ps1` 29 of 29 sites fixtured; `scope-check-repos.ps1` 29 of 31 (2 exempt); 7 rules exempt from a fixture pair; no unowned site |
+| `ritual-checks.ps1 -Branch 032-scope-check-unreadable-commit` in that checkout | `RESULT OK` (`doc-lint`, `enforcement-pack`, `scope-check`, `digests`, `roadmap-claims` OK) |
+| `scope-check.ps1 -Commit` | PASS on `7e1e134` (28 files), `d02ecc9` (2), `8ae5794` (4) and `d4eab33` (2) |
+| CI, `enforcement-tests` on the pushed phase 1 commit `7e1e134` | **success on `ubuntu-latest` and on `windows-latest`**: the second git (T002 item d, review finding F2 of phase 1) |
+
+The 1828 here is measured at the phase 2 change commit, so it carries to the tip (the later commits touch only this file, `adoption/updating.md` and the review files). The CI runs of the
+later commits were still in progress when this was written. Open, and not claimed here: the owner's gate run on phase 2, the human review at merge.

@@ -97,7 +97,7 @@ phase commit of each adopted project's own history grades the same bytes before 
       commit of each project's own history, and `doc-lint.ps1` and `ritual-checks.ps1 -Branch main`; list every line that moves in
       `notes.md` with its cause and say plainly where none moved. Then make a phase commit's tree unreadable in one clone and show
       the `ERROR` line and exit 1 where the parent printed `PASS (0 file(s))`. Do not edit kit files while `update-kit.ps1` runs.
-- [ ] T011 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed
+- [x] T011 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed
       afterwards): the full harness, `ritual-checks.ps1 -Branch 032-scope-check-unreadable-commit`, and `scope-check.ps1` on each
       phase commit. Record the numbers in `notes.md`. The owner then runs the gate.
 
