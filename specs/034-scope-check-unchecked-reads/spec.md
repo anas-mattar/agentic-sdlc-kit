@@ -2,7 +2,9 @@
 
 **Feature Branch**: `034-scope-check-unchecked-reads`
 **Created**: 2026-10-17
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-17
+**Status**: Approved 2026-10-17 (owner: anas.m) <!-- D1 A, D2 A, D3 A -->
+**Owner decisions**: anas.m, 2026-10-17 — D1 A (an ERROR line and exit 1 for a merge base or commit list git could not read; the legitimate UNGRADED states keep exit 0), D2 A (scope-check.ps1, scope-check-repos.ps1 and the shared Get-RepoMergeBase; territory-check.ps1 keeps its verdicts), D3 A (two phases)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-040: the scope checks name their other unchecked reads: Get-DiffBase and the commit-list git rev-list of scope-check.ps1 and scope-check-repos.ps1 discard their errors, so a damaged branch can end scope-check -All on UNGRADED could not resolve a merge base with exit 0."
@@ -144,7 +146,9 @@ on both, or an exemption with a written reason; the full harness passes unchange
 
 ## Decisions for the owner
 
-Each has a recommendation, given as a recommendation and not a decision.
+**Amendment approved by**: anas.m, 2026-10-17
+
+Each has a recommendation. **Decided by the owner (anas.m, 2026-10-17): D1 A, D2 A, D3 A**, as recommended.
 
 - **D1 - the verdict.** (A, recommended) An `ERROR` line and exit 1, as feature 032 decided for an unreadable commit: a branch whose
   merge base or commit list could not be read is red, and the legitimate `UNGRADED` states keep exit 0 because git answered. (B)
