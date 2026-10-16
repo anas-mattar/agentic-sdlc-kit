@@ -70,14 +70,14 @@ roadmap row is closed.
 - `docs/roadmap.md`
 - `docs/digests/**`
 
-- [ ] T006 Add a flow-down note to `adoption/updating.md` shaped like feature 032's (what was wrong, what it does now, what flows down,
+- [x] T006 Add a flow-down note to `adoption/updating.md` shaped like feature 032's (what was wrong, what it does now, what flows down,
       what may newly be seen — the NOTE line, the surgical entries and exit 2 where it printed `up to date` —, what does not change,
       what was measured, what to do: deepen or re-clone the kit, or accept the full review). No digest marker (the adoption digest is at
       its 40-bullet bound). Every path in it resolves in an adopted project (doc-lint).
-- [ ] T007 Update `docs/roadmap.md`: GAP-039 status text, a decisions-log entry dated the day the feature ships (recording D1 A, D2 A,
+- [x] T007 Update `docs/roadmap.md`: GAP-039 status text, a decisions-log entry dated the day the feature ships (recording D1 A, D2 A,
       D3 A and what the work corrected), and this feature's row to `shipped`. Run `pwsh -File scripts/build-digests.ps1 -Check` and
       regenerate only if a digest-marked document changed.
-- [ ] T008 Measurement (plan P6, SC-001, SC-002): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories
+- [x] T008 Measurement (plan P6, SC-001, SC-002): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories
       (never the real projects, nothing pushed); the kit as of the parent of this feature, then the kit as it stands, each run against
       a fresh copy of a clone with a known, an absent and an unknown recorded commit, dry run and `-Json -DryRun`; list every line that
       moves in `notes.md` with its cause and say plainly where none moved. The clones must be created with the same line-ending

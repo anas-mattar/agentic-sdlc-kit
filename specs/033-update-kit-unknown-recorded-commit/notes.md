@@ -114,3 +114,31 @@ Every pre-existing case passes unchanged; no case was re-expected.
   refers to "T006" where T005 is meant; the saved text of the byte comparison is the test itself (the four unchanged states pass on both commits, and the same cases were run on the parent script and the tip script
   by the reviewer, in text, `-DryRun` and `-Json`); the unguarded `rev-parse HEAD` the spec cites at `:186` is at `:194` after the added lines (the spec keeps the line of the parent). The CI image's git
   re-measurement of T002 is the CI run of the branch, recorded when it finishes.
+
+## Phase 2: guidance, close and measurement
+
+### T008 The measurement (plan P6, SC-001, SC-002)
+
+Method: for each project a `git clone` from its local directory into a scratch area (the real projects never touched, nothing pushed). Three variants, each a committed copy of the clone: the project's own
+`.kit-version` (its recorded commit is `a1258c5...`, a commit the kit clone has), `.kit-version` removed, and `kitCommit` set to `0000...0001`. Each variant was cloned afresh per run and updated with
+the script of the kit before this feature (`280be34`) and the script as it stands (`574b958`), **both run against the same kit content** (`-Kit` = the worktree at `574b958`): the kit's own copy
+of `update-kit.ps1` is a verbatim file, so with each kit's own content the two runs would also differ by that copy (22 files applied against 21, and the kit HEAD in the `Result:` line). Modes: `-DryRun`,
+`-DryRun -Json`, and, for the unknown variant, a real run (`.kit-version` after the run recorded).
+
+| Probe | FitForge, FlowBoard, ExpenseTracker |
+|---|---|
+| the project's own recorded commit, dry run and `-Json` | **byte-identical before and after** in all three |
+| `.kit-version` absent, dry run and `-Json` | **byte-identical before and after** in all three |
+| unknown recorded commit, dry run, before | exit 2; **no Surgical section**; 22 conflicts (`differs - no baseline (unknown provenance)`) |
+| the same, now | exit 2; the `NOTE: the recorded kit commit 0000...0001 is not in the kit clone ...` line; `Surgical ... (20)`, each `no baseline - review all`; the same 22 conflicts |
+| the same, `-Json`, before / now | `surgical` has **0** entries / **20** entries |
+| the same, a real run, before / now | no delivered-once note / the delivered-once note printed; both exit 2 and both rewrite `.kit-version` to the kit's HEAD (`574b958...`) |
+
+Two runs of the measurement were discarded before it came out right: the first splatted a one-element argument array character by character (`A positional parameter cannot be found that accepts argument 'D'`), and the
+second compared each script with its own kit and so differed by the verbatim copy of the script itself. Not exercised: a small kit whose verbatim files are all current (the test builds it, and the pre-plan
+measurement recorded the old script's `Result: up to date`, exit 0), a shallow kit clone in place, and the Linux platform (the CI run of the branch).
+
+### T006 and T007 Guidance and close
+
+`adoption/updating.md`: a flow-down note in the shape of feature 032's, no digest marker (the adoption digest is at its 40-bullet bound; `build-digests.ps1 -Check` is OK, 5 digests, 119 markers). It states the
+NOTE line, the entries and exit 2, the unchanged states, the five limits and what to do (fetch the kit's full history). `docs/roadmap.md`: GAP-039's status text, the row `shipped`, and a decisions-log entry.
