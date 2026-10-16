@@ -1,6 +1,7 @@
 Allocating feature number 001 (next free across local + remote + specs/).
 git push of 001-probe was rejected:
-To <ROOT>/origin.git
- ! [rejected]        001-probe -> 001-probe (non-fast-forward)
 error: failed to push some refs to '<ROOT>/origin.git'
+To <ROOT>/origin.git
+!	refs/heads/001-probe:refs/heads/001-probe	[rejected] (non-fast-forward)
+Done
 Nothing was claimed; the local branch and its spec directory remain. If the push may have landed, check origin (git ls-remote --heads origin 001-probe) before claiming again.

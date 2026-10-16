@@ -2344,6 +2344,15 @@
       "notes": "Added after the phase 3 AI review (finding F1): landed was first decided by the branch name alone. Shares its emission site with CLF-012. The stub create-new-feature.ps1 puts the foreign branch on origin as a side effect and switches git's push hints off (they vary by version). fail-rival makes a wrongly attempted withdrawal visible: the remote refuses deletions, so reading the foreign branch as ours would end the claim with the could-not-withdraw refusal instead of the renumbered success."
     },
     {
+      "id": "CLF-018",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a branch of our own name already on origin at our own sha (a second claimant with the same number and short name pushed it first, and a claim leaves the branch at main's own commit) is not our claim: the push is up to date and exits 0, so the script says the branch is theirs, withdraws nothing, and renumbers, instead of reporting a claim it did not make",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/031-claim-same-base-rival FR-001, FR-002; roadmap GAP-037",
+      "emitAnchor": "claimed concurrently by a claimant of the same short name",
+      "notes": "The stub create-new-feature.ps1 pushes the claim branch to origin before the script does, the window between the ledger read and the push; it does so for the first number only, so the renumbered claim succeeds. Origin refuses deletions in both directions, so an attempted withdrawal of the foreign branch would end the claim with the could-not-withdraw refusal instead of the renumbered success. The loop that ends in the three-times refusal is not reachable by a stub that plants once (CLF-007 covers that loop with a numeric rival at every attempt)."
+    },
+    {
       "id": "DIFF-001",
       "script": "enforcement-pack.ps1",
       "function": "Add-DiffUnreadable",
