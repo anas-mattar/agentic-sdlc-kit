@@ -113,3 +113,38 @@ could not be read ... run git fsck.`, exit 1, restored `PASS ... (1 file(s))`.
   `scope-check-repos.ps1` (`:379`); `git rev-list --parents` (`:118`) and `git log -1 --format=%s` (`:156`) discard errors too but sit behind the new guard.
   `-Commit` on the same commit gives the new ERROR. Decision for the owner: a new GAP (GAP-040) recorded in phase 2's roadmap commit, or a stated
   limit in the flow-down note, or both.
+
+## Phase 2: guidance, close and measurement
+
+### T010 The measurement (plan P8, SC-001, SC-002)
+
+Method (the one of features 030 and 031): for each project a `git clone` from its local directory into a scratch area (the real projects never touched).
+The kit before this feature (`989411f`, the merge of PR #100) applied with `update-kit.ps1`, `build-digests.ps1` run and committed ("measure: kit before"); the kit as
+it stands (`937cde6`, whose three scope scripts are the phase 1 files) applied the same way ("measure: kit now"). Four commits were chosen **once**, from each
+project's own history before any measure commit (two with a phase token, one without, one merge), so both states grade the same shas. Probes in each state, on a
+fresh copy of the committed clone: `scope-check.ps1 -Commit <sha> -Branch <feature>` on each; `doc-lint.ps1`; `ritual-checks.ps1 -Branch main`; and the damage probe: a fresh
+branch `099-probe` whose phase commit adds one file inside its declared Territory and one outside, graded intact, then with that commit's tree object truncated
+(the clones' own objects are packed, so a new loose commit is built).
+
+(A first run of this measurement was discarded: the clones' `core.autocrlf` was set after cloning, which made the working tree dirty, `update-kit.ps1` refused the "before"
+apply, and the commits were chosen with `HEAD~1`, which is a different commit in each state. Both were fixed and the whole measurement was run again.)
+
+| Probe | FitForge, FlowBoard, ExpenseTracker |
+|---|---|
+| four commits of the project's own history | **byte-identical before and after** in all three (a PASS of 1 or 2 files, `not applicable` for a commit with no phase token and for a merge, a WARN for a phase with no declared territory) |
+| `doc-lint.ps1` | exit 0; **byte-identical before and after** |
+| `ritual-checks.ps1 -Branch main` | `RESULT OK` in every state; **two lines moved, and only two:** the enforcement-pack diff base commit (each clone's own commit) and `verify-kit`'s recorded kit commit (`989411f...` to `937cde6...`) |
+| the damage probe, intact | `FAIL phase 1 commit <sha>: elsewhere/outside.txt not in territory`, exit 1 |
+| the damage probe, tree unreadable, **before** | `PASS phase 1 commit <sha> (0 file(s))`, **exit 0**: the out-of-territory file passes |
+| the damage probe, tree unreadable, **now** | `ERROR commit <sha>: its changed files could not be read (git show --name-status failed) ... run git fsck.`, **exit 1** |
+
+The real projects were checked afterwards: no `probe` branch in any of them, and the same working-tree state as before (FitForge: one untracked file; FlowBoard: two;
+ExpenseTracker: none). Not exercised: the Micro lane and the delete guard on a project's own history (the fixtures prove them), the nested-repository grader, the
+Linux platform (the CI run of the branch), and a damaged object that is not a loose tree.
+
+### T008 and T009 Guidance and close
+
+`adoption/updating.md`: a flow-down note in the shape of feature 031's, with no digest marker (the adoption digest is at its 40-bullet bound; `build-digests.ps1 -Check` is OK,
+5 digests, 119 markers). It states the F3 limit (`-All` can still end on UNGRADED when a commit object is missing), the unchanged blob reads and the git version. `docs/roadmap.md`:
+GAP-038's status text, the row `shipped`, a decisions-log entry, and **GAP-040** (the other unchecked reads, owner decision "both") as an inventory row and an `idea` row.
+Main had already taken the claim flip of PR #101, so `main` was merged into the branch before the row was edited and nothing conflicts at the merge.

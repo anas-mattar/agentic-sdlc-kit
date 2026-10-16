@@ -84,14 +84,14 @@ phase commit of each adopted project's own history grades the same bytes before 
 - `docs/roadmap.md`
 - `docs/digests/**`
 
-- [ ] T008 Add a flow-down note to `adoption/updating.md` shaped like feature 031's (what was wrong, what it does now, what flows
+- [x] T008 Add a flow-down note to `adoption/updating.md` shaped like feature 031's (what was wrong, what it does now, what flows
       down, what may newly be seen — the `ERROR` line and exit 1 for a commit git cannot read, including a token-less one —, what
       does not change, what was measured, what to do). No digest marker (the adoption digest is at its 40-bullet bound). Every
       path in it resolves in an adopted project (doc-lint).
-- [ ] T009 Update `docs/roadmap.md`: GAP-038 status text, a decisions-log entry dated the day the feature ships (recording D1 A, D2 A,
+- [x] T009 Update `docs/roadmap.md`: GAP-038 status text, a decisions-log entry dated the day the feature ships (recording D1 A, D2 A,
       D3 A, the exempt `REPOS-035` and what the work corrected), and this feature's row to `shipped`. Run
       `pwsh -File scripts/build-digests.ps1 -Check` and regenerate only if a digest-marked document changed.
-- [ ] T010 Measurement (plan P8, SC-001, SC-002): clones of FitForge, FlowBoard and ExpenseTracker made from their local
+- [x] T010 Measurement (plan P8, SC-001, SC-002): clones of FitForge, FlowBoard and ExpenseTracker made from their local
       directories (never the real projects, nothing pushed), the kit as of the parent of this feature applied with `update-kit.ps1`,
       then the kit as it stands, digests rebuilt; in each state run `scope-check.ps1 -Branch <feature> -Commit <sha>` on a phase
       commit of each project's own history, and `doc-lint.ps1` and `ritual-checks.ps1 -Branch main`; list every line that moves in
