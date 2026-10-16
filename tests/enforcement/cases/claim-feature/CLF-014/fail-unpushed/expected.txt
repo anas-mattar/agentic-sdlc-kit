@@ -1,0 +1,3 @@
+Allocating feature number 001 (next free across local + remote + specs/).
+WARNING: Number 001 was claimed concurrently (001-rival) — renumbering.
+git fetch origin failed — cannot claim against an unreachable ledger. 001-probe never reached origin.

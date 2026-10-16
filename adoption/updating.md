@@ -1039,7 +1039,6 @@ yours parsed the PowerShell error record around a refusal, it now gets the messa
 in-process and relied on its throwing, check `$LASTEXITCODE` after the call.
 
 <!-- digest: claim-feature's seven refusals now print their message and exit 1 themselves; a successful claim is unchanged. -->
-<!-- digest: claim-feature still dies in a throw if ls-remote fails, and a push the remote refuses reads as a lost race. -->
 
 ### Flow-down note: the 2026-10-13 Critical branch that is not red from its first commit (kit feature 024 — no constitution amendment)
 
@@ -1393,6 +1392,56 @@ the repository has a damaged or missing object: repair it, then re-run. Nothing 
 
 <!-- digest: A failed git read in the pack or territory-check is a named state: a numbered failure, UNGRADED on Lite. -->
 <!-- digest: territory-check refuses on an unreadable uncommitted diff or remote list; never "no overlap" unread. -->
+
+### Flow-down note: the 2026-10-16 claim ledger read and refused push (kit feature 030 — no constitution amendment)
+
+**What was wrong.** After feature 023 gave `scripts/claim-feature.ps1`'s seven refusals their own message and exit, the race loop and the helper that reads the remote ledger still held
+five silent or wrong states. (1) `Get-RemoteFeatureHeads` ended in a terminating `throw` when `git ls-remote --heads origin` failed. Started with `pwsh -File` the exit was 1 with a PowerShell error record
+around the message; through a wrapper that runs the script in-process it was a terminating error and, in the kit's harness, a leaked exit 128. (2) That read also runs **after every push**, so after a push that
+succeeded the claim was already live on `origin` while the script reported an error: a wrapper that read the failure as "no claim" and retried from a fresh checkout took a second number. (3) A push the remote
+**rejected** (no write permission, a server-side hook), with no rival, was read as a lost race: a `WARNING: Number NNN was claimed concurrently ()` with an empty list of claimants, a renumbering, and a retry, three times,
+ending on advice (renumber by hand) that does not apply, with git's own error never shown. (4) The `git push origin --delete` that withdraws a lost-race branch discarded its result, so a failed withdrawal left
+an abandoned claim on `origin` while the script renumbered past it. (5) The re-fetch before renumbering discarded its result, so a failed one went on to allocate from refs it had not refreshed. Items (1) to (3) are GAP-036 and the
+two "known limits" feature 023's note stated; (4) and (5) are the same loop.
+
+**What it does now.** A failed ledger read is a refusal in the script's own words, on the error stream, exit 1, from each of its three callers: `git ls-remote failed — cannot read the remote ledger. Nothing was claimed.` before any push;
+`git ls-remote failed after pushing <branch> — the claim may already be live on origin. Check origin (git ls-remote --heads origin <branch>) before claiming again; nothing on origin was changed.` after a push that succeeded (the
+branch is left alone); and, after a lost race and a withdrawal, the first message plus whether `<branch> was withdrawn from origin` or `never reached origin`. A push the remote rejects, with no rival, is refused **once** with
+git's own text (`git push of <branch> was rejected:` then git's lines, then `Nothing was claimed; the local branch and its spec directory remain. If the push may have landed, check origin ... before claiming again.`), with no
+concurrent-claim warning and no renumbering. A withdrawal that fails refuses with `Lost the allocation race but could not withdraw <branch> from origin — delete it by hand: git push origin --delete <branch>.`; a re-fetch
+that fails refuses with the first fetch's message and the state of our branch. A genuine rival, a successful claim with or without an origin or `-NoPush`, and the seven refusals of feature 023 are unchanged.
+
+**What flows down.** One verbatim file, `scripts/claim-feature.ps1`, and this document; the kit's test fixtures and the three new harness fields stay in the kit. Nothing surgical and nothing in your constitution. Run
+`scripts/build-digests.ps1` after the update: until you do, the digests member of `scripts/ritual-checks.ps1` reports the affected digests as stale.
+
+**What an owner may newly see.** On a claim whose reads and pushes succeed: nothing, byte for byte. On a failed ledger read, the refusal where an error record stood, and **after a push that succeeded, a refusal that says the claim may be
+live**: check `git ls-remote --heads origin` before claiming again, and delete your own branch if it should not stand. On a rejected push, one refusal showing git's error where three renumberings stood; a wrapper that matched the text
+`Lost the allocation race 3 times` to detect a rejected push will no longer see it (that text now means three genuine rivals). Called in-process, as in 023's note, a refusal does not throw: check `$LASTEXITCODE`.
+
+**What does NOT change.** The output and exit code of every successful claim, the `-Json` object and its fields (a refusal is still a message and exit 1 with no object), the seven messages of feature 023, the preflight order, the number
+allocation, the delegation to the stock script, and the genuine lost-race loop (warn, withdraw, renumber, push again, up to three attempts). This **supersedes** the "known limits" paragraph of feature 023's note above, which stands as history
+and is not edited.
+
+**Known limits, stated rather than hidden.** (1) A push that reports failure but landed (a timeout after the remote accepted it) cannot be told from a rejection by its exit code; the rejected-push message says to check `origin` for the branch. (2) The
+`git for-each-ref` in the number allocation still reads a failure as "no local branches"; the remote ledger and `specs/` still bound the number, so it can lower the choice but not below a number they show. (3) The local `git branch -m` and the
+spec directory rename of a renumbering are unchecked. (4) The wording of the messages is not machine-parsed and may change in a later update. (5) After any refusal the working copy is left on the new branch with its spec directory: return to
+`main` and delete the local branch if the remote shows the claim did not land.
+
+**What was measured.** Each of FitForge, FlowBoard and ExpenseTracker was cloned from its local directory (nothing in place touched, no network, and nothing pushed to the real projects: each clone's `origin` was a bare copy made in a scratch area,
+which is what let a claim **with a push** be run, as feature 023's measurement could not). The kit before this feature (`1d5914c`) was applied with `update-kit.ps1`, `build-digests.ps1` was run and committed, then the kit as it stands was applied the
+same way. In each state, on a fresh clone of `main`, with the clone reset between runs: a successful claim with `-NoPush` and one with a push; three refusals of feature 023 (a dirty working tree, a branch other than `main`, an `origin` that cannot be fetched);
+three states this feature names (the first ledger read failing, the read after a push that succeeded failing, a push rejected); `doc-lint.ps1`; and `ritual-checks.ps1 -Branch main`. **Both successful claims and the three refusals of 023 printed the same
+bytes before and after in all three projects, and `doc-lint.ps1` was `OK` and byte-identical.** The three new states differ, as intended, and identically in the three projects: a failed first read went from a PowerShell error record to
+`git ls-remote failed — cannot read the remote ledger. Nothing was claimed.`; a failed read after a push that succeeded went from the error record, **with the claim live on `origin`**, to the refusal that says so and names the branch; a rejected push went from
+three concurrent-claim warnings and `Lost the allocation race 3 times` to one refusal showing git's text. Every one of them exited 1 before and after (at a terminal; the 128 is particular to the kit's harness launcher). No `ritual-checks` member word
+moved and `ritual-checks.ps1 -Branch main` was `RESULT OK` in every project and state; the only line that moved was the recorded kit commit in `verify-kit`. The real projects were checked afterwards: no `probe` branch in any of them and the same working-tree
+state as before. **Not exercised, and said so:** the withdrawal and re-fetch refusals (they need a rival claim to appear between allocation and the push, which no adopted project can be made to do; the kit's fixtures prove them), anything run through a wrapper
+that starts the script as a child process, and the push a *rejected-for-permission* remote would answer with (the rejection measured here is an unreachable push URL). Every line that changed is listed in the notes of feature 030 in the kit repository.
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1` and `scripts/ritual-checks.ps1`. If a wrapper of yours matched `Lost the allocation race 3 times` or the error record of a failed ledger read, match the new messages
+instead. If a claim ends on `the claim may already be live on origin`, check `git ls-remote --heads origin` before you claim again. Nothing in your configuration needs to change.
+
+<!-- digest: claim-feature names a failed ledger read, rejected push, withdrawal or re-fetch (exit 1); after a push: may be live. -->
 
 ## 3. Other surgical files
 

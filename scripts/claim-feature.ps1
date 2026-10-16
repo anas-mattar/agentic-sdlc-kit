@@ -158,14 +158,21 @@ if ($hasRemote -and -not $NoPush) {
 
         # Lost the race. Withdraw our remote branch if it landed, then renumber.
         Write-Warning "Number $numPrefix was claimed concurrently ($($rivals -join ', ')) — renumbering."
-        if ($pushOk) { git push origin --delete $branch 2>$null | Out-Null }
+        # A withdrawal that fails leaves our abandoned number on origin as a live claim, so it is named and not
+        # stepped over (feature 030, plan P4).
+        if ($pushOk) {
+            git push origin --delete $branch 2>$null | Out-Null
+            if ($LASTEXITCODE -ne 0) { Stop-Refused "Lost the allocation race but could not withdraw $branch from origin — delete it by hand: git push origin --delete $branch." }
+        }
         if ($attempt -eq $MaxAttempts) {
             Stop-Refused "Lost the allocation race $MaxAttempts times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation)."
         }
+        $gone = if ($pushOk) { "$branch was withdrawn from origin" } else { "$branch never reached origin" }
+        # The first fetch refuses on failure; this one used to go on and allocate from refs it had not refreshed.
         git fetch origin --prune 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) { Stop-Refused "git fetch origin failed — cannot claim against an unreachable ledger. $gone." }
         $remoteHeads = @(Get-RemoteFeatureHeads)
         if ($script:LedgerReadFailed) {
-            $gone = if ($pushOk) { "$branch was withdrawn from origin" } else { "$branch never reached origin" }
             Stop-Refused "git ls-remote failed — cannot read the remote ledger. $gone; nothing of ours is claimed, and the local branch and its spec directory remain."
         }
         $newNumber = Get-NextFreeNumber -RemoteHeads $remoteHeads
