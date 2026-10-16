@@ -105,6 +105,13 @@
       meets a rival with its own number after each of its attempts, which no stub can do (a stub
       runs once, before the first push): the state behind claim-feature.ps1's 'lost the allocation
       race 3 times' refusal (CLF-007). It needs "origin" and is refused without one.
+    - "originPushFailsAfterLanding": N makes the Nth push to origin land and then report failure (feature
+      030, plan P5 as amended): origin's receive-pack is wrapped in a counting script that runs the real
+      one and exits 1 on call N. The branch is on origin afterwards and "git push" exits non-zero: the
+      state in which a push errors after the remote accepted it, which a claim must read as landed. A
+      deletion is a push too, so calls are counted across pushes and deletions (a claim's first push is
+      call 1). It needs "origin", and N must be a whole number of at least 1. It sets the same remote
+      option as "originRivalOnPush", so the two are refused together rather than one silently winning.
     - "originDenyDeletes": true makes origin refuse to delete a branch (feature 030, plan P5): git's own
       receive.denyDeletes is set on the repository origin points at, so 'git push origin --delete <branch>'
       is rejected by the remote ('deletion prohibited') while an ordinary push still lands. That is the
@@ -207,6 +214,18 @@ function New-FixtureRepo {
         }
         if (-not ($Recipe.originFailCall -is [int] -or $Recipe.originFailCall -is [long]) -or $Recipe.originFailCall -lt 1) {
             throw "fixture 'originFailCall' must be a whole number of at least 1 (the Nth read of origin's refs fails), got '$($Recipe.originFailCall)'. Refused rather than silently ignored."
+        }
+    }
+
+    if ($Recipe.PSObject.Properties.Name -contains 'originPushFailsAfterLanding' -and $null -ne $Recipe.originPushFailsAfterLanding) {
+        if (-not ($Recipe.PSObject.Properties.Name -contains 'origin' -and $Recipe.origin)) {
+            throw "fixture 'originPushFailsAfterLanding' needs 'origin': a push to a remote that then errors belongs to a remote, and there is none. Refused rather than silently ignored."
+        }
+        if (-not ($Recipe.originPushFailsAfterLanding -is [int] -or $Recipe.originPushFailsAfterLanding -is [long]) -or $Recipe.originPushFailsAfterLanding -lt 1) {
+            throw "fixture 'originPushFailsAfterLanding' must be a whole number of at least 1 (the Nth push lands and then fails), got '$($Recipe.originPushFailsAfterLanding)'. Refused rather than silently ignored."
+        }
+        if ($Recipe.PSObject.Properties.Name -contains 'originRivalOnPush' -and $Recipe.originRivalOnPush) {
+            throw "fixture 'originPushFailsAfterLanding' cannot be combined with 'originRivalOnPush': both wrap origin's receive-pack, so one would silently replace the other. Refused rather than silently ignored."
         }
     }
 
@@ -470,6 +489,23 @@ function New-FixtureRepo {
                 '  case "$b" in *-rival) continue ;; esac',
                 '  git -C "$1" branch "${b%%-*}-rival" main 2>/dev/null',
                 'done',
+                'exit $rc'
+            )
+            [System.IO.File]::WriteAllText($wrapper, (($lines -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+            Invoke-FixtureGit -RepoPath $root -Arguments @('config', 'remote.origin.receivepack', "sh '$($wrapper.Replace('\', '/'))'") | Out-Null
+        }
+        if ($Recipe.PSObject.Properties.Name -contains 'originPushFailsAfterLanding' -and $null -ne $Recipe.originPushFailsAfterLanding) {
+            # The real receive-pack runs to completion (so the branch lands); the Nth call then exits 1.
+            $wrapper = Join-Path (Join-Path $root '.git') 'fixture-receive-pack-fail.sh'
+            $lines = @(
+                '#!/bin/sh',
+                '# Fixture wrapper (feature 030, plan P5 as amended): the Nth push lands and then reports failure.',
+                'f="$(dirname "$0")/fixture-receive-pack-fail.count"',
+                'n=$(cat "$f" 2>/dev/null || echo 0)',
+                'n=$((n + 1))',
+                'echo "$n" > "$f"',
+                'git-receive-pack "$@"; rc=$?',
+                "if [ `"`$n`" = `"$([int]$Recipe.originPushFailsAfterLanding)`" ]; then exit 1; fi",
                 'exit $rc'
             )
             [System.IO.File]::WriteAllText($wrapper, (($lines -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))

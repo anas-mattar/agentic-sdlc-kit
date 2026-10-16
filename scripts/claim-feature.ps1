@@ -46,16 +46,20 @@ function Write-Info([string]$Message) {
 # $null, so a failure signalled by returning $null could not be told from a repository with no NNN-* branch
 # (feature 030, plan P1). Every caller checks it before it trusts the list.
 $script:LedgerReadFailed = $false
+# The commit each NNN-* branch on origin points at, from the same read (name -> sha), so a caller can tell our own push
+# from another claimant's branch of the same name without a second call (feature 030, phase 3 review finding F1).
+$script:LedgerShas = @{}
 
 function Get-RemoteFeatureHeads {
     # Returns the NNN-* branch names currently on origin (authoritative ledger). A failed read returns nothing and
     # sets $script:LedgerReadFailed; the caller refuses, in words that depend on what is already on origin.
     $script:LedgerReadFailed = $false
+    $script:LedgerShas = @{}
     $heads = git ls-remote --heads origin 2>$null
     if ($LASTEXITCODE -ne 0) { $script:LedgerReadFailed = $true; return @() }
     $names = @()
     foreach ($line in $heads) {
-        if ($line -match 'refs/heads/(\d{3,}-\S+)$') { $names += $matches[1] }
+        if ($line -match 'refs/heads/(\d{3,}-\S+)$') { $names += $matches[1]; $script:LedgerShas[$matches[1]] = ("$line" -split '\s+')[0] }
     }
     return $names
 }
@@ -150,24 +154,42 @@ if ($hasRemote -and -not $NoPush) {
         }
         $rivals = @($ledger | Where-Object { $_ -match "^$numPrefix-" -and $_ -ne $branch })
 
-        if ($pushOk -and $rivals.Count -eq 0) { $pushed = $true; break }
+        # Did our push reach origin? A push can exit non-zero after the remote accepted it, so the ledger just read is
+        # better evidence than the exit code: but only the COMMIT is ours. Our number was free when it was allocated, our
+        # branch NAME is not (a second claimant with the same number and short name allocates the same one), so a branch
+        # of our name at another commit is theirs: not landed, and never withdrawn (feature 030, plan P3 as amended;
+        # review finding F1 of phase 1, and F1 of phase 3).
+        $landed = $pushOk
+        if (-not $landed -and $script:LedgerShas.ContainsKey($branch)) {
+            $tip = @(git rev-parse --verify --quiet "refs/heads/$branch" 2>$null)
+            $landed = ($LASTEXITCODE -eq 0) -and ("$($tip[0])".Trim() -eq $script:LedgerShas[$branch])
+        }
+
+        if ($landed -and $rivals.Count -eq 0) {
+            if (-not $pushOk) {
+                $said = @($pushText | Where-Object { $_ -match '^(error|fatal|remote):' })
+                if ($said.Count -eq 0) { $said = $pushText }
+                Write-Warning "git push of $branch reported an error, but $branch is on origin and no rival carries number $numPrefix — treating the claim as made. git said:`n$($said -join "`n")"
+            }
+            $pushed = $true; break
+        }
 
         # A push the remote rejected, with no rival, is the remote's answer and not a lost race: renumbering and
         # pushing again would only repeat it, three times, and end on advice (renumber by hand) that does not apply.
-        if (-not $pushOk -and $rivals.Count -eq 0) { Stop-Refused "$rejection" }
+        if (-not $landed -and $rivals.Count -eq 0) { Stop-Refused "$rejection" }
 
         # Lost the race. Withdraw our remote branch if it landed, then renumber.
         Write-Warning "Number $numPrefix was claimed concurrently ($($rivals -join ', ')) — renumbering."
         # A withdrawal that fails leaves our abandoned number on origin as a live claim, so it is named and not
         # stepped over (feature 030, plan P4).
-        if ($pushOk) {
+        if ($landed) {
             git push origin --delete $branch 2>$null | Out-Null
             if ($LASTEXITCODE -ne 0) { Stop-Refused "Lost the allocation race but could not withdraw $branch from origin — delete it by hand: git push origin --delete $branch." }
         }
         if ($attempt -eq $MaxAttempts) {
             Stop-Refused "Lost the allocation race $MaxAttempts times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation)."
         }
-        $gone = if ($pushOk) { "$branch was withdrawn from origin" } else { "$branch never reached origin" }
+        $gone = if ($landed) { "$branch was withdrawn from origin" } else { "$branch never reached origin" }
         # The first fetch refuses on failure; this one used to go on and allocate from refs it had not refreshed.
         git fetch origin --prune 2>$null | Out-Null
         if ($LASTEXITCODE -ne 0) { Stop-Refused "git fetch origin failed — cannot claim against an unreachable ledger. $gone." }

@@ -375,6 +375,56 @@ Describe 'originRivalOnPush fixtures (feature 030, plan P5)' {
     }
 }
 
+Describe 'originPushFailsAfterLanding fixtures (feature 030, plan P5 as amended)' {
+    # The chosen push must land AND exit non-zero, and no other push may fail, or a fixture using the field
+    # would test an ordinary rejection (CLF-012) or an ordinary success instead of a push that errored after
+    # the remote accepted it.
+
+    BeforeAll {
+        $script:Base = [pscustomobject]@{
+            commits                     = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            origin                      = 'self'
+            originPushFailsAfterLanding = 1
+        }
+    }
+
+    It 'lands the Nth push, fails it, and lets every other push succeed' {
+        $root = New-FixtureRepo -Recipe $script:Base
+        try {
+            & git -C $root branch first 2>$null | Out-Null
+            & git -C $root branch second 2>$null | Out-Null
+            & git -C $root push origin first 2>$null | Out-Null
+            $firstExit = $LASTEXITCODE
+            & git -C $root push origin second 2>$null | Out-Null
+            $secondExit = $LASTEXITCODE
+            $firstExit | Should -Not -Be 0
+            $secondExit | Should -Be 0
+            $heads = (& git -C $root ls-remote --heads origin) | ForEach-Object { ($_ -split "`t")[1] -replace '^refs/heads/', '' }
+            ($heads | Sort-Object) -join ',' | Should -Be 'first,main,second'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'leaves origin alone when the recipe does not ask' {
+        $recipe = $script:Base.PSObject.Copy(); $recipe.PSObject.Properties.Remove('originPushFailsAfterLanding')
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            & git -C $root config remote.origin.receivepack 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses the field with no origin, a bad number, or a rival wrapper, instead of ignoring it' {
+        $commits = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+        { New-FixtureRepo -Recipe ([pscustomobject]@{ commits = $commits; originPushFailsAfterLanding = 1 }) } | Should -Throw -ExpectedMessage "*'originPushFailsAfterLanding' needs 'origin'*"
+        foreach ($bad in 0, -1, 'one') {
+            $recipe = $script:Base.PSObject.Copy(); $recipe.originPushFailsAfterLanding = $bad
+            { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'originPushFailsAfterLanding' must be a whole number*"
+        }
+        $recipe = $script:Base.PSObject.Copy(); $recipe | Add-Member -NotePropertyName originRivalOnPush -NotePropertyValue $true
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*cannot be combined with 'originRivalOnPush'*"
+    }
+}
+
 Describe 'originDenyDeletes fixtures (feature 030, plan P5)' {
     # The remote must refuse a deletion and accept an ordinary push, or a fixture using the field would fail at
     # the push (a different refusal) instead of at the withdrawal it names.
