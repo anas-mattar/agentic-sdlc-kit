@@ -2,7 +2,9 @@
 
 **Feature Branch**: `030-claim-ledger-read-named-state`
 **Created**: 2026-10-16
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-16
+**Status**: Approved 2026-10-16 (owner: anas.m) <!-- D1 A, D2 A, D3 A -->
+**Owner decisions**: anas.m, 2026-10-16 — D1 A (the loop is widened: read failure, rejected push, withdrawal and re-fetch), D2 A (a rejected push is refused at once), D3 A (two phases)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-036: Get-RemoteFeatureHeads in scripts/claim-feature.ps1 ends in a terminating throw when git ls-remote fails, also after a push that succeeded; a push the remote refuses is read as a lost race and passes over three numbers; the re-fetch in the race loop is unchecked. The same species feature 023 closed for the seven Write-Error refusals (GAP-031). Name each state, prove each with a fixture, and tell adopters."
@@ -214,7 +216,7 @@ stated reason and a `pass` that differs in one condition.
 
 ## Decisions for the owner
 
-Each has a recommendation; none is taken until the owner approves this spec.
+Each has a recommendation. **Decided by the owner (anas.m, 2026-10-16): D1 A, D2 A, D3 A**, as recommended.
 
 - **D1 - how far the loop is widened.** (A, recommended) The read failure (FR-001/002), the rejected push (FR-003) and
   the withdrawal and re-fetch (FR-004): one loop, one species, and the withdrawal failure is the only path that leaves a

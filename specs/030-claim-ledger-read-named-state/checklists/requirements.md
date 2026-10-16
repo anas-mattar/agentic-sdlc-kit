@@ -30,5 +30,5 @@
 
 ## Notes
 
-- Status is Draft: the owner approves the spec; the author never does (constitution I).
+- Approved by the owner (anas.m, 2026-10-16) with D1 A, D2 A, D3 A; the author never approves (constitution I).
 - The throw's exit code is unmeasured; phase 1 measures it before any change.
