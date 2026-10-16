@@ -2,7 +2,9 @@
 
 **Feature Branch**: `033-update-kit-unknown-recorded-commit`
 **Created**: 2026-10-16
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-16
+**Status**: Approved 2026-10-16 (owner: anas.m) <!-- D1 A, D2 A, D3 A -->
+**Owner decisions**: anas.m, 2026-10-16 — D1 A (every surgical file reported `no baseline - review all` with one line naming the unknown commit, the run otherwise as today), D2 A (the surgical pass and the one cause line; the verbatim conflicts keep their wording), D3 A (two phases)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-039: update-kit.ps1 names a recorded kit commit that is unknown to the kit clone instead of printing an empty surgical report: git log recorded..HEAD with 2>$null fails, the surgical section vanishes, and the record then advances past the lost report."
@@ -137,7 +139,9 @@ finished until a test reaches it.
 
 ## Decisions for the owner
 
-Each has a recommendation, given as a recommendation and not a decision.
+**Amendment approved by**: anas.m, 2026-10-16
+
+Each has a recommendation. **Decided by the owner (anas.m, 2026-10-16): D1 A, D2 A, D3 A**, as recommended.
 
 - **D1 - what the run does about an unknown recorded commit.** (A, recommended) Report every surgical file `no baseline - review all`
   with one line naming the unknown commit, and go on as today (the record advances; exit 2 while anything is pending): the
