@@ -1,0 +1,2 @@
+scope-check: not applicable (commit <SHA> carries no 'phase N' token — not a phase commit)
+scope-check: PASS phase 1 commit <SHA> (1 file(s))

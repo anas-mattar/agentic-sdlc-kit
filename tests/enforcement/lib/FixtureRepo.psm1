@@ -47,6 +47,10 @@
     - "truncateCommit" does the same to a COMMIT object named by a rev ("HEAD~1"), which is the
       unreadable-parent state: the commit is still referenced and still resolves by name, and
       reading it fails. A check that walks parents meets this one, not a corrupt blob (GAP-027).
+    - "commitGraph": true writes the repository's commit-graph after the commits are made (feature 034, GAP-040). With a graph
+      git answers `merge-base` from it without reading the commit objects, so a commit object that is then truncated ("truncateCommit")
+      leaves `merge-base` succeeding while `rev-list` over the range fails: the only way the commit-list read can fail after the merge
+      base was read. It runs before the truncation, and a truncated commit that is in the graph is still unreadable to `rev-list`.
     - "uncommitted" writes files after the last commit and leaves them unstaged, which is the
       state the "exists only in a working tree" rules refuse.
     - "rename" maps old path -> new path and stages it with 'git mv', so git records R and not
@@ -530,6 +534,11 @@ function New-FixtureRepo {
             $target = Join-Path $root $rel
             if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Force }
         }
+    }
+
+    # Before any truncation: the graph is written from readable commits, and the damage is done to the object store after it.
+    if ($Recipe.PSObject.Properties.Name -contains 'commitGraph' -and $Recipe.commitGraph) {
+        Invoke-FixtureGit -RepoPath $root -Arguments @('commit-graph', 'write', '--reachable') | Out-Null
     }
 
     if ($Recipe.PSObject.Properties.Name -contains 'truncateBlob' -and $Recipe.truncateBlob) {

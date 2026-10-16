@@ -1996,8 +1996,7 @@
       "summary": "under -All, a commit list git cannot read (git rev-list over the range fails after the merge base was read) fails the run with an ERROR instead of reading as an empty range",
       "law": "docs/sdlc/review-process.md; constitution X (territory rule); specs/034-scope-check-unchecked-reads FR-001, FR-003; roadmap GAP-040",
       "emitAnchor": "could not list the commits since the merge base",
-      "exemption": "Needs git rev-list <base>..HEAD to fail after git merge-base HEAD <trunk> succeeded. merge-base walks every commit from the tip down to the base, which is exactly what rev-list reads for the range, so every damage tried (the tip commit deleted or truncated, a middle commit deleted) fails the merge base first, and deleting a commit OLDER than the base fails merge-base (exit 255) while rev-list exits 0, the opposite order (measured, notes.md of feature 034). The line is kept as defence in depth, so a later change to the merge-base read cannot reopen the hole.",
-      "notes": "Added in feature 034 and exempt from the start (plan P5), disclosed in Complexity Tracking."
+      "notes": "Added in feature 034. First recorded as exempt (the plan believed every damage fails git merge-base first); the phase 1 review (finding F1) showed the state is reachable: with a commit-graph written (recipe field commitGraph, feature 034), git merge-base answers from the graph while a truncated tip commit makes git rev-list exit 128. The fail direction writes the graph and then truncates the tip commit; pass is the same readable. Shares nothing with SCOPE-031, whose fail has no graph (merge-base itself fails)."
     },
     {
       "id": "RIT-007",
@@ -2117,8 +2116,7 @@
       "summary": "under -All, a code repository whose commit list git cannot read fails the repository with an ERROR instead of reading as an empty range",
       "law": "specs/034-scope-check-unchecked-reads FR-001, FR-003, FR-004; specs/012-cross-repo-scope-check/contracts/scope-check-repos-cli.md; roadmap GAP-040",
       "emitAnchor": "could not list the commits since the merge base",
-      "exemption": "Needs git rev-list <base>..<branch> to fail after the merge base was read. Same reasoning as SCOPE-032: merge-base walks the objects rev-list reads, so every damage tried fails the merge base first.",
-      "notes": "Added in feature 034 and exempt from the start (plan P5), disclosed in Complexity Tracking."
+      "notes": "Added in feature 034. First recorded as exempt, like SCOPE-032, and made real after the phase 1 review (finding F1): the nested recipe writes the code repository's commit-graph (commitGraph) and then truncates its tip commit (truncateCommit), so git merge-base succeeds and git rev-list over the range exits 128. pass is the same readable."
     },
     {
       "id": "REPOS-033",
