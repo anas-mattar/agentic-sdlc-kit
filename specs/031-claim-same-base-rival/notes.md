@@ -41,3 +41,16 @@ What does separate the two claimants is the push's own status: only the claimant
 (porcelain `*`); the other sees `[up to date]` (porcelain `=`). A script-only variant of B's intent (git decides, the claim
 stays uncommitted) is therefore to read `git push --porcelain` and treat `=` for our own new branch as "the name already
 existed", that is, a rival. This is not yet in the spec: D1 as approved names the lease.
+
+### The rejected-push text under `--porcelain` (2026-10-16, git 2.55.0.windows.5)
+
+A bare `origin` whose `pre-receive` hook exits 1, one push of a new branch:
+
+| | stdout | stderr |
+|---|---|---|
+| `git push -u origin <b>` | `To <url>` and ` ! [remote rejected] <b> -> <b> (pre-receive hook declined)` are on stderr with the rest | `remote: denied by hook`, `To <url>`, ` ! [remote rejected] <b> -> <b> (pre-receive hook declined)`, `error: failed to push some refs to '<url>'` |
+| `git push --porcelain -u origin <b>` | `To <url>`, `!<TAB>refs/heads/<b>:refs/heads/<b><TAB>[remote rejected] (pre-receive hook declined)`, `Done` | `remote: denied by hook`, `error: failed to push some refs to '<url>'` |
+
+So `--porcelain` changes the layout of the git text quoted in feature 030's rejected-push refusal (plan P6). The stub
+`create-new-feature.ps1` of `CLF-017` already plants a same-name branch on `origin` at `main`'s sha (`git -C origin.git branch $b main`),
+after the ledger read and before the push, which is the race window; plan P7 uses it instead of a new harness recipe field.
