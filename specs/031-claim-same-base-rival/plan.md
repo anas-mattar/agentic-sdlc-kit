@@ -66,13 +66,18 @@ measurement on adopted-project clones, and depends on phase 1 only for the text 
   push that exited non-zero. A same-name, same-sha branch that appears **before** the ledger read needs no change: allocation
   already sees the name and takes the next number.
 - **P5 - tests (FR-005).** Written first, shown failing on the parent commit:
+
+  **Amendment approved by**: anas.m, 2026-10-16
   - **`CLF-018`** (`fail`, `pass`): the stub `create-new-feature.ps1` pushes `NNN-S` to `origin` at `main`'s sha after the
     ledger read and before the push (the `CLF-017` mechanism: `git -C origin.git branch $b main`). `fail` (this feature's
     behaviour) is the claim renumbered to the next number with the same-name branch left on `origin`, exit 0; `pass` is the same
     fixture without the rival, a claim that succeeds with the output of today. On the parent the first prints `CLAIMED:` for a
     branch it did not push.
-  - **`CLF-019`**: the stub plants the rival on every attempt, so the loop ends in `Lost the allocation race 3 times`, exit 1,
-    and every planted branch is still on `origin` (FR-002).
+  - **`CLF-019` is not built** (amended 2026-10-16, phase 1): the stub runs once per claim, before the first push, so it can plant the
+    first number only, a branch planted for a later number is seen by the ledger read and skipped by the allocation, and nothing on the
+    server can plant the name being pushed before the push is advertised. The loop that ends in the three-times refusal is the existing
+    one `CLF-007` covers with a numeric rival at every attempt, and this feature does not change it; `CLF-018` proves the new state
+    and that nothing is withdrawn (origin refuses deletions in both directions).
   - A genuine rival of another short name and one renumbering are pinned by the existing cases, unchanged.
   Each rule is inventoried in `tests/enforcement/rules.json` with its `emitAnchor`; the coverage report must show no unowned site.
 - **P6 - the rejected-push text (the carve-out).** `--porcelain` moves git's `! [remote rejected] ...` line from stderr to stdout
@@ -114,10 +119,12 @@ No `research.md`, `data-model.md` or `contracts/`: the script has no data model,
 
 ### Source Code (repository root)
 
+**Amendment approved by**: anas.m, 2026-10-16
+
 ```text
 scripts/claim-feature.ps1                 # phase 1: P1 to P4 (the push at the claim loop)
-tests/enforcement/rules.json              # phase 1: CLF-018, CLF-019 (and the re-expected cases of P6)
-tests/enforcement/cases/claim-feature/    # phase 1: CLF-018, CLF-019; P6's re-expected expectations
+tests/enforcement/rules.json              # phase 1: CLF-018 (and the re-expected cases of P6)
+tests/enforcement/cases/claim-feature/    # phase 1: CLF-018; P6's re-expected expectations
 adoption/updating.md                      # phase 2: flow-down note
 docs/roadmap.md                           # phase 2
 docs/digests/**                           # phase 2, only if a digest-marked document changes
@@ -128,9 +135,11 @@ docs/digests/**                           # phase 2, only if a digest-marked doc
 
 ## Testing Strategy
 
+**Amendment approved by**: anas.m, 2026-10-16
+
 - Each rule is written as a failing fixture and shown failing on the parent commit, then the behaviour lands. The harness runs
   the script with the case's working directory set to the fixture (`noRoot`).
-- `CLF-018` and `CLF-019` differ from their neighbours only in the planted branch; the `CLF-004` success cases and every other
+- `CLF-018` differs from its neighbours only in the planted branch; the `CLF-004` success cases and every other
   `CLF-001` to `CLF-017` case are unchanged except the ones P6 names.
 - The full harness runs on an isolated checkout of the final commit (feature 022's method); `-Case CLF-` and `-Case TERR-` and
   `-Case RIT-` per phase. The baseline (1805 on `95d4725`, as feature 030 left it) is re-taken on the parent commit and recorded.

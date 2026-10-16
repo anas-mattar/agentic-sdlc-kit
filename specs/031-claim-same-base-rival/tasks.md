@@ -13,8 +13,8 @@ amendments of FR-004 and FR-005 are recorded in the spec); tasks.md approved (an
 
 **Tests**: the state ships with a passing and a failing harness fixture in the same phase as the behaviour, expectations
 written by hand (feature 015). New fixtures are run against the parent commit before the code changes and must fail there, so
-each is shown to measure something. Phase evidence goes in `notes.md`, never here. Rule ids: `CLF-018` and `CLF-019`
-(`CLF-001` to `CLF-017` are features 023 and 030's).
+each is shown to measure something. Phase evidence goes in `notes.md`, never here. Rule id: `CLF-018`
+(`CLF-001` to `CLF-017` are features 023 and 030's; `CLF-019` is not built, plan P5 as amended).
 
 **Organization**: two phases, each independently revertible; phase 2 must be reverted before phase 1. The full harness is run
 on an isolated checkout of the final commit, never in a working directory someone is using.
@@ -42,15 +42,16 @@ the layout of git's own text quoted inside the rejected-push refusal (plan P6, a
       exists at our sha (`=`), of a rejected push, and of a push that lands and then exits non-zero (feature 030's
       `originPushFailsAfterLanding`); whether the flag and the ref are in the same columns on both; and whether
       `git branch --unset-upstream` exits non-zero on a branch with no upstream.
+
+**Amendment approved by**: anas.m, 2026-10-16
+
 - [ ] T003 Write the fixtures first (plan P5, Testing Strategy), under `tests/enforcement/cases/claim-feature/`: a `fail` and
       a `pass` for `CLF-018` (the stub `create-new-feature.ps1` pushes `NNN-S` to `origin` at `main`'s sha after the ledger read,
-      as `CLF-017`'s stub does, against the same fixture without the rival) and a `fail` for `CLF-019` (the stub plants the rival
-      on every attempt, so the claim ends in `Lost the allocation race 3 times`, exit 1, with every planted branch still on
-      `origin`). Expectations by hand; the warning text of P2 is pinned byte for byte; remember the harness reads stdout and
+      as `CLF-017`'s stub does, against the same fixture without the rival) with `originDenyDeletes` in both directions, so an attempted withdrawal of the foreign branch would show. Expectations by hand; the warning text of P2 is pinned byte for byte; remember the harness reads stdout and
       then stderr. Run them on the parent commit and record that each `fail` fails there for the stated reason (the parent prints
       `CLAIMED:` for a branch it did not push) and each `pass` passes. List in `notes.md` every existing case whose
       `expected.txt` quotes git's rejection lines, which T006 re-expects.
-- [ ] T004 Bring the new rules into the coverage sweep: add `CLF-018` and `CLF-019` to `tests/enforcement/rules.json` with each
+- [ ] T004 Bring the new rules into the coverage sweep: add `CLF-018` to `tests/enforcement/rules.json` with each
       rule's anchor and law; add an entry to `tests/enforcement/emission-idioms.json` only if the sweep reports a new site. Run
       the sweep and classify anything else it reports.
 - [ ] T005 Edit `scripts/claim-feature.ps1` (plan P1 to P4): push with `--porcelain`, call the push a same-name rival when it
