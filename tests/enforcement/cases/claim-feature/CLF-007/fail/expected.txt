@@ -1,7 +1,7 @@
 Allocating feature number 001 (next free across local + remote + specs/).
-WARNING: Number 001 was claimed concurrently () — renumbering.
+WARNING: Number 001 was claimed concurrently (001-rival) — renumbering.
 Renumbered: 001-probe -> 002-probe
-WARNING: Number 002 was claimed concurrently () — renumbering.
+WARNING: Number 002 was claimed concurrently (002-rival) — renumbering.
 Renumbered: 002-probe -> 003-probe
-WARNING: Number 003 was claimed concurrently () — renumbering.
+WARNING: Number 003 was claimed concurrently (003-rival) — renumbering.
 Lost the allocation race 3 times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation).

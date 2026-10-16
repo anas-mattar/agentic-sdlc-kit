@@ -32,20 +32,20 @@ feature 023's seven refusals print what they printed before. The withdrawal and 
 - `scripts/claim-feature.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, the coverage report's exempt-rule
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count, the coverage report's exempt-rule
       count and its site counts for `claim-feature.ps1`, and, run as `pwsh -File scripts/claim-feature.ps1 -ShortName probe
       "a probe"` in purpose-built directories, the exit code and output of (a) a ledger read that fails (the throw: measure its
       exit under `pwsh -File` and through the harness's launcher, which the spec leaves unmeasured on purpose), (b) the
       existing `CLF-007` push that fails with no rival (three warnings and the three-times refusal), and (c) a successful claim
       with no origin, with an origin that takes the push, with `-NoPush`, and with one genuine renumbering, as saved text for the
       byte comparison.
-- [ ] T002 Probe the harness fields (plan P5) in throwaway fixtures and record the result in `notes.md` before any rule
+- [x] T002 Probe the harness fields (plan P5) in throwaway fixtures and record the result in `notes.md` before any rule
       depends on it: (a) a counting wrapper on `remote.origin.uploadpack` that runs the real `git-upload-pack` and exits
       non-zero on the chosen call, checking the call order (first fetch, first read, then each later read and re-fetch) on this
       machine and on a CI runner; if it misbehaves, the `PATH` shim fallback; (b) a stub `create-new-feature.ps1` that creates a
       branch with our number in the nested origin as a rival; (c) whether a `pre-push` hook can make a rival appear at every
       attempt, which decides `CLF-007` (plan P6).
-- [ ] T003 Write the fixtures first (plan P2, P3, P6, Testing Strategy), under `tests/enforcement/cases/claim-feature/`: a
+- [x] T003 Write the fixtures first (plan P2, P3, P6, Testing Strategy), under `tests/enforcement/cases/claim-feature/`: a
       `fail` and a `pass` for each of `CLF-008` (the first read fails against one that succeeds), `CLF-009` (the read after a
       push that succeeded fails against one that does not), `CLF-010` (the read after a push that failed fails against one
       that does not), `CLF-011` (the read after a lost race and a withdrawal fails against one that does not; needs T002(b)) and
@@ -55,14 +55,14 @@ feature 023's seven refusals print what they printed before. The withdrawal and 
       harness reads stdout and then stderr. Run them on the parent commit and record that each `fail` fails there for the
       stated reason and each `pass` passes. `CLF-007` keeps its id for the three-rivals state only if T002(c) built it;
       otherwise it is exempt in T005 with a written reason.
-- [ ] T004 Add the `originFailCall` recipe field to `tests/enforcement/lib/FixtureRepo.psm1` (refused without `origin`, with a
+- [x] T004 Add the `originFailCall` recipe field to `tests/enforcement/lib/FixtureRepo.psm1` (refused without `origin`, with a
       self-test in `tests/enforcement/Harness.Tests.ps1`), as probed in T002(a), and the counting wrapper under the case
       directory. Nothing else in the harness changes.
-- [ ] T005 Bring the new rules into the coverage sweep: add `CLF-008` to `CLF-012` (and `CLF-007` as decided in T003) to
+- [x] T005 Bring the new rules into the coverage sweep: add `CLF-008` to `CLF-012` (and `CLF-007` as decided in T003) to
       `tests/enforcement/rules.json` with each rule's anchor and law; update `CLF-007`'s summary, law and notes to say it was
       re-expected; add an entry to `tests/enforcement/emission-idioms.json` only if the sweep reports a new site. If
       `CLF-007` is exempt, say why in its `notes`. Run the sweep and classify anything else it reports.
-- [ ] T006 Edit `scripts/claim-feature.ps1` (plan P1, P2, P3): `Get-RemoteFeatureHeads` reports a failure on a channel
+- [x] T006 Edit `scripts/claim-feature.ps1` (plan P1, P2, P3): `Get-RemoteFeatureHeads` reports a failure on a channel
       separate from an empty ledger; the three callers refuse with the P2 messages through `Stop-Refused`; the push's output is
       captured; the race loop follows the P3 decision table. Lines 140 and 144 and `Get-NextFreeNumber` do not change. Nothing
       else changes: the preflight order, the allocation, the delegation, the genuine lost-race loop, the warnings and the

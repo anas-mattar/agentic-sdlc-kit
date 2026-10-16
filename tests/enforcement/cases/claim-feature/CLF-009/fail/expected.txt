@@ -1,0 +1,2 @@
+Allocating feature number 001 (next free across local + remote + specs/).
+git ls-remote failed after pushing 001-probe — the claim may already be live on origin. Check origin (git ls-remote --heads origin 001-probe) before claiming again; nothing on origin was changed.

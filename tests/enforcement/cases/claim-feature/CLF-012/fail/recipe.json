@@ -1,0 +1,43 @@
+{
+  "description": "CLF-012 fail: origin reads fine but its push URL is a path that does not exist, so every push fails and there is no rival. The refusal is the rejected push, once, with git's text; no concurrent-claim warning, no renumbering. Moved from CLF-007 (feature 030, plan P6). Differs from the pass direction only in that push URL.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        ".specify/scripts/powershell/create-new-feature.ps1": [
+          "# Fixture stub of .specify/scripts/powershell/create-new-feature.ps1. The contract scripts/claim-feature.ps1 reads:",
+          "# it is called as -Json -Number N -ShortName S <description>, must create branch NNN-S and specs/NNN-S/ and",
+          "# leave that branch checked out, and must print {\"BRANCH_NAME\":\"NNN-S\"} on stdout.",
+          "param([switch]$Json, [int]$Number, [string]$ShortName, [Parameter(ValueFromRemainingArguments)]$Rest)",
+          "$b = '{0:000}-{1}' -f $Number, $ShortName",
+          "git checkout -q -b $b",
+          "New-Item -ItemType Directory -Force \"specs/$b\" | Out-Null",
+          "Set-Content \"specs/$b/spec.md\" 'stub'",
+          "[PSCustomObject]@{ BRANCH_NAME = $b } | ConvertTo-Json -Compress"
+        ],
+        ".gitignore": [
+          "/origin.git/"
+        ]
+      }
+    }
+  ],
+  "origin": "origin.git",
+  "nestedRepos": {
+    "origin.git": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "write": {
+            "README.md": "origin\n"
+          }
+        }
+      ]
+    }
+  },
+  "originPushUrl": "no-such-push-target"
+}

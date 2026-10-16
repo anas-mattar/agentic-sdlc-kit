@@ -275,6 +275,106 @@ Describe 'originPushUrl fixtures (feature 023, plan D2 as amended)' {
     }
 }
 
+Describe 'originFailCall fixtures (feature 030, plan P5)' {
+    # A ledger read must fail on a chosen call and on no other, or a fixture using the field would fail at
+    # the first fetch (a different refusal) instead of at the read it names. origin is "self" here: the
+    # fixture's own refs are the ledger, a real ls-remote with nothing mocked.
+
+    BeforeAll {
+        $script:Base = [pscustomobject]@{
+            commits = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            origin  = 'self'
+        }
+    }
+
+    It 'fails the Nth read of origin and no other' {
+        $recipe = $script:Base.PSObject.Copy(); $recipe | Add-Member -NotePropertyName originFailCall -NotePropertyValue 2
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            $codes = foreach ($i in 1..3) { & git -C $root ls-remote --heads origin 2>$null | Out-Null; $LASTEXITCODE }
+            ($codes -join ',') | Should -Be '0,128,0'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'does not count a push, and leaves the working tree clean' {
+        $recipe = $script:Base.PSObject.Copy(); $recipe | Add-Member -NotePropertyName originFailCall -NotePropertyValue 1
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            (& git -C $root status --porcelain) | Should -BeNullOrEmpty
+            & git -C $root branch side 2>$null | Out-Null
+            & git -C $root push origin side 2>$null | Out-Null
+            $LASTEXITCODE | Should -Be 0
+            & git -C $root ls-remote --heads origin 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'leaves origin alone when the recipe does not ask for a failing call' {
+        $root = New-FixtureRepo -Recipe $script:Base
+        try {
+            & git -C $root config remote.origin.uploadpack 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses a failing call with no origin instead of ignoring it' {
+        $recipe = [pscustomobject]@{
+            commits        = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            originFailCall = 2
+        }
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'originFailCall' needs 'origin'*"
+    }
+
+    It 'refuses a call number that is not a whole number of at least 1' {
+        foreach ($bad in 0, -1, 'two') {
+            $recipe = $script:Base.PSObject.Copy(); $recipe | Add-Member -NotePropertyName originFailCall -NotePropertyValue $bad
+            { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'originFailCall' must be a whole number*"
+        }
+    }
+}
+
+Describe 'originRivalOnPush fixtures (feature 030, plan P5)' {
+    # A rival must appear after the push of a numbered branch and carry its number, and must not appear after
+    # an unnumbered one or for a rival itself, or a claim would meet rivals of rivals.
+
+    BeforeAll {
+        $script:Base = [pscustomobject]@{
+            commits           = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            origin            = 'self'
+            originRivalOnPush = $true
+        }
+    }
+
+    It 'creates a rival carrying the number of a numbered branch that was pushed, and only that' {
+        $root = New-FixtureRepo -Recipe $script:Base
+        try {
+            & git -C $root branch 007-thing 2>$null | Out-Null
+            & git -C $root branch side 2>$null | Out-Null
+            & git -C $root push origin 007-thing side 2>$null | Out-Null
+            $LASTEXITCODE | Should -Be 0
+            $heads = (& git -C $root ls-remote --heads origin) | ForEach-Object { ($_ -split "`t")[1] -replace '^refs/heads/', '' }
+            ($heads | Sort-Object) -join ',' | Should -Be '007-rival,007-thing,main,side'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'leaves origin alone when the recipe does not ask for a rival' {
+        $recipe = $script:Base.PSObject.Copy(); $recipe.originRivalOnPush = $false
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            & git -C $root config remote.origin.receivepack 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses a rival with no origin instead of ignoring it' {
+        $recipe = [pscustomobject]@{
+            commits           = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            originRivalOnPush = $true
+        }
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'originRivalOnPush' needs 'origin'*"
+    }
+}
+
 Describe 'merge commits that carry content (feature 026, plan D8)' {
     # A merge could be built, but only with no content of its own, so the rule that grades what a
     # merge AUTHORED (feature 026) had no fixture: review finding F12 of feature 025. These tests pin

@@ -2249,10 +2249,54 @@
       "id": "CLF-007",
       "script": "claim-feature.ps1",
       "function": "(top level)",
-      "summary": "a claim whose pushes keep failing or keep meeting a rival is refused, with its remote claim withdrawn, rather than pushed under a contested number",
-      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003, FR-004 (amended); roadmap GAP-031",
+      "summary": "a claim that meets a rival with its own number after every attempt is refused, with its remote claim withdrawn each time, rather than pushed under a contested number",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-007; specs/023-claim-feature-refusals FR-001; roadmap GAP-031",
       "emitAnchor": "Lost the allocation race",
-      "notes": "Added exempt in feature 023 phase 1 on the premise that only a rival claim appearing between allocation and the check could reach this site. The phase 1 AI review (F1) showed that false: the loop treats a failed push as a lost race, so any push that fails does the same. Fixtured by CLF-007 through the originPushUrl recipe field (a push URL that does not exist, origin reading fine), which the owner approved as a plan amendment (anas.m, 2026-10-12). The fail leaves the local branch and spec directory in place, renumbered twice; only the remote claim is withdrawn, and nothing landed here to withdraw."
+      "notes": "Feature 023 fixtured this site through a push that fails; feature 030 (plan P6) moved that fixture to CLF-012, because a rejected push is no longer a lost race, and rebuilt this one through the originRivalOnPush recipe field: a receive-pack wrapper that makes a rival with the pushed number appear after every push. The fail leaves the local branch and spec directory in place, renumbered twice; each remote claim was withdrawn."
+    },
+    {
+      "id": "CLF-008",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim whose first read of the remote ledger fails is refused in the script's own words and exit 1, saying nothing was claimed, instead of dying in a terminating throw",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-001, FR-002; roadmap GAP-036",
+      "emitAnchor": "git ls-remote failed — cannot read the remote ledger. Nothing was claimed."
+    },
+    {
+      "id": "CLF-009",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim whose ledger read fails after its push succeeded is refused with a message that says the claim may already be live on origin, instead of reporting a failure for a claim that was taken",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-001, FR-002; roadmap GAP-036",
+      "emitAnchor": "git ls-remote failed after pushing",
+      "notes": "Reached through the originFailCall recipe field: the Nth call to origin's upload-pack fails (call 1 the first fetch, call 2 the first read, call 3 the read after the first push)."
+    },
+    {
+      "id": "CLF-010",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim whose push is rejected and whose ledger read then fails is refused as the rejected push, with the unreadable ledger noted, and claims nothing",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-001, FR-002, FR-003; roadmap GAP-036",
+      "emitAnchor": " The ledger could not be read either.",
+      "notes": "The pass direction is the rejected push with a readable ledger, so it also exits 1: it is the rule not firing, not a successful claim."
+    },
+    {
+      "id": "CLF-011",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim that lost a race, withdrew its branch and could not re-read the ledger is refused, saying nothing of ours is on origin and what remains locally, instead of dying in a terminating throw",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-001, FR-002; roadmap GAP-036",
+      "emitAnchor": "; nothing of ours is claimed, and the local branch",
+      "notes": "The rival is created by the case's stub create-new-feature.ps1 as a side effect (the stub is test code the recipe places), so no recipe field is needed for it; the failing read is call 5 (first fetch, first read, read after the push, re-fetch, re-read). The pass direction is the one genuine renumbering."
+    },
+    {
+      "id": "CLF-012",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a push the remote rejects, with no rival claim, is refused once with git's own text and is not read as a lost race: no concurrent-claim warning, no renumbering",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-003; specs/023-claim-feature-refusals FR-003 (amended); roadmap GAP-036",
+      "emitAnchor": "Stop-Refused \"$rejection\"",
+      "notes": "Moved from CLF-007, where feature 023 fixtured the same push (originPushUrl, a path that does not exist) as a lost race. Re-expected by feature 030: three warnings and the three-times refusal became the rejected-push refusal."
     },
     {
       "id": "DIFF-001",

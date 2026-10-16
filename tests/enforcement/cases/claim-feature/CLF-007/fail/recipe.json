@@ -1,5 +1,5 @@
 {
-  "description": "CLF-007 fail: origin still reads fine (fetch and ls-remote use the nested repository) but its push URL is a path that does not exist, so every push fails. The loop treats a failed push as a lost allocation race, withdraws nothing (nothing landed), renumbers twice and refuses on the third attempt, exit 1. Differs from the pass direction only in that push URL.",
+  "description": "CLF-007 fail: a rival claim with our number appears on origin after every push, so the claim loses the race three times, withdraws its own branch each time, renumbers twice and refuses on the third attempt, exit 1. Differs from the pass direction only in the rival. Rebuilt by feature 030 (the push that fails is CLF-012 now).",
   "defaultBranch": "main",
   "commits": [
     {
@@ -25,7 +25,6 @@
     }
   ],
   "origin": "origin.git",
-  "originPushUrl": "no-such-push-target",
   "nestedRepos": {
     "origin.git": {
       "defaultBranch": "main",
@@ -39,5 +38,6 @@
         }
       ]
     }
-  }
+  },
+  "originRivalOnPush": true
 }
