@@ -6,7 +6,9 @@ description: "Task list for feature 034 — the scope checks name a merge base o
 # Tasks: the scope checks name a merge base or commit list they cannot read
 
 **Input**: `specs/034-scope-check-unchecked-reads/spec.md`, `plan.md` (decisions P1–P8), `notes.md` (the measurements)
-**Prerequisites**: spec.md approved (anas.m, 2026-10-17; D1 A, D2 A, D3 A); no new dependency, no new script file, no new harness recipe field.
+**Prerequisites**: spec.md approved (anas.m, 2026-10-17; D1 A, D2 A, D3 A); tasks.md approved (anas.m, 2026-10-17); no new dependency, no new script file, no new harness recipe field.
+
+**Amendment approved by**: anas.m, 2026-10-17
 
 **Tests**: the state ships with a passing and a failing harness fixture in the same phase as the behaviour, expectations written by hand (feature 015). New fixtures
 are run against the parent commit before the code changes and must fail there, so each is shown to measure something. Phase evidence goes in `notes.md`, never here.
