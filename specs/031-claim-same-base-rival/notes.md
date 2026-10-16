@@ -174,3 +174,18 @@ first and the row here then conflicts on one line, resolved by taking `shipped`.
 - Two phase 2 commits therefore exist: `c91472e` (the change) and the follow-up. The full harness runs on `c91472e`; the
   follow-up touches only `adoption/updating.md`, `docs/roadmap.md` and this file, so its count carries, and `scope-check.ps1`
   is run on both.
+
+### T011 Final run on an isolated checkout of `c91472e`
+
+A detached `git worktree` of the phase 2 change commit outside the repository, removed afterwards.
+
+| Measure | Result |
+|---|---|
+| full harness (`tests/enforcement/Run-Tests.ps1`) | **1809 passed, 0 failed, exit 0** (the parent's 1805 plus the 4 cases of `CLF-018`) |
+| `claim-feature.ps1` coverage | 16 of 19 sites fixtured (3 not a rule), no unowned site |
+| `ritual-checks.ps1 -Branch 031-claim-same-base-rival` in that checkout | `RESULT OK` (`doc-lint`, `enforcement-pack`, `scope-check`, `digests`, `roadmap-claims` OK) |
+| `scope-check.ps1 -Commit` | PASS on `894f101` (11 files), `c91472e` (4 files) and `5097ee6` (3 files) |
+
+The review follow-up commit `5097ee6` and the review commit `40c7e5e` touch only `adoption/updating.md`, `docs/roadmap.md` and this
+feature's own files, so the count carries to them; their `ritual-checks` is `RESULT OK`. Open, and not claimed here: the owner's gate
+run, the human review at merge, and the CI run on the Linux runner (the second git).

@@ -94,7 +94,7 @@ closed.
       `claim-feature.ps1 -NoPush -ShortName probe "a probe"` on a fresh clone, `doc-lint.ps1` and `ritual-checks.ps1`; list every
       line that moves in `notes.md` with its cause, and say plainly where none moved. Do not edit kit files while
       `update-kit.ps1` runs.
-- [ ] T011 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed
+- [x] T011 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed
       afterwards): the full harness, `ritual-checks.ps1 -Branch 031-claim-same-base-rival`, and `scope-check.ps1` on each phase
       commit. Record the numbers in `notes.md`. The owner then runs the gate.
 
