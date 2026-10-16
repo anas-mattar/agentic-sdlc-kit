@@ -1376,8 +1376,8 @@ clone is fetched in full, `fetch-depth: 0` on `actions/checkout`).
 and is not edited.
 
 **Known limits, stated rather than hidden.** (1) `git cat-file -e` and `git rev-parse --verify --quiet` give the same exit code for absent and for unreadable, so they cannot be graded on the exit code; the
-arm that follows each is strict by design. (2) A non-zero exit is taken as the whole truth: silent corruption (exit 0, wrong content) is not detectable here. (3) Seven reads have no reachable data state
-(they fail only if a prior read of the same object succeeded and then failed), so they are guarded by their mutation or an injected failure, recorded in the feature's `notes.md`, not by a failing fixture
+arm that follows each is strict by design. (2) A non-zero exit is taken as the whole truth: silent corruption (exit 0, wrong content) is not detectable here. (3) Eleven reads have no reachable data state
+(seven fail only when a commit object is damaged, which breaks `git merge-base` first; three read objects a successful earlier read just read; `git ls-remote` fails only after a successful fetch), so they are guarded by their mutation or an injected failure, recorded in the feature's `notes.md`, not by a failing fixture
 (plan Amendments 1 to 3). (4) One code path, "the code repositories are still compared after a governance diff failure", is correct by reading and shown by no fixture. (5) git's own message is not
 shown, only its exit code, so the output is deterministic. (6) `territory-check.ps1` is not in the replay below (it fetches and lists the live remote); its fixtures cover it. (7) GAP-029 (the script's
 four terminating refusals speak none of the kit's vocabulary) stays open.

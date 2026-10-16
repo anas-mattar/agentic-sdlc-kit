@@ -321,6 +321,7 @@ Script restored byte for byte after each (hash compared). Before the commit, on 
 - **F3 (CONFIRM), the owner's choice**: "the code repositories are still compared after a governance diff failure" is shown by no fixture (U3 uncaught, recorded above); correct by reading. The owner may accept it or ask for a fixture (a recipe with `codeRepos`, a damaged governance diff and an overlap in a code repository).
 - **F4 (MINOR)**: the `last-commit-failed` text has nested parentheses where `diff-failed` uses a comma; cosmetic, not changed.
 - **F5 and F6 (DOC DRIFT), fixed**: the diff is 21 insertions and 3 deletions (24 changed lines, not 21), and the repository stores LF on both sides (the CRLF was a working-copy artifact); and the Amendment 3 paragraph now says the approval was given.
+
 ## Phase 5
 
 ### T027 — replay on real history (plan D9, FR-010, SC-005)
@@ -363,3 +364,11 @@ The two scripts hold no comment that describes the old state of these reads: the
 - `pwsh -File scripts/ritual-checks.ps1` on the working tree before the phase commit: doc-lint OK, enforcement-pack OK, scope-check OK, digests OK, roadmap-claims OK; scope-repos and verify-kit n/a (kit repository). `scope-check`: PASS phase 5 commit `2f00c82` (5 files).
 - **Full harness on an isolated checkout (detached worktree) of `2f00c82`: 1744 passed, 0 failed, 0 skipped** (1360.8 s), the same count as phase 4's close-out: phase 5 adds no case.
 - Phase 5 is not yet AI-reviewed (fresh-context, Reviewer Provenance) and the owner's gate is not yet run.
+
+### After the phase 5 AI review (`ai-code-review-phase5.md`, APPROVE with follow-ups)
+
+- **F1 (FOLLOW-UP), fixed:** "seven reads have no reachable data state" was wrong in the flow-down note and the roadmap entry: plan Amendments 1, 2 and 3 name 7 + 3 + 1 = **eleven**. Both now say eleven and give each amendment's reason (checked against `plan.md` lines 191-222).
+- **F2 (MINOR), accepted:** "fourteen graded reads" counts the plan's inventory rows (G1-G14; some rows hold two reads), the plan's own wording.
+- **F3 (MINOR), explained here:** the kit history held 115 merge commits at replay time against 028's 113: the history now ends with two more merge commits than 028 had (`git log --merges` lists #85 and #86 and a `main` merge into this branch above 028's own merges); the per-class counts were not itemised against 028's, so the exact two are not claimed. Replayed 94 against 028's 92.
+- **F4 (MINOR):** the replay's stated limits judged honest and sufficient. **F5 (DOC DRIFT):** T029's "merge evidence" cannot exist before the merge; the row says so, as 028's did. **F6 (MINOR), fixed:** blank line before `## Phase 5`.
+- Not run by the reviewer: `scope-check` on a named branch and the full harness (1744 is the author's count, from the isolated checkout of `2f00c82`).

@@ -673,7 +673,7 @@ Status flow: `idea → specified → in progress → shipped → dropped`
 
 - 2026-10-16 Feature 029 (GAP-035) built, reviewed and measured: every unchecked `git` read that could turn a failure into a wrong green in `scripts/enforcement-pack.ps1` and
   `scripts/territory-check.ps1` is a named state. Owner decisions (anas.m): **Decision 1 option B** (every unchecked read in both scripts, one phase per group), **Decision 2** (the 027/028 lane
-  split: a numbered failure, `UNGRADED` and exit 0 on the Lite lane), **D1-D9**, and **Amendments 1-3** (seven reads have no reachable data state and are guarded by a mutation or an injected failure,
+  split: a numbered failure, `UNGRADED` and exit 0 on the Lite lane), **D1-D9**, and **Amendments 1-3** (eleven reads have no reachable data state, seven by Amendment 1, three by Amendment 2, one by Amendment 3, and are guarded by a mutation or an injected failure,
   recorded in `notes.md`). **Corrected by the work:** the spec's "~30 reads" was fourteen graded reads once read line by line (about twenty were already named); the probe moved no read into
   or out of the set. **Measured:** four real histories, 145 merge commits, 115 replayed in the shape CI grades a pull request: no output differed and no exit code changed, the new reader
   ran 14,035 times; `territory-check.ps1` is not in the replay (it fetches the live remote), its fixtures cover it. **Open, by decision:** `git cat-file -e` and `git rev-parse --verify --quiet`
