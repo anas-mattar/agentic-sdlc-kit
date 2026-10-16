@@ -43,3 +43,59 @@ kit-integrity essentials, the verbatim file at the kit's current content, the su
 This is the state the FitForge measurement above could not show, because there the 21 verbatim files differed and surfaced as conflicts (exit 2). Here the run says the project
 is up to date when it has a pending hand-edit. The state is reachable in practice when a project's verbatim files are current but its recorded commit is not the kit clone's
 (a shallow clone, a rewritten history, another fork).
+
+## Phase 1: an unknown recorded commit is reported
+
+### T001 Baseline on the parent commit (`f2d1b1b`)
+
+The saved text of the states is the test itself, written first (T003): on the parent commit the four states that must not change pass
+(a recorded commit the kit has, one equal to the kit's HEAD, `.kit-version` absent, `.kit-version` malformed) and the three unknown-commit
+cases fail. The full-harness count on an isolated detached worktree of the parent is in T005.
+
+### T002 The probe of `git cat-file -e "<value>^{commit}"` against `git log "<value>..HEAD"` (git 2.55.0.windows.5)
+
+Run against this repository (full history) and against a `--depth 1` clone of it:
+
+| Value | `cat-file -e` | `git log` | Verdict |
+|---|---|---|---|
+| a full sha the kit has | 0 | 0 | known |
+| the same, abbreviated to 9 characters | 0 | 0 | known |
+| an unknown sha (`0000...0001`) | 128 | 128 | unknown |
+| a branch name (`main`), `HEAD~1` | 0 | 0 | known |
+| a tag that does not exist | 128 | 128 | unknown |
+| `-oops` (an option-shaped value) | 129 | 128 | unknown |
+| a **tree** sha | 128 | 0 | unknown (not a commit; `git log` happens to accept a tree-ish) |
+| an empty string | 128 | 0 | never reaches the call: `-not $recordedCommit` takes the absent branch first |
+| a full sha **beyond the boundary** of a shallow kit clone | 128 | 128 | unknown |
+| the shallow clone's own HEAD | 0 | 0 | known |
+
+The two disagree only for a tree sha and an empty string, neither a recorded kit commit; for every value `git log` could read as a commit, `cat-file` agrees. The CI image's
+git is the CI run of the branch (the second git).
+
+### T003 The test, written first; shown failing on the parent
+
+`tests/enforcement/UpdateKit.Tests.ps1` (7 cases, a small kit and target built with plain git in a temporary directory, so it does not depend on the depth of the CI checkout). On the parent
+commit the four unchanged states pass; `unknown, dry run` fails on `Expected 'Result: up to date' to not match` (the run printed `Result: up to date`, exit 0), `unknown, real run` on
+`Expected 'Surgical - upstream changes, never applied \(1\):' to match`, and `-Json` on `Expected 1, but got 0` (the `surgical` array was empty).
+
+### T004 The script
+
+`scripts/update-kit.ps1` (12 insertions, 1 deletion): `$recordedKnown` from `git -C $Kit cat-file -e "${recordedCommit}^{commit}"` (taken only when `$recordedCommit` is set), the baseline condition of the
+surgical pass becomes `-not $recordedCommit -or -not $recordedKnown`, and one `NOTE:` line in text mode names the unknown commit. All seven cases pass. On a clone of FitForge with an unknown
+recorded commit, a dry run now prints the NOTE, `Surgical ... (20)` each `no baseline - review all`, and the 22 verbatim conflicts as before; `-Json` has 20 `surgical` entries where it had 0.
+
+Environmental note: several tracked files of this working tree are CRLF on disk while the index holds LF (`git ls-files --eol`), and a script edit once left `update-kit.ps1` CRLF
+(the whole file showed as changed). It was restored with `git checkout` and edited again, and every file of the commit is checked for CR before it is committed (the lesson of feature 032's review, finding F1).
+
+### T005 Numbers (isolated detached worktrees outside the repository; the changed files copied into the second)
+
+| | Parent `f2d1b1b` | Phase 1 working tree |
+|---|---|---|
+| full harness | 1828 passed, 0 failed, exit 0 | **1835 passed, 0 failed, exit 0** (the 7 more are the cases of `UpdateKit.Tests.ps1`) |
+| coverage | 7 rules exempt from a fixture pair | 7 (unchanged); no new site, `update-kit.ps1` is outside the emission sweep |
+| `UpdateKit.Tests.ps1` | not present | 7 passed; on the parent its three unknown-commit cases fail |
+| the four states that must not change | pass on the parent | pass at the tip (known, equal to HEAD, absent, malformed) |
+| clone of FitForge, unknown recorded commit, `-DryRun -Json` | `surgical` 0 entries | `surgical` 20 entries |
+| `ritual-checks.ps1` | n/a | `RESULT OK` once the commit exists (`scope-check` is UNGRADED until then) |
+
+Every pre-existing case passes unchanged; no case was re-expected.

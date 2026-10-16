@@ -184,6 +184,14 @@ $recordedCommit = $null
 if (Test-Path $kitVersionPath) {
     try { $recordedCommit = (Get-Content $kitVersionPath -Raw | ConvertFrom-Json).kitCommit } catch {}
 }
+# Is the recorded commit a commit of THIS kit clone? A shallow or rewritten clone, or another fork, does not have it. The surgical pass
+# below reads its log, and a log that failed is not a log with no upstream commits: it must not be reported as 'nothing changed'
+# (feature 033, GAP-039).
+$recordedKnown = $true
+if ($recordedCommit) {
+    git -C $Kit cat-file -e "${recordedCommit}^{commit}" 2>$null
+    $recordedKnown = ($LASTEXITCODE -eq 0)
+}
 $kitHeadSha = (git -C $Kit rev-parse HEAD).Trim()
 $constitutionText = Get-Content (Join-Path $Kit '.specify/memory/constitution.md') -Raw
 $kitVersionString = if ($constitutionText -match '\*\*Version\*\*:\s*([0-9]+\.[0-9]+\.[0-9]+)') { $Matches[1] } else { 'unknown' }
@@ -251,7 +259,7 @@ foreach ($entry in $verbatimFiles) {
 $surgicalReport = @()
 foreach ($entry in $surgicalFiles) {
     $rel = $entry.Path
-    if (-not $recordedCommit) {
+    if (-not $recordedCommit -or -not $recordedKnown) {
         $surgicalReport += [PSCustomObject]@{ Path = $rel; Commits = @(); Note = 'no baseline — review all' }
         continue
     }
@@ -295,6 +303,9 @@ if ($Json) {
     } | ConvertTo-Json -Depth 6
 } else {
     Write-Host "update-kit: $Kit -> $Target$(if ($DryRun) { ' (dry run — zero writes)' })"
+    if ($recordedCommit -and -not $recordedKnown) {
+        Write-Host "NOTE: the recorded kit commit $recordedCommit is not in the kit clone (a shallow or rewritten clone, or another fork), so every surgical file is listed as having no baseline - the verbatim files below could not be compared to a baseline either."
+    }
     if ($applied.Count -gt 0) {
         Write-Host "Applied ($($applied.Count)):"
         foreach ($a in $applied) { Write-Host "  $($a.Path)  [$($a.State)]" }

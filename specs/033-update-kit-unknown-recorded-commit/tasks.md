@@ -31,27 +31,27 @@ lost report. Every other state prints what it printed before. Proved by a test w
 - `scripts/update-kit.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree and the
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree and the
       coverage report's counts, and, on the small kit and target of plan P5 (built with plain git), the saved output and exit code of
       the known, absent, malformed and unknown recorded-commit states, dry run and real run, and `-Json -DryRun`, for the byte
       comparison of T006.
-- [ ] T002 Probe the design (plan P1, Risks) and record it in `notes.md` before the script depends on it: `git -C <kit> cat-file -e
+- [x] T002 Probe the design (plan P1, Risks) and record it in `notes.md` before the script depends on it: `git -C <kit> cat-file -e
       "<value>^{commit}"` and `git log "<value>..HEAD"` on a full sha the kit has, an abbreviated sha, an unknown sha, a branch name, a
       value that is not a string, and a shallow kit clone whose boundary lies beyond the recorded commit; which of them `cat-file`
       and `git log` accept alike (the condition must never call unknown a value `git log` could read); on this machine and, through
       the CI run of the branch, on the CI image's git.
-- [ ] T003 Write the test first (plan P5), `tests/enforcement/UpdateKit.Tests.ps1`: a Pester file that builds the small kit and target
+- [x] T003 Write the test first (plan P5), `tests/enforcement/UpdateKit.Tests.ps1`: a Pester file that builds the small kit and target
       in a temporary directory with plain git (`core.autocrlf` false, a committed `.kit-version`) and runs `pwsh -NoProfile -File
       scripts/update-kit.ps1 -Kit <kit> -Target <target>`; cases for the recorded commit known, `.kit-version` absent and malformed
       (the three pass on the parent commit), and for the recorded commit unknown as a dry run, as a real run (the record advances and
       the delivered-once NOTE is printed) and with `-Json -DryRun` (`surgical` has one entry, the keys are unchanged). Expectations by
       hand from `notes.md`. Run it on the parent commit and record that the three known-good states pass and each unknown-commit
       state fails for the stated reason (`Result: up to date`, exit 0, no surgical entry).
-- [ ] T004 Edit `scripts/update-kit.ps1` (plan P1 to P4): after `$recordedCommit` is read, decide `$recordedKnown` with the call T002
+- [x] T004 Edit `scripts/update-kit.ps1` (plan P1 to P4): after `$recordedCommit` is read, decide `$recordedKnown` with the call T002
       validated; make the surgical pass's baseline condition `-not $recordedCommit -or -not $recordedKnown`; print the P3 line once in
       text mode, before the sections, when the commit is unknown. Nothing else changes: the verbatim pass, `-Force`, the preflight, the
       record write, the doctor, `-Json`'s keys, the exit codes.
-- [ ] T005 Run the new test, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, the new test as
+- [x] T005 Run the new test, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged, the new test as
       written, the coverage report lists no unowned site and the exempt count is stated. Re-run T001's states under `pwsh -File` and diff
       against the saved text: the known, absent and malformed states are byte-identical, and the unknown states say what the plan says.
       Record the numbers in `notes.md`.
