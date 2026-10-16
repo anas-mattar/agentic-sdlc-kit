@@ -6,7 +6,9 @@ description: "Task list for feature 033 — update-kit.ps1 names a recorded kit 
 # Tasks: update-kit.ps1 names a recorded kit commit its kit clone does not know
 
 **Input**: `specs/033-update-kit-unknown-recorded-commit/spec.md`, `plan.md` (decisions P1–P7), `notes.md` (the measurements)
-**Prerequisites**: spec.md approved (anas.m, 2026-10-16; D1 A, D2 A, D3 A); no new dependency, no new script file.
+**Prerequisites**: spec.md approved (anas.m, 2026-10-16; D1 A, D2 A, D3 A); tasks.md approved (anas.m, 2026-10-16); no new dependency, no new script file.
+
+**Amendment approved by**: anas.m, 2026-10-16
 
 **Tests**: the state ships with tests in the same phase as the behaviour, expectations written by hand. The new test is run against the
 parent commit before the code changes and must fail there for the unknown-commit states, so it is shown to measure something. Phase
