@@ -1,0 +1,3 @@
+Allocating feature number 001 (next free across local + remote + specs/).
+WARNING: Number 001 was claimed concurrently (001-rival) — renumbering.
+Lost the allocation race but could not withdraw 001-probe from origin — delete it by hand: git push origin --delete 001-probe.

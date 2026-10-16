@@ -150,24 +150,36 @@ if ($hasRemote -and -not $NoPush) {
         }
         $rivals = @($ledger | Where-Object { $_ -match "^$numPrefix-" -and $_ -ne $branch })
 
-        if ($pushOk -and $rivals.Count -eq 0) { $pushed = $true; break }
+        # Did our branch reach origin? Its number was free when it was allocated, so it can only be there if our push
+        # put it there, and a push can exit non-zero after the remote accepted it: the ledger just read is better
+        # evidence than the exit code (feature 030, plan P3 as amended; review finding F1 of phase 1).
+        $landed = $pushOk -or ($ledger -contains $branch)
+
+        if ($landed -and $rivals.Count -eq 0) {
+            if (-not $pushOk) {
+                $said = @($pushText | Where-Object { $_ -match '^(error|fatal|remote):' })
+                if ($said.Count -eq 0) { $said = $pushText }
+                Write-Warning "git push of $branch reported an error, but $branch is on origin and no rival carries number $numPrefix — treating the claim as made. git said:`n$($said -join "`n")"
+            }
+            $pushed = $true; break
+        }
 
         # A push the remote rejected, with no rival, is the remote's answer and not a lost race: renumbering and
         # pushing again would only repeat it, three times, and end on advice (renumber by hand) that does not apply.
-        if (-not $pushOk -and $rivals.Count -eq 0) { Stop-Refused "$rejection" }
+        if (-not $landed -and $rivals.Count -eq 0) { Stop-Refused "$rejection" }
 
         # Lost the race. Withdraw our remote branch if it landed, then renumber.
         Write-Warning "Number $numPrefix was claimed concurrently ($($rivals -join ', ')) — renumbering."
         # A withdrawal that fails leaves our abandoned number on origin as a live claim, so it is named and not
         # stepped over (feature 030, plan P4).
-        if ($pushOk) {
+        if ($landed) {
             git push origin --delete $branch 2>$null | Out-Null
             if ($LASTEXITCODE -ne 0) { Stop-Refused "Lost the allocation race but could not withdraw $branch from origin — delete it by hand: git push origin --delete $branch." }
         }
         if ($attempt -eq $MaxAttempts) {
             Stop-Refused "Lost the allocation race $MaxAttempts times — renumber manually (docs/sdlc/branch-strategy.md, Number Allocation)."
         }
-        $gone = if ($pushOk) { "$branch was withdrawn from origin" } else { "$branch never reached origin" }
+        $gone = if ($landed) { "$branch was withdrawn from origin" } else { "$branch never reached origin" }
         # The first fetch refuses on failure; this one used to go on and allocate from refs it had not refreshed.
         git fetch origin --prune 2>$null | Out-Null
         if ($LASTEXITCODE -ne 0) { Stop-Refused "git fetch origin failed — cannot claim against an unreachable ledger. $gone." }

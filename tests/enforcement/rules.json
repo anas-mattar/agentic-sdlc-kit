@@ -2317,6 +2317,24 @@
       "notes": "Call 4 of origin's upload-pack through originFailCall (first fetch 1, first read 2, read after the push 3, re-fetch 4). CLF-004's anchor was narrowed to the first fetch's closing quote so the two refusals, which share their words, are told apart."
     },
     {
+      "id": "CLF-015",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a push that reports failure but whose branch is on origin, with no rival, is read as a claim made (a warning carrying git's complaint, the CLAIMED lines, exit 0) instead of a rejection that says nothing was claimed",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-003 (amended 2026-10-16); roadmap GAP-036",
+      "emitAnchor": "treating the claim as made",
+      "notes": "Reached through the originPushFailsAfterLanding recipe field: origin's receive-pack runs to completion and exits 1 on the chosen call, so the branch lands and git push exits non-zero. Review finding F1 of phase 1."
+    },
+    {
+      "id": "CLF-016",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a push that reports failure but landed, beside a rival, is withdrawn like a push that exited 0, so the abandoned claim does not stay on origin",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-003 (amended 2026-10-16); roadmap GAP-036",
+      "emitAnchor": "could not withdraw",
+      "notes": "Shares its emission site with CLF-013: the withdrawal is made visible by a remote that refuses the deletion (originDenyDeletes), because with a working deletion the output of a withdrawn branch and of a skipped withdrawal is the same."
+    },
+    {
       "id": "DIFF-001",
       "script": "enforcement-pack.ps1",
       "function": "Add-DiffUnreadable",
