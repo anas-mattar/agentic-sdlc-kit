@@ -151,14 +151,14 @@ Detailed tasks and the per-phase **Territory** blocks are in `tasks.md`.
 
 ### Documentation (this feature)
 
-``text
+```text
 specs/030-claim-ledger-read-named-state/
 ├── spec.md
 ├── plan.md              # this file
 ├── tasks.md
 ├── notes.md             # baseline, probes, the re-expected case, the measurement
 └── checklists/requirements.md
-``
+```
 
 No `research.md`, `data-model.md` or `contracts/`: the script has no data model, and its CLI contract
 (`specs/003-flow-efficiency-pack/contracts/claim-feature-cli.md`) is unchanged: exit codes and the `-Json` object stay, only
@@ -166,7 +166,7 @@ the refusal text of states that previously died in a `throw` or in the three-tim
 
 ### Source Code (repository root)
 
-``text
+```text
 scripts/claim-feature.ps1                 # phase 1: P1, P2, P3; phase 2: P4 (140, 144)
 tests/enforcement/rules.json              # phase 1: CLF-008..CLF-012 and CLF-007; phase 2: CLF-013, CLF-014
 tests/enforcement/lib/FixtureRepo.psm1    # phase 1: originFailCall; phase 2: originDenyDeletes
@@ -176,7 +176,7 @@ tests/enforcement/emission-idioms.json    # only if the sweep reports a new site
 adoption/updating.md                      # phase 2: flow-down note
 docs/roadmap.md                           # phase 2
 docs/digests/**                           # phase 2, if a digest-marked document changes
-``
+```
 
 **Structure Decision**: no new script and no new library file; `scripts/claim-feature.ps1` already ships verbatim, so
 `kit-manifest.json` needs no entry. `scripts/territory-check.ps1` and `scripts/roadmap-claim-check.ps1` are untouched.
@@ -201,7 +201,8 @@ docs/digests/**                           # phase 2, if a digest-marked document
   indistinguishable from one that read an empty ledger; P1 names the separate channel and the empty-ledger `pass` pins it.
 - **`CLF-007` may lose its fixture.** If a rival at every attempt cannot be built, the rule is exempt with a written reason
   and the exempt count rises by one (P6); the plan says so now so it is not discovered at the gate.
-- **A push that fails but landed.** *Amendment (2026-10-16), review finding F1 of phase 1:* the ledger read after the push shows it, and the script reads the push as landed (P3). The residual case is a push that fails and landed while the ledger cannot be read: the exit code is then the only evidence, and the rejected-push message keeps its hedge to check origin for the branch. **Amendment approved by**: anas.m, 2026-10-16
+- **A push that fails but landed.** *Amendment (2026-10-16), review finding F1 of phase 1:* the ledger read after the push shows it, and the script reads the push as landed (P3). The residual case is a push that fails and landed while the ledger cannot be read: the exit code is then the only evidence, and the rejected-push message keeps its hedge to check origin for the branch. A second residual, stated: `create-new-feature.ps1` makes no commit, so two claimants with the same number and short name taken from the same `main` tip hold branches at the **same commit**; the commit test cannot tell them apart, and their pushes behave as they always did (the second is an up-to-date push that exits 0). The claim script's allocation makes this a same-moment collision only. **Amendment approved by**: anas.m, 2026-10-16
+  **Amendment approved by**: anas.m, 2026-10-16
 - **Message text with line breaks.** Git's rejection text is multi-line; the expectation is written by hand with those
   breaks and a fixture whose rejection text is fixed.
 - **The stub is test code the harness runs.** A stub that drifts from the real script's output contract (`BRANCH_NAME`)
