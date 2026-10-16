@@ -32,25 +32,25 @@ Every readable repository, `-Commit` and tip mode print what they printed before
 - `scripts/scope-check-repos.ps1`
 - `tests/**`
 
-- [ ] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, the coverage report's exempt-rule count and its site counts for
+- [x] T001 Record the baseline on the parent commit in `notes.md`: the full harness count on an isolated detached worktree, the coverage report's exempt-rule count and its site counts for
       `scope-check.ps1`, `scope-check-repos.ps1` and `scope-lib.ps1`, and the saved output and exit code of the legitimate states for the byte comparison of T007 (the existing cases
       `SCOPE-025` fail and pass, the no-shared-history and empty-range cases, and `REPOS-001` with `-All`).
-- [ ] T002 Probe the design (plan P1, P2, Risks) and record it in `notes.md` before a rule depends on it: (a) `git merge-base`, `git rev-parse --verify --quiet` and `git rev-list` exit
+- [x] T002 Probe the design (plan P1, P2, Risks) and record it in `notes.md` before a rule depends on it: (a) `git merge-base`, `git rev-parse --verify --quiet` and `git rev-list` exit
       codes for a missing trunk ref, no shared history (an orphan branch), a deleted commit object, a truncated commit object and a damaged trunk object, on this machine and, through the CI
       run of the branch, on the CI image's git; (b) that `truncateCommit` set to `HEAD` makes `merge-base` fail on a governance fixture and, in a **nested** recipe, on a code repository;
       (c) whether any recipe makes `git rev-list <base>..<tip>` fail after `git merge-base` succeeded (the plan expects not, which is the exemption of `SCOPE-032` and `REPOS-037`).
-- [ ] T003 Write the fixtures first (plan P5, Testing Strategy), under `tests/enforcement/cases/`: `scope-check/SCOPE-031` (`fail`: `SCOPE-025/pass`'s fixture with `truncateCommit` `HEAD`, `-All`;
+- [x] T003 Write the fixtures first (plan P5, Testing Strategy), under `tests/enforcement/cases/`: `scope-check/SCOPE-031` (`fail`: `SCOPE-025/pass`'s fixture with `truncateCommit` `HEAD`, `-All`;
       `pass`: `SCOPE-025/pass`; `pass-orphan`: a branch with no history in common with the trunk, which keeps `UNGRADED ... merge base` and exit 0) and `scope-check-repos/REPOS-036` (`fail`: `REPOS-001/pass`
       with `-All` and `truncateCommit` `HEAD` in the nested recipe; `pass`: the same readable). Expectations by hand with the P4 lines; remember the harness reads stdout and then stderr. Run them on
       the parent commit and record that each `fail` fails there for the stated reason (the parent prints `UNGRADED ... merge base`, exit 0) and each `pass` passes.
-- [ ] T004 Bring the new rules into the coverage sweep: add `SCOPE-031` and `REPOS-036` to `tests/enforcement/rules.json` with each rule's anchor and law, and `SCOPE-032` and `REPOS-037` as exempt
+- [x] T004 Bring the new rules into the coverage sweep: add `SCOPE-031` and `REPOS-036` to `tests/enforcement/rules.json` with each rule's anchor and law, and `SCOPE-032` and `REPOS-037` as exempt
       rules with their written reason (plan P5: `rev-list` can fail only on objects `merge-base` has just walked, measured in T002(c)); add an entry to `tests/enforcement/emission-idioms.json`
       only if the sweep reports a new site. Run the sweep and classify anything else it reports.
-- [ ] T005 Edit the scripts (plan P1 to P4, P7): `Get-RepoMergeBase` in `scripts/scope-lib.ps1` with the exit-code classification and the `Failed` and `FailedWith` members;
+- [x] T005 Edit the scripts (plan P1 to P4, P7): `Get-RepoMergeBase` in `scripts/scope-lib.ps1` with the exit-code classification and the `Failed` and `FailedWith` members;
       `Get-DiffBase` in `scripts/scope-check.ps1` with the same classification and `$script:DiffBaseReadFailed`; both commit-list reads checked on the next statement; the four `ERROR` lines of
       P4 (two in `scope-check.ps1`, each exit 1; two in `scope-check-repos.ps1`, each setting `$failed`). Nothing else changes: `-Commit`, `-Phase`, tip mode, the `UNGRADED` text and exit for a missing
       trunk, no shared history and an empty range, `territory-check.ps1`, the blob reads, the date read.
-- [ ] T006 Run `-Case SCOPE-`, `-Case REPOS-`, `-Case TERR-` (territory-check shares `Get-RepoMergeBase`) and `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged,
+- [x] T006 Run `-Case SCOPE-`, `-Case REPOS-`, `-Case TERR-` (territory-check shares `Get-RepoMergeBase`) and `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case unchanged,
       every new fixture as written, the coverage report lists no unowned site and the exempt count is stated. Re-run T001's states under `pwsh -File` and diff against the saved text: every legitimate state
       is byte-identical. Record the numbers in `notes.md`.
 

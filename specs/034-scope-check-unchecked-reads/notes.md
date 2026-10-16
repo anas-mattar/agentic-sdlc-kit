@@ -40,3 +40,52 @@ Where it comes from: `scripts/scope-check.ps1:86-95` (`Get-DiffBase`: `git merge
 
 Not measured here, and the plan must: the same probes on the CI image's git; the exit code of `git merge-base` when the *trunk* object is damaged rather than the branch's; and whether
 `territory-check.ps1` is affected the same way (it reads the same function; D2).
+
+## Phase 1: a merge base or commit list git could not read is an ERROR
+
+### T001 Baseline on the parent commit (`efa3bbc`)
+
+The saved text of the legitimate states is the harness itself: each is pinned byte for byte by an existing case that still passes at the tip (a missing trunk `SCOPE-025/fail`, a passing
+`-All` run `SCOPE-025/pass`, the nested-repository runs `REPOS-001` and the no-trunk and no-history `REPOS-` cases, and `TERR-` for `territory-check.ps1`, which shares `Get-RepoMergeBase`). The
+full-harness count on an isolated detached worktree of the parent is in T006.
+
+### T002 Probes of the design (git 2.55.0.windows.5)
+
+- **(a) Exit codes**, in addition to the pre-spec table: a **commit older than the base** deleted makes `git merge-base HEAD main` exit **255** while `git rev-list <base>..HEAD` exits **0**
+  (the reverse of the order that would make `rev-list` reachable); a tip commit deleted gives merge-base **128**, a middle commit deleted **255**. A scratch repository of five commits was used for the
+  older-than-base probe; nothing in the project was touched.
+- **(b) `truncateCommit`:** `HEAD` truncates the tip on a governance fixture (`SCOPE-031/fail`) and **in a nested recipe on a code repository** (`REPOS-036/fail`): both fixtures reach the
+  merge-base state (on the parent they print `UNGRADED could not resolve a merge base ...`, exit 0), so no new harness field is needed.
+- **(c) `rev-list` after a successful `merge-base`:** no damage constructed makes it fail. `merge-base` walks every commit from the tip to the base, which is what `rev-list <base>..<tip>` reads, so a
+  damaged tip or middle commit fails the merge base first; a damaged commit older than the base fails `merge-base` and not `rev-list`. The two commit-list sites are therefore exempt (`SCOPE-032`,
+  `REPOS-037`), with that reason written in `rules.json`.
+- **(d)** The CI image's git is the CI run of the branch (the second git); the fixtures pin exit 128 for a truncated tip commit.
+
+### T003 Fixtures written first, shown failing on the parent
+
+`SCOPE-031` (`fail`, `pass`, `pass-orphan`) and `REPOS-036` (`fail`, `pass`). On the parent commit each `fail` fails for the stated reason (observed `scope-check: UNGRADED could not resolve a merge base with main
+- nothing checked` and `scope-repos: code-repo: UNGRADED could not resolve a merge base with a trunk (...)`, both exit 0) and each `pass` passes, including `pass-orphan` (a branch with no history in common: `UNGRADED`,
+exit 0, which the new code keeps). The `REPOS-036/fail` expectation is two lines: the repository's `ERROR` and the run-level `UNGRADED (nothing was graded ...)`, which is true and which every repository run that
+grades nothing prints.
+
+### T004 and T005 The rules and the scripts
+
+Rules `SCOPE-031` and `REPOS-036` (one emission site each) and `SCOPE-032`, `REPOS-037` exempt, with the reason above. `scripts/scope-lib.ps1`: `Get-RepoMergeBase` classifies `rev-parse --verify --quiet`
+(exit 1: no such ref) and `merge-base` (exit 1: no shared history) as answers, any other non-zero exit as a failure, and returns `Failed` and `FailedWith` beside the existing members, true only when no candidate
+gave a base and one could not be read (a later candidate's base wins over an earlier failure). `scripts/scope-check.ps1`: `Get-DiffBase` the same, with `$script:DiffBaseFailure`; `-All` prints
+`ERROR could not read the merge base with main (<command> failed with exit <n>)` and exits 1, and checks `git rev-list` on the next statement (`ERROR could not list the commits since the merge base`).
+`scripts/scope-check-repos.ps1`: the same two lines, prefixed with the repository, setting `$failed` and going on to the next repository. `territory-check.ps1` is not changed. End to end on the kept fixture:
+intact `PASS`; the tip commit object deleted `ERROR ... (git merge-base failed with exit 128)`, exit 1; the middle commit object deleted `ERROR ... exit 255`, exit 1; restored `PASS`.
+
+### T006 Numbers (isolated detached worktrees outside the repository; the changed files copied into the second)
+
+| | Parent `efa3bbc` | Phase 1 working tree |
+|---|---|---|
+| full harness | 1838 passed, 0 failed, exit 0 | **1848 passed, 0 failed, exit 0** (the 10 more are the 5 cases of `SCOPE-031` and `REPOS-036`) |
+| `scope-check.ps1` sites fixtured | 29 of 29 | 30 of 31 (1 exempt: `SCOPE-032`) |
+| `scope-check-repos.ps1` sites fixtured | 29 of 31 (2 exempt) | 30 of 33 (3 exempt: `REPOS-037` added) |
+| rules exempt from a fixture pair | 7 | 9 (`SCOPE-032`, `REPOS-037`) |
+| `-Case SCOPE-`, `-Case REPOS-`, `-Case TERR-` | inside the full run | 364, 238 and 238 passed, 0 failed (the filters overlap: `SCOPE-` also matches `scope-check-repos`) |
+| the legitimate states (no trunk, no shared history, an empty range, a readable run) | pinned by existing cases | every pre-existing case passes unchanged; none was re-expected |
+
+`territory-check.ps1` is untouched; `-Case TERR-` passes unchanged (it reads `Base` and `Existing` of `Get-RepoMergeBase`, which keep their meaning).
