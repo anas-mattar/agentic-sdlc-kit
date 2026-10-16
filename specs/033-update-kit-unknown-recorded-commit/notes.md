@@ -99,3 +99,18 @@ Environmental note: several tracked files of this working tree are CRLF on disk 
 | `ritual-checks.ps1` | n/a | `RESULT OK` once the commit exists (`scope-check` is UNGRADED until then) |
 
 Every pre-existing case passes unchanged; no case was re-expected.
+
+### Phase 1 review follow-ups (`ai-code-review-phase1.md`, APPROVE with follow-ups, no blocking finding)
+
+- **F1 (a real defect of the phase 1 commit), fixed with tests:** the "delivered once" NOTE built `$recordedCommit.Substring(0,7)`. Before this feature an unknown recorded commit never reached that
+  line (the surgical report was empty); now it does, and a hand-edited `.kit-version` holding a value shorter than seven characters (`abc`) or a non-string (`123`) threw there, after `.kit-version`
+  had been rewritten, exit 1. Two new cases of `UpdateKit.Tests.ps1` (a short value and a number, each a real run) failed on the phase 1 commit for exactly that reason and pass now; `$recordedShort`
+  is computed once, with `[Math]::Min`. A third new case pins that a dry run leaves `.kit-version` as it was (the review's F5). The file now holds 10 cases.
+- **F2 (accepted):** with an unknown commit and no surgical file in the manifest, the output is the NOTE then `Result: up to date`, exit 0: the plan allows it (P3: the verbatim pass lacks its
+  baseline too, and the NOTE says so), and a project whose verbatim files are current has nothing to apply. No real manifest has no surgical file, and the case is not built.
+- **F3 (accepted):** a tree sha as the recorded value changes from "listed with commits" to unknown; it is not a commit, and T002 above records the disagreement. The plan's sentence that a
+  value `git log` could read is never called unknown holds for every value that is a commit.
+- **F4 (wording):** the 22 conflicts of T004 and the 21 of the pre-spec measurement are the same state on different kit commits (the kit gained a verbatim file between them; both were measured). T001
+  refers to "T006" where T005 is meant; the saved text of the byte comparison is the test itself (the four unchanged states pass on both commits, and the same cases were run on the parent script and the tip script
+  by the reviewer, in text, `-DryRun` and `-Json`); the unguarded `rev-parse HEAD` the spec cites at `:186` is at `:194` after the added lines (the spec keeps the line of the parent). The CI image's git
+  re-measurement of T002 is the CI run of the branch, recorded when it finishes.
