@@ -375,6 +375,55 @@ Describe 'originRivalOnPush fixtures (feature 030, plan P5)' {
     }
 }
 
+Describe 'originDenyDeletes fixtures (feature 030, plan P5)' {
+    # The remote must refuse a deletion and accept an ordinary push, or a fixture using the field would fail at
+    # the push (a different refusal) instead of at the withdrawal it names.
+
+    BeforeAll {
+        $script:Base = [pscustomobject]@{
+            commits           = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            origin            = 'self'
+            originDenyDeletes = $true
+        }
+    }
+
+    It 'lets a branch be pushed and refuses to delete it' {
+        $root = New-FixtureRepo -Recipe $script:Base
+        try {
+            & git -C $root branch side 2>$null | Out-Null
+            & git -C $root push origin side 2>$null | Out-Null
+            $LASTEXITCODE | Should -Be 0
+            & git -C $root push origin --delete side 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+            (& git -C $root ls-remote --heads origin) -join '' | Should -Match 'refs/heads/side'
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'leaves deletions allowed when the recipe does not ask' {
+        $recipe = $script:Base.PSObject.Copy(); $recipe.originDenyDeletes = $false
+        $root = New-FixtureRepo -Recipe $recipe
+        try {
+            & git -C $root branch side 2>$null | Out-Null
+            & git -C $root push origin side 2>$null | Out-Null
+            & git -C $root push origin --delete side 2>$null | Out-Null
+            $LASTEXITCODE | Should -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'refuses the field with no origin instead of ignoring it' {
+        $recipe = [pscustomobject]@{
+            commits           = @([pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } })
+            originDenyDeletes = $true
+        }
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*'originDenyDeletes' needs 'origin'*"
+    }
+
+    It 'refuses the field when the repository origin points at does not exist' {
+        $recipe = $script:Base.PSObject.Copy(); $recipe.origin = 'no-such-origin'
+        { New-FixtureRepo -Recipe $recipe } | Should -Throw -ExpectedMessage "*which does not exist*"
+    }
+}
+
 Describe 'merge commits that carry content (feature 026, plan D8)' {
     # A merge could be built, but only with no content of its own, so the rule that grades what a
     # merge AUTHORED (feature 026) had no fixture: review finding F12 of feature 025. These tests pin

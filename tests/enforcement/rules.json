@@ -2227,7 +2227,7 @@
       "function": "(top level)",
       "summary": "a claim against an origin that cannot be fetched is refused rather than allocated from a stale ledger",
       "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/023-claim-feature-refusals FR-001, FR-003; roadmap GAP-031",
-      "emitAnchor": "git fetch origin failed"
+      "emitAnchor": "unreachable ledger.'"
     },
     {
       "id": "CLF-005",
@@ -2251,7 +2251,7 @@
       "function": "(top level)",
       "summary": "a claim that meets a rival with its own number after every attempt is refused, with its remote claim withdrawn each time, rather than pushed under a contested number",
       "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-007; specs/023-claim-feature-refusals FR-001; roadmap GAP-031",
-      "emitAnchor": "Lost the allocation race",
+      "emitAnchor": "Lost the allocation race $MaxAttempts times",
       "notes": "Feature 023 fixtured this site through a push that fails; feature 030 (plan P6) moved that fixture to CLF-012, because a rejected push is no longer a lost race, and rebuilt this one through the originRivalOnPush recipe field: a receive-pack wrapper that makes a rival with the pushed number appear after every push. The fail leaves the local branch and spec directory in place, renumbered twice; each remote claim was withdrawn."
     },
     {
@@ -2297,6 +2297,24 @@
       "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-003; specs/023-claim-feature-refusals FR-003 (amended); roadmap GAP-036",
       "emitAnchor": "Stop-Refused \"$rejection\"",
       "notes": "Moved from CLF-007, where feature 023 fixtured the same push (originPushUrl, a path that does not exist) as a lost race. Re-expected by feature 030: three warnings and the three-times refusal became the rejected-push refusal."
+    },
+    {
+      "id": "CLF-013",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim that lost a race and cannot withdraw its own pushed branch is refused, naming the branch left on origin, instead of renumbering past a stale claim it never reported",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-004; roadmap GAP-036",
+      "emitAnchor": "could not withdraw",
+      "notes": "Reached through the originDenyDeletes recipe field (receive.denyDeletes on origin) and a stub create-new-feature.ps1 that makes a rival with our number appear."
+    },
+    {
+      "id": "CLF-014",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claim whose re-fetch after a lost race fails is refused with the first fetch's message and the state of our own branch, instead of allocating a number from refs the fetch did not refresh",
+      "law": "docs/sdlc/branch-strategy.md (Number Allocation); specs/030-claim-ledger-read-named-state FR-004; roadmap GAP-036",
+      "emitAnchor": "unreachable ledger. $gone",
+      "notes": "Call 4 of origin's upload-pack through originFailCall (first fetch 1, first read 2, read after the push 3, re-fetch 4). CLF-004's anchor was narrowed to the first fetch's closing quote so the two refusals, which share their words, are told apart."
     },
     {
       "id": "DIFF-001",

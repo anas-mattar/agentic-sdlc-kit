@@ -105,6 +105,12 @@
       meets a rival with its own number after each of its attempts, which no stub can do (a stub
       runs once, before the first push): the state behind claim-feature.ps1's 'lost the allocation
       race 3 times' refusal (CLF-007). It needs "origin" and is refused without one.
+    - "originDenyDeletes": true makes origin refuse to delete a branch (feature 030, plan P5): git's own
+      receive.denyDeletes is set on the repository origin points at, so 'git push origin --delete <branch>'
+      is rejected by the remote ('deletion prohibited') while an ordinary push still lands. That is the
+      state in which a claim that lost a race cannot withdraw its own branch. It needs "origin" and is
+      refused without one; the repository origin points at must exist when the fixture is finished (a
+      nested repository of that name, or "self"), or the build fails.
     - "detach": true leaves HEAD detached at the checked-out commit, the CI shape where the
       current branch cannot be read from the repository at all.
     - "noGit": true removes the .git directory once the fixture is written, so the directory is
@@ -201,6 +207,12 @@ function New-FixtureRepo {
         }
         if (-not ($Recipe.originFailCall -is [int] -or $Recipe.originFailCall -is [long]) -or $Recipe.originFailCall -lt 1) {
             throw "fixture 'originFailCall' must be a whole number of at least 1 (the Nth read of origin's refs fails), got '$($Recipe.originFailCall)'. Refused rather than silently ignored."
+        }
+    }
+
+    if ($Recipe.PSObject.Properties.Name -contains 'originDenyDeletes' -and $Recipe.originDenyDeletes) {
+        if (-not ($Recipe.PSObject.Properties.Name -contains 'origin' -and $Recipe.origin)) {
+            throw "fixture 'originDenyDeletes' needs 'origin': a remote that refuses deletions is a remote, and there is none. Refused rather than silently ignored."
         }
     }
 
@@ -552,6 +564,15 @@ function New-FixtureRepo {
         foreach ($prop in $Recipe.nestedRepos.PSObject.Properties) {
             New-FixtureRepo -Recipe $prop.Value -CaseDir $CaseDir -At (Join-Path $root $prop.Name) | Out-Null
         }
+    }
+
+    # After the nested repositories exist, because origin is usually one of them.
+    if ($Recipe.PSObject.Properties.Name -contains 'originDenyDeletes' -and $Recipe.originDenyDeletes) {
+        $originDir = ("$($Recipe.origin)" -eq 'self') ? $root : (Join-Path $root "$($Recipe.origin)")
+        if (-not (Test-Path -LiteralPath $originDir)) {
+            throw "fixture 'originDenyDeletes': origin points at '$originDir', which does not exist, so there is no repository to make refuse deletions. Refused rather than silently ignored."
+        }
+        Invoke-FixtureGit -RepoPath $originDir -Arguments @('config', 'receive.denyDeletes', 'true') | Out-Null
     }
 
     return $root
