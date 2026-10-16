@@ -100,10 +100,10 @@ refusals print the same bytes; the roadmap row is closed.
       144 are checked and refuse with the P2 messages. Nothing else changes.
 - [ ] T011 Run `-Case CLF-`, `-Case TERR-`, `-Case RIT-`, the full harness and `ritual-checks.ps1`: every pre-existing case
       unchanged, every new fixture as written, no unowned site. Record the numbers in `notes.md`.
-- [ ] T012 Add a flow-down note to `adoption/updating.md` shaped like feature 023's (what was wrong, what it does now, what
+- [x] T012 Add a flow-down note to `adoption/updating.md` shaped like feature 023's (what was wrong, what it does now, what
       flows down, what may newly be seen, what does not change, what was measured, what to do). Keep digest markers within 120
       characters, and every path in it resolving in an adopted project (doc-lint).
-- [ ] T013 Update `docs/roadmap.md`: GAP-036 status text, a decisions-log entry dated the day the feature ships (recording
+- [x] T013 Update `docs/roadmap.md`: GAP-036 status text, a decisions-log entry dated the day the feature ships (recording
       D1 A, D2 A, D3 A and what the work corrected, including the `CLF-007` outcome), and this feature's row to `shipped`. Run
       `pwsh -File scripts/build-digests.ps1` and commit the regenerated `docs/digests/**`.
 - [ ] T014 Measurement (plan P8, SC-001): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories
