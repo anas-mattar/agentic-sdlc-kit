@@ -4,6 +4,7 @@
 **Input**: Feature specification (approved, anas.m, 2026-10-16; D1 A, D2 A, D3 A) + decisions P1–P8 below
 **Gate Batching**: none
 **Gate Certification**: user-run
+**Amendment approved by**: anas.m, 2026-10-16
 
 ## Summary
 
@@ -200,8 +201,8 @@ docs/digests/**                           # phase 2, if a digest-marked document
 
 ## Needs the owner
 
-1. **The plan's approval.** Approving it fixes P1 to P8 as written. There are no open options: D1, D2 and D3 were decided with
-   the spec.
+1. **Decided (anas.m, 2026-10-16, by approving the plan as written): P1 to P8.** There were no open options: D1, D2 and D3 were
+   decided with the spec. `tasks.md` follows.
 2. **Worth a look before approving**: P2's message wording (the fixtures will pin it byte for byte), and P6's admission that
    `CLF-007` may become exempt.
 
