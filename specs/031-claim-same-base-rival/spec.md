@@ -2,7 +2,9 @@
 
 **Feature Branch**: `031-claim-same-base-rival`
 **Created**: 2026-10-16
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-16 (approval of the draft: Status, Owner decisions, Decisions for the owner)
+**Status**: Approved 2026-10-16 (owner: anas.m) <!-- D1 B, D2 A, D3 A -->
+**Owner decisions**: anas.m, 2026-10-16 — D1 B (a push lease on the absent ref), D2 A (the loser renumbers through the existing loop and withdraws nothing), D3 A (two phases)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-037: claim-feature.ps1 must tell a same-base rival (a foreign branch of our own name at our own sha) from our own claim, so two claimants of one number and short name cannot both believe they hold it. The shape (unique claim tip, push lease on the absent ref, refusal before the push) is an open decision for the owner."
@@ -143,8 +145,9 @@ until the harness can plant it.
   with every pre-existing case unchanged.
 
 ## Decisions for the owner
+**Amendment approved by**: anas.m, 2026-10-16
 
-Each has a recommendation, given as a recommendation and not a decision.
+Each has a recommendation. **Decided by the owner (anas.m, 2026-10-16): D1 B, D2 A, D3 A**, as recommended.
 
 - **D1 - the shape.** (A) A unique claim tip: the claim makes a commit carrying the claimant, so two claimants' branches
   of the same name are different refs and the second push is rejected as non-fast-forward; this reuses feature 030's

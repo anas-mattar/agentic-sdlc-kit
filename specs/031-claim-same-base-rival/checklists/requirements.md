@@ -32,4 +32,4 @@
 
 ## Notes
 
-- D1 to D3 are open for the owner; `/speckit.plan` waits for them.
+- D1 B, D2 A, D3 A decided by the owner (anas.m, 2026-10-16); `/speckit.plan` may proceed.
