@@ -121,7 +121,8 @@ could not be read ... run git fsck.`, exit 1, restored `PASS ... (1 file(s))`.
 Method (the one of features 030 and 031): for each project a `git clone` from its local directory into a scratch area (the real projects never touched).
 The kit before this feature (`989411f`, the merge of PR #100) applied with `update-kit.ps1`, `build-digests.ps1` run and committed ("measure: kit before"); the kit as
 it stands (`937cde6`, whose three scope scripts are the phase 1 files) applied the same way ("measure: kit now"). Four commits were chosen **once**, from each
-project's own history before any measure commit (two with a phase token, one without, one merge), so both states grade the same shas. Probes in each state, on a
+project's own history before any measure commit (the two newest with a phase token, the newest without one, the newest merge), so both states grade the same shas. What they grade differs
+per project: ExpenseTracker two PASS lines, FitForge one, FlowBoard none (a WARN for a phase with no declared territory), so FlowBoard's comparison has no PASS line. Probes in each state, on a
 fresh copy of the committed clone: `scope-check.ps1 -Commit <sha> -Branch <feature>` on each; `doc-lint.ps1`; `ritual-checks.ps1 -Branch main`; and the damage probe: a fresh
 branch `099-probe` whose phase commit adds one file inside its declared Territory and one outside, graded intact, then with that commit's tree object truncated
 (the clones' own objects are packed, so a new loose commit is built).
@@ -148,3 +149,14 @@ Linux platform (the CI run of the branch), and a damaged object that is not a lo
 5 digests, 119 markers). It states the F3 limit (`-All` can still end on UNGRADED when a commit object is missing), the unchanged blob reads and the git version. `docs/roadmap.md`:
 GAP-038's status text, the row `shipped`, a decisions-log entry, and **GAP-040** (the other unchecked reads, owner decision "both") as an inventory row and an `idea` row.
 Main had already taken the claim flip of PR #101, so `main` was merged into the branch before the row was edited and nothing conflicts at the merge.
+
+### Phase 2 review follow-ups (`ai-code-review-phase2.md`, APPROVE with follow-ups, no blocking finding)
+
+- **F1 (commit choice):** the flow-down note and T010 above now say what each project's four commits actually graded (ExpenseTracker two PASS, FitForge one, FlowBoard a WARN and no PASS).
+- **F2 (`-All` in CI):** the note's limit (1) now says `ritual-checks.ps1`, and so CI, runs `scope-check.ps1 -All`, so a branch with a missing commit object can be green with the
+  `UNGRADED` line (the same fact GAP-040 states).
+- **F3 and F4 (wording):** "one line per damaged commit" is now "a line for each commit git cannot read", with the reviewer's example of four lines for one removed tree, and the note says in one
+  sentence what a wrapper that matched `PASS` or `not applicable` for such a commit now sees.
+- **F5 (the 1828):** it was measured on the phase 1 working tree before the follow-up commits (line endings, notes); the number at the tip is the T011 run below.
+- **F6 (the real projects):** the counts recorded after this measurement (FitForge one untracked path, FlowBoard two, ExpenseTracker none; no `probe` branch) are the counts recorded after the
+  measurement of feature 031 on the same projects; the measurement only ever worked on clones. The owner's decision "both" for GAP-040 is in this file and in the roadmap's decisions log.
