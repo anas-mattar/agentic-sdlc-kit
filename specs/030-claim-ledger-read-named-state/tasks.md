@@ -117,6 +117,26 @@ refusals print the same bytes; the roadmap row is closed.
 
 ---
 
+## Phase 3: A push that reports failure but landed (amendment, 2026-10-16; US2 scenarios 4 and 5, FR-003)
+
+**Amendment approved by**: anas.m, 2026-10-16
+
+**Purpose**: the review finding F1 of phase 1: a push that exits non-zero after the remote accepted it is read as landed, from the ledger the script has just read, so the claim is made (or withdrawn when a rival is also there) instead of reported as rejected with `Nothing was claimed`. The first three tasks write what is new and show it failing; nothing else in the script changes.
+
+**Territory**:
+
+- `scripts/claim-feature.ps1`
+- `tests/**`
+- `adoption/updating.md`
+- `docs/roadmap.md`
+- `docs/digests/**`
+
+- [ ] T016 Write the fixtures first: a `fail` and a `pass` for `CLF-015` (a push whose `receive-pack` exits 1 after landing, no rival, against the same claim without it) and `CLF-016` (the same landed push beside a stub rival, against one that exits 0), differing only in the condition, with the `originPushFailsAfterLanding` recipe field in `tests/enforcement/lib/FixtureRepo.psm1` and its self-tests. Run them on the current `main` script and record that each `fail` fails there for the stated reason.
+- [ ] T017 Edit `scripts/claim-feature.ps1` (plan P3 as amended): compute `landed` from the exit code and the ledger just read, use it for the success, the withdrawal and the `` wording, and print the P2 warning when a push that exited non-zero is taken as landed. Add `CLF-015` and `CLF-016` to `tests/enforcement/rules.json`; run the coverage sweep.
+- [ ] T018 Run `-Case claim-feature`, `-Case TERR-`, `-Case RIT-`, the full harness on an isolated checkout and `ritual-checks.ps1`: every earlier fixture unchanged, no unowned site. Update the flow-down note in `adoption/updating.md` (what a wrapper may newly see: a failed push whose branch landed is now a claim made, with a warning), `docs/roadmap.md` and the digests; record the numbers and the amendment in `notes.md`. A fresh-context AI review of this phase, then the owner's gate.
+
+---
+
 ## Dependencies & Execution Order
 
 - T002 before T003 and T004 (the fixtures use what the probe proved); T003 before T006 (fixtures first, shown failing).

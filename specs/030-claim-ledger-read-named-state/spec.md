@@ -89,12 +89,16 @@ new message and exit 1, and a fixture of a genuine rival still renumbers.
 
 **Acceptance Scenarios**:
 
-1. **Given** a push that fails and no rival with our number on `origin`, **When** it runs, **Then** it prints a refusal that
+1. **Given** a push that fails, with no rival with our number on `origin` and our branch not on `origin`, **When** it runs, **Then** it prints a refusal that
    says the push was rejected and what git said, does not warn of a concurrent claim, does not renumber, and exits 1.
 2. **Given** a rival claim with our number on `origin`, **When** it runs, **Then** it warns, withdraws, renumbers and pushes
    exactly as it does today (the genuine lost race is unchanged).
 3. **Given** a push that fails and a rival with our number that appears at the same time, **When** it runs, **Then** it is
    treated as the lost race it is (a rival exists), unchanged.
+4. **Given** a push that reports failure but whose branch is on `origin` (the remote accepted it and then the push errored), with no rival carrying our number, **When** it runs, **Then** it warns that git reported an error but the branch is on `origin`, shows git's text, treats the claim as made, prints the `CLAIMED:` lines and exits 0.
+5. **Given** the same landed push beside a rival with our number, **When** it runs, **Then** it is the lost race: it warns, withdraws our branch from `origin`, renumbers and pushes, as for a push that exited 0.
+
+**Amendment approved by**: anas.m, 2026-10-16 (User Story 2 scenarios 1, 4 and 5, FR-003, the edge case and the assumption on stated limits, for the review finding F1 of phase 1)
 
 ---
 
@@ -147,9 +151,7 @@ stated reason and a `pass` that differs in one condition.
   (User Story 2) wins over the read failure, because the push is the older fact; the message still says nothing is claimed.
 - The read fails after a push that succeeded **and** the branch was withdrawn by an earlier attempt: the withdrawal happens
   before the re-read, so the state is the same as scenario 3 of User Story 1.
-- A push that reports failure but landed (a timeout after the remote accepted it): the script cannot tell from the exit code
-  alone. The refusal says to check `origin` for our branch before claiming again; deciding it from the ledger is out of
-  scope (see Assumptions).
+- A push that reports failure but landed (a timeout, or a remote that errors after accepting it): the ledger read after the push lists our branch, and the script reads the push as landed (FR-003). Only when that ledger cannot be read is the exit code the whole truth, and the refusal then says to check `origin` for our branch before claiming again.
 - `-Json` does not change the refusals: there is no JSON error object today and none is added.
 
 ## Level Rationale *(mandatory — answers the four Critical triggers, in writing)*
@@ -170,9 +172,10 @@ stated reason and a `pass` that differs in one condition.
   say it may already be on `origin` and that the remote must be checked before claiming again, and MUST NOT delete or move
   it. Where nothing of ours can be on `origin` (the first read, and the re-read after a withdrawal that worked) it MUST say
   nothing was claimed.
-- **FR-003**: A push that fails with no rival claim carrying our number on `origin` MUST be refused as a rejected push,
+- **FR-003**: A push that fails, with no rival claim carrying our number on `origin` and with our branch not on `origin`, MUST be refused as a rejected push,
   once, with git's own text, without the concurrent-claim warning, without renumbering and without retrying. A push whose
-  failure is accompanied by a rival, and a push that succeeded beside a rival, MUST behave as they do today.
+  failure is accompanied by a rival, and a push that succeeded beside a rival, MUST behave as they do today. A push that reports failure but whose branch is on `origin` MUST be read as landed (our number was free when it was allocated, so the branch can only be there if our push put it there): with no rival it is a claim made, with a warning that carries git's text, the `CLAIMED:` lines and exit 0; with a rival it is the lost race, and the branch is withdrawn like that of a push that exited 0.
+  **Amendment approved by**: anas.m, 2026-10-16
 - **FR-004**: A withdrawal (`git push origin --delete <branch>`) that fails MUST refuse, naming the branch left on `origin`
   and saying to delete it; a re-fetch (line 144) that fails MUST refuse with the existing first-fetch message and MUST say
   our abandoned branch is already withdrawn.
@@ -239,7 +242,7 @@ Each has a recommendation. **Decided by the owner (anas.m, 2026-10-16): D1 A, D2
 - The refusal text stays on the error stream through the script's `Stop-Refused`, as in feature 023.
 - Left as stated limits, not changed here: the `git for-each-ref` in `Get-NextFreeNumber` (line 58), because the remote
   ledger and `specs/` still bound the number it chooses, so a failure there can lower the choice but not below a number the
-  ledger or `specs/` shows; the local `git branch -m` and `Rename-Item` of the renumbering; a push that failed but landed;
+  ledger or `specs/` shows; the local `git branch -m` and `Rename-Item` of the renumbering;
   and `scripts/claim-feature.ps1`'s interaction with the stock `create-new-feature.ps1`, which feature 023 covers.
 - The script is kit-owned and flows down verbatim; no adopted project has a verdict from it to move.
 - The throw's exit code and the launcher's reading of it are measured in phase 1, before the change, not assumed.

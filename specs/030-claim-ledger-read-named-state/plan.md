@@ -78,11 +78,17 @@ register, goes to the error stream through `Stop-Refused`, and exits 1:
 The wording of the first line of the re-fetch refusal is the first-fetch refusal's, unchanged (feature 023). Git's own text
 for the rejected push is captured (the script discards it today) and printed as git wrote it.
 
+**Amendment (2026-10-16): the wordings as built.** **Amendment approved by**: anas.m, 2026-10-16
+The rejected-push row is laid out on several lines (the first line `git push of <branch> was rejected:`, then git's text on its own lines, then the closing sentence), because git's text is five lines; the sentences are as in the row, and the closing sentence also says to check `origin` for the branch (the Risks section's hedge). The re-read row has a second wording, `<branch> never reached origin`, for the state where our own push was rejected and a rival is also on `origin`; the re-fetch row uses the same two wordings. A new row for a push that reports failure but whose branch is on `origin` with no rival (a warning, then the claim is made): `git push of <branch> reported an error, but <branch> is on origin and no rival carries number <NNN> — treating the claim as made. git said:` followed by git's text on its own lines.
+
 **P3 — The race loop's decision table (FR-003).** With `pushOk` and the rival list as the two inputs: push ok and no rival
 is a success (unchanged); a rival with our number, whatever the push did, is the lost race, with the warning, the
 withdrawal (only when the push landed), the renumber and the retry (unchanged, including the `claimed concurrently (...)`
 line, whose list is now never empty); push failed and no rival is the rejected push, refused once with no warning and no
 renumber. A failed ledger read in the failed-push row is the third row of P2.
+
+**Amendment (2026-10-16): `landed`.** **Amendment approved by**: anas.m, 2026-10-16
+The first input is not `pushOk` alone but `landed`: the push exited 0, **or** the ledger just read lists our branch (our number was free when it was allocated, so the branch can only be there if our push put it there; a push can exit non-zero after the remote accepted it). Landed and no rival is a success, with the new P2 warning when the exit code was non-zero; a rival is the lost race, with the withdrawal whenever the push landed (by either evidence) and `<branch> was withdrawn from origin` in the re-read and re-fetch wordings; not landed and no rival is the rejected push, refused once. When the ledger cannot be read the exit code is the only evidence, as before.
 
 **P4 — Withdrawal and re-fetch are checked in phase 2, not phase 1 (D1 A, D3 A).** Phase 1 leaves lines 140 and 144 as
 they are; phase 2 gives each its refusal (P2). This keeps phase 1's diff to the read and the rejected push, so a reviewer
@@ -102,6 +108,8 @@ Each is first tried in a throwaway fixture and the result recorded in `notes.md`
   `create-new-feature.ps1` creates a branch with our number in the nested origin as a side effect, which needs no new field
   because the stub is test code the recipe already places. The three-rivals state of line 142 would need a rival at every
   attempt; it is tried with a `pre-push` hook in the fixture and, if the harness cannot build it, left exempt (P6).
+- *Amendment (2026-10-16), as built:* the three-rivals state was built not by a `pre-push` hook but by a `receive-pack` wrapper that runs the real one and then creates `<NNN>-rival` (field `originRivalOnPush`), so `CLF-007` kept its fixture. **Amendment approved by**: anas.m, 2026-10-16
+- *Amendment (2026-10-16): a push that exits non-zero after the remote accepted it:* `remote.origin.receivepack` pointed at a counting wrapper that runs the real `git-receive-pack` and exits 1 on the chosen call (probed: the branch lands, upstream tracking is set, `git push` exits 1). Field `originPushFailsAfterLanding`, refused without `origin` and refused together with `originRivalOnPush` (both set `receivepack`), with a self-test.
 
 **P6 — Rule ids, the pre-existing case, and the exempt count (FR-006, SC-005).** New rules, each with a pair differing in
 one condition: `CLF-008` (first read fails), `CLF-009` (read fails after a push that succeeded), `CLF-010` (read fails after a
@@ -110,7 +118,7 @@ push that failed), `CLF-011` (read fails after a re-fetch), `CLF-012` (rejected 
 no rival, which today prints three concurrent-claim warnings and the three-times refusal and, after phase 1, prints the
 rejected-push refusal. That fixture moves to `CLF-012`, and `CLF-007` keeps site 142 only if a genuine rival at every
 attempt can be built (P5, the `pre-push` hook); if it cannot, `CLF-007` becomes exempt with a written reason, the exempt count
-rises by one and SC-005 allows it. The re-expectation is recorded in `notes.md` as a pre-existing case changed by the work, in
+rises by one and SC-005 allows it. Amendment (2026-10-16): ``CLF-015`` (a push that reports failure but whose branch is on origin, no rival, is a claim made) and ``CLF-016`` (the same beside a rival is withdrawn and renumbered), each a pair differing in one condition. The re-expectation is recorded in `notes.md` as a pre-existing case changed by the work, in
 the way feature 028 recorded `AMEND-008/fail`.
 
 **P7 — A baseline measures the parent before anything changes (spec, Assumptions).** Phase 1's first task records, on the
@@ -135,6 +143,7 @@ Detailed tasks and the per-phase **Territory** blocks are in `tasks.md`.
    parent, the script, the harness field and its self-test.
 2. **The withdrawal, the re-fetch, guidance and measurement.** P4, P5 (the denied withdrawal), P6 (`CLF-013`, `CLF-014`), P8.
    Delivers User Stories 3 and 4 and FR-004, FR-006 (the rest), FR-008, SC-001.
+3. **A push that reports failure but landed (amendment, 2026-10-16).** P3 (`landed`), P5 (`originPushFailsAfterLanding`), P6 (`CLF-015`, `CLF-016`), the User Story 2 scenarios 4 and 5 and FR-003 as amended. **Amendment approved by**: anas.m, 2026-10-16
 
 ## Project Structure
 
@@ -190,9 +199,7 @@ docs/digests/**                           # phase 2, if a digest-marked document
   indistinguishable from one that read an empty ledger; P1 names the separate channel and the empty-ledger `pass` pins it.
 - **`CLF-007` may lose its fixture.** If a rival at every attempt cannot be built, the rule is exempt with a written reason
   and the exempt count rises by one (P6); the plan says so now so it is not discovered at the gate.
-- **A push that fails but landed.** The exit code cannot tell it from a rejection; P2's message says nothing was claimed,
-  which is false in that rare case. The message for the rejected push therefore says to check origin for the branch, and
-  the spec lists the case as out of scope.
+- **A push that fails but landed.** *Amendment (2026-10-16), review finding F1 of phase 1:* the ledger read after the push shows it, and the script reads the push as landed (P3). The residual case is a push that fails and landed while the ledger cannot be read: the exit code is then the only evidence, and the rejected-push message keeps its hedge to check origin for the branch. **Amendment approved by**: anas.m, 2026-10-16
 - **Message text with line breaks.** Git's rejection text is multi-line; the expectation is written by hand with those
   breaks and a fixture whose rejection text is fixed.
 - **The stub is test code the harness runs.** A stub that drifts from the real script's output contract (`BRANCH_NAME`)
