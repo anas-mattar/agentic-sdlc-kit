@@ -1,0 +1,45 @@
+{
+  "description": "CLF-018 fail: a second claimant with the same number and short name pushed a branch of OUR name at OUR sha between our ledger read and our push (the stub pushes the claim branch to origin before the script does, and nothing else differs from the pass direction). Our push is then up to date, exit 0, and says it created nothing: the branch on origin is the other claimant's. The claim is not reported as made: the script warns, leaves that branch alone (origin refuses deletions, so an attempted withdrawal would show), renumbers to 002 and claims that, exit 0. On the parent commit it printed CLAIMED for 001-probe, a branch it did not push.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        ".specify/scripts/powershell/create-new-feature.ps1": [
+          "# Fixture stub of .specify/scripts/powershell/create-new-feature.ps1. The contract scripts/claim-feature.ps1 reads:",
+          "# it is called as -Json -Number N -ShortName S <description>, must create branch NNN-S and specs/NNN-S/ and",
+          "# leave that branch checked out, and must print {\"BRANCH_NAME\":\"NNN-S\"} on stdout.",
+          "param([switch]$Json, [int]$Number, [string]$ShortName, [Parameter(ValueFromRemainingArguments)]$Rest)",
+          "$b = '{0:000}-{1}' -f $Number, $ShortName",
+          "git checkout -q -b $b",
+          "# A second claimant with the same number AND the same short name pushes this very branch, at this very sha, after our ledger read and before our push.",
+          "if ($Number -eq 1) { git push -q origin $b 2>&1 | Out-Null }",
+          "New-Item -ItemType Directory -Force \"specs/$b\" | Out-Null",
+          "Set-Content \"specs/$b/spec.md\" 'stub'",
+          "[PSCustomObject]@{ BRANCH_NAME = $b } | ConvertTo-Json -Compress"
+        ],
+        ".gitignore": [
+          "/origin.git/"
+        ]
+      }
+    }
+  ],
+  "origin": "origin.git",
+  "nestedRepos": {
+    "origin.git": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "write": {
+            "README.md": "origin\n"
+          }
+        }
+      ]
+    }
+  },
+  "originDenyDeletes": true
+}
