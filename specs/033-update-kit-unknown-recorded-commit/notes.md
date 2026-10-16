@@ -134,7 +134,7 @@ of `update-kit.ps1` is a verbatim file, so with each kit's own content the two r
 | the same, `-Json`, before / now | `surgical` has **0** entries / **20** entries |
 | the same, a real run, before / now | no delivered-once note / the delivered-once note printed; both exit 2 and both rewrite `.kit-version` to the kit's HEAD (`574b958...`) |
 
-Two runs of the measurement were discarded before it came out right: the first splatted a one-element argument array character by character (`A positional parameter cannot be found that accepts argument 'D'`), and the
+Encoding of the captures: the `fitforge-unknown-before-*` captures of the final run were text-normalised (a hyphen for the em dash the script prints) unlike every other capture, so a raw diff of them shows 23 removed lines that are encoding only; the conclusion (no Surgical section before, 20 entries now) does not depend on them. Two runs of the measurement were discarded before it came out right: the first splatted a one-element argument array character by character (`A positional parameter cannot be found that accepts argument 'D'`), and the
 second compared each script with its own kit and so differed by the verbatim copy of the script itself. Not exercised: a small kit whose verbatim files are all current (the test builds it, and the pre-plan
 measurement recorded the old script's `Result: up to date`, exit 0), a shallow kit clone in place, and the Linux platform (the CI run of the branch).
 
@@ -142,3 +142,12 @@ measurement recorded the old script's `Result: up to date`, exit 0), a shallow k
 
 `adoption/updating.md`: a flow-down note in the shape of feature 032's, no digest marker (the adoption digest is at its 40-bullet bound; `build-digests.ps1 -Check` is OK, 5 digests, 119 markers). It states the
 NOTE line, the entries and exit 2, the unchanged states, the five limits and what to do (fetch the kit's full history). `docs/roadmap.md`: GAP-039's status text, the row `shipped`, and a decisions-log entry.
+
+### Phase 2 review follow-ups (`ai-code-review-phase2.md`, APPROVE with follow-ups, no blocking finding)
+
+- **F1 (the main residual risk), fixed in the note:** "run it again to get the real list" does not work after a real run, because the record has already advanced to the kit's HEAD and a second run lists nothing;
+  the delivered-once line itself prints a `git log <old>..<new>` that fails in the clone that lacks `<old>`. The "What to do" paragraph now says: make a **dry run** after giving the kit clone the missing history, then the real run; after a real
+  run, take the list from a clone that has the commit the NOTE named (`git log <that commit>..HEAD -- <surgical file>`); a commit from a rewritten history is in no clone, so review the surgical files against the kit as a whole.
+- **F2 (limit 3):** the reviewer tested a 7-character and a 4-character prefix and both are accepted by `cat-file` and `git log` (known). The limit now says what counts as unknown (a value that does not resolve to a commit: unresolvable, a tree sha, a non-string) and says the tree-sha behaviour change.
+- **F3 (the dash):** the script prints an em dash; the note and the roadmap entry now quote it. **F4:** "Not exercised" now lists the real runs of the known and absent states and `-Force` with an unknown commit. **F5:** the encoding of the
+  `fitforge-unknown-before-*` captures is stated under T008. **F6:** the note says `-Json`'s `result` was the string `up to date` and is now an object in the old silent state. **F7:** the GAP-039 status text points at the limits in the flow-down note.
