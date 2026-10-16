@@ -192,6 +192,9 @@ if ($recordedCommit) {
     git -C $Kit cat-file -e "${recordedCommit}^{commit}" 2>$null
     $recordedKnown = ($LASTEXITCODE -eq 0)
 }
+# The short form the delivered-once NOTE prints. A hand-edited .kit-version can hold a value shorter than seven characters or one that is not a
+# string, and an unknown one now reaches that NOTE (feature 033, review finding F1).
+$recordedShort = if ($recordedCommit) { "$recordedCommit".Substring(0, [Math]::Min(7, "$recordedCommit".Length)) } else { '<old>' }
 $kitHeadSha = (git -C $Kit rev-parse HEAD).Trim()
 $constitutionText = Get-Content (Join-Path $Kit '.specify/memory/constitution.md') -Raw
 $kitVersionString = if ($constitutionText -match '\*\*Version\*\*:\s*([0-9]+\.[0-9]+\.[0-9]+)') { $Matches[1] } else { 'unknown' }
@@ -328,7 +331,7 @@ if ($Json) {
         Write-Host "Result: kit $kitVersionString @ $newKitCommit$(if ($DryRun) { ' (not written - dry run)' })"
     }
     if ($surgicalReport.Count -gt 0 -and -not $DryRun) {
-        Write-Host "NOTE: this surgical report is delivered once — the record now advances to kit HEAD. Handle it this session (adoption/updating.md); recover it later with: git log $(if ($recordedCommit) { $recordedCommit.Substring(0,7) } else { '<old>' })..$($kitHeadSha.Substring(0,7)) in the kit clone."
+        Write-Host "NOTE: this surgical report is delivered once — the record now advances to kit HEAD. Handle it this session (adoption/updating.md); recover it later with: git log $recordedShort..$($kitHeadSha.Substring(0,7)) in the kit clone."
     }
 }
 

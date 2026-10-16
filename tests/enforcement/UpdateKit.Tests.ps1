@@ -68,6 +68,7 @@ BeforeAll {
         Write-Lf (Join-Path $target 'docs/a.md') "verbatim v1`n"
         Write-Lf (Join-Path $target 'docs/sdlc/gate-command.md') "my project's gate`n"
         if ($Recorded -eq 'malformed') { Write-Lf (Join-Path $target '.kit-version') '{ not json' }
+        elseif ($Recorded -eq 'number') { Write-Lf (Join-Path $target '.kit-version') '{ "kitVersion": "0.9.0", "kitCommit": 123, "updatedOn": "2026-01-01" }' }
         elseif ($Recorded -ne 'absent') {
             Write-Lf (Join-Path $target '.kit-version') ('{ "kitVersion": "0.9.0", "kitCommit": "' + $Recorded + '", "updatedOn": "2026-01-01" }')
         }
@@ -143,6 +144,31 @@ Describe 'update-kit.ps1 and the recorded kit commit (feature 033, plan P5)' {
             $r.Text | Should -Match 'delivered once'
             $r.Exit | Should -Be 2
             (Get-Content (Join-Path $target '.kit-version') -Raw | ConvertFrom-Json).kitCommit | Should -Be $script:KitHead
+        }
+
+        It 'a dry run leaves .kit-version as it was' {
+            $target = New-Target $script:Unknown
+            $before = Get-Content (Join-Path $target '.kit-version') -Raw
+            Invoke-UpdateKit $target @('-DryRun') | Out-Null
+            (Get-Content (Join-Path $target '.kit-version') -Raw) | Should -Be $before
+        }
+
+        It 'a recorded value shorter than a sha (a hand-edited .kit-version) is unknown too, and a real run still ends in its report, exit 2, not in an error (review finding F1)' {
+            $target = New-Target 'abc'
+            $r = Invoke-UpdateKit $target @()
+            $r.Text | Should -Match 'NOTE: the recorded kit commit abc is not in the kit clone'
+            $r.Text | Should -Match 'delivered once'
+            $r.Text | Should -Not -Match 'Exception|cannot be|Substring'
+            $r.Exit | Should -Be 2
+            (Get-Content (Join-Path $target '.kit-version') -Raw | ConvertFrom-Json).kitCommit | Should -Be $script:KitHead
+        }
+
+        It 'a recorded value that is not a string (a number) is unknown too, and a real run ends in its report, exit 2 (review finding F1)' {
+            $r = Invoke-UpdateKit (New-Target 'number') @()
+            $r.Text | Should -Match 'NOTE: the recorded kit commit 123 is not in the kit clone'
+            $r.Text | Should -Match 'delivered once'
+            $r.Text | Should -Not -Match 'Exception|cannot be|Substring'
+            $r.Exit | Should -Be 2
         }
 
         It '-Json keeps its keys and carries the surgical entry; the cause line is text mode only' {
