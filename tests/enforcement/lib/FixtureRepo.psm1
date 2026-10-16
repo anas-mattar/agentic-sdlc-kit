@@ -91,6 +91,20 @@
       ledger and every 'git push' fails: the state in which a claim's push is rejected with no rival, which
       claim-feature.ps1 reports as a lost allocation race (feature 023, CLF-007). It needs "origin", and is
       refused without one rather than ignored.
+    - "originFailCall": N makes the Nth read of origin's refs fail (feature 030, plan P5): every
+      'git fetch' and 'git ls-remote' against origin runs the remote's upload-pack, so origin's
+      upload-pack is wrapped in a counting script that exits non-zero on call N and runs the real
+      one on every other call. A push uses receive-pack and is not counted, so the call order a
+      claim makes is fixed: the first fetch is call 1, the first ledger read call 2, the read after
+      the first push call 3. The wrapper and its counter live under .git/, so the working tree
+      stays clean (a claim refuses a dirty one). It needs "origin", and N must be a whole number
+      of at least 1; either is refused rather than ignored.
+    - "originRivalOnPush": true makes a rival claim appear on origin after every push (feature 030,
+      plan P5): origin's receive-pack is wrapped in a script that runs the real one and then creates
+      "<NNN>-rival", a branch carrying the number of every numbered branch just pushed. A claim then
+      meets a rival with its own number after each of its attempts, which no stub can do (a stub
+      runs once, before the first push): the state behind claim-feature.ps1's 'lost the allocation
+      race 3 times' refusal (CLF-007). It needs "origin" and is refused without one.
     - "detach": true leaves HEAD detached at the checked-out commit, the CI shape where the
       current branch cannot be read from the repository at all.
     - "noGit": true removes the .git directory once the fixture is written, so the directory is
@@ -178,6 +192,21 @@ function New-FixtureRepo {
     if ($Recipe.PSObject.Properties.Name -contains 'originPushUrl' -and $Recipe.originPushUrl) {
         if (-not ($Recipe.PSObject.Properties.Name -contains 'origin' -and $Recipe.origin)) {
             throw "fixture 'originPushUrl' needs 'origin': a push URL belongs to a remote, and there is none. Refused rather than silently ignored."
+        }
+    }
+
+    if ($Recipe.PSObject.Properties.Name -contains 'originFailCall' -and $null -ne $Recipe.originFailCall) {
+        if (-not ($Recipe.PSObject.Properties.Name -contains 'origin' -and $Recipe.origin)) {
+            throw "fixture 'originFailCall' needs 'origin': a read of a remote's refs belongs to a remote, and there is none. Refused rather than silently ignored."
+        }
+        if (-not ($Recipe.originFailCall -is [int] -or $Recipe.originFailCall -is [long]) -or $Recipe.originFailCall -lt 1) {
+            throw "fixture 'originFailCall' must be a whole number of at least 1 (the Nth read of origin's refs fails), got '$($Recipe.originFailCall)'. Refused rather than silently ignored."
+        }
+    }
+
+    if ($Recipe.PSObject.Properties.Name -contains 'originRivalOnPush' -and $Recipe.originRivalOnPush) {
+        if (-not ($Recipe.PSObject.Properties.Name -contains 'origin' -and $Recipe.origin)) {
+            throw "fixture 'originRivalOnPush' needs 'origin': a rival claim appears on a remote, and there is none. Refused rather than silently ignored."
         }
     }
 
@@ -392,6 +421,47 @@ function New-FixtureRepo {
         }
         if ($Recipe.PSObject.Properties.Name -contains 'originPushUrl' -and $Recipe.originPushUrl) {
             Invoke-FixtureGit -RepoPath $root -Arguments @('config', 'remote.origin.pushurl', (Join-Path $root "$($Recipe.originPushUrl)")) | Out-Null
+        }
+        if ($Recipe.PSObject.Properties.Name -contains 'originFailCall' -and $null -ne $Recipe.originFailCall) {
+            # The Nth upload-pack call fails; every other call runs the real one. Written under .git/ so the
+            # working tree stays clean, with LF endings (it is run by sh), and run as 'sh <script>' so it
+            # needs no execute bit on any platform. The counter file sits beside it, starting absent.
+            $gitDir = Join-Path $root '.git'
+            $wrapper = Join-Path $gitDir 'fixture-upload-pack.sh'
+            $lines = @(
+                '#!/bin/sh',
+                '# Fixture wrapper (feature 030, plan P5): fails the Nth call to upload-pack, runs git-upload-pack otherwise.',
+                'here=$(dirname "$0")',
+                'f="$here/fixture-upload-pack.count"',
+                'n=$(cat "$f" 2>/dev/null || echo 0)',
+                'n=$((n + 1))',
+                'echo "$n" > "$f"',
+                "if [ `"`$n`" = `"$([int]$Recipe.originFailCall)`" ]; then",
+                '  echo "fixture: upload-pack call $n is made to fail" >&2',
+                '  exit 1',
+                'fi',
+                'exec git-upload-pack "$@"'
+            )
+            [System.IO.File]::WriteAllText($wrapper, (($lines -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+            $wrapperPath = $wrapper.Replace('\', '/')
+            Invoke-FixtureGit -RepoPath $root -Arguments @('config', 'remote.origin.uploadpack', "sh '$wrapperPath'") | Out-Null
+        }
+        if ($Recipe.PSObject.Properties.Name -contains 'originRivalOnPush' -and $Recipe.originRivalOnPush) {
+            # After the real receive-pack, every numbered branch on origin gets a rival carrying its number.
+            # git runs this as '<receivepack> <repo path>', so $1 is the repository that was pushed to.
+            $wrapper = Join-Path (Join-Path $root '.git') 'fixture-receive-pack.sh'
+            $lines = @(
+                '#!/bin/sh',
+                '# Fixture wrapper (feature 030, plan P5): a rival claim appears after every push.',
+                'git-receive-pack "$@"; rc=$?',
+                'for b in $(git -C "$1" for-each-ref --format=''%(refname:short)'' ''refs/heads/[0-9]*''); do',
+                '  case "$b" in *-rival) continue ;; esac',
+                '  git -C "$1" branch "${b%%-*}-rival" main 2>/dev/null',
+                'done',
+                'exit $rc'
+            )
+            [System.IO.File]::WriteAllText($wrapper, (($lines -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))
+            Invoke-FixtureGit -RepoPath $root -Arguments @('config', 'remote.origin.receivepack', "sh '$($wrapper.Replace('\', '/'))'") | Out-Null
         }
     }
 

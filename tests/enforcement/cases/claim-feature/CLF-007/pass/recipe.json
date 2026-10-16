@@ -1,5 +1,5 @@
 {
-  "description": "CLF-007 pass: origin is a repository nested in the fixture and takes the push, so the claim is made and pushed. Differs from the fail direction only in the missing push URL.",
+  "description": "CLF-007 pass: the same claim with no rival: it succeeds on the first attempt.",
   "defaultBranch": "main",
   "commits": [
     {
