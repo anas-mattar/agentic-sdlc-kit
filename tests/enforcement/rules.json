@@ -1954,6 +1954,33 @@
       "notes": "The general case the per-site conversions do not reach. Invoke-ScopeCheck returns a skip for a merge commit, for a commit with no 'phase N' token, and for a pre-006 tree with no tasks.md; a branch made only of those exits 0 having graded nothing, and before this the wrapper printed OK. Counted the way scripts/scope-check-repos.ps1 has counted since feature 012 ($graded), so the two members answer the same question the same way. The pair differs in one commit's SUBJECT LINE - 'work: the thing' against 'phase 1: the thing' - which is the whole of the condition (plan D10)."
     },
     {
+      "id": "SCOPE-028",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "a Standard phase commit whose changed files git cannot read fails the commit with an ERROR instead of passing with 0 files",
+      "law": "docs/sdlc/review-process.md; constitution X (territory rule); specs/032-scope-check-unreadable-commit FR-001, FR-003; roadmap GAP-038",
+      "emitAnchor": "its changed files could not be read",
+      "notes": "Added in feature 032. The fail direction truncates the commit's tree (truncateCommit HEAD^{tree}); on the parent commit it printed PASS (0 file(s)) and exit 0 for a commit it had not graded. The pass direction is SCOPE-019's fixture; pass-empty pins that a readable empty commit keeps printing PASS (0 file(s)). SCOPE-029 and SCOPE-030 share this emission site (one function prints the line)."
+    },
+    {
+      "id": "SCOPE-029",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "a Micro phase commit whose changed files git cannot read fails the commit with an ERROR instead of passing with 0 files",
+      "law": "docs/sdlc/review-process.md; constitution X (territory rule); specs/032-scope-check-unreadable-commit FR-001, FR-003; roadmap GAP-038",
+      "emitAnchor": "its changed files could not be read",
+      "notes": "Added in feature 032. The Micro lane reads the changed files through the same function as the Standard lane (plan P3); the pass direction is SCOPE-016's fixture. Shares its emission site with SCOPE-028."
+    },
+    {
+      "id": "SCOPE-030",
+      "script": "scope-check.ps1",
+      "function": "Invoke-ScopeCheck",
+      "summary": "the guard that refuses a deletion or rename of tasks.md or spec.md names a commit whose changed files it cannot read instead of standing down as not applicable",
+      "law": "docs/sdlc/review-process.md; constitution X (territory rule); specs/032-scope-check-unreadable-commit FR-001, FR-003; roadmap GAP-038",
+      "emitAnchor": "its changed files could not be read",
+      "notes": "Added in feature 032. A commit with no phase token that deletes tasks.md and whose tree is unreadable used to print not applicable and UNGRADED (exit 0), hiding the deletion; the pass direction is the same commit readable, which the guard refuses. Shares its emission site with SCOPE-028."
+    },
+    {
       "id": "RIT-007",
       "script": "ritual-checks.ps1",
       "function": "(run verdict)",
@@ -2044,6 +2071,16 @@
       "siteCount": 2,
       "exemption": "Needs the diff base's tree to be unreadable while every earlier read of the same range succeeds. The base is the first parent of the branch's first commit (and, in a replay, the left end of the range), so a damaged base tree breaks the commit batch (git log --name-status over the range) and the per-commit boundary read (AMEND-005) before this site is reached; for a merge, the base is one of the merge's parents, which the merge readability check (AMEND-008) refuses first, by design (the base is read only after the merge and its parents proved readable). Measured: truncateCommit naming main's tree with -IgnoreAmendmentBoundary lifts the boundary read and still ends on 'graded 2 of 2' because the name-status batch comes back empty, so a fixture would pin a different outcome under this rule's name (the defect that would then be hiding is the empty batch, which is a separate rule's concern). Exempted rather than faked.",
       "notes": "Feature 027 phase 1 (plan D2, D8). Two emission sites share one failure text (the ordinary-commit row loop and the merge helper's result); the refusal is defensive and fails closed: a base that cannot be read must not be read as an empty set, which would exempt every amendment of another feature's document as a creation. The id AMEND-009 is reserved by plan D8 for the Lite lane's UNGRADED lines (phase 2)."
+    },
+    {
+      "id": "REPOS-035",
+      "script": "scope-check-repos.ps1",
+      "function": "Invoke-RepoScopeCheck",
+      "summary": "a code repository's phase commit whose changed files git cannot read fails the repository with an ERROR instead of passing with 0 files",
+      "law": "specs/032-scope-check-unreadable-commit FR-004; specs/012-cross-repo-scope-check/contracts/scope-check-repos-cli.md (ERROR row); roadmap GAP-038",
+      "emitAnchor": "ERROR cannot read the changed files of ",
+      "exemption": "Needs git show --name-status to fail for a commit whose committer date (git show -s --format=%cI) was read fine. Every damage tried (the tree removed, a subtree removed, the tree truncated) breaks the date read first in the same run, measured in notes.md of feature 032 on git 2.55 (a property of that git, not of the code; the CI run is the second git), so a case would pin REPOS-033's rule under this rule's name. The line is kept as defence in depth, so a later change to the date read cannot reopen the hole. Same reasoning as REPOS-033.",
+      "notes": "Added in feature 032 and exempt from the start (plan P5), disclosed in Complexity Tracking."
     },
     {
       "id": "REPOS-033",

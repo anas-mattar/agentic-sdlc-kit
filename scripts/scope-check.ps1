@@ -94,6 +94,15 @@ function Get-DiffBase {
     return $null
 }
 
+# A commit whose changed files git cannot read was not graded, and is not a pass: an unreadable read used to be
+# an empty path list, so a phase commit printed PASS (0 file(s)) and the deletion guard stood down (feature 032,
+# GAP-038). Prints the one line and returns $false, the verdict of a commit that fails.
+function Write-UnreadableCommit {
+    param([string]$Sha7)
+    Write-Host "scope-check: ERROR commit ${Sha7}: its changed files could not be read (git show --name-status failed), so nothing about it was graded - the object store may be damaged: run git fsck."
+    return $false
+}
+
 # Check one commit; returns $true when the verdict is not FAIL.
 function Invoke-ScopeCheck {
     param([string]$Sha, [string]$FeatureBranch, [int]$PhaseOverride)
@@ -120,7 +129,8 @@ function Invoke-ScopeCheck {
     # territory declaration (constitution X, Micro lane), and deleting it is never
     # legitimate on any numbered branch (promotion rewrites it, never removes it).
     $specRel = "specs/$FeatureBranch/spec.md"
-    $statusRows = git -c core.quotepath=off show --name-status --format='' $Sha 2>$null
+    $statusRows = @(Get-CommitStatusRows -Sha $Sha)
+    if ($script:CommitReadFailed) { return (Write-UnreadableCommit -Sha7 $sha7) }
     foreach ($row in $statusRows) {
         $parts = $row -split "`t"
         if ($row -match "^D`t") {
@@ -185,6 +195,7 @@ function Invoke-ScopeCheck {
         }
         $globs = @("specs/$FeatureBranch/**") + $territory.Entries  # implicit spec-dir entry
         $paths = @(Get-CommitPaths -Sha $Sha)
+        if ($script:CommitReadFailed) { return (Write-UnreadableCommit -Sha7 $sha7) }
         $strays = @($paths | Where-Object { -not (Test-InTerritory -Path $_ -Globs $globs) })
         if ($strays.Count -eq 0) {
             Write-Host "scope-check: PASS phase $phaseN commit $sha7 ($($paths.Count) file(s), Micro territory from spec.md)"
@@ -253,6 +264,7 @@ function Invoke-ScopeCheck {
 
     $globs = @("specs/$FeatureBranch/**") + $territory.Entries      # implicit spec-dir entry
     $paths = @(Get-CommitPaths -Sha $Sha)
+    if ($script:CommitReadFailed) { return (Write-UnreadableCommit -Sha7 $sha7) }
     $strays = @($paths | Where-Object { -not (Test-InTerritory -Path $_ -Globs $globs) })
 
     if ($strays.Count -eq 0) {

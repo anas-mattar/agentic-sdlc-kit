@@ -1,0 +1,1 @@
+scope-check: ERROR commit <SHA>: its changed files could not be read (git show --name-status failed), so nothing about it was graded - the object store may be damaged: run git fsck.
