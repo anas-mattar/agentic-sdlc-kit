@@ -151,3 +151,18 @@ NOTE line, the entries and exit 2, the unchanged states, the five limits and wha
 - **F2 (limit 3):** the reviewer tested a 7-character and a 4-character prefix and both are accepted by `cat-file` and `git log` (known). The limit now says what counts as unknown (a value that does not resolve to a commit: unresolvable, a tree sha, a non-string) and says the tree-sha behaviour change.
 - **F3 (the dash):** the script prints an em dash; the note and the roadmap entry now quote it. **F4:** "Not exercised" now lists the real runs of the known and absent states and `-Force` with an unknown commit. **F5:** the encoding of the
   `fitforge-unknown-before-*` captures is stated under T008. **F6:** the note says `-Json`'s `result` was the string `up to date` and is now an object in the old silent state. **F7:** the GAP-039 status text points at the limits in the flow-down note.
+
+### T009 Final run on an isolated checkout of `fe9a02d`, and the CI result of phase 1
+
+A detached `git worktree` of the phase 2 change commit outside the repository, removed afterwards.
+
+| Measure | Result |
+|---|---|
+| full harness (`tests/enforcement/Run-Tests.ps1`) | **1838 passed, 0 failed, exit 0** (the parent's 1828 plus the 10 cases of `UpdateKit.Tests.ps1`; phase 2 adds no test) |
+| coverage | 7 rules exempt from a fixture pair (unchanged); no unowned site |
+| `ritual-checks.ps1 -Branch 033-update-kit-unknown-recorded-commit` in that checkout | `RESULT OK` |
+| `scope-check.ps1 -Commit` | PASS on `debca9c` (4 files), `8a909ec` (2), `fe9a02d` (4) and `f82ddc8` (4) |
+| CI, `enforcement-tests` on the pushed phase 1 commits `debca9c` and `574b958` | **success on `ubuntu-latest` and on `windows-latest`** for both: the second git (T002), and `UpdateKit.Tests.ps1` on both runners |
+
+The 1838 is measured at the phase 2 change commit and carries to the tip (the later commits touch only this file, `adoption/updating.md`, `docs/roadmap.md` and the review files). The CI runs of the later commits were
+still in progress when this was written. Open, and not claimed here: the owner's gate run on phase 2, the human review at merge.

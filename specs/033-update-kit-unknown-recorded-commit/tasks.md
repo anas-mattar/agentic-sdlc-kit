@@ -82,7 +82,7 @@ roadmap row is closed.
       a fresh copy of a clone with a known, an absent and an unknown recorded commit, dry run and `-Json -DryRun`; list every line that
       moves in `notes.md` with its cause and say plainly where none moved. The clones must be created with the same line-ending
       configuration for both states and the commits chosen once. Do not edit kit files while `update-kit.ps1` runs.
-- [ ] T009 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards):
+- [x] T009 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards):
       the full harness, `ritual-checks.ps1 -Branch 033-update-kit-unknown-recorded-commit`, and `scope-check.ps1` on each phase commit.
       Record the numbers in `notes.md`. The owner then runs the gate.
 
