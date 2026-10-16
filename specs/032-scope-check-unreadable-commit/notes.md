@@ -28,3 +28,13 @@ on a tree (`HEAD^2^{tree}`). `HEAD^{tree}` is the object M1 and M2 removed.
 
 Not measured here, and the plan must: the output of a **readable empty** commit (`git commit --allow-empty`), which must stay
 `PASS ... (0 file(s))`; and the same probes on the CI image's git.
+
+## Plan-time measurements (2026-10-16, git 2.55.0.windows.5)
+
+| Probe (the kept fixture repository of `SCOPE-001/pass`) | Result |
+|---|---|
+| a readable **empty** phase commit (`git commit --allow-empty -m "phase 1: ..."`): `git show --name-status --format=` | empty output, exit 0; `scope-check.ps1` prints `PASS phase 1 commit 5eca3ec (0 file(s))`, exit 0. This is the output FR-002 keeps. |
+| the phase commit's tree object **truncated to half its bytes** (the damage `truncateCommit` makes) | `git show` prints `error: corrupt loose object ...` and `fatal: loose object ... is corrupt`; `scope-check.ps1` prints `PASS phase 1 commit ac9be87 (0 file(s))`, exit 0 (the same state as removing the object). |
+
+The harness commits every recipe entry with `--allow-empty` (`FixtureRepo.psm1:412`), so an entry with no files is the empty
+readable commit of FR-002. The CI image's git and the flag's scope across both callers are the phase 1 tasks T001 and T002.
