@@ -19,3 +19,25 @@ consulted. Both claimants hold `031-same-name` at one sha.
 
 Not measured here: the `--force-with-lease=<ref>:` push, a claim commit carrying the claimant, and the harness recipe field
 that plants a same-name, same-sha branch. They are the plan's first tasks, before any change to the script.
+
+## Plan-time measurement of decision D1 B (2026-10-16, git 2.55.0.windows.5)
+
+Same throwaway `origin` (a bare repository outside the project), the same-name, same-sha race, three pushes of the same
+branch from two clones.
+
+| Push | Output | Exit |
+|---|---|---|
+| `git push --force-with-lease=refs/heads/<name>: -u origin <name>`, no rival | `[new branch]` | 0 |
+| the same command from a second clone, a rival's same-name, same-sha branch already on `origin` | `Everything up-to-date` | **0** |
+| the same command again, the rival's ref now fetched locally | `Everything up-to-date` | **0** |
+| `git push --porcelain -u origin <name>`, no rival | `*  refs/heads/<name>:refs/heads/<name>  [new branch]` | 0 |
+| the same command from a second clone, same name and sha already on `origin` | `=  refs/heads/<name>:refs/heads/<name>  [up to date]` | 0 |
+
+**D1 B does not work as written.** A push whose sha already equals the remote's is short-circuited by git as up to date before
+any lease is consulted, so the lease cannot refuse the one case this feature exists for. The lease is only useful against a
+rival at a different sha, which feature 030 already handles.
+
+What does separate the two claimants is the push's own status: only the claimant that creates the ref sees `[new branch]`
+(porcelain `*`); the other sees `[up to date]` (porcelain `=`). A script-only variant of B's intent (git decides, the claim
+stays uncommitted) is therefore to read `git push --porcelain` and treat `=` for our own new branch as "the name already
+existed", that is, a rival. This is not yet in the spec: D1 as approved names the lease.
