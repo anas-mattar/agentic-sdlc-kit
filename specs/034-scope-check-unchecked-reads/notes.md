@@ -89,3 +89,36 @@ intact `PASS`; the tip commit object deleted `ERROR ... (git merge-base failed w
 | the legitimate states (no trunk, no shared history, an empty range, a readable run) | pinned by existing cases | every pre-existing case passes unchanged; none was re-expected |
 
 `territory-check.ps1` is untouched; `-Case TERR-` passes unchanged (it reads `Base` and `Existing` of `Get-RepoMergeBase`, which keep their meaning).
+
+### Phase 1 review follow-ups (`ai-code-review-phase1.md`, APPROVE with follow-ups, no blocking finding)
+
+- **F1 (the exemptions were wrong), fixed with the owner's approval of the amendment (anas.m, 2026-10-17):** the reasons written for `SCOPE-032` and `REPOS-037` (in `rules.json`, plan P5 and T002(c) above) said
+  `git rev-list` over the range can fail only after `git merge-base` has failed. With a **commit-graph**, git answers `merge-base` from the graph without reading the commit objects, so a truncated tip commit leaves
+  `merge-base` exiting 0 while `rev-list` exits 128; the reviewer reproduced it through both scripts (the parent printed `UNGRADED (no commits since merge base)`, exit 0; the tip, the new `ERROR`). The line is live code,
+  not defence in depth. Phase 1 therefore gained one recipe field, `commitGraph` (`FixtureRepo.psm1` runs `git commit-graph write --reachable` after the commits and before any truncation, with a three-test self-test in
+  `Harness.Tests.ps1`: the graph file is written; with it, `merge-base` exits 0 and `rev-list` fails; without it both fail), and `SCOPE-032` and `REPOS-037` have real `fail`/`pass` fixtures, shown failing on the parent
+  (`UNGRADED (no commits since merge base - no commit was examined)`, exit 0) and passing at the tip. The exempt count stays 7. The spec (Assumptions), plan (P5, Source Code, Complexity Tracking) and tasks (T003, T004) were
+  amended, each with the approver record.
+- **F2 (a garbage ref file):** a corrupt `refs/heads/main` file makes `rev-parse --verify --quiet` exit 1, which reads as "no such ref": `UNGRADED`, exit 0, on parent and tip. A stated limit; git itself answers "no ref" there.
+- **F3 (accepted):** an unborn HEAD with `origin/main` present, or a trunk that is a tag of a tree, now gives `ERROR` where the parent gave `UNGRADED`, because `git merge-base` exits 128 for them. FR-006's "byte for byte" is for
+  readable repositories; these two states are not readable in git's sense.
+- **F4 (accepted):** when `origin/main` is damaged and `main` is readable, `main` wins silently (plan P1). A stale `main` only widens the range, so a branch commit is never missed; at worst other features' commits are graded, which can
+  produce a spurious FAIL and never a PASS.
+- **F5 (a second `Get-DiffBase`):** `scripts/enforcement-pack.ps1:186-200` has its own `Get-DiffBase` with the same discarded read. Its consequences are the pack's named states (feature 028), so it is not in this spec; it is recorded
+  for phase 2 (a stated limit in the flow-down note and, if the owner agrees, a roadmap row).
+- **F6 (shallow CI checkouts):** a depth-1 clone (the default `actions/checkout`) has no merge base with the trunk: git answers exit 1, so it stays `UNGRADED`, exit 0, as before. The flow-down note will say CI needs
+  `fetch-depth: 0` for `-All` to read a merge base at all.
+- **F7 (accepted):** the fixtures pin `exit 128` for a truncated tip commit, measured on git 2.55.0.windows.5; the CI run of the branch is the second probe.
+- **F8 (notes):** the damaged **trunk** object case was not in T002: the reviewer measured it, `git merge-base` exits 128 (and `rev-parse --verify --quiet` of a corrupt ref file exits 1, F2). `scope-lib.ps1` has no line in the coverage
+  sweep's site counts (only the two scripts do); T001 recorded the two scripts' counts and the harness total.
+
+### T006 again, after the amendment: numbers at `c565660`
+
+The full harness on an isolated detached worktree of `c565660` (below, recorded when it finishes) replaces the 1848 of T006: the changed code plus `commitGraph`, its three self-tests and the 8 cases of `SCOPE-032` and `REPOS-037`.
+
+| Measure (isolated detached worktree of `c565660`) | Result |
+|---|---|
+| full harness | **1859 passed, 0 failed, exit 0** (the parent's 1838 plus the 10 of `SCOPE-031`/`REPOS-036`, the 8 of `SCOPE-032`/`REPOS-037` and the 3 self-tests of `commitGraph`) |
+| `scope-check.ps1` sites fixtured | 31 of 31 (no exemption) |
+| `scope-check-repos.ps1` sites fixtured | 31 of 33 (2 exempt: the two it already had; `REPOS-037` is real) |
+| rules exempt from a fixture pair | 7 (unchanged from the parent) |
