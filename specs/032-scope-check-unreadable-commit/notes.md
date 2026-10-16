@@ -93,3 +93,23 @@ could not be read ... run git fsck.`, exit 1, restored `PASS ... (1 file(s))`.
 | `scope-check-repos.ps1` sites fixtured | 29 of 30 (1 exempt) | 29 of 31 (2 exempt: the new `REPOS-035`) |
 | rules exempt from a fixture pair | 6 | 7 |
 | readable commits, byte for byte | every existing case pinned | every pre-existing case passes unchanged (no case was re-expected) |
+
+### Phase 1 review follow-ups (`ai-code-review-phase1.md`, APPROVE with follow-ups, no blocking finding)
+
+- **F1 (line endings), fixed in `d02ecc9`:** the phase 1 commit had converted `scripts/scope-lib.ps1` and `scripts/scope-check-repos.ps1` from LF to
+  CRLF (the Edit tool wrote them that way); the real change is 18 and 6 lines, and the diff of those two files against the parent is now 18 and 6
+  lines again (`git diff --stat 8f31ab9`: 36 insertions, 2 deletions across the three scripts). `-Case SCOPE-` 344 passed and `-Case REPOS-` 224 passed after the fix.
+- **F6 (numbers):** the 339 and 219 recorded for `-Case SCOPE-` and `-Case REPOS-` were taken before `ScopeLib.Tests.ps1` existed; with the case
+  filter the five `ScopeLib` tests also run, so the runs at the tip are **344 and 224**, as the reviewer observed. T006 names `Harness.Tests.ps1`; the
+  self-test is the new file `tests/enforcement/ScopeLib.Tests.ps1`, because `Harness.Tests.ps1` tests the harness with throwaway scripts and never a kit
+  function (its own header); the file is inside `tests/**`.
+- **F5 (the `SCOPE-030` pair):** plan P5 and task T003 describe `pass` as the commit "readable and not deleting"; the shipped `pass` is the same
+  token-less commit readable **and still deleting**, so the guard refuses it (`FAIL commit ...: the commit deletes specs/001-thing/tasks.md`). That is the
+  stricter pair: `pass` and `fail` differ only in the truncated tree, and the pair shows the guard working and then failing to see. No document is amended.
+- **F4 (exemption wording):** the `REPOS-035` exemption now says its reason is a property of git 2.55, with the CI run as the second git.
+- **F2 (T002 item d):** the probe on the CI image's git is the CI run of the branch; its result is recorded below when it finishes.
+- **F3 (open, for the owner):** with a phase commit **object deleted**, `scope-check.ps1 -All` prints `UNGRADED could not resolve a merge base` and
+  exits 0 (`Get-DiffBase`, `:81-93`), and the same discarded-error pattern is in the `git rev-list` of `scope-check.ps1` (`:319`) and
+  `scope-check-repos.ps1` (`:379`); `git rev-list --parents` (`:118`) and `git log -1 --format=%s` (`:156`) discard errors too but sit behind the new guard.
+  `-Commit` on the same commit gives the new ERROR. Decision for the owner: a new GAP (GAP-040) recorded in phase 2's roadmap commit, or a stated
+  limit in the flow-down note, or both.

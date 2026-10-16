@@ -2079,7 +2079,7 @@
       "summary": "a code repository's phase commit whose changed files git cannot read fails the repository with an ERROR instead of passing with 0 files",
       "law": "specs/032-scope-check-unreadable-commit FR-004; specs/012-cross-repo-scope-check/contracts/scope-check-repos-cli.md (ERROR row); roadmap GAP-038",
       "emitAnchor": "ERROR cannot read the changed files of ",
-      "exemption": "Needs git show --name-status to fail for a commit whose committer date (git show -s --format=%cI) was read fine. Every damage tried (the tree removed, a subtree removed, the tree truncated) breaks the date read first in the same run, measured in notes.md of feature 032, so a case would pin REPOS-033's rule under this rule's name. The line is kept as defence in depth, so a later change to the date read cannot reopen the hole. Same reasoning as REPOS-033.",
+      "exemption": "Needs git show --name-status to fail for a commit whose committer date (git show -s --format=%cI) was read fine. Every damage tried (the tree removed, a subtree removed, the tree truncated) breaks the date read first in the same run, measured in notes.md of feature 032 on git 2.55 (a property of that git, not of the code; the CI run is the second git), so a case would pin REPOS-033's rule under this rule's name. The line is kept as defence in depth, so a later change to the date read cannot reopen the hole. Same reasoning as REPOS-033.",
       "notes": "Added in feature 032 and exempt from the start (plan P5), disclosed in Complexity Tracking."
     },
     {
