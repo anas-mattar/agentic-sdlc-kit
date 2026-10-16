@@ -173,3 +173,54 @@ Reviews: `ai-code-review-phase1.md` (APPROVE with follow-ups) and `ai-code-revie
 | phase 2 F3: roadmap `shipped` with T011/T014/T015 open | Closed by this section; the roadmap says built and measured, with the reviews, the gate and the human review still to come |
 | phase 2 F4, F5: the note omitted the withdrawal and re-fetch refusals and called the loop unchanged | Closed: both added to the note |
 | phase 2 F6, F7: git's reason is not shown for a failed withdrawal or re-fetch; no fixture covers the last-attempt ordering | Accepted, minor; stated in the note (reason not shown) and here (ordering) |
+
+## Phase 3: a push that reports failure but landed (amendment of 2026-10-16)
+
+Raised by the phase 1 review's finding F1 and F5; instructed by the owner ("fix F1 and amend the plan", anas.m), who also approved amending the spec (asked, because FR-003 and the spec's out-of-scope edge case
+contradicted the fix). The amendment (commit `ac731a0`: spec FR-003, User Story 2 scenarios 1/4/5, the edge case and the stated limits; plan P2 to P6, Risks and Phases, recording the three wording deviations of F5 and the
+`receive-pack` wrapper that replaced the planned `pre-push` hook; a Phase 3 in `tasks.md`) carries `**Amendment approved by**: anas.m, 2026-10-16` where amended and in the commit message. One refinement was the
+implementer's, inside that approval and disclosed in the plan: the warning shows only git's `error:`, `fatal:` and `remote:` lines, because git's progress lines reach the capture in an order nothing fixes.
+
+### Probe and fixtures
+
+Probe: `remote.origin.receivepack` pointed at a wrapper that runs the real `git-receive-pack` and then exits 1 makes `git push` exit 1 **with the branch on origin and upstream tracking set**. Implemented as the
+`originPushFailsAfterLanding` recipe field (counts every push to origin including deletions; refused without `origin`, with a bad number, and together with `originRivalOnPush`, which sets the same option), with self-tests.
+Fixtures `CLF-015` (landed, no rival: a claim made, a warning, exit 0) and `CLF-016` (landed beside a rival and a remote that refuses deletions: the withdrawal is attempted). Run on the script of `d33e908` before the change:
+`CLF-015/fail` observed `git push of 001-probe was rejected` with exit 1 (the review's F1 reproduced) and `CLF-016/fail` renumbered past a stale branch with exit 0; the pass twins passed.
+
+### The phase 3 review said REQUEST CHANGES, and was right
+
+`ai-code-review-phase3.md` (fresh-context, on `a26da6e`): **F1 (high, blocking)**: `landed` was decided by the branch **name**. The plan's premise (our number was free, so the branch can only be there if our push put it there)
+holds for the number and not the name: a second claimant with the same number and short name allocates the same branch name, so their branch on origin at another commit was read as our landed push (a false `CLAIMED:`, exit 0),
+and the withdrawal could delete their branch. The reviewer reproduced it with a hand-built probe. Fixed in `95d4725`: the ledger read keeps each branch's sha (`$script:LedgerShas`, no extra git call) and a push that errored is
+landed only if origin's branch of our name is at our own commit. `CLF-017` (a foreign branch of our name: the rejected push, exit 1; and `fail-rival`: the same beside a rival on a remote that refuses deletions, where reading the
+foreign branch as ours would attempt the withdrawal and end on `could not withdraw`) was written first and **shown failing on the script of `a26da6e`** (4 failures: `fail` observed `treating the claim as made`, exit 0; `fail-rival`
+observed `could not withdraw`, exit 1). One expectation was corrected by reasoning, not by copying the output: git reports the rejection as `(non-fast-forward)` and not `(fetch first)` because the claim's first fetch has already
+brought origin's `main` commit into the clone. The premise is corrected in the spec, plan, tasks, roadmap, adopter note and script comment, with the owner's approver record (the owner approved this correction in the session).
+
+### The fix review (`ai-code-review-phase3-fix.md`, APPROVE with follow-ups)
+
+Verified by the reviewer: the truth table over push exit x same-name branch x same sha x rival x ledger readable; `$script:LedgerShas` reset and refilled on every call with its one reader right after the per-attempt read;
+`$LASTEXITCODE` read at the right moment; `CLF-017` failing on the old script and passing on the new (151 passed, 4 failed; then 155 passed).
+
+| Finding | Disposition |
+|---|---|
+| F1 (minor, reasoning only): `create-new-feature.ps1` makes no commit, so two claimants with the same number and short name from the same `main` tip hold branches at the same commit; the commit test cannot tell them apart | Stated as a limit in the plan (Risks) and the adopter note |
+| F2 (doc drift, verified): four code fences of `plan.md` damaged by a backtick clean-up | Restored |
+| F3 (minor): a script comment still names the old premise, then corrects it | No action |
+| phase 3 F2, F4 (nits): the warning drops git's `! [rejected]` lines (disclosed in the plan); a self-test only checks one config key | Accepted |
+| phase 3 F3 (nit): `T017` lost its `$gone` token to shell expansion | Fixed |
+
+### Numbers
+
+| Measure | Phase 3 final code commit `95d4725` |
+|---|---|
+| full harness, isolated detached worktree | **1805 passed, 0 failed** (1788 before phase 3; the earlier run at `bf59a3f` was discarded, the code having changed) |
+| `claim-feature.ps1` sites fixtured | 15 of 18 (3 not a rule), no unowned site |
+| rules exempt from a fixture pair | 6 (unchanged) |
+| `-Case claim-feature` | 155 passed, 0 failed |
+| `scope-check.ps1` | PASS on `a26da6e`, `95d4725` and `1f80b49` (20, 17 and 3 files) |
+| `ritual-checks.ps1 -Branch 030-claim-ledger-read-named-state` on the branch (32 changed files beyond `main`) | `RESULT OK`: `doc-lint`, `enforcement-pack`, `scope-check`, `digests`, `roadmap-claims` all OK, `scope-repos` and `verify-kit` n/a |
+
+Not measured: the phase 3 behaviour in the three adopted-project clones (the landed-then-failed state needs a remote whose `receive-pack` errors after accepting, which a clone's bare copy does not do; the fixtures prove it), and the
+Linux platform (the CI run on the pull request is its evidence). The three-project measurement of phase 2 stands: phase 3 changes nothing in the states it measured (a push that exits 0, a read that fails, a push that fails with no branch on origin).
