@@ -19,6 +19,8 @@ repository and, because a nested recipe is built by the same function, on a code
 
 ## Technical Context
 
+**Amendment approved by**: anas.m, 2026-10-17
+
 **Language/Version**: PowerShell 7 (`pwsh`), git 2.55 (measured; the plan's first task re-measures on the CI image's git)
 **Primary Dependencies**: none new
 **Storage**: N/A
@@ -27,9 +29,11 @@ repository and, because a nested recipe is built by the same function, on a code
 **Project Type**: governance kit; command-line scripts
 **Performance Goals**: N/A (the same git calls, with their exit codes read)
 **Constraints**: every readable repository, `-Commit` and tip mode, and every legitimate UNGRADED state print today's bytes and exit with today's code (spec FR-002, FR-006)
-**Scale/Scope**: two scripts and one library function, four rules (two exempt), one flow-down note
+**Scale/Scope**: two scripts and one library function, four rules (none exempt), one new recipe field, one flow-down note
 
 ## Constitution Check
+
+**Amendment approved by**: anas.m, 2026-10-17
 
 - [x] **Specification First (I)**: `spec.md` is approved (anas.m, 2026-10-17); this plan follows it; `tasks.md` follows.
 - [ ] **Repository Separation (III)**: not applicable, the kit is one repository.
@@ -37,7 +41,7 @@ repository and, because a nested recipe is built by the same function, on a code
 - [ ] **Domain Invariants (V)**: not applicable, the template's slot is unfilled.
 - [x] **Security (VI)**: the change makes a check fail where it passed; nothing is written, no secret is read.
 - [ ] **External Integration Governance (VII)**: not applicable.
-- [x] **Testing Requirements (VIII)**: every reachable site has a passing and a failing fixture, hand-written; the two sites no recipe can reach are exempt with written reasons (P5).
+- [x] **Testing Requirements (VIII)**: every reachable site has a passing and a failing fixture, hand-written; the commit-list sites are reached with the `commitGraph` recipe field and have real fixtures (P5 as amended).
 - [x] **Human Review (IX)**: gate-6 human review at merge; each phase has a fresh-context AI review with Reviewer Provenance.
 - [x] **Controlled Delivery (X)**: two phases, one at a time. This changes the check that grades every phase commit on every push, so the owner runs the gate: no batching, no ci-held.
 
@@ -47,6 +51,8 @@ and the measurement on adopted-project clones, and depends on phase 1 only for t
 **Post-design re-check**: no new violation. There is no decision left to the owner beyond approving the plan (Needs the owner).
 
 ## Decisions
+
+**Amendment approved by**: anas.m, 2026-10-17
 
 - **P1 - the merge base of `scope-check.ps1` (FR-001, FR-002).** `Get-DiffBase` (`:86`) keeps its candidates (`origin/main`, `main`) and gains the
   classification, per candidate: `git rev-parse --verify --quiet <c>` exiting 1 means the ref is absent (continue, as today); any other non-zero exit is a
@@ -70,12 +76,14 @@ and the measurement on adopted-project clones, and depends on phase 1 only for t
     `UNGRADED could not resolve a merge base with main - nothing checked`, exit 0; `pass` is `SCOPE-025/pass` unchanged; **`pass-orphan`** is a branch with no
     history in common with the trunk (`"orphan": true`): the `UNGRADED ... merge base` line and exit 0, pinning FR-002 (git answered "none"). The no-trunk-ref state is
     already pinned by `SCOPE-025/fail`.
-  - **`SCOPE-032`** (the commit list): exempt, with a written reason: `git rev-list` over `<base>..<tip>` can fail only on objects `git merge-base` has just walked,
-    so every damage tried fails the merge base first (measured, `notes.md`); the line is defence in depth and stays inventoried.
+  - **`SCOPE-032`** (the commit list): `fail` is `SCOPE-025/pass`'s fixture with `commitGraph` and `truncateCommit` `HEAD`: git answers `merge-base` from the commit-graph and succeeds,
+    `git rev-list` over the range exits 128, and P4's second line ends the run, exit 1; `pass` the same readable. (First planned as exempt, on the belief that every damage fails the merge base first;
+    the phase 1 review, finding F1, showed the state is reachable with a commit-graph, and the field is built.)
   - **`REPOS-036`** (the code repository's merge base): `fail` is `REPOS-001/pass`'s fixture with `-All` and `truncateCommit` `HEAD` in the **nested** recipe (the nested repository is
     built by the same function, so the field applies to it): P4's repository line, `UNGRADED`-free, exit 1; `pass` the same readable.
-  - **`REPOS-037`** (the code repository's list): exempt, the same reason as `SCOPE-032`.
-  Each rule is inventoried in `tests/enforcement/rules.json` with its `emitAnchor`; the coverage report must show no unowned site; the exempt count rises by two (7 to 9).
+  - **`REPOS-037`** (the code repository's list): the same with `commitGraph` and `truncateCommit` in the nested recipe, two lines (the repository's `ERROR` and the run-level `UNGRADED`), exit 1; `pass` readable.
+  Each rule is inventoried in `tests/enforcement/rules.json` with its `emitAnchor`; the coverage report must show no unowned site; the exempt count stays 7.
+  The new recipe field is `commitGraph`: `FixtureRepo.psm1` writes the commit-graph (`git commit-graph write --reachable`) after the commits and before any truncation, with a self-test in `Harness.Tests.ps1`.
 - **P6 - guidance and close (FR-008, phase 2).** `adoption/updating.md` gains a flow-down note in the shape of feature 033's (no digest marker: the adoption digest is at its
   40-bullet bound); `docs/roadmap.md` closes GAP-040, records the decision and marks the row `shipped`; the measurement runs the changed scripts on clones of the
   three adopted projects with `-All` on a feature branch, before and after, and on a damaged one (SC-002, SC-001).
@@ -111,20 +119,24 @@ No `research.md`, `data-model.md` or `contracts/`: the scripts have no data mode
 
 ### Source Code (repository root)
 
+**Amendment approved by**: anas.m, 2026-10-17
+
 ```text
 scripts/scope-lib.ps1                     # phase 1: P2 (Get-RepoMergeBase)
 scripts/scope-check.ps1                   # phase 1: P1, P3, P4 (Get-DiffBase, the commit list)
 scripts/scope-check-repos.ps1             # phase 1: P2 caller, P3, P4
-tests/enforcement/rules.json              # phase 1: SCOPE-031, SCOPE-032 (exempt), REPOS-036, REPOS-037 (exempt)
-tests/enforcement/cases/scope-check/      # phase 1: SCOPE-031 (fail, pass, pass-orphan)
-tests/enforcement/cases/scope-check-repos/ # phase 1: REPOS-036 (fail, pass)
+tests/enforcement/lib/FixtureRepo.psm1    # phase 1: the commitGraph recipe field (P5 as amended)
+tests/enforcement/Harness.Tests.ps1         # phase 1: the self-test of commitGraph
+tests/enforcement/rules.json              # phase 1: SCOPE-031, SCOPE-032, REPOS-036, REPOS-037
+tests/enforcement/cases/scope-check/      # phase 1: SCOPE-031 (fail, pass, pass-orphan), SCOPE-032 (fail, pass)
+tests/enforcement/cases/scope-check-repos/ # phase 1: REPOS-036 (fail, pass), REPOS-037 (fail, pass)
 adoption/updating.md                      # phase 2: flow-down note
 docs/roadmap.md                           # phase 2
 docs/digests/**                           # phase 2, only if a digest-marked document changes
 ```
 
 **Structure Decision**: no new script and no new library file; the three scripts ship verbatim, so `kit-manifest.json` needs no entry. `tests/enforcement/lib/FixtureRepo.psm1`
-is untouched (`truncateCommit` takes `HEAD`, and applies to a nested recipe).
+gains one recipe field, `commitGraph` (`truncateCommit` takes `HEAD` and applies to a nested recipe, as before).
 
 ## Testing Strategy
 
@@ -146,10 +158,14 @@ is untouched (`truncateCommit` takes `HEAD`, and applies to a nested recipe).
 
 ## Needs the owner
 
+**Amendment approved by**: anas.m, 2026-10-17
+
 1. **Decided (anas.m, 2026-10-17, by D1 A, D2 A and D3 A in the spec):** the verdict, the reach and the two phases. P1 to P8 follow them.
 2. **Worth a look before approving the plan**: P1's choice that a later candidate's base wins over an earlier candidate's failure, P4's wording of the two `ERROR` lines (the fixtures pin it
-   byte for byte), and P5's exemptions of `SCOPE-032` and `REPOS-037`.
+   byte for byte), and P5's `commitGraph` field and the real fixtures of `SCOPE-032` and `REPOS-037`.
 
 ## Complexity Tracking
 
-No constitution violation to justify. The exempt count rises by two (`SCOPE-032`, `REPOS-037`), disclosed here and in `notes.md` once measured.
+**Amendment approved by**: anas.m, 2026-10-17
+
+No constitution violation to justify. The exempt count stays 7: the two commit-list sites were first planned as exempt and were made real in phase 1 (review finding F1), with one new harness recipe field.

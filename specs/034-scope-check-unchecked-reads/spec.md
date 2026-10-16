@@ -77,6 +77,8 @@ and exits 0, the `pass` (this feature) prints the named state and does not.
 
 ### User Story 3 - The states are proved, and adopters are told (Priority: P2)
 
+**Amendment approved by**: anas.m, 2026-10-17
+
 **Why this priority**: GAP-029, GAP-031, GAP-036, GAP-037 and GAP-038 stayed open for lack of a way to reach the state.
 
 **Independent Test**: the coverage report lists the new rules, each with a `fail` that fails on the parent commit and a `pass` that passes
@@ -85,7 +87,7 @@ on both, or an exemption with a written reason; the full harness passes unchange
 **Acceptance Scenarios**:
 
 1. **Given** the harness, **When** a recipe truncates the tip commit (`truncateCommit` accepts `HEAD`), **Then** the merge-base state is reached
-   with no new harness field; a state that no recipe can reach is exempt with a written reason.
+   with no new harness field for that state (the commit-list state needs the `commitGraph` recipe field, see Assumptions); a state that no recipe can reach is exempt with a written reason.
 2. **Given** an adopted project, **When** it updates the kit, **Then** `adoption/updating.md` says what changed, that the scripts flow down
    verbatim, and what a CI run on a damaged branch now shows.
 
@@ -163,9 +165,12 @@ Each has a recommendation. **Decided by the owner (anas.m, 2026-10-17): D1 A, D2
 
 ## Assumptions
 
+**Amendment approved by**: anas.m, 2026-10-17
+
 - The harness reaches these scripts the way features 032 and earlier did; `truncateCommit` takes any revision (`HEAD` for the tip commit), so no
-  new recipe field is built. If the plan finds a state no recipe reaches (the `rev-list` failure after a successful merge base is the likely one,
-  because both walk the same objects), it says so and exempts it with a written reason.
+  new recipe field is built for the merge-base state. The `rev-list` failure after a successful merge base IS reachable (the phase 1 review, finding F1): with a commit-graph
+  written, git answers `merge-base` from the graph and a truncated tip commit fails only `rev-list`, so one recipe field, `commitGraph`, is built for it and the
+  commit-list sites have real fixtures; a state no recipe reaches is still exempt with a written reason.
 - The scripts are kit-owned and flow down verbatim; no adopted project has a verdict from them to move.
 - The refusal and error text stay on the streams they use today (`Write-Host` and `Write-Line`).
 - The measured exit codes of git (`merge-base` 1 for no merge base, 128 or 255 for a failure; `rev-list` 128) hold for git 2.55 for Windows; the
