@@ -1,0 +1,41 @@
+{
+  "description": "Two open branches sharing src/shared.txt, with the tree of src on the OTHER branch unreadable: git diff of main...origin/012-other exits 128. The check used to read no files and print CLEAN, missing a real overlap; it now lists the comparison as UNGRADED and the run ends UNGRADED, exit 0 (feature 029, G14b).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "phase 1: the other thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "other\n"
+      }
+    }
+  ],
+  "truncateCommit": "012-other:src",
+  "checkout": "011-thing",
+  "origin": "self"
+}

@@ -1,0 +1,5 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 4 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
+UNGRADED: PhaseSizeWarning: git show --numstat of <SHA> could not be read (git exited 128), so that commit was not measured against the phase-size guideline
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: cannot grade '001-thing' — git show <SHA>:specs/001-thing/plan.md failed (git exited 255), so what the branch's commits changed is unknown; grading what could be read would pass an unread amendment on a wrong reason. Repair the repository (a damaged object), or fetch the full history: 'fetch-depth: 0' on actions/checkout

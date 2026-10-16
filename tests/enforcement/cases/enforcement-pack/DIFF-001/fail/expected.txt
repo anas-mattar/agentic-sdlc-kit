@@ -1,5 +1,6 @@
 enforcement-pack: branch '002-b', diff base '<SHA>', diff unreadable (git diff exited 128)
 LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 002-b (Standard) was not checked against any (adoption/updating.md)
 AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+UNGRADED: PhaseSizeWarning: git show --numstat of <SHA> could not be read (git exited 128), so that commit was not measured against the phase-size guideline
 enforcement-pack: FAIL (1 issue(s)):
   - DiffUnreadable: git diff against '<SHA>' failed on '002-b' (exit 128), so the changed-file list is unknown and the checks that read it graded nothing - repair the repository (a damaged object, or fetch the full history: 'fetch-depth: 0' on actions/checkout)

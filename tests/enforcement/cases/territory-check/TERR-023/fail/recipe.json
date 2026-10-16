@@ -1,0 +1,42 @@
+{
+  "description": "A branch under check whose committed diff is readable but whose working-tree diff is not: git diff --name-only HEAD exits 128 (the blob of a committed file is truncated and the working copy of that file has been edited to the same length, which is the state in which git must compare content with the committed blob). The check used to read no uncommitted files, so a dirty tree could drop out of the overlap check; it now refuses (feature 029, G13a).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 500,
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "phase 1: the thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/shared.txt": "mine\n"
+      }
+    },
+    {
+      "branch": "main",
+      "message": "back to main",
+      "hoursAgo": 480,
+      "write": {
+        "docs/note.md": "note\n"
+      }
+    },
+    {
+      "branch": "012-other",
+      "message": "phase 1: the other thing",
+      "hoursAgo": 2,
+      "write": {
+        "src/other.txt": "other\n"
+      }
+    }
+  ],
+  "truncateCommit": "HEAD:src/shared.txt",
+  "uncommitted": { "src/shared.txt": "mind\n" },
+  "checkout": "011-thing",
+  "origin": "self"
+}

@@ -1,0 +1,1 @@
+Cannot read the uncommitted changes of '011-thing' — git diff --name-only HEAD failed (git exited 128), so the branch's own uncommitted files would drop out of the overlap check.

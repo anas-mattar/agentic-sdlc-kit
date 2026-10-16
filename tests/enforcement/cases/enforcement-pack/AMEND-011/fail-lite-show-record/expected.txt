@@ -1,0 +1,4 @@
+enforcement-pack: branch 'docs/x', diff base '<SHA>', 1 changed file(s)
+enforcement-pack: 'docs/x' is the lightweight docs/ lane — review-provenance is the only scripted check that applies
+UNGRADED: AmendmentAuthority: cannot grade 'docs/x' — git show <SHA>:specs/001-a/plan.md failed (git exited 255), so what the branch's commits changed is unknown; grading what could be read would pass an unread amendment on a wrong reason. Repair the repository (a damaged object), or fetch the full history: 'fetch-depth: 0' on actions/checkout
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

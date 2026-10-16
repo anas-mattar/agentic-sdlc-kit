@@ -1350,6 +1350,50 @@ your code or configuration needs to change.
 <!-- digest: An unreadable git diff is a named state: count line, a numbered failure, UNGRADED on the Lite lane, never empty. -->
 <!-- digest: A Lite branch whose diff cannot be read prints UNGRADED per check and exits 0; a numbered branch fails once. -->
 
+### Flow-down note: the 2026-10-16 unchecked git reads (kit feature 029 — no constitution amendment)
+
+**What was wrong.** After feature 028 named the unreadable diff, `scripts/enforcement-pack.ps1` and `scripts/territory-check.ps1` still held fourteen graded reads of `git` that discarded stderr
+and read an empty result as "nothing": `git show --numstat` in the Micro lane's phase walk and in `PhaseSizeWarning` (a Micro-declared branch with a 700-line phase commit and a damaged blob ended
+`enforcement-pack: OK`, exit 0, instead of the hard 400-line failure), the amendment check's history reads (`git log` batches, `rev-list`, `git show <ref>:<path>`, `git show -U0`, `ls-tree`), a rename
+compared with two failing `rev-parse` calls (`$null -eq $null` read as "content came across intact"), the Critical cooling-off date, a Surface Exception's date (a failure fell back to the runner's clock),
+and in `territory-check.ps1` the uncommitted-tree diff, `git ls-remote`, and an open branch's date and diff (read as "no overlap").
+
+**What it does now.** Every one of those reads goes through an exit-checked reader and is a named state. On a numbered branch (`NNN-*`) a failed read is one `GitReadUnreadable: <read> failed on '<branch>'
+(git exited <n>), so <what graded nothing> - repair the repository ...` failure, once per read per run; inside the amendment check it is that check's existing refusal text, and a failed pair of `rev-parse`
+calls grades the rename instead of skipping it. On a `fix/`, `chore/` or `docs/` branch, and for the advisory `PhaseSizeWarning`, it is one `UNGRADED:` line naming the read and exit 0: the Lite lane is
+never newly failed on a condition the machine cannot compute (feature 014, FR-009). `territory-check.ps1` keeps its own vocabulary: an unreadable uncommitted diff or remote listing is a refusal (the script's
+existing `Stop-Refused`, exit 1); an unreadable open-branch comparison is an `ungraded` record, never "no overlap" (exit unchanged).
+
+**What flows down.** Two verbatim files, `scripts/enforcement-pack.ps1` and `scripts/territory-check.ps1`, and this document; the kit's test fixtures stay in the kit. Nothing surgical and nothing in your
+constitution. Run `scripts/build-digests.ps1` after the update: until you do, the digests member of `scripts/ritual-checks.ps1` reports the affected digests as stale.
+
+**What an owner may newly see.** On any repository whose git reads succeed: nothing, byte for byte. On a repository with a damaged object a read must touch: on a numbered branch a `GitReadUnreadable`
+failure (or the amendment check's refusal) where a green or a silent skip stood; on a Lite branch `UNGRADED` lines and exit 0. The fix is the same: repair the repository (re-clone; a shallow or partial
+clone is fetched in full, `fetch-depth: 0` on `actions/checkout`).
+
+**What does NOT change.** The output and exit code of every run whose reads succeed; the verdict words (no new one); the grading rules; the lane split; and every other member of the pack. This
+**supersedes** the open-limit wording of feature 028's note, limits (1) and (3) ("territory-check has two reads that stay unchecked"; "the pack's other `git` reads are not changed"). 028's note is history
+and is not edited.
+
+**Known limits, stated rather than hidden.** (1) `git cat-file -e` and `git rev-parse --verify --quiet` give the same exit code for absent and for unreadable, so they cannot be graded on the exit code; the
+arm that follows each is strict by design. (2) A non-zero exit is taken as the whole truth: silent corruption (exit 0, wrong content) is not detectable here. (3) Eleven reads have no reachable data state
+(seven fail only when a commit object is damaged, which breaks `git merge-base` first; three read objects a successful earlier read just read; `git ls-remote` fails only after a successful fetch), so they are guarded by their mutation or an injected failure, recorded in the feature's `notes.md`, not by a failing fixture
+(plan Amendments 1 to 3). (4) One code path, "the code repositories are still compared after a governance diff failure", is correct by reading and shown by no fixture. (5) git's own message is not
+shown, only its exit code, so the output is deterministic. (6) `territory-check.ps1` is not in the replay below (it fetches and lists the live remote); its fixtures cover it. (7) GAP-029 (the script's
+four terminating refusals speak none of the kit's vocabulary) stays open.
+
+**What was measured.** The same method as 028: clones of FitForge, FlowBoard, ExpenseTracker and the kit, replayed merge by merge in the shape CI grades a pull request, the parent
+`enforcement-pack.ps1` against this one. Of **145 merge commits**, **115 named a merged branch** (39 numbered, 76 Lite) and were replayed; the other 30 are `main` merged into a branch or
+`governance:` commits. **No output differed in any of the 115 runs and no exit code changed**; the new reader ran **14,035 times** across them (largest run 1,173 reads). Time per run was one sample per
+version, old first, no cost seen and none can be claimed. **That shows** that no branch whose reads succeed changes, on four real histories. **It does not show** how the new states read on a damaged
+repository (the fixtures do), how often it will occur, or anything about your own CI, a shallow clone or another platform.
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1` and `scripts/ritual-checks.ps1`. If a run now prints `GitReadUnreadable` or an `UNGRADED` line naming a read where it printed `OK`,
+the repository has a damaged or missing object: repair it, then re-run. Nothing in your code or configuration needs to change.
+
+<!-- digest: A failed git read in the pack or territory-check is a named state: a numbered failure, UNGRADED on Lite. -->
+<!-- digest: territory-check refuses on an unreadable uncommitted diff or remote list; never "no overlap" unread. -->
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
