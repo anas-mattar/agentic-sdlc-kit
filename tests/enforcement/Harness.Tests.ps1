@@ -474,6 +474,55 @@ Describe 'originDenyDeletes fixtures (feature 030, plan P5)' {
     }
 }
 
+Describe 'commitGraph fixtures (feature 034, plan P5 as amended)' {
+    # The state the field exists for: with a commit-graph, a truncated commit object leaves `git merge-base` working (it answers from the
+    # graph) and makes `git rev-list` over the range fail. Without the graph both fail, which is why the commit-list read of the scope
+    # checks was first thought unreachable.
+
+    BeforeAll {
+        function script:New-GraphRecipe {
+            param([bool]$Graph, [bool]$Truncate)
+            $r = [pscustomobject]@{
+                defaultBranch = 'main'
+                commits       = @(
+                    [pscustomobject]@{ branch = 'main'; message = 'init'; write = [pscustomobject]@{ 'a.txt' = "a`n" } },
+                    [pscustomobject]@{ branch = 'feat'; message = 'one'; write = [pscustomobject]@{ 'b.txt' = "b`n" } },
+                    [pscustomobject]@{ branch = 'feat'; message = 'two'; write = [pscustomobject]@{ 'c.txt' = "c`n" } }
+                )
+                checkout      = 'feat'
+            }
+            if ($Graph)    { $r | Add-Member -NotePropertyName commitGraph -NotePropertyValue $true }
+            if ($Truncate) { $r | Add-Member -NotePropertyName truncateCommit -NotePropertyValue 'HEAD' }
+            return $r
+        }
+    }
+
+    It 'writes the commit-graph file' {
+        $root = New-FixtureRepo -Recipe (New-GraphRecipe -Graph $true -Truncate $false)
+        try { (Test-Path -LiteralPath (Join-Path $root '.git/objects/info/commit-graph')) | Should -BeTrue }
+        finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'with the graph and a truncated tip commit, merge-base succeeds and rev-list fails' {
+        $root = New-FixtureRepo -Recipe (New-GraphRecipe -Graph $true -Truncate $true)
+        try {
+            $base = (& git -C $root merge-base HEAD main 2>$null); $mergeBaseExit = $LASTEXITCODE
+            $mergeBaseExit | Should -Be 0
+            "$base".Trim() | Should -Be ((& git -C $root rev-parse main).Trim())
+            & git -C $root rev-list --reverse --no-merges "$(($base).Trim())..HEAD" 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+
+    It 'without the graph the same truncation fails merge-base too (the graph is what makes the difference)' {
+        $root = New-FixtureRepo -Recipe (New-GraphRecipe -Graph $false -Truncate $true)
+        try {
+            & git -C $root merge-base HEAD main 2>$null | Out-Null
+            $LASTEXITCODE | Should -Not -Be 0
+        } finally { Remove-FixtureRepo -Path $root }
+    }
+}
+
 Describe 'merge commits that carry content (feature 026, plan D8)' {
     # A merge could be built, but only with no content of its own, so the rule that grades what a
     # merge AUTHORED (feature 026) had no fixture: review finding F12 of feature 025. These tests pin

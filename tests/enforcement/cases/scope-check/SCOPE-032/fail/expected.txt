@@ -1,0 +1,1 @@
+scope-check: ERROR could not list the commits since the merge base (git rev-list failed with exit 128), so nothing on the branch was graded - the object store may be damaged: run git fsck.

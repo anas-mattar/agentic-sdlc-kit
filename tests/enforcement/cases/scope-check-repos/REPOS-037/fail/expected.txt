@@ -1,0 +1,2 @@
+scope-repos: code-repo: ERROR could not list the commits since the merge base (git rev-list failed with exit 128), so nothing in this repository was graded - the object store may be damaged: run git fsck.
+scope-repos: UNGRADED (nothing was graded in the declared code repositories for '001-thing' — the reason is on the line(s) above)

@@ -1981,6 +1981,24 @@
       "notes": "Added in feature 032. A commit with no phase token that deletes tasks.md and whose tree is unreadable used to print not applicable and UNGRADED (exit 0), hiding the deletion; the pass direction is the same commit readable, which the guard refuses. Shares its emission site with SCOPE-028."
     },
     {
+      "id": "SCOPE-031",
+      "script": "scope-check.ps1",
+      "function": "(run verdict)",
+      "summary": "under -All, a merge base git cannot read (git merge-base fails, as opposed to answering that there is none) fails the run with an ERROR instead of printing UNGRADED and exiting 0",
+      "law": "docs/sdlc/review-process.md; constitution X (territory rule); specs/034-scope-check-unchecked-reads FR-001, FR-003; roadmap GAP-040",
+      "emitAnchor": "could not read the merge base with main",
+      "notes": "Added in feature 034. The fail direction truncates the tip commit (truncateCommit HEAD): git merge-base exits 128. On the parent commit it printed UNGRADED could not resolve a merge base and exit 0, the words and exit of a branch with no shared history or no trunk. pass is SCOPE-025/pass; pass-orphan pins that a branch with no history in common (merge-base exit 1) keeps its UNGRADED text and exit 0; the missing-trunk state is pinned by SCOPE-025/fail."
+    },
+    {
+      "id": "SCOPE-032",
+      "script": "scope-check.ps1",
+      "function": "(run verdict)",
+      "summary": "under -All, a commit list git cannot read (git rev-list over the range fails after the merge base was read) fails the run with an ERROR instead of reading as an empty range",
+      "law": "docs/sdlc/review-process.md; constitution X (territory rule); specs/034-scope-check-unchecked-reads FR-001, FR-003; roadmap GAP-040",
+      "emitAnchor": "could not list the commits since the merge base",
+      "notes": "Added in feature 034. First recorded as exempt (the plan believed every damage fails git merge-base first); the phase 1 review (finding F1) showed the state is reachable: with a commit-graph written (recipe field commitGraph, feature 034), git merge-base answers from the graph while a truncated tip commit makes git rev-list exit 128. The fail direction writes the graph and then truncates the tip commit; pass is the same readable. Shares nothing with SCOPE-031, whose fail has no graph (merge-base itself fails)."
+    },
+    {
       "id": "RIT-007",
       "script": "ritual-checks.ps1",
       "function": "(run verdict)",
@@ -2081,6 +2099,24 @@
       "emitAnchor": "ERROR cannot read the changed files of ",
       "exemption": "Needs git show --name-status to fail for a commit whose committer date (git show -s --format=%cI) was read fine. Every damage tried (the tree removed, a subtree removed, the tree truncated) breaks the date read first in the same run, measured in notes.md of feature 032 on git 2.55 (a property of that git, not of the code; the CI run is the second git), so a case would pin REPOS-033's rule under this rule's name. The line is kept as defence in depth, so a later change to the date read cannot reopen the hole. Same reasoning as REPOS-033.",
       "notes": "Added in feature 032 and exempt from the start (plan P5), disclosed in Complexity Tracking."
+    },
+    {
+      "id": "REPOS-036",
+      "script": "scope-check-repos.ps1",
+      "function": "(run verdict)",
+      "summary": "under -All, a code repository whose merge base git cannot read fails the repository with an ERROR instead of reporting it UNGRADED and exiting 0",
+      "law": "specs/034-scope-check-unchecked-reads FR-001, FR-003, FR-004; specs/012-cross-repo-scope-check/contracts/scope-check-repos-cli.md; roadmap GAP-040",
+      "emitAnchor": "could not read the merge base with a trunk",
+      "notes": "Added in feature 034. The fail direction truncates the code repository's tip commit through the nested recipe's own truncateCommit (the nested repository is built by the same function). On the parent commit it printed code-repo: UNGRADED could not resolve a merge base with a trunk and exit 0. pass is the same run readable."
+    },
+    {
+      "id": "REPOS-037",
+      "script": "scope-check-repos.ps1",
+      "function": "(run verdict)",
+      "summary": "under -All, a code repository whose commit list git cannot read fails the repository with an ERROR instead of reading as an empty range",
+      "law": "specs/034-scope-check-unchecked-reads FR-001, FR-003, FR-004; specs/012-cross-repo-scope-check/contracts/scope-check-repos-cli.md; roadmap GAP-040",
+      "emitAnchor": "could not list the commits since the merge base",
+      "notes": "Added in feature 034. First recorded as exempt, like SCOPE-032, and made real after the phase 1 review (finding F1): the nested recipe writes the code repository's commit-graph (commitGraph) and then truncates its tip commit (truncateCommit), so git merge-base succeeds and git rev-list over the range exits 128. pass is the same readable."
     },
     {
       "id": "REPOS-033",

@@ -1,0 +1,1 @@
+scope-check: ERROR could not read the merge base with main (git merge-base failed with exit 128), so nothing on the branch was graded - the object store may be damaged: run git fsck.

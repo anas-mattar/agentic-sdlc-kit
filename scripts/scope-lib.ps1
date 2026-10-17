@@ -205,14 +205,21 @@ function Get-RepoMergeBase {
     param([Parameter(Mandatory)][string]$RepoPath, [Parameter(Mandatory)][string]$Ref, [string[]]$Candidates)
     if (-not $Candidates -or $Candidates.Count -eq 0) { $Candidates = Get-RepoTrunkCandidates }
     $existing = @()
+    $failed = $null
     foreach ($c in $Candidates) {
         git -C $RepoPath rev-parse --verify --quiet $c *> $null
-        if ($LASTEXITCODE -ne 0) { continue }
+        $verifyExit = $LASTEXITCODE
+        if ($verifyExit -eq 1) { continue }                  # git answered: there is no such ref
+        if ($verifyExit -ne 0) { if (-not $failed) { $failed = "git rev-parse of $c failed with exit $verifyExit" }; continue }
         $existing += $c
         $b = git -C $RepoPath merge-base $Ref $c 2>$null
-        if ($LASTEXITCODE -eq 0 -and $b) {
-            return @{ Base = "$b".Trim(); Trunk = $c; Tried = @($Candidates); Existing = @($existing) }
+        $mergeBaseExit = $LASTEXITCODE
+        if ($mergeBaseExit -eq 0 -and $b) {
+            return @{ Base = "$b".Trim(); Trunk = $c; Tried = @($Candidates); Existing = @($existing); Failed = $false; FailedWith = $null }
         }
+        # Exit 1 is git's answer that the two share no history; any other non-zero exit is a failure to read (feature 034, GAP-040).
+        if ($mergeBaseExit -ne 0 -and $mergeBaseExit -ne 1) { if (-not $failed) { $failed = "git merge-base failed with exit $mergeBaseExit" } }
     }
-    return @{ Base = $null; Trunk = $null; Tried = @($Candidates); Existing = @($existing) }
+    # Failed only when NO candidate gave a base and at least one could not be read: a later candidate's base wins over an earlier failure.
+    return @{ Base = $null; Trunk = $null; Tried = @($Candidates); Existing = @($existing); Failed = [bool]$failed; FailedWith = $failed }
 }

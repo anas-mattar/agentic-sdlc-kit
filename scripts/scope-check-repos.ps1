@@ -370,13 +370,27 @@ foreach ($repoName in $toGrade) {
         $base = $null
         $candidates = Get-RepoTrunkCandidates
         if ($BaseRef) { $candidates = @($BaseRef) }
-        $base = (Get-RepoMergeBase -RepoPath $repoPath -Ref $Branch -Candidates $candidates).Base
+        $mergeBase = Get-RepoMergeBase -RepoPath $repoPath -Ref $Branch -Candidates $candidates
+        $base = $mergeBase.Base
+        if (-not $base -and $mergeBase.Failed) {
+            # git could not read: not "no trunk" and not "no shared history", which keep their UNGRADED below (feature 034, GAP-040).
+            Write-Line "${repoName}: ERROR could not read the merge base with a trunk ($($candidates -join ', ')) ($($mergeBase.FailedWith)), so nothing in this repository was graded - the object store may be damaged: run git fsck."
+            $failed = $true
+            continue
+        }
         if (-not $base) {
             Write-Line "${repoName}: UNGRADED could not resolve a merge base with a trunk ($($candidates -join ', ')) — NOTHING WAS GRADED in this repository; to grade it, run: pwsh -File scripts/scope-check-repos.ps1 -All -Repo $repoName -BaseRef <trunk>"
             $ungradedRepos += $repoName
             continue
         }
-        $commits = @((git -C $repoPath rev-list --reverse --no-merges "$base..$Branch" 2>$null) | Where-Object { $_ })
+        $listed = git -C $repoPath rev-list --reverse --no-merges "$base..$Branch" 2>$null
+        $listExit = $LASTEXITCODE
+        if ($listExit -ne 0) {
+            Write-Line "${repoName}: ERROR could not list the commits since the merge base (git rev-list failed with exit $listExit), so nothing in this repository was graded - the object store may be damaged: run git fsck."
+            $failed = $true
+            continue
+        }
+        $commits = @($listed | Where-Object { $_ })
         if ($commits.Count -eq 0) {
             Write-Line "${repoName}: UNGRADED (no commits since merge base — no commit was examined)"
             $ungradedRepos += $repoName

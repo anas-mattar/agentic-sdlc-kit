@@ -1,0 +1,85 @@
+{
+  "description": "REPOS-037 fail: the same run with the code repository's commit-graph written and its tip commit object then truncated (commitGraph and truncateCommit HEAD in the nested recipe). git merge-base answers from the graph, but git rev-list over the range exits 128: the list used to be read as empty and the repository reported UNGRADED (no commits since merge base), exit 0. It now says the commit list could not be read, fails the repository, and exits 1 (the run-level line then says nothing was graded, which is true).",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "hoursAgo": 5,
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": [
+          "{",
+          "  \"kitVersion\": \"0.9.0\",",
+          "  \"codeRepos\": [\"code-repo\"]",
+          "}"
+        ]
+      }
+    },
+    {
+      "branch": "001-thing",
+      "message": "spec: 001 thing",
+      "hoursAgo": 4,
+      "write": {
+        "specs/001-thing/spec.md": [
+          "# Feature Specification: Thing",
+          "",
+          "**Feature Branch**: `001-thing`",
+          "**Status**: Approved 2026-01-01 (owner: fixture)",
+          "**Delivery Level**: Standard",
+          "",
+          "## Requirements",
+          "",
+          "- **FR-001**: System MUST do the thing."
+        ],
+        "specs/001-thing/plan.md": [
+          "# Implementation Plan: Thing",
+          "",
+          "**Gate Batching**: none",
+          "**Gate Certification**: user-run",
+          "",
+          "## Summary",
+          "",
+          "One phase."
+        ],
+        "specs/001-thing/tasks.md": [
+          "# Tasks: Thing",
+          "",
+          "## Phase 1: The thing",
+          "",
+          "**Territory**:",
+          "",
+          "- `code-repo/src/**`",
+          "",
+          "- [ ] T001 Do the thing."
+        ]
+      }
+    }
+  ],
+  "checkout": "001-thing",
+  "nestedRepos": {
+    "code-repo": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "hoursAgo": 3,
+          "write": {
+            "README.md": "code\n"
+          }
+        },
+        {
+          "branch": "001-thing",
+          "message": "phase 1: the thing",
+          "hoursAgo": 2,
+          "write": {
+            "src/a.txt": "a\n"
+          }
+        }
+      ],
+      "commitGraph": true,
+      "truncateCommit": "HEAD"
+    }
+  }
+}

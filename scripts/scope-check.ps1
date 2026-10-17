@@ -83,14 +83,23 @@ function Get-CurrentBranch {
     return "$b".Trim()
 }
 
+# The merge base of HEAD with the trunk. git's own exit codes tell "there is none" from "could not read": rev-parse --verify --quiet exits 1 for a
+# missing ref and merge-base exits 1 for no shared history (both answers, handled as before), and any other non-zero exit is a failure to read, kept in
+# $script:DiffBaseFailure when no candidate gave a base (feature 034, GAP-040). A later candidate's base wins over an earlier failure.
 function Get-DiffBase {
+    $script:DiffBaseFailure = $null
+    $failed = $null
     foreach ($c in @('origin/main', 'main')) {
         git rev-parse --verify --quiet $c *> $null
-        if ($LASTEXITCODE -eq 0) {
-            $base = git merge-base HEAD $c 2>$null
-            if ($LASTEXITCODE -eq 0 -and $base) { return "$base".Trim() }
-        }
+        $verifyExit = $LASTEXITCODE
+        if ($verifyExit -eq 1) { continue }
+        if ($verifyExit -ne 0) { if (-not $failed) { $failed = "git rev-parse of $c failed with exit $verifyExit" }; continue }
+        $base = git merge-base HEAD $c 2>$null
+        $mergeBaseExit = $LASTEXITCODE
+        if ($mergeBaseExit -eq 0 -and $base) { return "$base".Trim() }
+        if ($mergeBaseExit -ne 0 -and $mergeBaseExit -ne 1) { if (-not $failed) { $failed = "git merge-base failed with exit $mergeBaseExit" } }
     }
+    $script:DiffBaseFailure = $failed
     return $null
 }
 
@@ -313,10 +322,20 @@ $script:gradedCommits = 0
 if ($All) {
     $base = Get-DiffBase
     if (-not $base) {
+        if ($script:DiffBaseFailure) {
+            Write-Host "scope-check: ERROR could not read the merge base with main ($($script:DiffBaseFailure)), so nothing on the branch was graded - the object store may be damaged: run git fsck."
+            exit 1
+        }
         Write-Host 'scope-check: UNGRADED could not resolve a merge base with main — nothing checked'
         exit 0
     }
-    $commits = @((git rev-list --reverse --no-merges "$base..HEAD" 2>$null) | Where-Object { $_ })
+    $listed = git rev-list --reverse --no-merges "$base..HEAD" 2>$null
+    $listExit = $LASTEXITCODE
+    if ($listExit -ne 0) {
+        Write-Host "scope-check: ERROR could not list the commits since the merge base (git rev-list failed with exit $listExit), so nothing on the branch was graded - the object store may be damaged: run git fsck."
+        exit 1
+    }
+    $commits = @($listed | Where-Object { $_ })
     if ($commits.Count -eq 0) {
         Write-Host 'scope-check: UNGRADED (no commits since merge base — no commit was examined)'
         exit 0
