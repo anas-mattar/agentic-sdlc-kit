@@ -2,7 +2,8 @@
 
 **Feature Branch**: `036-critical-merge-ready-edges`  
 **Created**: 2026-10-17  
-**Status**: Draft  
+**Amendment approved by**: anas.m, 2026-10-17  
+**Status**: Approved (anas.m, 2026-10-17)  
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "Close the open edges GAP-022 leaves after features 024 and 025: a pending Merge Readiness claim left in place, the plan amendment needed to gain the line, and a plan that declares nothing still getting the 024 heuristic"
