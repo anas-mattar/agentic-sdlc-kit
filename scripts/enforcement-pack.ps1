@@ -183,18 +183,31 @@ function Get-CurrentBranch {
     (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
 }
 
+# The merge base of HEAD with the integration branch. git's own exit codes tell "there is none" from "could not read":
+# rev-parse --verify --quiet exits 1 for a missing ref and merge-base exits 1 for no shared history (both answers, handled
+# as before), and any other non-zero exit is a failure to read, kept in $script:DiffBaseFailure when no candidate gave a
+# base, so the messages can name the cause (feature 035, GAP-041; the recipe of feature 034). A later candidate's base wins
+# over an earlier failure.
 function Get-DiffBase {
+    $script:DiffBaseFailure = $null
+    $failed = $null
     $candidates = @('origin/main', 'main')
     foreach ($c in $candidates) {
         git rev-parse --verify --quiet $c *> $null
-        if ($LASTEXITCODE -eq 0) {
-            # No .Trim() on the bare call: `merge-base` prints nothing when the two histories
-            # share no commit — a truncated clone that still carries origin/main — and the
-            # method call on null killed the whole pack before any member ran.
-            $base = @(git merge-base HEAD $c 2>$null | Where-Object { $_ })
-            if ($LASTEXITCODE -eq 0 -and $base.Count -gt 0) { return $base[0].Trim() }
-        }
+        $verifyExit = $LASTEXITCODE
+        if ($verifyExit -eq 1) { continue }
+        if ($verifyExit -ne 0) { if (-not $failed) { $failed = "git rev-parse of $c failed with exit $verifyExit" }; continue }
+        # No .Trim() on the bare call: `merge-base` prints nothing when the two histories
+        # share no commit — a truncated clone that still carries origin/main — and the
+        # method call on null killed the whole pack before any member ran. The exit code is read on the next
+        # statement, before the filter below can reset it.
+        $mergeBaseOut = git merge-base HEAD $c 2>$null
+        $mergeBaseExit = $LASTEXITCODE
+        $base = @($mergeBaseOut | Where-Object { $_ })
+        if ($mergeBaseExit -eq 0 -and $base.Count -gt 0) { return $base[0].Trim() }
+        if ($mergeBaseExit -ne 0 -and $mergeBaseExit -ne 1) { if (-not $failed) { $failed = "git merge-base failed with exit $mergeBaseExit" } }
     }
+    $script:DiffBaseFailure = $failed
     return $null
 }
 
@@ -1313,6 +1326,10 @@ function Invoke-ReviewProvenanceCheck {
     # actions/checkout shape. It still does not FAIL - FR-011 forbids a new hard failure on the
     # Lite lane - but the verdict can no longer be read as a graded pass.
     if (-not $Base) {
+        if ($script:DiffBaseFailure) {
+            $script:ungraded += "ReviewProvenance: the diff base could not be read ($($script:DiffBaseFailure)), so no review file on '$Branch' was inspected - the machine half of DoD gate 5 formed no opinion. The object store may be damaged: run git fsck, or re-clone"
+            return
+        }
         $script:ungraded += "ReviewProvenance: no diff base, so no review file on '$Branch' was inspected - the machine half of DoD gate 5 formed no opinion. Fetch the full history ('fetch-depth: 0' on actions/checkout)"
         return
     }
@@ -2140,6 +2157,11 @@ function Invoke-AmendmentAuthorityCore {
         return
     }
     if (-not $Base) {
+        if ($script:DiffBaseFailure) {
+            # git could not read the base (feature 035): the cause is the object store, not a missing integration branch.
+            $script:failures += "AmendmentAuthority: cannot grade '$Branch' — the diff base could not be read ($($script:DiffBaseFailure)), so what the branch changed is unknown. The object store may be damaged: run git fsck, or re-clone (constitution I, Amendment authority)"
+            return
+        }
         $script:failures += "AmendmentAuthority: cannot grade '$Branch' — no integration branch to diff against. Either neither 'origin/main' nor 'main' resolves here, or one of them resolves but shares no commit with HEAD (a truncated clone, or unrelated histories) — this check does not distinguish them, and says so rather than naming a cause it did not test. Fetch the full history ('git fetch origin main', 'fetch-depth: 0' on actions/checkout), or run the check where it is reachable (constitution I, Amendment authority)"
         return
     }
@@ -2398,7 +2420,12 @@ if ($script:ChangedFilesRead.Ok) {
 # this names the condition instead of failing on it — the run reports itself as ungraded rather
 # than as clean. An NNN-* branch still fails, in the check.
 if (-not $diffBase -and $Branch -notin @('main', 'master')) {
-    $script:warnings += "enforcement-pack: no integration branch to diff against, so nothing on '$Branch' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout)."
+    if ($script:DiffBaseFailure) {
+        # git could not read the base: not "no integration branch", and fetching more history is no remedy (feature 035).
+        $script:warnings += "enforcement-pack: the diff base could not be read ($($script:DiffBaseFailure)), so nothing on '$Branch' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. The object store may be damaged: run git fsck, or re-clone."
+    } else {
+        $script:warnings += "enforcement-pack: no integration branch to diff against, so nothing on '$Branch' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. Fetch the full history ('git fetch origin main', or 'fetch-depth: 0' on actions/checkout)."
+    }
 }
 
 if ($Branch -in @('main', 'master')) {

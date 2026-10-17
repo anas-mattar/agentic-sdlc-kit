@@ -1,0 +1,7 @@
+enforcement-pack: branch '001-thing', diff base '', 0 changed file(s)
+LevelSurface: not armed — kit-adoption.json declares no critical surfaces, so 001-thing (Standard) was not checked against any (adoption/updating.md)
+WARNING: enforcement-pack: the diff base could not be read (git merge-base failed with exit 128), so nothing on '001-thing' was compared — each check that reads the diff either graded an empty file list, returned without grading, or failed for want of a base. This run is not evidence that the branch is clean — it is evidence that nothing was compared. The object store may be damaged: run git fsck, or re-clone.
+UNGRADED: ReviewProvenance: the diff base could not be read (git merge-base failed with exit 128), so no review file on '001-thing' was inspected - the machine half of DoD gate 5 formed no opinion. The object store may be damaged: run git fsck, or re-clone
+UNGRADED: PhaseSizeWarning: no diff base, so no commit on '001-thing' was measured against the phase-size guideline
+enforcement-pack: FAIL (1 issue(s)):
+  - AmendmentAuthority: cannot grade '001-thing' — the diff base could not be read (git merge-base failed with exit 128), so what the branch changed is unknown. The object store may be damaged: run git fsck, or re-clone (constitution I, Amendment authority)
