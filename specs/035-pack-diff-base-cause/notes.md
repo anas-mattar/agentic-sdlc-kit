@@ -89,3 +89,35 @@ Still open: fresh-context AI review with Reviewer Provenance, the CI run on the 
 ## CI on the pushed branch (2026-10-17, run 39022452441 on `f543cf4`)
 
 `enforcement-tests`: ubuntu-latest success, windows-latest success; `ritual-checks` success. The `BASE-*` fixtures (the exit-128 state through `truncateCommit HEAD`) therefore pass on the CI image's git on Linux as well as on Windows: the second probe of the plan's Risks holds. Then `main` (PR 109, the roadmap claim for 035) was merged into the branch (`046d769`); the merge touches only `docs/roadmap.md`.
+
+## Phase 2: guidance, close and measurement
+
+### T009 The measurement (plan P6, SC-001, SC-002), 2026-10-17
+
+Method (features 030 to 034): the pack of the kit before this feature (`37ea2c4`, a detached worktree, removed afterwards) and as it stands (`1844dc0`), each run with `-Root <clone> -Branch <probe>` against **the same fresh clones** (`--no-hardlinks`, in the
+scratchpad) of FitForge, FlowBoard and ExpenseTracker (the real projects never touched, no network, nothing pushed). Six probe branches per clone, made in the clone: a numbered branch `099-probe` (a spec commit), a Lite branch `docs/probe`
+(one docs file), two orphans (`098-orphan`, `docs/orphan`, no history in common with `main`) and two branches with a fresh tip commit whose loose object was truncated to half its bytes when probed (`097-damaged`, `docs/damaged`). Lesson of
+feature 034 held: no clone is shared between a damaged and an intact probe, and a damaged tip is truncated only when probed (git cannot switch away from a damaged HEAD; the first run of the script failed on that and was discarded, nothing was measured by it).
+The branch name is passed as one argument (`ProcessStartInfo.ArgumentList`), so no argument array is splatted.
+
+| Probe | FitForge | FlowBoard | ExpenseTracker |
+|---|---|---|---|
+| `099-probe` (numbered, intact) | identical, exit 1/1 | identical, exit 1/1 | identical, exit 1/1 |
+| `docs/probe` (Lite, intact) | identical, exit 0/0 | identical, exit 0/0 | identical, exit 0/0 |
+| `098-orphan` (numbered, no shared history) | identical, exit 1/1 | identical, exit 1/1 | identical, exit 1/1 |
+| `docs/orphan` (Lite, no shared history) | identical, exit 0/0 | identical, exit 0/0 | identical, exit 0/0 |
+| `097-damaged` (numbered, tip truncated) | differs, exit 1/1 | differs, exit 1/1 | differs, exit 1/1 |
+| `docs/damaged` (Lite, tip truncated) | differs, exit 0/0 | differs, exit 0/0 | differs, exit 0/0 |
+
+(The numbered probes exit 1 before and after because a bare probe spec is not a complete feature; what the measurement compares is the bytes and the code, which are equal.) **Every line that moves, and its cause**, identical in the three projects:
+on the damaged numbered branch, three lines: the dispatch `WARNING` (`no integration branch to diff against ... Fetch the full history` becomes `the diff base could not be read (git merge-base failed with exit 128) ... run git fsck, or re-clone`),
+the `UNGRADED: ReviewProvenance` line (`no diff base ... Fetch the full history ('fetch-depth: 0' ...)` becomes `the diff base could not be read (...) ... run git fsck, or re-clone`) and the `AmendmentAuthority` failure (`cannot grade ... no integration branch to
+diff against. Either neither ...` becomes `cannot grade ... the diff base could not be read (...), so what the branch changed is unknown ...`); on the damaged Lite branch, the first two of these (the numbered-lane failure does not apply). Cause: `git merge-base`
+exits 128 on a truncated tip, which `Get-DiffBase` now classifies as a failure to read. No other line moved.
+The real projects were checked afterwards: `git status --porcelain` and `git branch -a` of each equal to the lines taken before (no probe branch, same working-tree state). Not exercised, and said so: the commit-graph shape (the pack's base read is
+`git merge-base` alone, so it is not a separate state here).
+
+### T007, T008 The documents
+
+`adoption/updating.md` gains the flow-down note of feature 035 (no digest marker, so no digest changes; `build-digests.ps1 -Check`: 5 digests fresh, 119 markers). `docs/roadmap.md`: the GAP-041 status text, the row set to `shipped`, a decisions-log entry
+(D1 A, D2 A, D3 A; the exempt-count correction; what was measured; what is still open).
