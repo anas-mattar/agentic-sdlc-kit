@@ -6,7 +6,9 @@ description: "Task list for feature 036 — the open edges of GAP-022: a forgott
 # Tasks: Critical merge-readiness open edges
 
 **Input**: `specs/036-critical-merge-ready-edges/spec.md` (approved, anas.m, 2026-10-17; D1 failure, D2 no exemption, D3 Standard), `plan.md` (approved, anas.m, 2026-10-17; decisions P1–P8, P4 the suffix), `notes.md` (the measurements)
-**Prerequisites**: spec.md and plan.md approved; tasks.md awaiting approval; no new dependency, no new script file, no new harness recipe field.
+**Prerequisites**: spec.md and plan.md approved; tasks.md approved (anas.m, 2026-10-17); no new dependency, no new script file, no new harness recipe field.
+
+**Amendment approved by**: anas.m, 2026-10-17
 
 **Tests**: every new behaviour ships with a passing and a failing harness fixture in the same phase, expectations written by hand (feature 015). New fixtures are run against the parent commit before the code changes and must fail there, so each is shown to measure something. Phase evidence goes in `notes.md`, never here. New rule id: `CRIT-R04` (the family of features 024 and 025).
 
