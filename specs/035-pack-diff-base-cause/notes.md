@@ -24,3 +24,49 @@ that say "no diff base" at `:908` (MicroLane), `:1316` (ReviewProvenance, the on
 
 Not measured here, and the plan must: the same probes on the CI image's git (feature 034's CI showed the `exit 128` of a truncated tip holds on Linux); whether the pack's other uses of the base (the `git diff` reads of feature 028) are affected;
 and how the pack's own shallow-clone detection (`git rev-parse --is-shallow-repository`) interacts (the shallow state is answered separately and must keep its text).
+
+## Phase 1 evidence (2026-10-17, working tree, before the phase commit)
+
+**Fixtures shown failing on the parent commit (T003).** The new `BASE-001` to `BASE-003` case directories were copied into a detached worktree of `37ea2c4` (outside the repository, removed afterwards) and run with
+`-Case enforcement-pack/BASE-`: 8 cases selected. `BASE-001/fail`, `BASE-002/fail` and `BASE-003/fail` pass the exit-code check and **fail the output check** (the parent prints the old text); `BASE-001/pass`, `BASE-001/pass-orphan`,
+`BASE-002/pass`, `BASE-002/pass-orphan` and `BASE-003/pass` pass. The failing output was not printed by the harness; the reason is inferred from the exit code matching (the verdicts are unchanged by design) and the output differing.
+
+**Changed pre-existing expectation.** `enforcement-pack/GAP27-003/fail/expected.txt` truncates a commit, so on this branch it prints the new cause (`git merge-base failed with exit 128`) in the three messages. Verdict and exit code are
+unchanged. This departs from tasks.md's "every pre-existing case unchanged" and awaits the owner's acceptance.
+
+**Harness on the working tree (T006, partial).** `Run-Tests.ps1 -Case enforcement-pack/`: 819 passed, 0 failed, 0 skipped (the filter narrows fixture cases only; the other test files ran too), including the coverage sweep.
+Not the full 1859-test baseline run on an isolated checkout of the final commit (T001, T010).
+
+**`ritual-checks.ps1 -Branch 035-pack-diff-base-cause`:** doc-lint OK, enforcement-pack OK, digests OK, roadmap-claims OK, scope-repos n/a, verify-kit n/a; scope-check UNGRADED because no commit carries a `phase N` token yet.
+
+**Not yet done:** T001 baseline counts and the saved no-base outputs, T002 probes (a to c), the byte-identical comparison of the legitimate no-base states, the CI confirmation on the CI image's git.
+
+## T001, T002 and the byte comparison (2026-10-17, git 2.55.0.windows.5, pwsh 7.6.7)
+
+**T001 baseline, parent commit `37ea2c4`, isolated detached worktree (removed afterwards):** full harness `1859 passed, 0 failed, 0 skipped` (matches the figure feature 034 left). Coverage: `270 of 287 declared emission site(s) owned
+by a fixtured rule, 8 exempt, 9 declared not a rule, across 10 grading script(s)`; `enforcement-pack.ps1: 79 of 86 site(s) fixtured (3 exempt, 4 not a rule)`. **The plan's "exempt count stays 7" does not match this baseline (8 in
+total, 3 in the pack); the figure to hold is the measured one.** The new run must show the same exempt counts.
+
+**T002 probes (a, b, c), a scratch repository, git 2.55.0.windows.5:**
+
+| Probe | Result |
+|---|---|
+| `rev-parse --verify --quiet origin/main`, ref absent | exit 1 |
+| `merge-base HEAD main`, readable | exit 0, one line |
+| `merge-base HEAD main`, orphan branch (no shared history) | exit 1, no output |
+| `merge-base HEAD <no such ref>` | exit 128 |
+| `merge-base HEAD main`, tip commit loose object truncated (read-only attribute cleared first) | exit 128, no output |
+| `rev-parse --is-shallow-repository` on the truncated repository | `false` |
+
+(b) The exit code read on the statement after a split `git merge-base` is git's own (0, 1, 128 as above). The comparison with the old pipeline read did not discriminate: `$LASTEXITCODE` was 128 after
+`| Where-Object` too, so this probe does not show the old form was wrong, only that the split form is correct. (c) The `BASE-*` fixtures with `truncateCommit` `HEAD` take the no-base path on both lanes
+(the harness run), and shallow detection stays `false`. The CI image's git (Linux) is not yet probed: the branch's CI run is the second probe (plan Risks).
+
+**Byte comparison (FR-004, T006):** the parent commit's script and the working tree's script run through `Invoke-FixtureCase` against the same fixtures, every `enforcement-pack` case whose expectation names a no-base state (15 cases). 
+11 print identical bytes and the same exit code: `AMEND-001/pass-lite-docs-readme-only-shallow`, `AMEND-003/fail`, `AMEND-004/fail`, `BASE-001/pass-orphan`, `BASE-002/pass-orphan`, `CRIT-R02/fail-shallow-clone`,
+`CRIT-R03/pass-shallow-clone-declaration-needs-no-history`, `GAP27-001/fail`, `GAP27-002/fail`, `GAP27-004/fail`, `PACK-001/fail`. 4 differ in text, with the same exit code: `BASE-001/fail`, `BASE-002/fail`,
+`BASE-003/fail` (the new states) and `GAP27-003/fail` (a truncated commit; see above). Every legitimate no-base state is byte-identical. The comparison script is a scratch file, not part of the kit.
+
+**Still open:** the full harness and `ritual-checks.ps1` on an isolated checkout of the final commit (T010), the coverage line of the new tree (T004/T006 want the exempt counts stated), the CI run on the CI image's git, and the owner's decision on `GAP27-003/fail`.
+
+**Owner decision (2026-10-17, anas.m):** the `GAP27-003/fail/expected.txt` change is accepted (a truncated-commit fixture now prints the new cause; verdict and exit code unchanged).

@@ -804,7 +804,7 @@
       "function": "(dispatch)",
       "summary": "a run with no computable base says that nothing was compared",
       "law": "FR-009 (the Lite lane must not newly fail on a null base) and FR-011; GAP-027",
-      "emitAnchor": "was compared — each check that reads the diff either graded an empty file list",
+      "emitAnchor": "enforcement-pack: no integration branch to diff against, so nothing on '$Branch' was compared",
       "notes": "GAP-027's own line. Both directions exit 0 - what differs is whether the run admits it compared nothing - so the fail direction is the shape the roadmap describes: a fix/ branch on a baseless clone, green, having graded nothing. Phase 5 (T039-T041) gives this an UNGRADED verdict state; when it rewords this line the stale-anchor assertion will say so, which is the point of inventorying it now rather than after."
     },
     {
@@ -2442,6 +2442,33 @@
       "law": "feature 014 FR-009 (the Lite lane is never newly failed on a condition it cannot compute); feature 028 spec FR-003 and plan D3, D6",
       "emitAnchor": "could not be read (git diff exited ",
       "notes": "Feature 028 phases 1 and 2. ONE emission site, the Lite arm of Add-DiffUnreadable, one UNGRADED line per reader that graded nothing, exit 0, the verdict reading 'not graded', never OK. Three readers reach it: LiteAndAbuse (fix/ and chore/, phase 1), review-provenance and the Lite amendment gate (every Lite lane, phase 2); a fix/ or chore/ branch lists all three, a docs/ branch the last two. fail, fail-chore and fail-blob-rename-detection are the fix/ and chore/ lanes over the src-truncated branch and over a second damage shape (no tree is unreadable, but a blob that rename detection must read is, so git diff exits 128 the same way, and only the dispatch's rename-detecting read fails while the gate's --no-renames read succeeds: that case is what guards the gate's first-read test); fail-docs is the docs/ lane. pass is the numbered twin over the same damage (the lane that keeps its failure), named pass because it is the rule's other direction, and expecting exit 1, as AMEND-009 does. pass-lite-readable, pass-docs-readable, pass-docs-readable-review and pass-lite-empty-diff are the controls: a readable or empty diff prints exactly what it printed before (pass-docs-readable-review: a provenance-less review file is graded and failed when the diff is readable). Not guarded by a fixture, stated: a partial list (git builds the whole tree diff before it prints, so a failing diff prints nothing), the gate's second read failing alone (with --no-renames it reads no more than the dispatch's read, so it fails only when that one already has: mutations M10 and M11 are equivalent), and review-provenance's read failing alone (same trees, same rename detection)."
+    },
+    {
+      "id": "BASE-001",
+      "script": "enforcement-pack.ps1",
+      "function": "(dispatch)",
+      "summary": "when git cannot read the diff base (git merge-base fails, as opposed to answering that there is none) the dispatch warning says so and names the repair instead of describing a missing integration branch and advising a fetch",
+      "law": "specs/035-pack-diff-base-cause FR-001, FR-002, FR-003; feature 014 FR-009 and feature 015 D6 (verdicts unchanged); roadmap GAP-041",
+      "emitAnchor": "enforcement-pack: the diff base could not be read",
+      "notes": "Added in feature 035. The fail direction truncates the tip commit of a Lite-lane branch (truncateCommit HEAD): git merge-base exits 128. On the parent commit the warning said no integration branch to diff against and advised fetching the full history. The Lite lane stays UNGRADED at exit 0. pass is the same readable; pass-orphan pins that a branch with no history in common (merge-base exit 1) keeps today's warning and advice. The shallow and missing-trunk states are pinned by AMEND-001 pass-lite-docs-readme-only-shallow, AMEND-003 and CRIT-R02."
+    },
+    {
+      "id": "BASE-002",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-AmendmentAuthorityCore",
+      "summary": "on the numbered lane, a diff base git cannot read fails AmendmentAuthority once, naming the failure and the repair, instead of saying no integration branch exists and that the check does not distinguish the causes",
+      "law": "specs/035-pack-diff-base-cause FR-001, FR-002, FR-003; feature 014 FR-009 and feature 015 D6 (verdicts unchanged); roadmap GAP-041",
+      "emitAnchor": "cannot grade '$Branch' — the diff base could not be read",
+      "notes": "Added in feature 035. The fail direction truncates the tip commit of a numbered branch: on the parent commit the failure said no integration branch to diff against (a truncated clone, or unrelated histories) and advised fetching more history. The numbered lane stays red, exit 1. pass is STRUCT-001's fixture; pass-orphan pins that a numbered orphan keeps today's failure text. The shallow-clone failure above it is asked first and unchanged (AMEND-003)."
+    },
+    {
+      "id": "BASE-003",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewProvenanceCheck",
+      "summary": "when git cannot read the diff base, the ReviewProvenance UNGRADED line names the failure and the repair instead of advising fetch-depth 0",
+      "law": "specs/035-pack-diff-base-cause FR-001, FR-002, FR-003; feature 014 FR-009 and feature 015 D6 (verdicts unchanged); roadmap GAP-041",
+      "emitAnchor": "ReviewProvenance: the diff base could not be read",
+      "notes": "Added in feature 035, as its own rule beside BASE-001 because it is its own emission site; the Lite-lane fixture shows both lines. The other no-diff-base UNGRADED lines (MicroLane, PhaseSizeWarning, LiteAndAbuse) state a consequence that is still true of a damaged branch and are not changed."
     },
     {
       "id": "GITREAD-001",
