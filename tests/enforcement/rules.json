@@ -592,6 +592,15 @@
       "notes": "GAP-022 follow-up. Two emission sites, declared: the team arm names human-pr-review.md and the solo arm names second-model-review.md. The pass is the owner's declared pending on a branch shaped like FitForge 002 (duplicate 'Phase N amendment' headings, 'tasks: phase N done' subjects, the final phase landing before phase 2), where feature 024 reads final-landed and fails; the fail is the same branch with ready, today's failure. Variants: the solo arm; a depth-1 clone and a tasks.md with no phase heading (an explicit declaration needs no history, plan D2; a missing tasks.md cannot be used, the Structure check fails it first); a committed invalid artifact (pending never suppresses the arm's grading); a marker inside a one-line comment, a multi-line comment, a fence or a code span (hidden, so feature 024 decides), and a visible pending with a trailing comment (the comment is stripped, the value reads exactly pending); a Standard feature carrying the marker (ignored, plan D4). The malformed-marker reasons (two lines, an unknown value, an empty value, the case variant Pending) reuse CRIT-R02's site and are its variants. The amendment grading of the marker line is shown by AMEND-001 variants (plan D5). On the parent every pass fails or reads differently except two controls that are byte-identical by design: a hidden marker falling back to the heuristic, and a Standard feature."
     },
     {
+      "id": "CRIT-R04",
+      "script": "enforcement-pack.ps1",
+      "function": "Get-CriticalMergeReadiness",
+      "summary": "a plan that declares Merge Readiness: pending while every task in tasks.md is ticked is not treated as pending: the independence artifact is demanded, and the line says the plan and the tasks disagree",
+      "law": "feature 036 spec FR-001, FR-002, FR-003 (GAP-022, the forgotten pending); docs/sdlc/definition-of-done.md item 6",
+      "emitAnchor": "not treated as mid-feature",
+      "notes": "The reason is carried by the existing 'not treated as mid-feature' line (CRIT-R02's site, so both rules anchor on it: this one adds a reason, not an emission site of its own; each fail fixture's expected.txt carries the reason text 'has all 3 of its tasks ticked'). The fail is CRIT-R03's FitForge-shaped branch with every task ticked; the pass is the same branch with one task unticked (byte-identical to CRIT-R03's pass). Variants pin the reader: upper-case X, a solo arm, an unticked checkbox inside a fence or a comment (example text, not a task), a sub-task left unticked under a ticked parent, a checkbox only inside a fence or a comment, a tasks.md with no checkbox tasks, and a committed artifact (which ends the pending state before the ticks are read)."
+    },
+    {
       "id": "CRIT-S01",
       "script": "enforcement-pack.ps1",
       "function": "Invoke-CriticalSoloEvidence",

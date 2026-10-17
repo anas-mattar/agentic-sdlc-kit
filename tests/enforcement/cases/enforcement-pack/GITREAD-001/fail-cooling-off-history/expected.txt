@@ -1,6 +1,6 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', diff unreadable (git diff exited 128)
 AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
-WARNING: CriticalEvidence: not treated as mid-feature - specs/001-thing/tasks.md is not committed or cannot be read; the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5)
+WARNING: CriticalEvidence: not treated as mid-feature - specs/001-thing/tasks.md is not committed or cannot be read; the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5); the plan can state the answer with **Merge Readiness**: pending or ready (docs/sdlc/critical-delivery.md item 5)
 UNGRADED: PhaseSizeWarning: git show --numstat of <SHA> could not be read (git exited 128), so that commit was not measured against the phase-size guideline
 enforcement-pack: FAIL (2 issue(s)):
   - DiffUnreadable: git diff against '<SHA>' failed on '001-thing' (exit 128), so the changed-file list is unknown and the checks that read it graded nothing - repair the repository (a damaged object, or fetch the full history: 'fetch-depth: 0' on actions/checkout)

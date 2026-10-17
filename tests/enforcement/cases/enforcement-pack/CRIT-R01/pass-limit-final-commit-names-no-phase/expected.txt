@@ -1,4 +1,4 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', 7 changed file(s)
 AmendmentAuthority: graded 0 of 4 commit(s) in <SHA>..HEAD (4 not graded: 4 made before the check existed (plan D2b))
-WARNING: CriticalEvidence: specs/001-thing/human-pr-review.md is not yet due - the branch is at phase 2 of 3 and the independent human review is owed once the phase 3 commit lands (team mode (2 developers declared in kit-adoption.json); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)
+WARNING: CriticalEvidence: specs/001-thing/human-pr-review.md is not yet due - the branch is at phase 2 of 3 and the independent human review is owed once the phase 3 commit lands (team mode (2 developers declared in kit-adoption.json); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass); the plan can state the answer with **Merge Readiness**: pending or ready (docs/sdlc/critical-delivery.md item 5)
 enforcement-pack: OK

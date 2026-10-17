@@ -452,7 +452,11 @@ function Get-EvidenceMode { return (Get-DeveloperMode -Root $Root) }
 # DECLARATION (feature 025): a plan.md may carry '**Merge Readiness**: pending' or 'ready', which
 # decides before the heuristic above is consulted and needs no history. 'pending' is a CLAIM the
 # owner makes: an owner who sets it and never flips it merges with only the deferral WARN on this
-# check, and gate 6 stands behind it. Flipping it is a plan amendment, so it carries a recorded
+# check, and gate 6 stands behind it - except, since feature 036, in the evident case: a plan that
+# says 'pending' while its committed tasks.md has at least one checkbox task and none unticked
+# (Get-TaskTickCount) is not treated as pending, and the arm demands the artifact. Ticks are a
+# proxy for "complete", so a forgotten 'pending' beside an unticked task, or a tasks.md without
+# checkbox tasks, is still only a claim. Flipping it is a plan amendment, so it carries a recorded
 # approver (constitution I), a written claim a reviewer can falsify, not proof of who approved.
 #   A 'pending' added inside a merge commit IS graded since feature 026: AmendmentAuthority asks of a
 #   merge whether its result equals what a parent already had, or what git's automatic merge of two
@@ -497,26 +501,35 @@ function Get-CriticalMergeReadiness {
             }
         }
         if ($declarations.Count -gt 1) {
-            return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness** more than once" }
+            return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness** more than once"; Marked = $true }
         }
         if ($declarations.Count -eq 1) {
             switch -CaseSensitive ($declarations[0]) {
-                'ready'   { return @{ Pending = $false; Why = $null } }
-                'pending' { return @{ Pending = $true; Why = $null; Declared = $true } }
-                ''        { return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness** with no value, which is neither pending nor ready" } }
-                default   { return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness**: '$($declarations[0])', which is neither pending nor ready" } }
+                'ready'   { return @{ Pending = $false; Why = $null; Marked = $true } }
+                'pending' {
+                    # Feature 036 (GAP-022, E1): a declaration the tasks contradict is not a deferral. At
+                    # least one task, and none unticked, reads the work as done; anything the check cannot
+                    # read as that (no file, no task, any unticked task) leaves 'pending' exactly as 025 did.
+                    $ticks = Get-TaskTickCount -Path $tasksRel
+                    if ($ticks.Total -gt 0 -and $ticks.Unticked -eq 0) {
+                        return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness**: pending but $tasksRel has all $($ticks.Total) of its tasks ticked, so the branch is treated as ready; set it to ready (an amendment with an approver record) and supply the review, or untick the work that is not done"; Marked = $true }
+                    }
+                    return @{ Pending = $true; Why = $null; Declared = $true; Marked = $true }
+                }
+                ''        { return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness** with no value, which is neither pending nor ready"; Marked = $true } }
+                default   { return @{ Pending = $false; Why = "specs/$Branch/plan.md declares **Merge Readiness**: '$($declarations[0])', which is neither pending nor ready"; Marked = $true } }
             }
         }
     }
     if (-not $Base) {
-        return @{ Pending = $false; Why = 'there is no diff base to read the branch history against, as in a shallow clone' }
+        return @{ Pending = $false; Why = 'there is no diff base to read the branch history against, as in a shallow clone'; Marked = $false }
     }
     if ("$(git rev-parse --is-shallow-repository 2>$null)".Trim() -eq 'true') {
-        return @{ Pending = $false; Why = 'this is a shallow clone, so the branch history may be incomplete' }
+        return @{ Pending = $false; Why = 'this is a shallow clone, so the branch history may be incomplete'; Marked = $false }
     }
     $blob = @(git show "HEAD:./$tasksRel" 2>$null)
     if ($LASTEXITCODE -ne 0) {
-        return @{ Pending = $false; Why = "$tasksRel is not committed or cannot be read" }
+        return @{ Pending = $false; Why = "$tasksRel is not committed or cannot be read"; Marked = $false }
     }
     # Headings are read the way a renderer shows them: comments removed, and a heading inside a
     # fenced block is example text, not a phase.
@@ -527,13 +540,13 @@ function Get-CriticalMergeReadiness {
         if (-not $fenced[$i] -and $visible[$i] -match '^##\s+Phase\s+(\d+)\b') {
             $n = ConvertTo-PhaseNumber $matches[1]
             if ($n -eq [long]::MaxValue) {
-                return @{ Pending = $false; Why = "a '## Phase N' heading number in $tasksRel is too large to read" }
+                return @{ Pending = $false; Why = "a '## Phase N' heading number in $tasksRel is too large to read"; Marked = $false }
             }
             $declared.Add($n)
         }
     }
     if ($declared.Count -eq 0) {
-        return @{ Pending = $false; Why = "$tasksRel declares no '## Phase N' heading" }
+        return @{ Pending = $false; Why = "$tasksRel declares no '## Phase N' heading"; Marked = $false }
     }
     $final = ($declared | Measure-Object -Maximum).Maximum
     # DISTINCT numbers exactly 1..N: with the maximum being N and the minimum 1, N distinct values is the full set.
@@ -541,11 +554,11 @@ function Get-CriticalMergeReadiness {
     $distinct = @($declared | Sort-Object -Unique)
     $contiguous = ($distinct.Count -eq $final) -and ($distinct[0] -eq 1)
     if (-not $contiguous) {
-        return @{ Pending = $false; Why = "the '## Phase N' headings of $tasksRel are not numbered 1 to N without a gap (found $((@($declared | Sort-Object)) -join ', '))" }
+        return @{ Pending = $false; Why = "the '## Phase N' headings of $tasksRel are not numbered 1 to N without a gap (found $((@($declared | Sort-Object)) -join ', '))"; Marked = $false }
     }
     $subjects = @(git log --format=%s "$Base..HEAD" 2>$null)
     if ($LASTEXITCODE -ne 0) {
-        return @{ Pending = $false; Why = "the commit subjects of '$Branch' cannot be read" }
+        return @{ Pending = $false; Why = "the commit subjects of '$Branch' cannot be read"; Marked = $false }
     }
     $tip = [long]0
     foreach ($s in $subjects) {
@@ -555,16 +568,39 @@ function Get-CriticalMergeReadiness {
         foreach ($m in [regex]::Matches($s, '(?i)\bphases?\s*(\d+)')) {
             $k = ConvertTo-PhaseNumber $m.Groups[1].Value
             if ($k -ge $final) {
-                return @{ Pending = $false; Why = $null; Final = $final; Tip = $final }
+                return @{ Pending = $false; Why = $null; Final = $final; Tip = $final; Marked = $false }
             }
             # The same token below N is the evidence that the branch is mid-feature at all.
             if ($k -gt $tip) { $tip = $k }
         }
     }
     if ($tip -eq 0) {
-        return @{ Pending = $false; Why = 'no commit on the branch carries a phase subject yet' }
+        return @{ Pending = $false; Why = 'no commit on the branch carries a phase subject yet'; Marked = $false }
     }
-    return @{ Pending = $true; Why = $null; Final = $final; Tip = $tip }
+    return @{ Pending = $true; Why = $null; Final = $final; Tip = $tip; Marked = $false }
+}
+
+# The tasks of a committed tasks.md, as the readiness decision counts them (feature 036, plan P2): a
+# visible, unfenced checkbox list item at any indent, read the way the phase-heading read above reads
+# the file (comments removed, a fenced block is example text). A file git cannot read, or one with no
+# such item, answers Total 0, which the caller treats as "no evidence": the rule only ever tightens on
+# a positive reading. A project that does not use checkbox tasks therefore reads as zero tasks.
+function Get-TaskTickCount {
+    param([string]$Path)
+    $total = 0
+    $unticked = 0
+    $blob = @(git show "HEAD:./$Path" 2>$null)
+    if ($LASTEXITCODE -eq 0) {
+        $visible = @(Get-VisibleFromText -Lines $blob)
+        $fenced = Get-FencedLineMap -Lines $visible
+        for ($i = 0; $i -lt $visible.Count; $i++) {
+            if (-not $fenced[$i] -and $visible[$i] -match '^\s*[-*+]\s+\[([ xX])\]\s') {
+                $total++
+                if ($matches[1] -eq ' ') { $unticked++ }
+            }
+        }
+    }
+    return @{ Total = $total; Unticked = $unticked }
 }
 function Invoke-CriticalEvidenceCheck {
     param([string]$Branch, [string]$Base)
@@ -585,16 +621,20 @@ function Invoke-CriticalEvidenceCheck {
         }
         return
     }
+    # Feature 036 (plan P4): where the answer came from the commit-subject heuristic and not from a
+    # declaration, the message names the declaration as the repair. A plan that carries a marker, valid or
+    # not, already knows it, so it gets no suffix.
+    $declareHint = if ($readiness.Marked) { '' } else { '; the plan can state the answer with **Merge Readiness**: pending or ready (docs/sdlc/critical-delivery.md item 5)' }
     if ($readiness.Pending) {
         if ($mode.Mode -eq 'team') {
-            $script:warnings += "CriticalEvidence: $dir/human-pr-review.md is not yet due - the branch is at phase $($readiness.Tip) of $($readiness.Final) and the independent human review is owed once the phase $($readiness.Final) commit lands (team mode ($($mode.Why)); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+            $script:warnings += "CriticalEvidence: $dir/human-pr-review.md is not yet due - the branch is at phase $($readiness.Tip) of $($readiness.Final) and the independent human review is owed once the phase $($readiness.Final) commit lands (team mode ($($mode.Why)); docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)$declareHint"
         } else {
-            $script:warnings += "CriticalEvidence: $dir/second-model-review.md is not yet due - the branch is at phase $($readiness.Tip) of $($readiness.Final) and the second-model review is owed once the phase $($readiness.Final) commit lands (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)"
+            $script:warnings += "CriticalEvidence: $dir/second-model-review.md is not yet due - the branch is at phase $($readiness.Tip) of $($readiness.Final) and the second-model review is owed once the phase $($readiness.Final) commit lands (solo mode; docs/sdlc/critical-delivery.md item 5; a WARN, not a pass)$declareHint"
         }
         return
     }
     if ($readiness.Why) {
-        $script:warnings += "CriticalEvidence: not treated as mid-feature - $($readiness.Why); the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5)"
+        $script:warnings += "CriticalEvidence: not treated as mid-feature - $($readiness.Why); the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5)$declareHint"
     }
     if ($mode.Mode -eq 'team') {
         Invoke-CriticalTeamEvidence -Dir $dir -Why $mode.Why -Roster $mode.Roster
