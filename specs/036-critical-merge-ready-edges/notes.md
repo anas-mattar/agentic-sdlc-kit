@@ -103,3 +103,12 @@ The owner ran the gate command (`docs/sdlc/gate-command.md`) on the working tree
 F1 `critical-delivery.md` had been committed as CRLF (244 CR bytes in 244 lines against 0 at `e8ac2e0`), so the diff read as a whole-file rewrite: converted back to LF, diff against `e8ac2e0` is +15 lines again, CR bytes checked on every file touched. F2 "ticked honestly" was contradicted by FitForge's own list (three of the six open tasks were later marked "record corrected: was `[x]`"; commits 32 and 33 had T100 as the only open task, checked with `git show`): reworded in the flow-down note, the roadmap row and this file. F3 the log entry's "still open" list named the phase 2 gate, now moved to certified. F4 `*` and `+` bullets are tasks too and a numbered `1. [ ]` is not: stated in the guidance and the flow-down note. The review is in `ai-code-review-phase2.md`. `build-digests.ps1 -Check` OK and `ritual-checks.ps1` `RESULT OK` after the edits.
 
 The owner ran the gate command again on the working tree with the phase 2 review follow-ups and confirmed **exit code 0**, 2026-10-18.
+
+### T011: final run on an isolated checkout
+
+A detached `git worktree` outside the repository, removed afterwards.
+
+- **Full harness at `94352c4`**: **1907 passed, 0 failed, 0 skipped** (`enforcement-tests: OK`), 1761 s. The only commit after it, `c905933`, changes documents and this feature's notes and review files, no script or test, and the commit before it, `e8ac2e0`, is the last that changed code; the harness was not re-run on `c905933`.
+- **`ritual-checks.ps1 -Branch 036-critical-merge-ready-edges` at the final commit `c905933`**: doc-lint OK, enforcement-pack OK (`AmendmentAuthority` graded 10 of 10 commits), scope-check OK, digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; **RESULT OK**. (The same run on `94352c4` also gave RESULT OK, 9 of 9 commits.)
+- **`scope-check.ps1 -Branch 036-critical-merge-ready-edges` on each phase commit**: PASS `6e24d98` (64 files), PASS `e8ac2e0` (9), PASS `94352c4` (6), PASS `c905933` (5). A first attempt without `-Branch` answered UNGRADED for the detached checkout, which is the script's own refusal to guess a lane, and was discarded.
+- Not yet recorded: CI on the pushed branch (the branch is local only) and the human review of each phase.
