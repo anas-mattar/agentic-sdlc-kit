@@ -121,3 +121,23 @@ The real projects were checked afterwards: `git status --porcelain` and `git bra
 
 `adoption/updating.md` gains the flow-down note of feature 035 (no digest marker, so no digest changes; `build-digests.ps1 -Check`: 5 digests fresh, 119 markers). `docs/roadmap.md`: the GAP-041 status text, the row set to `shipped`, a decisions-log entry
 (D1 A, D2 A, D3 A; the exempt-count correction; what was measured; what is still open).
+
+### Gate records (reported to the agent by the owner in conversation, not machine-verified)
+
+- Phase 1 gate: exit 0, reported by anas.m on 2026-10-17 (after the phase 1 commits, the review and CI on `1844dc0` were green).
+- Phase 2 gate: not yet reported.
+
+### Phase 2 review follow-ups (2026-10-17, `ai-code-review-phase2.md`)
+
+- **F1:** the flow-down note now says the cause may read `git rev-parse of <ref> failed with exit <n>` when `rev-parse` itself failed.
+- **F2:** "No verdict moves" is qualified in the note: in the states measured and by construction.
+- **F3:** the phase 1 gate result is recorded above, as reported by the owner.
+- **F4, F5:** noted, no change (the `shipped` row follows the 033/034 precedent and the log lists what is open; the measured script `1844dc0` is the tip's script, Phase 2 changing none; the Linux confirmation is CI's).
+
+### T010 Final run (2026-10-17, isolated detached checkout of phase 2 commit `236e184`, removed afterwards)
+
+- Full harness: `1875 passed, 0 failed, 0 skipped`; coverage `273 of 290 declared emission site(s) owned by a fixtured rule, 8 exempt, 9 declared not a rule`; `enforcement-pack.ps1: 82 of 89 site(s) fixtured (3 exempt, 4 not a rule)` (equal to the phase 1 run: phase 2 changes no script, fixture or harness file).
+- `ritual-checks.ps1 -Branch 035-pack-diff-base-cause`: doc-lint OK, enforcement-pack OK, scope-check OK, digests OK, roadmap-claims OK, scope-repos n/a, verify-kit n/a; RESULT OK. (`scope-check.ps1` run bare in a detached checkout prints `UNGRADED detached HEAD`, as designed; the commits were graded in the repository itself, below.)
+- `scope-check.ps1 -Commit` in the repository: `PASS phase 1 commit 0b88180 (28 file(s))` and `PASS phase 2 commit 236e184 (3 file(s))`.
+- The follow-up commit after the review (the two note fixes, `notes.md`, `ai-code-review-phase2.md`) touches documents only; `ritual-checks.ps1` is re-run on it.
+- Still open: the owner's phase 2 gate, and the human review at merge.
