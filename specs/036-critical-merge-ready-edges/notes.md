@@ -65,3 +65,12 @@ The hint cases the plan listed for T003 are not new fixtures: the 18 existing ca
 ### Phase 1 gate
 
 The owner ran the gate command (`docs/sdlc/gate-command.md`) on the working tree before the phase commit and confirmed **exit code 0**, 2026-10-18.
+
+### Review follow-ups of `6e24d98` (fresh-context agent, verdict APPROVE WITH FOLLOW-UPS)
+
+- **F1 (low, fixed).** `Get-TaskTickCount` required a whitespace character after the box, so a bare `- [ ]` line was not counted as a task; a `tasks.md` with ticked tasks and one bare unticked box read as all ticked. The pattern now ends `(\s|$)`; a box glued to text (`- [x]nospace`) is still not a task. Probe on the four shapes: `- [ ]` and `- [x]` old no / new yes, `- [ ] t` old yes / new yes, `- [x]nospace` no / no. New fixture `CRIT-R04/pass-bare-unticked-checkbox` (one task written as a bare `- [ ]`): pending is honoured, output byte-identical to `pass`. Under the old pattern that task is not counted, the file reads as all ticked and the case would fail.
+- **F2 (low, pinned as a stated limit).** An unterminated `<!--` hides every later line (`Get-VisibleFromText`, the same reader the phase-heading read uses), so an unticked task below it is not seen. New fixture `CRIT-R04/fail-unterminated-comment-hides-later-tasks` pins the behaviour: all 2 visible tasks ticked, the rule fires. It errs toward demanding the review earlier, never later. To be listed with the limits in the Phase 2 guidance (T007, T008).
+- **F3 to F5 (low and informational), accepted, no change.** F3: `pass-checkbox-only-in-fence` and `pass-checkbox-only-in-comment` are not minimal pairs against `fail`, but they measure the claim, and the `fail-unticked-example-in-*` fixtures are the one-condition versions. F4: `fail-tasks-absent-pending-honoured` exits 1 only through `Structure`, by design. F5: the invalid-marker hint is covered by the existing `CRIT-R02/fail-marker-*` cases.
+- `-Case CRIT-R04` after the follow-ups: **125 passed, 0 failed, 0 skipped**.
+- Full harness after the follow-ups (F1 regex, two new fixtures): **1907 passed, 0 failed, 0 skipped** (`enforcement-tests: OK`). Phase 1 commit `6e24d98` was 1903; the 4 more are the two new fixtures, two checks each.
+- The owner ran the gate command again on the working tree with the follow-ups and confirmed **exit code 0**, 2026-10-18.

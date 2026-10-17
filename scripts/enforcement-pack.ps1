@@ -594,7 +594,7 @@ function Get-TaskTickCount {
         $visible = @(Get-VisibleFromText -Lines $blob)
         $fenced = Get-FencedLineMap -Lines $visible
         for ($i = 0; $i -lt $visible.Count; $i++) {
-            if (-not $fenced[$i] -and $visible[$i] -match '^\s*[-*+]\s+\[([ xX])\]\s') {
+            if (-not $fenced[$i] -and $visible[$i] -match '^\s*[-*+]\s+\[([ xX])\](\s|$)') {
                 $total++
                 if ($matches[1] -eq ' ') { $unticked++ }
             }
