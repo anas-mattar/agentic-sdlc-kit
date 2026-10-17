@@ -125,7 +125,7 @@ The real projects were checked afterwards: `git status --porcelain` and `git bra
 ### Gate records (reported to the agent by the owner in conversation, not machine-verified)
 
 - Phase 1 gate: exit 0, reported by anas.m on 2026-10-17 (after the phase 1 commits, the review and CI on `1844dc0` were green).
-- Phase 2 gate: not yet reported.
+- Phase 2 gate: exit 0, reported by anas.m on 2026-10-17 (after the phase 2 commit, its review and CI on `b19cac0` were green; CI run 39029365425: `enforcement-tests` Ubuntu and Windows, `ritual-checks`).
 
 ### Phase 2 review follow-ups (2026-10-17, `ai-code-review-phase2.md`)
 
