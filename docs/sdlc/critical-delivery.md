@@ -212,7 +212,7 @@ not give it to itself, and a machine can check only that it is well formed.
    (make the move in an ordinary commit); and the record is still a written claim.
 
    **A `pending` the tasks contradict** (feature 036). A plan that says `pending` while its committed `tasks.md` has at least one
-   checkbox task (`- [ ]` or `- [x]`, any indent, `[X]` too) and **none unticked** is not read as a deferral: the check prints the
+   checkbox task (a `-`, `*` or `+` list item at any indent whose box is `[ ]`, `[x]` or `[X]`; a numbered `1. [ ]` item is not read) and **none unticked** is not read as a deferral: the check prints the
    `not treated as mid-feature` line with the reason (`declares **Merge Readiness**: pending but ... has all N of its tasks ticked`) and
    the arm demands the artifact exactly as for `ready`. The repair is the one the line names: set the plan to `ready` and supply the
    review, or untick the work that is not done. Adding the marker to an existing approved plan is the same amendment as above, with
