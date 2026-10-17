@@ -6,7 +6,9 @@ description: "Task list for feature 035 — the enforcement pack names the cause
 # Tasks: the enforcement pack names the cause when its diff base cannot be read
 
 **Input**: `specs/035-pack-diff-base-cause/spec.md`, `plan.md` (decisions P1–P7), `notes.md` (the measurements)
-**Prerequisites**: spec.md approved (anas.m, 2026-10-17; D1 A, D2 A, D3 A); no new dependency, no new script file, no new harness recipe field.
+**Prerequisites**: spec.md approved (anas.m, 2026-10-17; D1 A, D2 A, D3 A); tasks.md approved (anas.m, 2026-10-17); no new dependency, no new script file, no new harness recipe field.
+
+**Amendment approved by**: anas.m, 2026-10-17
 
 **Tests**: the states ship with a passing and a failing harness fixture in the same phase as the behaviour, expectations written by hand (feature 015). New fixtures are run against the parent commit
 before the code changes and must fail there, so each is shown to measure something. Phase evidence goes in `notes.md`, never here. Rule ids: `BASE-001` to `BASE-003` (a new family; `DIFF-` and `GITREAD-` are features 028 and 029's).
