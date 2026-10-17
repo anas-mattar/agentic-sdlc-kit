@@ -79,3 +79,9 @@ total, 3 in the pack); the figure to hold is the measured one.** The new run mus
 - `scope-check.ps1` on `0b88180`: PASS (28 files).
 
 Still open: fresh-context AI review with Reviewer Provenance, the CI run on the CI image's git, and the owner's gate run.
+
+## Review follow-ups (2026-10-17, phase 1 AI review `ai-code-review-phase1.md`)
+
+- **F1 (doc drift):** the implemented wording of the dispatch warning and the `AmendmentAuthority` failure joins the clauses with a full stop (`... . The object store may be damaged: run git fsck, or re-clone`), where `plan.md` P2 and P3 sketch a dash. The fixtures pin the implemented wording. `plan.md` is not rewritten by the phase that implements it; the owner may amend P2 and P3 (recording the approver) if the sketch should match.
+- **F2 (doc drift):** the dispatch-warning rule in `rules.json` kept its meaning but its anchor moved (the old text occurs in both branches of the warning now); its `notes` now name `BASE-001` as the owner of the unreadable-base wording.
+- **F3:** exit 128 on the CI image's git is the one remaining probe; the branch's CI run is it (needs a push by the owner).

@@ -805,7 +805,7 @@
       "summary": "a run with no computable base says that nothing was compared",
       "law": "FR-009 (the Lite lane must not newly fail on a null base) and FR-011; GAP-027",
       "emitAnchor": "enforcement-pack: no integration branch to diff against, so nothing on '$Branch' was compared",
-      "notes": "GAP-027's own line. Both directions exit 0 - what differs is whether the run admits it compared nothing - so the fail direction is the shape the roadmap describes: a fix/ branch on a baseless clone, green, having graded nothing. Phase 5 (T039-T041) gives this an UNGRADED verdict state; when it rewords this line the stale-anchor assertion will say so, which is the point of inventorying it now rather than after."
+      "notes": "GAP-027's own line. Both directions exit 0 - what differs is whether the run admits it compared nothing - so the fail direction is the shape the roadmap describes: a fix/ branch on a baseless clone, green, having graded nothing. Phase 5 (T039-T041) gives this an UNGRADED verdict state; when it rewords this line the stale-anchor assertion will say so, which is the point of inventorying it now rather than after. Feature 035: the anchor names the no-integration-branch wording only; when git could not read the base (merge-base exit other than 0 or 1) the same site prints a different sentence, owned by BASE-001."
     },
     {
       "id": "PACK-002",
