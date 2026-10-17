@@ -4,7 +4,8 @@
 **Input**: Feature specification (draft; decisions D1 to D3 of the spec taken by the owner, 2026-10-17) + decisions P1 to P8 below
 **Gate Batching**: none
 **Gate Certification**: user-run
-**Status**: Draft (awaiting owner approval; nothing is implemented from it until approved)
+**Amendment approved by**: anas.m, 2026-10-17
+**Status**: Approved (anas.m, 2026-10-17) — decisions P1–P8 approved as written, including P4 (the message suffix, not a separate WARN line)
 
 ## Summary
 
