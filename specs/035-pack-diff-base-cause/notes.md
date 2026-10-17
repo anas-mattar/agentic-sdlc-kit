@@ -85,3 +85,7 @@ Still open: fresh-context AI review with Reviewer Provenance, the CI run on the 
 - **F1 (doc drift):** the implemented wording of the dispatch warning and the `AmendmentAuthority` failure joins the clauses with a full stop (`... . The object store may be damaged: run git fsck, or re-clone`), where `plan.md` P2 and P3 sketch a dash. The fixtures pin the implemented wording. `plan.md` is not rewritten by the phase that implements it; the owner may amend P2 and P3 (recording the approver) if the sketch should match.
 - **F2 (doc drift):** the dispatch-warning rule in `rules.json` kept its meaning but its anchor moved (the old text occurs in both branches of the warning now); its `notes` now name `BASE-001` as the owner of the unreadable-base wording.
 - **F3:** exit 128 on the CI image's git is the one remaining probe; the branch's CI run is it (needs a push by the owner).
+
+## CI on the pushed branch (2026-10-17, run 39022452441 on `f543cf4`)
+
+`enforcement-tests`: ubuntu-latest success, windows-latest success; `ritual-checks` success. The `BASE-*` fixtures (the exit-128 state through `truncateCommit HEAD`) therefore pass on the CI image's git on Linux as well as on Windows: the second probe of the plan's Risks holds. Then `main` (PR 109, the roadmap claim for 035) was merged into the branch (`046d769`); the merge touches only `docs/roadmap.md`.
