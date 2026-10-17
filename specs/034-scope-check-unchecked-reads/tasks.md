@@ -68,12 +68,12 @@ clone and that a damaged branch is now red; the roadmap row is closed.
 - `docs/roadmap.md`
 - `docs/digests/**`
 
-- [ ] T007 Add a flow-down note to `adoption/updating.md` shaped like feature 033's (what was wrong, what it does now, what flows down, what may newly be seen — the `ERROR` lines and exit 1 on a damaged
+- [x] T007 Add a flow-down note to `adoption/updating.md` shaped like feature 033's (what was wrong, what it does now, what flows down, what may newly be seen — the `ERROR` lines and exit 1 on a damaged
       branch, red where it was green —, what does not change, the stated limits including `territory-check.ps1`, what was measured, what to do: `git fsck`, re-fetch, re-clone). No digest marker (the adoption
       digest is at its 40-bullet bound). Every path in it resolves in an adopted project (doc-lint).
-- [ ] T008 Update `docs/roadmap.md`: GAP-040 status text, a decisions-log entry dated the day the feature ships (recording D1 A, D2 A, D3 A, the new `commitGraph` field and what the work corrected), and this
+- [x] T008 Update `docs/roadmap.md`: GAP-040 status text, a decisions-log entry dated the day the feature ships (recording D1 A, D2 A, D3 A, the new `commitGraph` field and what the work corrected), and this
       feature's row to `shipped`. Run `pwsh -File scripts/build-digests.ps1 -Check` and regenerate only if a digest-marked document changed.
-- [ ] T009 Measurement (plan P6, SC-001, SC-002): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (never the real projects, nothing pushed); the scripts of the kit as of the
+- [x] T009 Measurement (plan P6, SC-001, SC-002): clones of FitForge, FlowBoard and ExpenseTracker made from their local directories (never the real projects, nothing pushed); the scripts of the kit as of the
       parent of this feature and as they stand, **both run against the same kit content** (feature 033's lesson: the kit's own copies of the scripts are verbatim files); `scope-check.ps1 -All` and, where a
       project declares code repositories, `scope-check-repos.ps1 -All` on a feature branch of each clone, intact and with a commit object made unreadable; list every line that moves in `notes.md` with its
       cause and say plainly where none moved. Do not edit kit files while `update-kit.ps1` runs; check that an argument array of one element is not splatted character by character.

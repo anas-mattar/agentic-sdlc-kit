@@ -122,3 +122,31 @@ The full harness on an isolated detached worktree of `c565660` (below, recorded 
 | `scope-check.ps1` sites fixtured | 31 of 31 (no exemption) |
 | `scope-check-repos.ps1` sites fixtured | 31 of 33 (2 exempt: the two it already had; `REPOS-037` is real) |
 | rules exempt from a fixture pair | 7 (unchanged from the parent) |
+
+## Phase 2: guidance, close and measurement
+
+### T009 The measurement (plan P6, SC-001, SC-002)
+
+Method (features 030 to 033, with the lesson of 033): the script of the kit before this feature (`07b7ed1`) and the script as it stands (`336c410`), each run with `-Root <clone> -Branch <probe> -All` against **the same fresh clones**
+of FitForge, FlowBoard and ExpenseTracker (the real projects never touched, nothing pushed). Three probe branches per project, made in the clones: an **intact** feature branch (`099-probe`: a spec commit declaring a Territory
+and a phase commit inside it), an **orphan** branch (`098-orphan`, no history in common with the project's `main`), and the intact branch with its **tip commit object truncated** to half its bytes. Clones are made with `--no-hardlinks`.
+
+| Probe | FitForge, FlowBoard, ExpenseTracker |
+|---|---|
+| intact branch, `-All` | **byte-identical before and after**: `not applicable (commit ... carries no 'phase N' token)` then `PASS phase 1 commit ... (1 file(s))`, exit 0 |
+| orphan branch, `-All` | **byte-identical before and after**: `UNGRADED could not resolve a merge base with main - nothing checked`, exit 0 (a legitimate state, kept) |
+| tip commit truncated, `-All`, before | `UNGRADED could not resolve a merge base with main - nothing checked`, **exit 0** |
+| the same, now | `ERROR could not read the merge base with main (git merge-base failed with exit 128), so nothing on the branch was graded - the object store may be damaged: run git fsck.`, **exit 1** |
+
+The real projects were checked afterwards: no probe or orphan branch in any of them, and the same working-tree state as before (FitForge one untracked path, FlowBoard two, ExpenseTracker none).
+
+A first run of this measurement was discarded: the damaged clone was made from the intact one with a plain local `git clone`, which hardlinks loose objects, so truncating the tip commit in one corrupted the same file in the other and the
+"intact" probe printed the damaged result in both states. It was rerun with `--no-hardlinks`. Not exercised: `scope-check-repos.ps1` on an adopted project (a governance clone has no code repository present, so it prints `n/a`; the fixtures prove
+it, including the nested code repository), the commit-list `ERROR` on a project clone (it needs a commit-graph; `SCOPE-032` and `REPOS-037` prove it), and the Linux platform (the CI run of the branch).
+
+### T007 and T008 Guidance and close
+
+`adoption/updating.md`: a flow-down note in the shape of feature 033's, no digest marker (the adoption digest is at its 40-bullet bound; `build-digests.ps1 -Check` is OK, 5 digests, 119 markers). It states the six limits (the
+pack's own `Get-DiffBase`, the depth-1 clone and `fetch-depth: 0`, the corrupt ref file, `territory-check.ps1`, the pinned exit 128, the message wording), what turns red, and what to do. `docs/roadmap.md`: GAP-040's status text,
+the row `shipped`, a decisions-log entry, and **GAP-041** (the pack's own `Get-DiffBase`, owner decision) as an inventory row and an `idea` row at P3. The pack's `Get-DiffBase` is less severe than the scope check's was: a numbered branch with
+no base still fails there, with the wrong cause named, and only a Lite-lane branch merely warns.
