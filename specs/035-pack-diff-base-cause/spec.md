@@ -2,7 +2,9 @@
 
 **Feature Branch**: `035-pack-diff-base-cause`
 **Created**: 2026-10-17
-**Status**: Draft
+**Amendment approved by**: anas.m, 2026-10-17
+**Status**: Approved 2026-10-17 (owner: anas.m) <!-- D1 A, D2 A, D3 A -->
+**Owner decisions**: anas.m, 2026-10-17 — D1 A (name the cause, keep the verdicts: the numbered lane stays red and the Lite lane stays UNGRADED at exit 0), D2 A (Get-DiffBase, the dispatch warning, the AmendmentAuthority failure and the ReviewProvenance UNGRADED line that advises fetch-depth), D3 A (two phases)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "GAP-041: the enforcement pack names the cause when its diff base cannot be read: Get-DiffBase in enforcement-pack.ps1 takes any non-zero git merge-base exit for no integration branch, so a damaged numbered branch fails with the wrong cause and a Lite-lane branch only warns."
@@ -105,7 +107,9 @@ names git's failure, and points at repairing the repository, instead of telling 
 
 ## Decisions for the owner
 
-Each has a recommendation, given as a recommendation and not a decision.
+**Amendment approved by**: anas.m, 2026-10-17
+
+Each has a recommendation. **Decided by the owner (anas.m, 2026-10-17): D1 A, D2 A, D3 A**, as recommended.
 
 - **D1 - what the pack does.** (A, recommended) Name the cause, keep the verdicts: the numbered lane stays red with the cause named, the Lite lane stays `UNGRADED` at exit 0 with the cause named,
   as feature 014 FR-009 and feature 015 D6 decided. (B) Also fail the Lite lane on a failed read: a damaged `docs/` branch would be red, at the cost of overriding feature 014 FR-009 (which would
