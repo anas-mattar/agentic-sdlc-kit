@@ -173,3 +173,17 @@ The working-tree state of each project was checked afterwards (FitForge one untr
 - **F3 (GAP-041):** recorded at the owner's instruction (anas.m, 2026-10-17: "record GAP-041 and start phase 2"); the roadmap entry now says so.
 - **F4 to F7 (wording):** the repository lines are described as the same sentences worded for a repository; `RESULT UNGRADED` with exit 0 is named as what CI counted as passing; the open list of the decisions log names T010 and the phase 2 review;
   the phantom `-Json` flag is removed from the note. Phase 1's superseded T002(c) and T006 text in this file stays as history, flagged as superseded.
+### T010 Final run on an isolated checkout of `7a96899`, and the CI result of phase 1
+
+A detached `git worktree` of the phase 2 change commit outside the repository, removed afterwards.
+
+| Measure | Result |
+|---|---|
+| full harness (`tests/enforcement/Run-Tests.ps1`) | **1859 passed, 0 failed, exit 0** (the parent's 1838 plus the 21 of phase 1: `SCOPE-031`, `SCOPE-032`, `REPOS-036`, `REPOS-037` and the three `commitGraph` self-tests; phase 2 adds no test) |
+| coverage | 7 rules exempt from a fixture pair (unchanged); no unowned site |
+| `ritual-checks.ps1 -Branch 034-scope-check-unchecked-reads` in that checkout | `RESULT OK` |
+| `scope-check.ps1 -Commit` | PASS on `987563a` (21 files), `c565660` (15), `7a96899` (4) and `e1ad134` (4) |
+| CI, `enforcement-tests` on the pushed phase 1 commits `987563a` and `336c410` | **success on `ubuntu-latest` and on `windows-latest`** for both: the second git. The fixtures that pin `git merge-base failed with exit 128` and the `commitGraph` fixtures pass on Linux (review finding F7 of phase 1, T002(d)) |
+
+The 1859 is measured at the phase 2 change commit and carries to the tip (the later commits touch only this file, `adoption/updating.md`, `docs/roadmap.md` and the review files). The CI runs of the latest commits were still in
+progress when this was written. Open, and not claimed here: the owner's gate run on phase 2, the human review at merge.

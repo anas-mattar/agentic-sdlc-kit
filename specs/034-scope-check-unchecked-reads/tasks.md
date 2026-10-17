@@ -77,7 +77,7 @@ clone and that a damaged branch is now red; the roadmap row is closed.
       parent of this feature and as they stand, **both run against the same kit content** (feature 033's lesson: the kit's own copies of the scripts are verbatim files); `scope-check.ps1 -All` and, where a
       project declares code repositories, `scope-check-repos.ps1 -All` on a feature branch of each clone, intact and with a commit object made unreadable; list every line that moves in `notes.md` with its
       cause and say plainly where none moved. Do not edit kit files while `update-kit.ps1` runs; check that an argument array of one element is not splatted character by character.
-- [ ] T010 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards): the full harness,
+- [x] T010 Final run on an isolated checkout of the final commit (a detached `git worktree` outside the repository, removed afterwards): the full harness,
       `ritual-checks.ps1 -Branch 034-scope-check-unchecked-reads`, and `scope-check.ps1` on each phase commit. Record the numbers in `notes.md`. The owner then runs the gate.
 
 ---
