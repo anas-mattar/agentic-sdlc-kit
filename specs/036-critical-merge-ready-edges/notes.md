@@ -112,3 +112,8 @@ A detached `git worktree` outside the repository, removed afterwards.
 - **`ritual-checks.ps1 -Branch 036-critical-merge-ready-edges` at the final commit `c905933`**: doc-lint OK, enforcement-pack OK (`AmendmentAuthority` graded 10 of 10 commits), scope-check OK, digests OK, roadmap-claims OK, scope-repos and verify-kit n/a; **RESULT OK**. (The same run on `94352c4` also gave RESULT OK, 9 of 9 commits.)
 - **`scope-check.ps1 -Branch 036-critical-merge-ready-edges` on each phase commit**: PASS `6e24d98` (64 files), PASS `e8ac2e0` (9), PASS `94352c4` (6), PASS `c905933` (5). A first attempt without `-Branch` answered UNGRADED for the detached checkout, which is the script's own refusal to guess a lane, and was discarded.
 - Not yet recorded: CI on the pushed branch (the branch is local only) and the human review of each phase.
+
+### Human review and CI
+
+- CI on the pushed branch, tip `fcd8947`: `ritual-checks` success, `enforcement-tests (ubuntu-latest)` success, `enforcement-tests (windows-latest)` success.
+- The owner (anas.m) reported on 2026-10-18 that the human review of both phases is done and **approved**. No `human-pr-review.md` is committed on the branch (it is required only for a Critical feature); this line records the owner's report, not a review file. The roadmap row is flipped to `shipped` on the branch ahead of the merge, with the merge itself the one thing still open.
