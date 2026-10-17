@@ -211,6 +211,21 @@ not give it to itself, and a machine can check only that it is well formed.
    is graded the strict way, where a record satisfies it; a document removed or renamed inside a merge is graded and no record can satisfy it
    (make the move in an ordinary commit); and the record is still a written claim.
 
+   **A `pending` the tasks contradict** (feature 036). A plan that says `pending` while its committed `tasks.md` has at least one
+   checkbox task (a `-`, `*` or `+` list item at any indent whose box is `[ ]`, `[x]` or `[X]`; a numbered `1. [ ]` item is not read) and **none unticked** is not read as a deferral: the check prints the
+   `not treated as mid-feature` line with the reason (`declares **Merge Readiness**: pending but ... has all N of its tasks ticked`) and
+   the arm demands the artifact exactly as for `ready`. The repair is the one the line names: set the plan to `ready` and supply the
+   review, or untick the work that is not done. Adding the marker to an existing approved plan is the same amendment as above, with
+   no exemption: `**Amendment approved by**: <name>, <YYYY-MM-DD>` in the plan and the approver named in the commit message. A plan with
+   no marker still gets feature 024's heuristic; where that heuristic produced its message, the message now also says that the plan can
+   state the answer with `**Merge Readiness**` (a plan with a marker, valid or not, gets no such suffix). **Limits, stated rather than
+   hidden:** a tick is a proxy for "complete", and the rule only ever demands the artifact **earlier**, never later. An owner who never
+   ticks, or whose `tasks.md` has no checkbox tasks (or whose tasks sit in a comment or a fenced block, which are not read), keeps
+   `pending` as a claim and gate 6 stands behind it. A stray unterminated `<!--` hides every line after it, so ticked tasks above it can
+   read as all the tasks there are. A box with text glued to it (`- [x]done`) is not a task.
+
+   <!-- digest: Critical 5: a Merge Readiness pending beside a tasks.md with every task ticked is graded as ready. -->
+   <!-- digest: Critical 5: ticks are a proxy; an unticked, absent or hidden task leaves Merge Readiness pending a claim. -->
    <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->
    <!-- digest: Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. -->

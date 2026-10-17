@@ -1,5 +1,5 @@
 enforcement-pack: branch '001-thing', diff base '<SHA>', 6 changed file(s)
 AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
-WARNING: CriticalEvidence: not treated as mid-feature - the '## Phase N' headings of specs/001-thing/tasks.md are not numbered 1 to N without a gap (found 1, 2, 4); the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5)
+WARNING: CriticalEvidence: not treated as mid-feature - the '## Phase N' headings of specs/001-thing/tasks.md are not numbered 1 to N without a gap (found 1, 2, 4); the independence artifact is demanded now (docs/sdlc/critical-delivery.md item 5); the plan can state the answer with **Merge Readiness**: pending or ready (docs/sdlc/critical-delivery.md item 5)
 enforcement-pack: FAIL (1 issue(s)):
   - CriticalEvidence: specs/001-thing/human-pr-review.md is missing — team mode (2 developers declared in kit-adoption.json) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)
