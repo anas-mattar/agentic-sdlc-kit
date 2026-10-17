@@ -70,3 +70,12 @@ total, 3 in the pack); the figure to hold is the measured one.** The new run mus
 **Still open:** the full harness and `ritual-checks.ps1` on an isolated checkout of the final commit (T010), the coverage line of the new tree (T004/T006 want the exempt counts stated), the CI run on the CI image's git, and the owner's decision on `GAP27-003/fail`.
 
 **Owner decision (2026-10-17, anas.m):** the `GAP27-003/fail/expected.txt` change is accepted (a truncated-commit fixture now prints the new cause; verdict and exit code unchanged).
+
+## Phase 1 final run (2026-10-17, isolated detached checkout of phase commit `0b88180`, removed afterwards)
+
+- Full harness: `1875 passed, 0 failed, 0 skipped` (baseline 1859 plus the 16 assertions of the 8 new `BASE-*` cases).
+- Coverage: `273 of 290 declared emission site(s) owned by a fixtured rule, 8 exempt, 9 declared not a rule`; `enforcement-pack.ps1: 82 of 89 site(s) fixtured (3 exempt, 4 not a rule)`. Exempt counts equal the baseline (8 total, 3 in the pack); the three new sites are owned by `BASE-001` to `BASE-003`, no unowned site.
+- `ritual-checks.ps1 -Branch 035-pack-diff-base-cause`: doc-lint OK, enforcement-pack OK, scope-check OK, digests OK, roadmap-claims OK, scope-repos n/a, verify-kit n/a; RESULT OK.
+- `scope-check.ps1` on `0b88180`: PASS (28 files).
+
+Still open: fresh-context AI review with Reviewer Provenance, the CI run on the CI image's git, and the owner's gate run.
