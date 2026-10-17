@@ -150,3 +150,26 @@ it, including the nested code repository), the commit-list `ERROR` on a project 
 pack's own `Get-DiffBase`, the depth-1 clone and `fetch-depth: 0`, the corrupt ref file, `territory-check.ps1`, the pinned exit 128, the message wording), what turns red, and what to do. `docs/roadmap.md`: GAP-040's status text,
 the row `shipped`, a decisions-log entry, and **GAP-041** (the pack's own `Get-DiffBase`, owner decision) as an inventory row and an `idea` row at P3. The pack's `Get-DiffBase` is less severe than the scope check's was: a numbered branch with
 no base still fails there, with the wrong cause named, and only a Lite-lane branch merely warns.
+
+### T009 again: `scope-check-repos.ps1` on the three real projects (phase 2 review, finding F2)
+
+The measurement script above ran only `scope-check.ps1`; the review asked for the other grader. All three projects declare code repositories that exist locally, as separate repositories, so a governance clone does not carry them and
+copying the projects (`node_modules` and all) was not practical. The scripts only read git, so `scope-check-repos.ps1 -All -Root D:/solutions/<project> -Branch <feature>` was run **in place**, once with the script of `07b7ed1` and once with
+`7a96899` (two detached kit worktrees, removed afterwards), on a feature branch each code repository carries: FitForge `002-identity-member-profile`, FlowBoard `008-realtime-sync`, ExpenseTracker `003-expense-entry`.
+
+| Project | Before and after | Content |
+|---|---|---|
+| FitForge | **byte-identical** | 14 `PASS` lines (10 in `fitforge-api`, 4 in `fitforge-web`), exit 0 |
+| FlowBoard | **byte-identical** | `UNGRADED (no commits since merge base - no commit was examined)` for both repositories (the branch is merged), exit 0 |
+| ExpenseTracker | **byte-identical** | its own pre-existing result (24 lines including a territory WARN and the empty-range `UNGRADED` lines), exit 1 both before and after |
+
+The working-tree state of each project was checked afterwards (FitForge one untracked path, FlowBoard two, ExpenseTracker none). The damaged-branch state of this grader remains proved by `REPOS-036` and `REPOS-037` only.
+
+### Phase 2 review follow-ups (`ai-code-review-phase2.md`, APPROVE with follow-ups, no blocking finding)
+
+- **F1 (a third state):** a project root git cannot open as a repository (no `.git`, or a `safe.directory` refusal) now gives `ERROR ... (git rev-parse of origin/main failed with exit 128)` where it gave `UNGRADED`;
+  the flow-down note names it, and says the `git fsck` hint does not fit it.
+- **F2 (`scope-check-repos.ps1` on adopted projects):** measured in place on the real projects, byte-identical before and after (the table above); the note says what was and was not exercised.
+- **F3 (GAP-041):** recorded at the owner's instruction (anas.m, 2026-10-17: "record GAP-041 and start phase 2"); the roadmap entry now says so.
+- **F4 to F7 (wording):** the repository lines are described as the same sentences worded for a repository; `RESULT UNGRADED` with exit 0 is named as what CI counted as passing; the open list of the decisions log names T010 and the phase 2 review;
+  the phantom `-Json` flag is removed from the note. Phase 1's superseded T002(c) and T006 text in this file stays as history, flagged as superseded.
