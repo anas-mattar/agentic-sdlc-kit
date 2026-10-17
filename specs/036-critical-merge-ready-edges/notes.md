@@ -74,3 +74,26 @@ The owner ran the gate command (`docs/sdlc/gate-command.md`) on the working tree
 - `-Case CRIT-R04` after the follow-ups: **125 passed, 0 failed, 0 skipped**.
 - Full harness after the follow-ups (F1 regex, two new fixtures): **1907 passed, 0 failed, 0 skipped** (`enforcement-tests: OK`). Phase 1 commit `6e24d98` was 1903; the 4 more are the two new fixtures, two checks each.
 - The owner ran the gate command again on the working tree with the follow-ups and confirmed **exit code 0**, 2026-10-18.
+
+## Phase 2
+
+### T010: measurement (plan P7, SC-003), 2026-10-18
+
+Method: a fresh clone of FitForge made with `--no-hardlinks` into the scratchpad (the real project never touched, nothing pushed), the branch `002-identity-member-profile` replayed at each of its **43** commits beyond `main`. At each commit a throwaway commit in the clone injected `**Merge Readiness**: pending` after the plan's `**Gate Certification**` line (the line does not exist in that history, so this is a simulation: it shows the rule on a real file, not that an owner will leave `pending` in place). The enforcement pack of the kit before this feature (`0f35653`, a detached worktree, removed afterwards) and as it stands at the phase 1 follow-up (`e8ac2e0`) were each run with `-Root <clone> -Branch 002-identity-member-profile` and the `CriticalEvidence` line classified. The two commits that precede `plan.md` carry no plan to inject into.
+
+- **Verdict changed at 0 of 43 commits.** Before and after, the 41 commits that carry a plan print the same `pending` deferral warning.
+- Tick counts read by the new rule (visible, unfenced checkbox items): 102 tasks with 102 unticked at the first plan commit, 106 with 1 unticked at the lowest point (commit 32, `5c740f1`), 128 with **6 unticked at the tip** (`b9e1d88`). The count of unticked tasks was never 0, so the rule never fired.
+- What the tip's 6 unticked tasks are: T077 and T078 (Vitest tests, T078 marked "Record corrected, phase 12 (F11): was `[x]`"), T084 and T085 (the BFF `me` route and the back-button check, both marked corrected from `[x]`), T096 (the Visual Compliance Loop against the profile screenshots) and **T100, filing the independent `human-pr-review.md` itself**. So the feature's own task list kept the work that was not done unticked, including the review the check demands: the case the rule exists for (every task ticked, `pending` left in place) did not occur in this history, and the rule correctly stayed silent while T100 was open.
+- What the replay shows: on a real 128-task file the reader counts 128 tasks, and a feature whose owner ticks honestly is not touched. What it does not show: a branch where every task is ticked and `pending` is left in place (none exists in this history), nor that an owner will declare `pending` at all.
+- The kit's own last features' `tasks.md` at `HEAD` with the final reader (bare boxes counted): 033 ticked 9 unticked 0, 034 ticked 10 unticked 0, **035 ticked 0 unticked 10**, 036 ticked 6 unticked 5 (phase 2 open). So the convention is not uniform in the kit: the rule would read 033 and 034 as complete and 035 as never complete (the second reading leaves `pending` a claim, the stated proxy limit).
+
+### T007 to T009: guidance, flow-down, roadmap, digests
+
+- `docs/sdlc/critical-delivery.md`: a paragraph after feature 025's (the all-ticked rule, the repair the line names, the amendment shape with no exemption, the hint suffix, the limits including the unterminated comment and the glued box) and two digest markers; the critical digest regenerated (+2 lines).
+- `adoption/updating.md`: a flow-down note shaped like 025's. Its two digest markers were dropped: the adoption digest was already at `MaxDigestContentLines = 40` (42 with them, `build-digests.ps1` refused), and T007 allows markers only when the digest has room. `docs/digests/adoption-digest.md` is unchanged. Every path in the note resolves in an adopted project (doc-lint OK).
+- `docs/roadmap.md`: the GAP-022 row gains an update (the merge-commit edge was closed by feature 026, what 036 closes, the 0 of 43 measurement, what stays open) and a decisions-log entry dated 2026-10-18; this feature's own row stays `specified` until the human review at merge (T009).
+- `build-digests.ps1 -Check`: OK, 5 digests fresh, 121 markers.
+
+### Phase 2 gate
+
+The owner ran the gate command (`docs/sdlc/gate-command.md`) on the working tree before the phase commit and confirmed **exit code 0**, 2026-10-18.
