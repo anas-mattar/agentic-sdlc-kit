@@ -2615,6 +2615,51 @@
       "summary": "two roster names that write as one ref name cannot claim: the refusal names both and picks neither",
       "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
       "emitAnchor": "have no unique ref name"
+    },
+    {
+      "id": "CRIT-R05",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewClaimCheck",
+      "summary": "a Critical team-arm review whose Reviewer has not pulled the review (no review claim on origin) fails, naming the repair",
+      "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001 to FR-006a; roadmap GAP-024 (b)",
+      "emitAnchor": "has no review claim for",
+      "notes": "Graded only once the 021 conditions hold. The Owner's own claim does not stand in for the Reviewer's and the message says so (fail-owner-claim-only)."
+    },
+    {
+      "id": "CRIT-R06",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewClaimCheck",
+      "summary": "a review claim whose name writes as the Owner's does not count",
+      "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001 to FR-006a; roadmap GAP-024 (b)",
+      "emitAnchor": "is the Owner's: its name slugs to the Owner's",
+      "notes": "Owner and Reviewer are different strings (so the 021 comparison passes) that write as one ref name."
+    },
+    {
+      "id": "CRIT-R07",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewClaimCheck",
+      "summary": "a review claim whose commit was authored under the Owner's name or email does not count",
+      "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001 to FR-006a; roadmap GAP-024 (b)",
+      "emitAnchor": "was authored as",
+      "notes": "The one signal git gives of who pushed a claim. It catches the owner pushing a claim from their own identity and nothing more: the roster maps no name to an identity (plan P9)."
+    },
+    {
+      "id": "CRIT-R08",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewClaimCheck",
+      "summary": "a Critical team-arm review that is missing and was never pulled says so beside the missing-review failure",
+      "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001 to FR-006a; roadmap GAP-024 (b)",
+      "emitAnchor": "nobody has pulled the review of",
+      "notes": "A clause on the existing missing-review failure (CRIT-T01), only when the ledger was read and holds no claim for the feature. The pass direction is the same fixture with a claim: the failure stands, the clause does not. Nothing is assigned."
+    },
+    {
+      "id": "CRIT-R09",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-ReviewClaimCheck",
+      "summary": "a review claim reading the check could not make (no origin, an unreadable ledger or author, two roster names that write as one ref name) is UNGRADED, never a pass",
+      "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001 to FR-006a; roadmap GAP-024 (b)",
+      "emitAnchor": "the review claim of $feature was not graded:",
+      "notes": "An UNGRADED line and exit 0 (spec FR-004). Four causes, one site: fail (no origin), fail-ledger-unreadable, fail-author-unreadable, fail-ambiguous-roster."
     }
   ]
 }

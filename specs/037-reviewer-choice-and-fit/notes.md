@@ -69,3 +69,34 @@ while the index holds LF (the known state of this working tree); both were writt
   injective and refuses clearly when two names collide or none is usable; a few twins differ in more than one condition but the extra difference cannot
   rescue a fail for a wrong reason.
 - **F8 (recorded).** The T001 parent baseline was not recorded in full; stated above, and the append-only change to `adoption-lib.ps1` is why no verdict moves.
+
+## Phase 2: the check reads the claim (T009 to T013)
+
+**What changed.** `Invoke-CriticalTeamEvidence` (`scripts/enforcement-pack.ps1`) now calls a new `Invoke-ReviewClaimCheck` after the 021
+conditions, and only when they hold (Reviewer on the roster, permitted, not the Owner, Owner named): a stranger, the Owner and a denied
+reviewer are named as before and the claim is not graded a second time (FR-005). It reads the claims once with `Get-ReviewClaims -WithAuthors`
+and says, in the pack's vocabulary: a failure when the Reviewer has no claim (the Owner's own claim is named as not counting), when the
+claim's name slugs to the Owner's, or when its commit was authored under the Owner's name or email local part; an `UNGRADED` line (exit
+unchanged) when there is no origin, the ledger or a claim's author cannot be read, or two roster names write as one ref name. The existing
+"human-pr-review.md is missing" failure gains one clause, on the same line, when the ledger was read and holds no claim for the feature
+(FR-006a). The solo arm never reaches the code; `Get-CriticalMergeReadiness` and every other member are untouched.
+
+**New cases.** 16 under `enforcement-pack/CRIT-R05` to `CRIT-R09` (plan P4's table): R05 no claim (and the Owner's claim only), R06 a claim that
+slugs to the Owner's, R07 a claim authored under the Owner's name and under the Owner's email, R08 the unclaimed clause, R09 the four
+`UNGRADED` causes (no origin, ledger unreadable through `originFailCall`, author unreadable, ambiguous roster). Rules `CRIT-R05` to `CRIT-R09`
+are in `rules.json`. Run against the unchanged check first: R05 fail, R06 fail, R07 fail and R07 fail-email were observed failing (their expected failure line is not printed by it);
+R08 and R09 were run too but only their exit-code results were captured on the parent (they matched there, exit 0 or 1 being the same), so their parent-side
+output mismatch is not recorded. The passes are the same fixtures with the one condition put right.
+
+**Existing fixtures changed (T009/T013, plan P5).** Sixteen team-arm fixtures whose Reviewer is valid had no origin, so the new reading
+printed an `UNGRADED` line and ended `enforcement-pack: UNGRADED` where they expected `OK`: `CRIT-R01/pass-artifact-committed-final-commit-unnamed`,
+`CRIT-R01/pass-artifact-committed-mid-feature`, `CRIT-R04/pass-ready-all-ticked-unchanged`, `CRIT-T01/pass`, `CRIT-T02/pass` to `CRIT-T06/pass`,
+`CRIT-T07/fail` and `/pass`, `CRIT-T08/pass`, `/pass-case-differs`, `/pass-object-roster`, `CRIT-T09/pass`, `/pass-denied-other-person`. Each recipe
+gained `origin: "self"` and the Reviewer's claim as a branch; no `expected.txt` changed, so their output is byte-identical to before. Every other
+existing case (including the solo arm, the stranger, Owner-as-Reviewer and denied-reviewer fixtures, and every pending/mid-feature case) passed unchanged.
+
+**Honest limits, stated.** A claim shows that someone who can push to origin wrote a roster name; the author test catches the owner pushing
+from their own identity and nothing more (the roster maps no name to an identity, plan P9). An unreadable ledger or author is `UNGRADED`, not red
+(spec FR-004), so a Critical team feature can reach merge with that line on a CI that cannot read origin; gate 6 stands behind it. The check reads no
+dates: an abandoned claim stays a claim until the Reviewer named in the review file differs from it. A real project whose claim is missing sees a
+failure naming the command that fixes it; FitForge, the only adopted team-arm project, is the one whose first red run the update note will predict.

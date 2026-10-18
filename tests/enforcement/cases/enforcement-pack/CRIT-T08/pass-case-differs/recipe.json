@@ -1,5 +1,5 @@
 {
-  "description": "The Reviewer is written GRACE and the roster says grace: the match is case-insensitive, as the reader deduplicates (plan D3).",
+  "description": "The Reviewer is written GRACE and the roster says grace: the match is case-insensitive, as the reader deduplicates (plan D3). Feature 037: the ledger also holds the Reviewer's review claim (origin is the repository itself), so the claim reading adds nothing and the output is the original.",
   "defaultBranch": "main",
   "commits": [
     {
@@ -73,7 +73,13 @@
       "write": {
         "src/thing.ps1": "Write-Host 'thing'\n"
       }
+    },
+    {
+      "branch": "review/001-thing/grace",
+      "message": "review claim: 001-thing by GRACE",
+      "author": "GRACE <grace@example.invalid>"
     }
   ],
-  "checkout": "001-thing"
+  "checkout": "001-thing",
+  "origin": "self"
 }
