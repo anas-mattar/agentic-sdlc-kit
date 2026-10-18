@@ -143,7 +143,7 @@ not give it to itself, and a machine can check only that it is well formed.
    and only `name` is required. A bare name is permitted to approve Critical, so a project that has
    only ever written names is not newly locked out; `canApproveCritical: false` (a value that
    is not a boolean is read as `false`, the safe direction for a permission) is how a record says a developer may not be the
-   Reviewer of a Critical feature. `repos` is validated and recorded and read by **no check**: its one reader
+   Reviewer of a Critical feature. `repos` is validated and recorded and graded by **no check**: its one reader
    is the advisory Fit note of `scripts/claim-feature.ps1` (`docs/sdlc/team-workflow.md`), which prints a line and
    never refuses a claim, because assigning developers to repositories is assignment authority, which the kit does
    not implement. Names compare after trimming, exactly and case-insensitively: a Reviewer written

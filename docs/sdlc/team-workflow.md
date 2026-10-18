@@ -153,7 +153,8 @@ must have one; a claim whose name slugs to the Owner's does not count; and neith
 Owner's name or email (`ada.lovelace@` and `ada-lovelace` are compared alike). A review nobody has pulled says so beside the missing
 review, naming the command, and the kit assigns no one. An abandoned claim keeps counting until the Reviewer named in the review file
 is someone else: reclaiming a review is a second person pulling it, as a stale feature claim is adopted. Any ref at that slug is a
-claim, and the check reads no dates.
+claim, and the check reads no dates. Roster names should hold ASCII letters or digits: a name with none cannot claim. If the review file is missing and the ledger
+cannot be read, the missing-review failure stands alone, with neither the clause nor an `UNGRADED` line.
 
 **What the claim does not prove.** Someone who can push to `origin` wrote a roster name. The roster maps no name to a git identity, so
 the author test catches the owner pushing a claim from their own identity and nothing more; it does not show who the person is, that
@@ -175,9 +176,9 @@ alters a claim, never changes an exit code and never ranks the roadmap. It is si
 no `repos` for the claimant, or a full cover. It says `Fit: not read - …` when it cannot decide: the claimant (`-As`, default the git
 `user.name`) is not a roster name, the fragment names no row or several, the table has no `Repos` column, or the roadmap cannot be read.
 It reads `docs/roadmap.md` and the roster from the working tree, so claim from an up-to-date `main`; a tree behind `origin` can give a
-wrong match. One limit of the command line: `-Row` and `-As` bind by prefix, so a feature description that contains a dash-led word
-such as `-A`, `-As`, `-R` or `-Row` is taken as a parameter, and one that ends in it fails with "Missing an argument": write the
-description without dash-led words.
+wrong match. One limit of the command line: `-Row` and `-As` bind by prefix, so an **unquoted** dash-led word in the description (`claim-feature.ps1 -ShortName x fix the -Row handling`)
+is taken as a parameter, and one that ends the line fails with "Missing an argument". Pass the description as one quoted argument, as in the
+command above, and it is unaffected.
 
 <!-- digest: A Critical reviewer pulls the review (claim-review.ps1); a written claim, not identity. -->
 <!-- digest: claim-feature -Row prints an advisory Fit note if a row's Repos exceed yours; it never refuses. -->

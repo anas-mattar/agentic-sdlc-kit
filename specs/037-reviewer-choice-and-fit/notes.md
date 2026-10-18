@@ -215,3 +215,26 @@ was not available in any of the three, so **the claim grading itself rests on th
 
 **Open for the owner: F1 of the phase 3 review.** The prefix-binding limit of `-Row` and `-As` is documented (guidance, update note, roadmap) and the spec's FR-011 is not reworded;
 rewording it is an amendment and needs the owner's approver record. Recorded in the roadmap log as open.
+
+### Phase 4 review follow-ups (`ai-code-review-phase4.md`: APPROVE with follow-ups, F1 to F8)
+
+- **F1 (fixed; closes the phase 3 review's F1).** The prefix-binding limit of `-Row` and `-As` was overstated as applying to every description. Probed on a stub of the real
+  `param` block (five invocations): a description passed as one quoted argument is unaffected, including one that contains `-Row` or `-A` as a word and one that starts with
+  `-Row`; only unquoted words bind (`-ShortName x fix the -Row handling` binds `handling` to `-Row`). The documented form quotes the description, so a claim made as documented and
+  without `-Row` is byte-identical and **FR-011 holds for it**. The guidance, the flow-down note, the GAP-024 row and the roadmap log now say "pass the description as one quoted
+  argument"; the earlier entries in this file that call it an open owner decision to reword FR-011 are superseded: no amendment is needed.
+- **F2 (fixed).** `specs/_templates/**` is `verbatim` in `kit-manifest.json`, not surgical; the flow-down note said "surgical, never applied for you". It now says the template is
+  verbatim, gained a paragraph about the optional `Repos` column, and that the adopter's own `docs/roadmap.md` is not touched. `scripts/claim-review.ps1` is covered by `scripts/*.ps1`.
+- **F3 (recorded).** T020 edits `docs/sdlc/team-workflow.md` and `docs/sdlc/critical-delivery.md` inside the feature branch, where section 7 of `team-workflow.md` asks governance
+  changes to ride alone on a `docs/` branch with team-lead approval. Features 021 and 036 did the same for guidance that describes shipped behaviour. The owner's approval of the task
+  list, whose T020 names the edit, is read as covering it; the owner can still ask for the two documents to be split onto a `docs/` branch before merge.
+- **F4 (closed by re-running).** T024 and SC-001 name `ritual-checks.ps1` and the first measurement did not run it. Re-run on fresh `--no-hardlinks` clones with `ritual-checks.ps1` added
+  (the kit's scripts overlaid as of `b6b39d4` and as of `8c23b42`): the output is **byte-identical on `main` in all three projects**, now including `ritual-checks`; on FitForge's
+  `002-identity-member-profile` the only difference is the clause appended to the existing missing-review failure, and it appears in the pack's own output and in the pack member inside
+  `ritual-checks`; the verdict is `FAIL` before and after. The first run's statement "ritual-checks was not run" stands for that run; this one supersedes it as the T024 evidence.
+- **F5 (now true).** The roadmap log's "four phases, each with a fresh-context AI review" holds with `ai-code-review-phase4.md` (all four: APPROVE with follow-ups).
+- **F6 (fixed).** `critical-delivery.md` said `repos` is "read by no check: its one reader is ..." in one sentence; it now says "graded by no check".
+- **F7 (fixed in the guidance and note).** Roster names should hold ASCII letters or digits (a name with none cannot claim); with the review file missing and the ledger unreadable, the
+  missing-review failure stands alone, with neither the clause nor an `UNGRADED` line.
+- **F8 (accepted).** "After the conditions above hold" skips the attestation line (the claim is graded whether or not the attestation is present, as the code does) and the GAP-024
+  `**Status**` is appended without a full stop; cosmetic.
