@@ -220,7 +220,8 @@
       "script": "claim-feature.ps1",
       "accumulators": [
         "Stop-Refused\\s+['\"]",
-        "Write-Warning\\s"
+        "Write-Warning\\s",
+        "Write-Fit\\s+['\"]"
       ],
       "notRules": [
         {

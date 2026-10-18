@@ -118,3 +118,44 @@ failure naming the command that fixes it; FitForge, the only adopted team-arm pr
   one-developer fixture was not added either (the solo arm does not reach the code). The fetch-fallback success path of `Get-ReviewClaims -WithAuthors` has no
   fixture. The parent-side output of `CRIT-R08` and `CRIT-R09` was not recorded (stated above).
 - **F6 (recorded for phase 4).** The fetch fallback writes objects and `FETCH_HEAD` into the clone being graded (plan P2 specifies it); the guidance says so.
+
+## Phase 3: pull-time fit (T014 to T019)
+
+**What changed.** `scripts/adoption-lib.ps1` gains `Get-RoadmapCells`, `Get-RoadmapRows` and `Get-ClaimFit`: the only reader of a roster entry's `repos`,
+returning a kind (`None`, `Partial`, `Unplaced`, `RowCount`, `NoColumn`, `Unreadable`) and never anything that could stop a claim.
+`scripts/claim-feature.ps1` gains `-Row <fragment>` and `-As <roster name>` (default the git `user.name`) and one `Write-Fit` section before the
+number is allocated; without `-Row` nothing in it runs. `specs/_templates/roadmap-template.md` documents the optional `Repos` column.
+
+**Probes (T015).** `roadmap-claim-check.ps1` finds `Status` and `Owner` by header name: a table with a `Repos` column leaves its verdict unchanged
+(`CLAIM-001/pass-repos-column`, same expected text as `pass`). Inside the harness `git config user.name` is `Fixture Author`, and `-As` overrides it.
+Names compare trimmed, exact and case-insensitive, as the roster's names do (021): `Ada L.` against `ada` is not a match, and the line says so.
+
+**New cases.** 22 under `claim-feature/FIT-001` to `FIT-005` (hand-written expectations) plus `roadmap-claim-check/CLAIM-001/pass-repos-column`:
+`FIT-001` the Fit note (fail, fail-nobody-lists, fail-two-repos, fail-partial-cover) against the cover (pass) and the silent cases (pass-row-declares-none,
+pass-claimant-has-no-repos, pass-no-roster, pass-without-row, pass-names-compare-loosely); `FIT-002` an unplaced claimant (by `-As` and by git `user.name`);
+`FIT-003` no row or several rows; `FIT-004` a table with no `Repos` column; `FIT-005` no `docs/roadmap.md`. Run on the unchanged script first, the `-Row`
+cases failed there (an unknown parameter). The rules `FIT-001` to `FIT-005` are in `rules.json`, and the claim-feature idiom gained the `Write-Fit` accumulator;
+the coverage report reads `claim-feature.ps1  21 of 24 site(s) fixtured (3 not a rule)` (16 before, plus the five).
+
+**Pre-existing cases.** Every `claim-feature/` case (219 passed, 0 failed, with the coverage tests) and every `roadmap-claim-check/` case (207 passed, 0 failed)
+pass unchanged: no `expected.txt` outside the new directories was touched, and a claim without `-Row` prints the bytes it printed.
+
+**Found by the fixtures, before any review.** A local `$row` in `Get-ClaimFit` collided with the typed `[string]$Row` parameter (PowerShell variables are
+case-insensitive), turning the matched row into the string "System.Collections.Hashtable": every case read `no Repos column` with an empty row name. It is now `$hit`.
+
+**Deviations from the task text, recorded (the task list is not edited: an edit needs an approver record).**
+- T016 numbers the cases `FIT-001` to `FIT-008`; what shipped is `FIT-001` to `FIT-005` (the contract's five outputs, one rule per emission site), with the
+  silent cases as `pass-*` variants of `FIT-001`, and `FIT-008` is `roadmap-claim-check/CLAIM-001/pass-repos-column`.
+- T016's `FIT-003` says a table with no `Repos` column prints nothing extra; the contract (`contracts/claim-feature-fit.md`) and plan P7 say it prints
+  `Fit: not read - ...`. The contract and the plan were followed (FIT-004): a project that asks for a reading with `-Row` and whose table has no column is told so,
+  and a project that never passes `-Row` sees nothing. Plan P8's "never screened" means no Partial note is made for it.
+- T016's `FIT-007` (the claim itself identical with and without a note) is the `FIT-001/fail` expected text itself: the claim's four lines are the same bytes as
+  the `pass` direction's, with the Fit line before them.
+- A `-Json` variant of the fixture was written and removed: the harness normalises the fixture path in text, and a JSON-escaped Windows path is not normalised.
+  That `-Json` stays free of the Fit line follows from `Write-Fit` going through `Write-Info`, which is silent under `-Json`; it was seen directly (the JSON object
+  was the only output of that run) and is not pinned by a fixture.
+
+**Limits, stated.** Fit is advisory: the claim, its number, its branch and the exit code are those of the same claim without the note. It depends on the claimant
+being a roster name (`Anas M.` against `anas.m` reads nothing and says so). The roadmap reader here is a second one beside `roadmap-claim-check.ps1`'s own (plan,
+risks): it needs the first cell and one column and does not copy the claim-binding rules. A roster entry's `repos` is compared by name only; it is not checked
+against `codeRepos` here (the doctor validates it).

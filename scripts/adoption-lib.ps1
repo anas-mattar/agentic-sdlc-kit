@@ -445,3 +445,87 @@ function Get-ReviewClaims {
     }
     return $result
 }
+
+# --- Pull-time fit (feature 037, GAP-024 c) -------------------------------------------------------------
+# The first and only reader of a roster entry's `repos` (recorded since feature 021, read by nothing until now).
+# A claim can be told which roadmap row it is for (scripts/claim-feature.ps1 -Row); this compares the repositories
+# the row declares, in an optional `Repos` column of the roadmap table, with the claimant's. It is ADVISORY: it
+# returns what to say and nothing in it can stop, delay or change a claim, and it never ranks, proposes or assigns
+# anyone. A reading it cannot make is a named kind, never a clean silence.
+
+# One pipe-table line as trimmed cells; an escaped \| is cell content, not a boundary (the GAP-015 lesson).
+function Get-RoadmapCells {
+    param([string]$Line)
+    $shield = [string][char]1
+    $cells = $Line.Trim().Trim('|').Replace('\|', $shield) -split '\|'
+    return @($cells | ForEach-Object { $_.Replace($shield, '\|').Trim() })
+}
+
+# The rows of every roadmap table (a table whose header has a Status column) with the first cell and, where the
+# table has a Repos column, the repository names its cell lists (empty or an em dash lists none).
+# Returns: Ok, Cause, Rows = @( @{ Name; HasReposColumn; Repos } )
+function Get-RoadmapRows {
+    param([Parameter(Mandatory)][string]$Root)
+    $result = @{ Ok = $true; Cause = ''; Rows = @() }
+    $path = Join-Path $Root 'docs/roadmap.md'
+    if (-not (Test-Path -LiteralPath $path)) { $result.Ok = $false; $result.Cause = 'docs/roadmap.md was not found in this tree'; return $result }
+    try { $lines = @(Get-Content -LiteralPath $path -ErrorAction Stop) } catch { $result.Ok = $false; $result.Cause = 'docs/roadmap.md could not be read'; return $result }
+    $statusIdx = -1; $reposIdx = -1
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = "$($lines[$i])"
+        if ($line -notmatch '^\s*\|') { $statusIdx = -1; $reposIdx = -1; continue }
+        if ($line -match '^\s*\|[\s:|-]+\|?\s*$') { continue }
+        $cells = Get-RoadmapCells $line
+        $next = if ($i + 1 -lt $lines.Count) { "$($lines[$i + 1])" } else { '' }
+        if ($next -match '^\s*\|[\s:|-]+\|?\s*$') {
+            $statusIdx = [array]::IndexOf(@($cells | ForEach-Object { "$_" }), 'Status')
+            $reposIdx = [array]::IndexOf(@($cells | ForEach-Object { "$_" }), 'Repos')
+            continue
+        }
+        if ($statusIdx -lt 0) { continue }
+        $repos = @()
+        if ($reposIdx -ge 0 -and $reposIdx -lt $cells.Count) {
+            $repos = @(($cells[$reposIdx] -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne [string][char]0x2014 })
+        }
+        $result.Rows += @{ Name = $cells[0]; HasReposColumn = ($reposIdx -ge 0); Repos = $repos }
+    }
+    return $result
+}
+
+# What a claim of one roadmap row, by one claimant, has to say about fit. Returns @{ Kind; ... }:
+#   None        nothing to say: no roster, the row declares none, the claimant lists none, or every repository is covered
+#   Partial     RowName, Declared, Claimant, Uncovered, ListedBy
+#   Unplaced    Claimant (as given), Roster (names joined): the claimant is not a roster name (the 021 comparison)
+#   RowCount    Count: the fragment names no row, or several
+#   NoColumn    RowName: the row's table has no Repos column
+#   Unreadable  Cause: the roadmap could not be read
+function Get-ClaimFit {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$Row, [string]$Claimant)
+    $roster = @((Get-DeveloperMode -Root $Root).Roster)
+    if ($roster.Count -eq 0) { return @{ Kind = 'None' } }
+    $read = Get-RoadmapRows -Root $Root
+    if (-not $read.Ok) { return @{ Kind = 'Unreadable'; Cause = $read.Cause } }
+    $matched = @($read.Rows | Where-Object { $_.Name.IndexOf($Row, [StringComparison]::OrdinalIgnoreCase) -ge 0 })
+    if ($matched.Count -ne 1) { return @{ Kind = 'RowCount'; Count = $matched.Count } }
+    $hit = $matched[0]
+    if (-not $hit.HasReposColumn) { return @{ Kind = 'NoColumn'; RowName = $hit.Name } }
+    if ($hit.Repos.Count -eq 0) { return @{ Kind = 'None' } }
+    $entry = $null
+    foreach ($d in $roster) { if ([string]::Equals($d.Name, "$Claimant".Trim(), [StringComparison]::OrdinalIgnoreCase)) { $entry = $d; break } }
+    if (-not $entry) { return @{ Kind = 'Unplaced'; Claimant = "$Claimant".Trim(); Roster = (($roster | ForEach-Object { $_.Name }) -join ', ') } }
+    $mine = @($entry.Repos | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
+    if ($mine.Count -eq 0) { return @{ Kind = 'None' } }
+    $uncovered = @($hit.Repos | Where-Object { $mine -notcontains $_ })
+    if ($uncovered.Count -eq 0) { return @{ Kind = 'None' } }
+    $segments = @()
+    foreach ($repo in $uncovered) {
+        $names = @($roster | Where-Object { $_ -ne $entry -and (@($_.Repos | ForEach-Object { "$_".Trim() }) -contains $repo) } | ForEach-Object { $_.Name })
+        $segments += @{ Repo = $repo; Names = ($names -join ', ') }
+    }
+    $listed = if ($segments.Count -eq 1) {
+        if ($segments[0].Names) { $segments[0].Names } else { 'no one declared it' }
+    } else {
+        (@($segments | ForEach-Object { "$($_.Repo) - $(if ($_.Names) { $_.Names } else { 'no one declared it' })" })) -join '; '
+    }
+    return @{ Kind = 'Partial'; RowName = $hit.Name; Declared = $hit.Repos; Claimant = $entry.Name; Uncovered = $uncovered; ListedBy = $listed }
+}

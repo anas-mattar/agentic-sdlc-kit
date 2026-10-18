@@ -2660,6 +2660,51 @@
       "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001 to FR-006a; roadmap GAP-024 (b)",
       "emitAnchor": "the review claim of $feature was not graded:",
       "notes": "An UNGRADED line and exit 0 (spec FR-004). Four causes, one site: fail (no origin), fail-ledger-unreadable, fail-author-unreadable, fail-ambiguous-roster."
+    },
+    {
+      "id": "FIT-001",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a roadmap row whose declared repositories are not all in the claimant's roster repos prints one advisory Fit note naming the row, the uncovered repositories and who lists them, and the claim goes ahead unchanged",
+      "law": "docs/sdlc/team-workflow.md (picking a feature; the Fit note); specs/037-reviewer-choice-and-fit FR-007 to FR-012; roadmap GAP-024 (c)",
+      "emitAnchor": "does not list",
+      "notes": "Advisory (spec Q2): exit code, number, branch and every other line are those of the same claim without the note (the fail direction prints them beside it). Variants: fail-nobody-lists, fail-two-repos, fail-partial-cover; the pass-* variants pin every case that prints nothing (row declares none, claimant lists none, no roster, no -Row, names compared loosely, -Json)."
+    },
+    {
+      "id": "FIT-002",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a claimant the roster cannot place (-As or the git user.name is not a roster name) is said, with the strings compared, and no fit is read",
+      "law": "docs/sdlc/team-workflow.md (picking a feature; the Fit note); specs/037-reviewer-choice-and-fit FR-007 to FR-012; roadmap GAP-024 (c)",
+      "emitAnchor": "cannot tell who is claiming",
+      "notes": "The 021 name comparison: trimmed, exact, case-insensitive. A name that only differs in form (Ada L. against ada) is not a match, and the line says so instead of guessing."
+    },
+    {
+      "id": "FIT-003",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "-Row that names no roadmap row, or several, is said with the count and no fit is read",
+      "law": "docs/sdlc/team-workflow.md (picking a feature; the Fit note); specs/037-reviewer-choice-and-fit FR-007 to FR-012; roadmap GAP-024 (c)",
+      "emitAnchor": "roadmap rows match",
+      "notes": "A fragment of the first cell, case-insensitive; exactly one row must match."
+    },
+    {
+      "id": "FIT-004",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a roadmap table with no Repos column cannot be read for repositories and says so",
+      "law": "docs/sdlc/team-workflow.md (picking a feature; the Fit note); specs/037-reviewer-choice-and-fit FR-007 to FR-012; roadmap GAP-024 (c)",
+      "emitAnchor": "has no Repos column",
+      "notes": "The column is optional; a project that does not use it sees this line only when it asks for a reading with -Row."
+    },
+    {
+      "id": "FIT-005",
+      "script": "claim-feature.ps1",
+      "function": "(top level)",
+      "summary": "a roadmap that cannot be read for the fit (no docs/roadmap.md) is said with the cause",
+      "law": "docs/sdlc/team-workflow.md (picking a feature; the Fit note); specs/037-reviewer-choice-and-fit FR-007 to FR-012; roadmap GAP-024 (c)",
+      "emitAnchor": "Fit: not read - $($fit.Cause)",
+      "notes": "Also the line for a partial kit install that lacks scripts/adoption-lib.ps1, which no fixture can build."
     }
   ]
 }

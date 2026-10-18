@@ -30,6 +30,11 @@ param(
     [string]$ShortName,
     [switch]$Json,
     [switch]$NoPush,
+    # Feature 037 (GAP-024 c): the roadmap row this claim is for (a fragment of its first cell) and who is claiming (a
+    # roster name; default the git user.name). Together they ask for one ADVISORY reading of whether the row's declared
+    # repositories fit the claimant's. Without -Row nothing here runs and the output is byte-identical to before.
+    [string]$Row,
+    [string]$As,
     [Parameter(Mandatory, Position = 0, ValueFromRemainingArguments = $true)]
     [string[]]$FeatureDescription
 )
@@ -40,6 +45,8 @@ $MaxAttempts = 3
 function Write-Info([string]$Message) {
     if (-not $Json) { Write-Host $Message }
 }
+# An advisory fit line (feature 037): never a refusal, never an exit code, silent under -Json.
+function Write-Fit([string]$Message) { Write-Info $Message }
 
 # Set by every Get-RemoteFeatureHeads call: $true when the ledger could not be read. It is a flag and not a return
 # value because an empty ledger is a valid read, and PowerShell unrolls an empty array returned from a function to
@@ -118,6 +125,25 @@ if ($hasRemote) {
     if ($script:LedgerReadFailed) { Stop-Refused 'git ls-remote failed — cannot read the remote ledger. Nothing was claimed.' }
 } else {
     Write-Warning 'No origin remote configured — allocating from the LOCAL ledger only. This claim is NOT team-visible.'
+}
+
+# --- 2b. Fit of the row to the claimant (feature 037; advisory, only with -Row) --------------
+if ($Row) {
+    $adoptionLib = Join-Path $PSScriptRoot 'adoption-lib.ps1'
+    if (Test-Path -LiteralPath $adoptionLib) {
+        . $adoptionLib
+        $who = if ($As) { $As } else { "$(git config user.name 2>$null)".Trim() }
+        $fit = Get-ClaimFit -Root $repoRoot -Row $Row -Claimant $who
+    } else {
+        $fit = @{ Kind = 'Unreadable'; Cause = 'scripts/adoption-lib.ps1 was not found beside this script (partial kit install?)' }
+    }
+    switch ($fit.Kind) {
+        'Partial'    { Write-Fit "Fit: row '$($fit.RowName)' declares $($fit.Declared -join ', '); $($fit.Claimant) does not list $($fit.Uncovered -join ', '); listed by: $($fit.ListedBy)" }
+        'Unplaced'   { Write-Fit "Fit: not read - cannot tell who is claiming ($(if ($fit.Claimant) { "'$($fit.Claimant)' against $($fit.Roster)" } else { "no -As and no git user.name; roster: $($fit.Roster)" }))" }
+        'RowCount'   { Write-Fit "Fit: not read - $($fit.Count) roadmap rows match '$Row'" }
+        'NoColumn'   { Write-Fit "Fit: not read - the roadmap table holding '$($fit.RowName)' has no Repos column" }
+        'Unreadable' { Write-Fit "Fit: not read - $($fit.Cause)" }
+    }
 }
 
 # --- 3+4. Allocate and create (delegated to the stock Spec Kit script) -----------------

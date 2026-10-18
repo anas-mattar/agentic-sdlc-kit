@@ -1,0 +1,31 @@
+{
+  "description": "CLAIM-001 pass variant (feature 037): the roadmap table gains an optional Repos column. Status and Owner are found by header name, so the verdict is the pass direction's.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Repos | Status | Owner | Spec |",
+          "|---|---|---|---|---|",
+          "| Roadmap claim check | web | in progress | anas.m | `specs/011-thing/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

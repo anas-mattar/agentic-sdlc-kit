@@ -1,0 +1,5 @@
+Fit: not read - cannot tell who is claiming ('Ada L.' against ada, grace)
+Allocating feature number 001 (next free across local + remote + specs/).
+CLAIMED: 001-probe (pushed to origin — the claim is live)
+SPEC_FILE: <ROOT>/specs/001-probe/spec.md
+NEXT: flip the roadmap row for 001-probe (Status, Owner, Spec `specs/001-probe/`) in a main-side docs commit — ritual-checks fails while a claim's row still reads 'idea' (GAP-017).
