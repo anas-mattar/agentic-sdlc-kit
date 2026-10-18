@@ -41,7 +41,7 @@ brownfield project (B2 below).
 | B | UI-heavy app | **brownfield** (`adoption/existing-system.md`) | 3-5 features | Standard (with visual refs), Lite | Tests Visual Compliance Loop and adoption into existing code |
 | C | Small utility / script | greenfield | 1-2 features | Micro, Lite, a planned Micro promotion | Tests that the process is not too heavy for small work |
 
-Fill in the actual project names/ideas: A = ____ B = ____ C = ____
+Projects: A = `booking-api` (booking/reservation API, .NET 10 Web API + SQL Server; record in `field-test/booking-api/project.md`) B = ____ C = ____
 
 Deliberate probes, built into the projects:
 
@@ -162,7 +162,7 @@ Set the overhead threshold **before** project A starts, and do not move it after
 Go only if all hold:
 - [ ] No open `high`-severity kit fixes
 - [ ] Claim audit: no unresolved `agent-faked` mismatches in the last project
-- [ ] Overhead share per feature at or below ____ % (set before project A)
+- [ ] Overhead share per feature at or below **40 %** (set 2026-10-18, before project A, by anas.m)
 - [ ] The top automation candidate is backed by occurrence data from at least 2 projects
 
 Otherwise: apply the fixes and run another round, or narrow the runner's scope.
