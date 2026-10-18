@@ -159,3 +159,23 @@ case-insensitive), turning the matched row into the string "System.Collections.H
 being a roster name (`Anas M.` against `anas.m` reads nothing and says so). The roadmap reader here is a second one beside `roadmap-claim-check.ps1`'s own (plan,
 risks): it needs the first cell and one column and does not copy the claim-binding rules. A roster entry's `repos` is compared by name only; it is not checked
 against `codeRepos` here (the doctor validates it).
+
+### Phase 3 review follow-ups (`ai-code-review-phase3.md`: APPROVE with follow-ups, F1 to F6)
+
+- **F1 (OPEN, owner decision).** FR-011 says a claim without `-Row` is byte-identical. The new `-Row` and `-As` bind by prefix, and `FeatureDescription` takes remaining arguments, so a
+  description that contains a dash-led word that is a prefix of one of them (`-A`, `-As`, `-R`, `-Row`) now binds as a parameter instead of staying in the description, and a description
+  ending in one fails with "Missing an argument" (probed by the reviewer on stub param blocks; plain words, `Row` without a dash, `-Json`, `-NoPush` and exit codes are unchanged).
+  PowerShell offers no switch that turns prefix binding off for a script's parameters. The choices are to accept it and say so in the phase 4 guidance, or to reword FR-011 (an
+  amendment with an approver). Not decided here; no code changed for it.
+- **F2 (fixed).** The fit block had no `try/catch` under `$ErrorActionPreference = 'Stop'`, so an exception in the reading would have aborted the claim before allocation. It is now the
+  `Fit: not read - the fit reading failed: ...` line. No input that throws was found (the reviewer fed it about thirteen odd rosters and roadmaps), so this is a guard with no fixture.
+- **F3 (fixed).** A `Repos` cell of an ASCII `-` was read as a repository named `-`, and `web, web` printed twice. An ASCII hyphen now declares nothing (with the empty cell and the em dash)
+  and a name written twice is one name. Fixtures `FIT-001/pass-row-declares-none-ascii-dash` and `fail-duplicate-repo-named-once` failed on the committed phase 3 code and pass now. A pipe
+  inside backticks in a cell still splits the cell (the roadmap reader splits on unescaped pipes as `roadmap-claim-check.ps1` does).
+- **F4 (recorded, drift).** Plan P6 and T018 name a pure `Get-RepoFit -Roster -Claimant -Repos`. What shipped is `Get-ClaimFit -Root -Row -Claimant`, which reads the roster and the roadmap itself
+  and returns the kind (`None`, `Partial`, `Unplaced`, `RowCount`, `NoColumn`, `Unreadable`). It is still the one reader of `repos`; the split into a pure comparison and a reader was
+  not kept because the kinds decide on both. Not listed in the phase 3 deviations; listed here.
+- **F5 (part fixed).** Added `FIT-001/pass-claimant-case-and-padding` (`-As '  GRACE  '`) and `pass-row-declares-none-empty-cell`. Not added: a `-Json` silence fixture (the harness cannot
+  normalise a JSON-escaped Windows path, stated above), a roadmap that exists but cannot be read, and the lib-not-found branch (neither can be built by a recipe).
+- **F6 (recorded for phase 4).** The fit reads `docs/roadmap.md` and the roster from the working tree after the claim's fetch and no merge, so a tree behind origin can give a wrong match count or
+  cover. The guidance says to claim from an up-to-date `main`, which `claim-feature.ps1` already requires of the branch it starts from.

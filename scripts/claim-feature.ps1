@@ -133,7 +133,9 @@ if ($Row) {
     if (Test-Path -LiteralPath $adoptionLib) {
         . $adoptionLib
         $who = if ($As) { $As } else { "$(git config user.name 2>$null)".Trim() }
-        $fit = Get-ClaimFit -Root $repoRoot -Row $Row -Claimant $who
+        # A failure inside the reading is the 'not read' line and never an abort of the claim (phase 3 review F2).
+        try { $fit = Get-ClaimFit -Root $repoRoot -Row $Row -Claimant $who }
+        catch { $fit = @{ Kind = 'Unreadable'; Cause = "the fit reading failed: $($_.Exception.Message)" } }
     } else {
         $fit = @{ Kind = 'Unreadable'; Cause = 'scripts/adoption-lib.ps1 was not found beside this script (partial kit install?)' }
     }

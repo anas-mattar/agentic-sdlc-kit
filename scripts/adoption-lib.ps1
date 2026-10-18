@@ -485,7 +485,12 @@ function Get-RoadmapRows {
         if ($statusIdx -lt 0) { continue }
         $repos = @()
         if ($reposIdx -ge 0 -and $reposIdx -lt $cells.Count) {
-            $repos = @(($cells[$reposIdx] -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne [string][char]0x2014 })
+            # An empty cell, an em dash and an ASCII hyphen declare nothing; a name written twice is one name (phase 3 review F3).
+            $repos = @()
+            foreach ($name in (($cells[$reposIdx] -split ',') | ForEach-Object { $_.Trim() })) {
+                if (-not $name -or $name -eq [string][char]0x2014 -or $name -eq '-') { continue }
+                if ($repos -notcontains $name) { $repos += $name }
+            }
         }
         $result.Rows += @{ Name = $cells[0]; HasReposColumn = ($reposIdx -ge 0); Repos = $repos }
     }
