@@ -318,7 +318,7 @@ Describe 'emission-idiom declaration' {
         $declaredNames = @($script:Idioms.scripts.script)
         foreach ($name in @('enforcement-pack.ps1', 'scope-check.ps1', 'scope-check-repos.ps1', 'doc-lint.ps1',
                 'verify-kit.ps1', 'build-digests.ps1', 'roadmap-claim-check.ps1', 'territory-check.ps1',
-                'ritual-checks.ps1', 'claim-feature.ps1')) {
+                'ritual-checks.ps1', 'claim-feature.ps1', 'claim-review.ps1')) {
             if ($name -notin $declaredNames) { $missing += "$name has no entry in emission-idioms.json" }
         }
         if ($missing.Count -gt 0) { throw ($missing -join "`n") }

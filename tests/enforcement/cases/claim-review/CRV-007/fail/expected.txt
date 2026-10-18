@@ -1,0 +1,1 @@
+'grace' is a developer whose roster entry in kit-adoption.json does not permit approving Critical features (canApproveCritical is not true) - a review claim by them would not be accepted.

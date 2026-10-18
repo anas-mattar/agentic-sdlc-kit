@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 6 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+enforcement-pack: FAIL (1 issue(s)):
+  - CriticalEvidence: specs/001-thing/human-pr-review.md names 'grace' as its reviewer, but 'grace' has no review claim for 001-thing on origin (review/001-thing/grace) - the reviewer takes the review with: pwsh -File scripts/claim-review.ps1 -Feature 001-thing -As 'grace' (docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md)

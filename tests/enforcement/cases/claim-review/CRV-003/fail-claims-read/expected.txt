@@ -1,0 +1,1 @@
+git ls-remote --heads origin failed (git exited 128), so the review claims cannot be read - cannot read the remote ledger. Nothing was claimed.

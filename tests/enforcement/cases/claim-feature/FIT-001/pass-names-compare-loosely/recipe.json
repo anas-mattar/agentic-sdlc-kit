@@ -1,0 +1,50 @@
+{
+  "description": "FIT-001 pass variant: the row writes Web with spaces and capitals; names compare trimmed and case-insensitively.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        ".specify/scripts/powershell/create-new-feature.ps1": [
+          "# Fixture stub of .specify/scripts/powershell/create-new-feature.ps1. The contract scripts/claim-feature.ps1 reads:",
+          "# it is called as -Json -Number N -ShortName S <description>, must create branch NNN-S and specs/NNN-S/ and",
+          "# leave that branch checked out, and must print {\"BRANCH_NAME\":\"NNN-S\"} on stdout.",
+          "param([switch]$Json, [int]$Number, [string]$ShortName, [Parameter(ValueFromRemainingArguments)]$Rest)",
+          "$b = '{0:000}-{1}' -f $Number, $ShortName",
+          "git checkout -q -b $b",
+          "New-Item -ItemType Directory -Force \"specs/$b\" | Out-Null",
+          "Set-Content \"specs/$b/spec.md\" 'stub'",
+          "[PSCustomObject]@{ BRANCH_NAME = $b } | ConvertTo-Json -Compress"
+        ],
+        ".gitignore": [
+          "/origin.git/"
+        ],
+        "kit-adoption.json": "{\r\n  \"developers\": [\r\n    {\r\n      \"repos\": [\r\n        \"api\"\r\n      ],\r\n      \"name\": \"ada\"\r\n    },\r\n    {\r\n      \"repos\": [\r\n        \"web\"\r\n      ],\r\n      \"name\": \"grace\"\r\n    }\r\n  ]\r\n}",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Feature | Priority | Status | Owner | Repos | Spec |",
+          "|---|---|---|---|---|---|",
+          "| Checkout page | P1 | idea | — |  Web  | — |"
+        ]
+      }
+    }
+  ],
+  "origin": "origin.git",
+  "nestedRepos": {
+    "origin.git": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "write": {
+            "README.md": "origin\n"
+          }
+        }
+      ]
+    }
+  }
+}

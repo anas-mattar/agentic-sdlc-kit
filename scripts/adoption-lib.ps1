@@ -363,3 +363,174 @@ function Get-CodeRepos {
     $result.Repos = @($clean)
     return $result
 }
+
+# --- Review claims (feature 037, GAP-024 b) ------------------------------------------------------------
+# A Critical feature's reviewer takes the review: a remote ref refs/heads/review/<feature>/<slug>, one
+# commit, pushed by scripts/claim-review.ps1. These two functions and Get-RosterBySlug are the one reader
+# of that ledger, so the command that writes a claim and the check that grades it cannot disagree about
+# what a claim is (the 013 lesson). The ref can never match the pattern the other ledger readers use
+# (refs/heads/(\d{3,}-\S+)$), so no claim counter, number allocator or territory comparison sees it.
+
+# A roster name as a ref name can hold it. A ref cannot contain a space, a leading dot, '..', a trailing
+# '.' or '.lock', and a roster name may hold any of them. Trim, lower-case, every character outside
+# [a-z0-9._-] becomes '-', runs of '-' and of '.' collapse, leading and trailing '-' and '.' are removed,
+# and a trailing '.lock' becomes '-lock'. An empty result means the name has no usable slug.
+function ConvertTo-ReviewSlug {
+    param([string]$Name)
+    $s = "$Name".Trim().ToLowerInvariant()
+    $s = [regex]::Replace($s, '[^a-z0-9._-]', '-')
+    $s = [regex]::Replace($s, '-{2,}', '-')
+    $s = [regex]::Replace($s, '\.{2,}', '.')
+    $s = $s.Trim('-', '.')
+    if ($s.EndsWith('.lock')) { $s = $s.Substring(0, $s.Length - 5) + '-lock' }
+    return $s
+}
+
+# The roster entries by slug: slug -> @(entries). A slug held by two entries is ambiguous, and neither
+# of them can claim (the check and the command name both, and pick neither). Entries are the objects
+# Get-DeveloperMode returns in .Roster.
+function Get-RosterBySlug {
+    param([object[]]$Roster = @())
+    $map = [ordered]@{}
+    foreach ($entry in @($Roster)) {
+        $slug = ConvertTo-ReviewSlug $entry.Name
+        if (-not $slug) { continue }
+        if (-not $map.Contains($slug)) { $map[$slug] = @() }
+        $map[$slug] += $entry
+    }
+    return $map
+}
+
+# The review claims on origin for one feature. A read that fails is NOT an empty list: Failed is set with
+# a Cause, and a caller that reads Claims without looking at Failed would read "nobody pulled the review"
+# where the truth is "could not tell" (the GAP-036 recipe, one species with GAP-027/034/035). With
+# -WithAuthors each claim's commit author is read too, fetching the ref once if the commit is not in the
+# clone; a claim whose author cannot be read fails the whole reading, because a claim whose author is
+# unknown cannot be told from the Owner's.
+#
+# Returns: Failed, Cause, Claims = @( @{ Slug; Sha; AuthorName; AuthorEmail } )
+function Get-ReviewClaims {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$Feature, [switch]$WithAuthors)
+    $result = @{ Failed = $false; Cause = ''; Claims = @() }
+    git -C $Root remote get-url origin 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        $result.Failed = $true; $result.Cause = 'there is no origin remote, so the review claims cannot be read'
+        return $result
+    }
+    $lines = @(git -C $Root ls-remote --heads origin "refs/heads/review/$Feature/*" 2>$null)
+    $exit = $LASTEXITCODE
+    if ($exit -ne 0) {
+        $result.Failed = $true; $result.Cause = "git ls-remote --heads origin failed (git exited $exit), so the review claims cannot be read"
+        return $result
+    }
+    $pattern = '^([0-9a-fA-F]+)\s+refs/heads/review/' + [regex]::Escape($Feature) + '/([^/\s]+)$'
+    foreach ($line in $lines) {
+        if ("$line" -notmatch $pattern) { continue }
+        $claim = @{ Slug = $matches[2]; Sha = $matches[1]; AuthorName = ''; AuthorEmail = '' }
+        if ($WithAuthors) {
+            $meta = @(git -C $Root log -1 --format='%an%x1f%ae' $claim.Sha 2>$null)
+            if ($LASTEXITCODE -ne 0) {
+                git -C $Root fetch --quiet origin "refs/heads/review/$Feature/$($claim.Slug)" 2>$null | Out-Null
+                $meta = @(git -C $Root log -1 --format='%an%x1f%ae' $claim.Sha 2>$null)
+            }
+            if ($LASTEXITCODE -ne 0 -or "$($meta[0])" -notmatch "\x1f") {
+                $result.Failed = $true; $result.Cause = "the author of the review claim '$($claim.Slug)' could not be read (git log failed on its commit, and a fetch did not supply it)"
+                $result.Claims = @()
+                return $result
+            }
+            $parts = "$($meta[0])" -split "\x1f", 2
+            $claim.AuthorName = $parts[0]; $claim.AuthorEmail = $parts[1]
+        }
+        $result.Claims += $claim
+    }
+    return $result
+}
+
+# --- Pull-time fit (feature 037, GAP-024 c) -------------------------------------------------------------
+# The first and only reader of a roster entry's `repos` (recorded since feature 021, read by nothing until now).
+# A claim can be told which roadmap row it is for (scripts/claim-feature.ps1 -Row); this compares the repositories
+# the row declares, in an optional `Repos` column of the roadmap table, with the claimant's. It is ADVISORY: it
+# returns what to say and nothing in it can stop, delay or change a claim, and it never ranks, proposes or assigns
+# anyone. A reading it cannot make is a named kind, never a clean silence.
+
+# One pipe-table line as trimmed cells; an escaped \| is cell content, not a boundary (the GAP-015 lesson).
+function Get-RoadmapCells {
+    param([string]$Line)
+    $shield = [string][char]1
+    $cells = $Line.Trim().Trim('|').Replace('\|', $shield) -split '\|'
+    return @($cells | ForEach-Object { $_.Replace($shield, '\|').Trim() })
+}
+
+# The rows of every roadmap table (a table whose header has a Status column) with the first cell and, where the
+# table has a Repos column, the repository names its cell lists (empty or an em dash lists none).
+# Returns: Ok, Cause, Rows = @( @{ Name; HasReposColumn; Repos } )
+function Get-RoadmapRows {
+    param([Parameter(Mandatory)][string]$Root)
+    $result = @{ Ok = $true; Cause = ''; Rows = @() }
+    $path = Join-Path $Root 'docs/roadmap.md'
+    if (-not (Test-Path -LiteralPath $path)) { $result.Ok = $false; $result.Cause = 'docs/roadmap.md was not found in this tree'; return $result }
+    try { $lines = @(Get-Content -LiteralPath $path -ErrorAction Stop) } catch { $result.Ok = $false; $result.Cause = 'docs/roadmap.md could not be read'; return $result }
+    $statusIdx = -1; $reposIdx = -1
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = "$($lines[$i])"
+        if ($line -notmatch '^\s*\|') { $statusIdx = -1; $reposIdx = -1; continue }
+        if ($line -match '^\s*\|[\s:|-]+\|?\s*$') { continue }
+        $cells = Get-RoadmapCells $line
+        $next = if ($i + 1 -lt $lines.Count) { "$($lines[$i + 1])" } else { '' }
+        if ($next -match '^\s*\|[\s:|-]+\|?\s*$') {
+            $statusIdx = [array]::IndexOf(@($cells | ForEach-Object { "$_" }), 'Status')
+            $reposIdx = [array]::IndexOf(@($cells | ForEach-Object { "$_" }), 'Repos')
+            continue
+        }
+        if ($statusIdx -lt 0) { continue }
+        $repos = @()
+        if ($reposIdx -ge 0 -and $reposIdx -lt $cells.Count) {
+            # An empty cell, an em dash and an ASCII hyphen declare nothing; a name written twice is one name (phase 3 review F3).
+            $repos = @()
+            foreach ($name in (($cells[$reposIdx] -split ',') | ForEach-Object { $_.Trim() })) {
+                if (-not $name -or $name -eq [string][char]0x2014 -or $name -eq '-') { continue }
+                if ($repos -notcontains $name) { $repos += $name }
+            }
+        }
+        $result.Rows += @{ Name = $cells[0]; HasReposColumn = ($reposIdx -ge 0); Repos = $repos }
+    }
+    return $result
+}
+
+# What a claim of one roadmap row, by one claimant, has to say about fit. Returns @{ Kind; ... }:
+#   None        nothing to say: no roster, the row declares none, the claimant lists none, or every repository is covered
+#   Partial     RowName, Declared, Claimant, Uncovered, ListedBy
+#   Unplaced    Claimant (as given), Roster (names joined): the claimant is not a roster name (the 021 comparison)
+#   RowCount    Count: the fragment names no row, or several
+#   NoColumn    RowName: the row's table has no Repos column
+#   Unreadable  Cause: the roadmap could not be read
+function Get-ClaimFit {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$Row, [string]$Claimant)
+    $roster = @((Get-DeveloperMode -Root $Root).Roster)
+    if ($roster.Count -eq 0) { return @{ Kind = 'None' } }
+    $read = Get-RoadmapRows -Root $Root
+    if (-not $read.Ok) { return @{ Kind = 'Unreadable'; Cause = $read.Cause } }
+    $matched = @($read.Rows | Where-Object { $_.Name.IndexOf($Row, [StringComparison]::OrdinalIgnoreCase) -ge 0 })
+    if ($matched.Count -ne 1) { return @{ Kind = 'RowCount'; Count = $matched.Count } }
+    $hit = $matched[0]
+    if (-not $hit.HasReposColumn) { return @{ Kind = 'NoColumn'; RowName = $hit.Name } }
+    if ($hit.Repos.Count -eq 0) { return @{ Kind = 'None' } }
+    $entry = $null
+    foreach ($d in $roster) { if ([string]::Equals($d.Name, "$Claimant".Trim(), [StringComparison]::OrdinalIgnoreCase)) { $entry = $d; break } }
+    if (-not $entry) { return @{ Kind = 'Unplaced'; Claimant = "$Claimant".Trim(); Roster = (($roster | ForEach-Object { $_.Name }) -join ', ') } }
+    $mine = @($entry.Repos | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
+    if ($mine.Count -eq 0) { return @{ Kind = 'None' } }
+    $uncovered = @($hit.Repos | Where-Object { $mine -notcontains $_ })
+    if ($uncovered.Count -eq 0) { return @{ Kind = 'None' } }
+    $segments = @()
+    foreach ($repo in $uncovered) {
+        $names = @($roster | Where-Object { $_ -ne $entry -and (@($_.Repos | ForEach-Object { "$_".Trim() }) -contains $repo) } | ForEach-Object { $_.Name })
+        $segments += @{ Repo = $repo; Names = ($names -join ', ') }
+    }
+    $listed = if ($segments.Count -eq 1) {
+        if ($segments[0].Names) { $segments[0].Names } else { 'no one declared it' }
+    } else {
+        (@($segments | ForEach-Object { "$($_.Repo) - $(if ($_.Names) { $_.Names } else { 'no one declared it' })" })) -join '; '
+    }
+    return @{ Kind = 'Partial'; RowName = $hit.Name; Declared = $hit.Repos; Claimant = $entry.Name; Uncovered = $uncovered; ListedBy = $listed }
+}

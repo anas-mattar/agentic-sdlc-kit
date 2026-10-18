@@ -1,0 +1,1 @@
+No team roster is declared in kit-adoption.json (1 developer declared in kit-adoption.json) - the solo arm uses a second-model review, not a review claim (docs/sdlc/critical-delivery.md item 5).

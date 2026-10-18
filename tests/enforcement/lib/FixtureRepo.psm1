@@ -79,6 +79,9 @@
       staging the removal — the mirror of "uncommitted", and the state the fail-closed rules
       refuse from the other side: the commit-to-commit diff still names the file, so a check
       that reads the diff and then reads the file finds nothing to read.
+    - "author": "Name <email>" sets one commit's AUTHOR (feature 037, plan P4): the committer stays the fixture's own,
+      so a review claim planted on origin can be authored by the Owner or by the Reviewer, the one signal the check reads
+      of who pushed it. It is refused when not of the form "Name <email>", never ignored.
     - "hoursAgo" back-dates one commit's author AND committer date. Both, because which one a
       rule reads is the rule's business and a fixture that set only the one today's rule happens
       to read would quietly stop testing anything the day that changed.
@@ -414,6 +417,12 @@ function New-FixtureRepo {
         # not. git takes the author date as an argument and the committer date only from the
         # environment, so both are set and the environment is restored whatever happens.
         $commitArgs = @('commit', '--quiet', '--allow-empty', '-m', $message)
+        if ($commit.PSObject.Properties.Name -contains 'author' -and $null -ne $commit.author) {
+            if ("$($commit.author)" -notmatch '^[^<>]+ <[^<>@\s]+@[^<>\s]+>$') {
+                throw "fixture 'author' must be of the form 'Name <email>', got '$($commit.author)'. Refused rather than silently ignored."
+            }
+            $commitArgs += @('--author', "$($commit.author)")
+        }
         $previousCommitterDate = $env:GIT_COMMITTER_DATE
         try {
             if ($commit.PSObject.Properties.Name -contains 'hoursAgo' -and $null -ne $commit.hoursAgo) {

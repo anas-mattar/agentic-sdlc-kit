@@ -704,7 +704,12 @@ function Invoke-CriticalTeamEvidence {
     $reviewPath = Join-Path $Dir 'human-pr-review.md'
 
     if (-not (Test-Path -LiteralPath $reviewPath)) {
-        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is missing — team mode ($Why) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)"
+        # Feature 037 (plan P4, FR-006a): a review nobody has pulled says so, beside the missing review. A ledger that
+        # cannot be read adds nothing here: the failure already stands, and the claim reading names the unreadable ledger
+        # where it can be graded.
+        $pulled = Get-ReviewClaims -Root $Root -Feature ($Dir -replace '^specs/', '')
+        $nobodyPulled = (-not $pulled.Failed) -and @($pulled.Claims).Count -eq 0
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is missing — team mode ($Why) requires the independent human review itself, not the solo substitute (docs/sdlc/critical-delivery.md item 5)$(if ($nobodyPulled) { "; nobody has pulled the review of $($Dir -replace '^specs/', '') yet - a reviewer takes it with: pwsh -File scripts/claim-review.ps1 -Feature $($Dir -replace '^specs/', '') -As <roster name> (docs/sdlc/team-workflow.md)" })"
         return
     }
     # Read the COMMITTED blob, not the working tree. A history check alone only proved the
@@ -776,8 +781,8 @@ function Invoke-CriticalTeamEvidence {
     # Critical feature (feature 021, FR-006). An empty or placeholder Reviewer was already failed above
     # and is not graded a second time. The match is exact and case-insensitive, through the same
     # ordinal comparer the reader deduplicates with (plan D3), never a second one.
+    $entry = $null
     if ($reviewer -and $reviewer -notmatch $placeholder) {
-        $entry = $null
         foreach ($d in @($Roster)) {
             if ([string]::Equals($d.Name, $reviewer, [StringComparison]::OrdinalIgnoreCase)) { $entry = $d; break }
         }
@@ -790,6 +795,60 @@ function Invoke-CriticalTeamEvidence {
     }
     if ($slice -notmatch [regex]::Escape($attestation)) {
         $script:failures += "CriticalEvidence: $Dir/human-pr-review.md is missing the verbatim attestation sentence '$attestation' from its Review Provenance section (team mode — $Why)"
+    }
+    # Feature 037 (plan P4): the Reviewer must also have PULLED the review. Graded only once the 021 conditions hold
+    # (a stranger, the Owner and a denied reviewer are named above and not graded a second time, FR-005).
+    if ($entry -and $entry.CanApproveCritical -and $owner -and $owner -notmatch $placeholder -and $reviewer -ine $owner) {
+        Invoke-ReviewClaimCheck -Dir $Dir -Reviewer $reviewer -Owner $owner -Entry $entry -Roster $Roster
+    }
+}
+
+# Feature 037 (GAP-024 b, plan P2 to P4): the review claim of a Critical team-arm feature. A claim is the ref
+# refs/heads/review/<feature>/<slug> on origin (scripts/claim-review.ps1, read by Get-ReviewClaims in
+# scripts/adoption-lib.ps1). It counts for the Reviewer when its slug is the Reviewer's, is not the Owner's, and its
+# commit was not authored under the Owner's name or email. A claim is a written claim: it shows that someone who can
+# push to origin wrote a roster name, not who they are, that the review happened or that it was independent, and the
+# author test catches only the owner pushing from their own identity. A reading the check cannot make is UNGRADED
+# with its cause (never a pass, and never read as 'no claims').
+function Invoke-ReviewClaimCheck {
+    param([string]$Dir, [string]$Reviewer, [string]$Owner, [object]$Entry, [object[]]$Roster = @())
+    $feature = $Dir -replace '^specs/', ''
+    $docs = '(docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md)'
+    $slug = ConvertTo-ReviewSlug $Entry.Name
+    $ownerSlug = ConvertTo-ReviewSlug $Owner
+    $alike = @((Get-RosterBySlug -Roster $Roster)[$slug])
+    $cannot = $null
+    if (-not $slug) {
+        $cannot = "the roster name '$($Entry.Name)' has no character a ref can hold, so a claim cannot be written for it"
+    } elseif (-not $ownerSlug) {
+        # The Owner tests compare slugs, and an Owner with none would make every one of them silently pass (phase 2
+        # review F1): the reading cannot be made, and it says so.
+        $cannot = "the Owner '$Owner' has no character a ref can hold, so a claim by the Owner cannot be told from the Reviewer's"
+    } elseif ($alike.Count -gt 1) {
+        $cannot = "roster names $((@($alike) | ForEach-Object { "'$($_.Name)'" }) -join ' and ') write as one ref name ('$slug'), so their claims cannot be told apart"
+    } else {
+        $read = Get-ReviewClaims -Root $Root -Feature $feature -WithAuthors
+        if ($read.Failed) { $cannot = $read.Cause }
+    }
+    if ($cannot) {
+        $script:ungraded += "CriticalEvidence: the review claim of $feature was not graded: $cannot (docs/sdlc/team-workflow.md)"
+        return
+    }
+    $mine = @($read.Claims | Where-Object { $_.Slug -ceq $slug })
+    if ($mine.Count -eq 0) {
+        $ownerHint = if (@($read.Claims | Where-Object { $ownerSlug -and $_.Slug -ceq $ownerSlug }).Count -gt 0) { "; the review claim by the Owner ('$Owner') does not count" } else { '' }
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$Reviewer' as its reviewer, but '$Reviewer' has no review claim for $feature on origin (review/$feature/$slug) - the reviewer takes the review with: pwsh -File scripts/claim-review.ps1 -Feature $feature -As '$Reviewer'$ownerHint $docs"
+        return
+    }
+    if ($ownerSlug -and $slug -ceq $ownerSlug) {
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$Reviewer' as its reviewer, but the review claim review/$feature/$slug is the Owner's: its name slugs to the Owner's ('$Owner') - a claim by the Owner does not count $docs"
+        return
+    }
+    $claim = $mine[0]
+    $mailLocal = ("$($claim.AuthorEmail)" -split '@', 2)[0]
+    # first.last@ is read as the hyphen the Owner's name slugs with (phase 2 review F2): both forms are compared.
+    if ($ownerSlug -and ((ConvertTo-ReviewSlug $claim.AuthorName) -ceq $ownerSlug -or (ConvertTo-ReviewSlug $mailLocal) -ceq $ownerSlug -or (ConvertTo-ReviewSlug ($mailLocal -replace '\.', '-')) -ceq $ownerSlug)) {
+        $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$Reviewer' as its reviewer, but the review claim review/$feature/$slug was authored as '$($claim.AuthorName) <$($claim.AuthorEmail)>', which is the Owner ('$Owner') - a claim pushed under the Owner's identity does not count $docs"
     }
 }
 

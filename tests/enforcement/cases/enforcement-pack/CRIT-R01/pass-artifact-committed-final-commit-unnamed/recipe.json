@@ -1,5 +1,5 @@
 {
-  "description": "Team arm. The final commit is \"final: step 3\" but a valid human review is committed: the pending state ends, the arm grades the artifact as today and passes, and no WARN is printed (review F1, plan D3 as amended).",
+  "description": "Team arm. The final commit is \"final: step 3\" but a valid human review is committed: the pending state ends, the arm grades the artifact as today and passes, and no WARN is printed (review F1, plan D3 as amended). Feature 037: the ledger also holds the Reviewer's review claim (origin is the repository itself), so the claim reading adds nothing and the output is the original.",
   "defaultBranch": "main",
   "commits": [
     {
@@ -104,7 +104,13 @@
           "APPROVE."
         ]
       }
+    },
+    {
+      "branch": "review/001-thing/grace",
+      "message": "review claim: 001-thing by grace",
+      "author": "grace <grace@example.invalid>"
     }
   ],
-  "checkout": "001-thing"
+  "checkout": "001-thing",
+  "origin": "self"
 }

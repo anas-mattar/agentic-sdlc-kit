@@ -220,7 +220,8 @@
       "script": "claim-feature.ps1",
       "accumulators": [
         "Stop-Refused\\s+['\"]",
-        "Write-Warning\\s"
+        "Write-Warning\\s",
+        "Write-Fit\\s+['\"]"
       ],
       "notRules": [
         {
@@ -237,6 +238,13 @@
         }
       ],
       "note": "Added in feature 023 (GAP-031), when the script entered the coverage sweep. Its seven refusals were Write-Error calls, which under ErrorActionPreference = 'Stop' throw before the exit 1 beneath them; they are now Stop-Refused calls and each is fixtured (CLF-001 to CLF-007)."
+    },
+    {
+      "script": "claim-review.ps1",
+      "accumulators": [
+        "Stop-Refused\\s+['\"]"
+      ],
+      "note": "Added in feature 037 (GAP-024 b). Its refusals are Stop-Refused calls, as claim-feature.ps1's are; the two that carry git's own words (a ledger that cannot be read, a claim that was not made) go through Stop-LedgerUnreadable and Stop-NotMade, one site each, so each is proved by one fixture."
     }
   ]
 }

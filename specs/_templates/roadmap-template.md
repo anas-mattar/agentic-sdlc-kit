@@ -39,6 +39,13 @@ feature's `Covers` cell or be explicitly dropped in the decisions log.
 
 Status flow: `idea → specified → in progress → shipped → dropped`
 
+**Optional `Repos` column (feature 037).** A table that also carries the `Status` and `Owner` columns may add a `Repos`
+column listing the repositories the feature is expected to touch, comma-separated, in the names `codeRepos` uses in
+`kit-adoption.json`. `scripts/claim-feature.ps1 -Row <fragment of the Feature cell>` reads it and, when the claimant's
+roster `repos` do not cover it, prints one advisory `Fit` note before the claim goes ahead. An empty cell or an em dash
+declares nothing; a table without the column is simply not read for fit. No check fails on it and it never picks a
+developer: the claim stays the claimant's choice.
+
 | Feature | Covers (Inv #) | Priority | Status | Owner | Spec |
 |---|---|---|---|---|---|
 | [Invoice list (read-only)] | INV-001 | P1 | idea | [name] | — |

@@ -1,0 +1,1 @@
+{"noRoot":true,"script":"claim-review.ps1","args":["-Feature","007-payments","-As","ada"],"exitCode":1}
