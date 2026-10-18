@@ -8,6 +8,8 @@ description: "Task list for feature 037 — GAP-024 (b) and (c): the reviewer pu
 **Input**: `specs/037-reviewer-choice-and-fit/spec.md` (approved, anas.m, 2026-10-18; Q1 pull, Q2 advisory), `plan.md` (approved, anas.m, 2026-10-18; decisions P1–P10), `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `notes.md` (the measurements)
 **Prerequisites**: spec.md and plan.md approved; tasks.md approved (pending); no new dependency; one new script file (`scripts/claim-review.ps1`) and, only if T003 proves the existing fields insufficient, new harness recipe fields.
 
+**Amendment approved by**: anas.m, 2026-10-18
+
 **Tests**: every new behaviour ships with a passing and a failing harness fixture in the same phase, expectations written by hand (feature 015). New fixtures are run against the parent commit before the code changes and must fail there, so each is shown to measure something. Phase evidence goes in `notes.md`, never here. New rule ids: `CRV-*` (the review claim command and reader), `CRIT-R05` to `CRIT-R09` (the claim reading in the Critical team arm), `FIT-*` (the fit note).
 
 **Organization**: four phases, each independently revertible, reverted in the order 4, 3, 2, 1. Phase 3 does not depend on 1 or 2. The full harness is run on an isolated checkout of the final commit, never in a working directory someone is using. Every file is checked for carriage returns before it is committed (this working tree has tracked files that are CRLF on disk).
