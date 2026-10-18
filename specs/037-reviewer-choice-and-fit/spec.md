@@ -2,7 +2,8 @@
 
 **Feature Branch**: `037-reviewer-choice-and-fit`
 **Created**: 2026-10-18
-**Status**: Draft (Q1 pull and Q2 advisory decided at the owner's go-ahead, 2026-10-18; awaiting approval)
+**Amendment approved by**: anas.m, 2026-10-18
+**Status**: Approved (anas.m, 2026-10-18)
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "Close GAP-024 (b) and (c) from the roadmap inventory: (b) the Owner picks their own cross-reviewer at claim time, so the judged party selects the judge; feature 021 made the roster load-bearing for names but left the choice of reviewer with the owner. (c) Pull has no matching: picking is ordered by roadmap priority and screened only for dependencies and territory, never for fit, so in a multi-repo project the top row goes to whoever is free rather than whoever owns that stack. Deliberately NOT in scope: assignment authority, skill matrices, capacity planning; keep the leaderless claim-by-push ledger. Spec only."
