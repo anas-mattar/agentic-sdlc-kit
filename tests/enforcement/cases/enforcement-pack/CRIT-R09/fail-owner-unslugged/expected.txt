@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 6 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+UNGRADED: CriticalEvidence: the review claim of 001-thing was not graded: the Owner 'é' has no character a ref can hold, so a claim by the Owner cannot be told from the Reviewer's (docs/sdlc/team-workflow.md)
+enforcement-pack: UNGRADED (1 check(s) formed no opinion)

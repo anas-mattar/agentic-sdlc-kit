@@ -100,3 +100,21 @@ from their own identity and nothing more (the roster maps no name to an identity
 (spec FR-004), so a Critical team feature can reach merge with that line on a CI that cannot read origin; gate 6 stands behind it. The check reads no
 dates: an abandoned claim stays a claim until the Reviewer named in the review file differs from it. A real project whose claim is missing sees a
 failure naming the command that fixes it; FitForge, the only adopted team-arm project, is the one whose first red run the update note will predict.
+
+### Phase 2 review follow-ups (`ai-code-review-phase2.md`: APPROVE with follow-ups, F1 to F6)
+
+- **F1 (fixed).** An Owner whose name slugs to empty (any name with no ASCII letter or digit) silently disabled both Owner tests, so a claim by that
+  Owner passed with no failure and no `UNGRADED` line. The reading now says `UNGRADED` (the Owner cannot be told from the Reviewer by a ref name). New
+  fixture `CRIT-R09/fail-owner-unslugged`: observed on the unchanged code printing `enforcement-pack: OK`, now `UNGRADED`.
+- **F2 (fixed).** The author test missed `first.last@`: the email local part keeps its dot while the Owner's name slugs with a hyphen. Both forms are compared
+  now. New fixture `CRIT-R07/fail-email-first-dot-last`, observed on the unchanged code printing `OK`, now the failure.
+- **F3 (accepted).** A roster slug collision that includes the Owner's own entry is `UNGRADED`, not the Owner-claim failure; it is plan P3/P4 as written.
+- **F4 (accepted, stated).** `-WithAuthors` reads the author of every claim on the feature, so one unreadable unrelated claim turns a decidable "no claim by the
+  Reviewer" (red) into `UNGRADED` (exit 0). Reading only the Reviewer's claim would fix it; left, because the claim set of one feature is a handful of refs and the
+  `UNGRADED` line names the claim whose author could not be read.
+- **F5 (part fixed, part recorded).** The `CRIT-R08` rule's `function` now names `Invoke-CriticalTeamEvidence`, where the clause sits. The T010 extra fixtures for a
+  stranger, the Owner as Reviewer, a denied reviewer, the solo arm and a pending feature were not added: the existing `CRIT-T08`, `CRIT-T06`, `CRIT-T09`,
+  `CRIT-R01/R03` fail and pass-solo cases already pin them, and they stayed byte-identical (those without an origin print no claim line, which is the point). A
+  one-developer fixture was not added either (the solo arm does not reach the code). The fetch-fallback success path of `Get-ReviewClaims -WithAuthors` has no
+  fixture. The parent-side output of `CRIT-R08` and `CRIT-R09` was not recorded (stated above).
+- **F6 (recorded for phase 4).** The fetch fallback writes objects and `FETCH_HEAD` into the clone being graded (plan P2 specifies it); the guidance says so.

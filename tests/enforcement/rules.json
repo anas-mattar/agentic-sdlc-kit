@@ -2646,7 +2646,7 @@
     {
       "id": "CRIT-R08",
       "script": "enforcement-pack.ps1",
-      "function": "Invoke-ReviewClaimCheck",
+      "function": "Invoke-CriticalTeamEvidence",
       "summary": "a Critical team-arm review that is missing and was never pulled says so beside the missing-review failure",
       "law": "docs/sdlc/critical-delivery.md item 5; docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001 to FR-006a; roadmap GAP-024 (b)",
       "emitAnchor": "nobody has pulled the review of",

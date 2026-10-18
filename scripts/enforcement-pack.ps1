@@ -820,6 +820,10 @@ function Invoke-ReviewClaimCheck {
     $cannot = $null
     if (-not $slug) {
         $cannot = "the roster name '$($Entry.Name)' has no character a ref can hold, so a claim cannot be written for it"
+    } elseif (-not $ownerSlug) {
+        # The Owner tests compare slugs, and an Owner with none would make every one of them silently pass (phase 2
+        # review F1): the reading cannot be made, and it says so.
+        $cannot = "the Owner '$Owner' has no character a ref can hold, so a claim by the Owner cannot be told from the Reviewer's"
     } elseif ($alike.Count -gt 1) {
         $cannot = "roster names $((@($alike) | ForEach-Object { "'$($_.Name)'" }) -join ' and ') write as one ref name ('$slug'), so their claims cannot be told apart"
     } else {
@@ -842,7 +846,8 @@ function Invoke-ReviewClaimCheck {
     }
     $claim = $mine[0]
     $mailLocal = ("$($claim.AuthorEmail)" -split '@', 2)[0]
-    if ($ownerSlug -and ((ConvertTo-ReviewSlug $claim.AuthorName) -ceq $ownerSlug -or (ConvertTo-ReviewSlug $mailLocal) -ceq $ownerSlug)) {
+    # first.last@ is read as the hyphen the Owner's name slugs with (phase 2 review F2): both forms are compared.
+    if ($ownerSlug -and ((ConvertTo-ReviewSlug $claim.AuthorName) -ceq $ownerSlug -or (ConvertTo-ReviewSlug $mailLocal) -ceq $ownerSlug -or (ConvertTo-ReviewSlug ($mailLocal -replace '\.', '-')) -ceq $ownerSlug)) {
         $script:failures += "CriticalEvidence: $Dir/human-pr-review.md names '$Reviewer' as its reviewer, but the review claim review/$feature/$slug was authored as '$($claim.AuthorName) <$($claim.AuthorEmail)>', which is the Owner ('$Owner') - a claim pushed under the Owner's identity does not count $docs"
     }
 }
