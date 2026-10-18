@@ -11,6 +11,7 @@
 - Critical 2: AI and human reviews each pass over the domain-invariants pack item by item, recorded. (`docs/sdlc/critical-delivery.md`)
 - Critical 3: audit evidence retained — gate command + exit code, scope-check verdict, diff stat, both review checklists. (`docs/sdlc/critical-delivery.md`)
 - Critical 4: human-executed gates only, one per phase — never agent-run gates, batching, ci-held, or the Micro lane. (`docs/sdlc/critical-delivery.md`)
+- Critical 5 (team): the Reviewer must have pulled the review; an owner's claim does not count. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: a Merge Readiness pending beside a tasks.md with every task ticked is graded as ready. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: ticks are a proxy; an unticked, absent or hidden task leaves Merge Readiness pending a claim. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. (`docs/sdlc/critical-delivery.md`)

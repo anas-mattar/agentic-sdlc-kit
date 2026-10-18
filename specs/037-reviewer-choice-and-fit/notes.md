@@ -179,3 +179,39 @@ against `codeRepos` here (the doctor validates it).
   normalise a JSON-escaped Windows path, stated above), a roadmap that exists but cannot be read, and the lib-not-found branch (neither can be built by a recipe).
 - **F6 (recorded for phase 4).** The fit reads `docs/roadmap.md` and the roster from the working tree after the claim's fetch and no merge, so a tree behind origin can give a wrong match count or
   cover. The guidance says to claim from an up-to-date `main`, which `claim-feature.ps1` already requires of the branch it starts from.
+
+## Phase 4: guidance, flow-down, roadmap, measurement (T020 to T025)
+
+**Guidance (T020, T021).** `docs/sdlc/team-workflow.md`: section 3 step 4 no longer says the owner picks the reviewer (the reviewer pulls the review with
+`scripts/claim-review.ps1`; the kit proposes, ranks and assigns no one; rule 4 stands for other features); the roster paragraph's "`repos` is recorded and read by
+nothing" now says it has one reader, the advisory Fit note; a new subsection "Who judges a Critical feature, and whether a feature fits you (feature 037)" beside
+the 021 one states the claim (ref shape, who writes it, what the check requires and in what order, the unclaimed-review message, reclaiming, any ref at the slug is a
+claim, no dates), what it does not prove, the fetch into the graded clone (review F6 of phase 2), the fit note, the `Repos` column, the working-tree read (review F6 of
+phase 3) and the prefix-binding limit of `-Row`/`-As` (review F1 of phase 3, documented as the recommended handling). `docs/sdlc/critical-delivery.md`: the team-arm bullet
+of item 5 adds the claim, the roster paragraph's "read by no check" now names its one advisory reader, and a "review claim" paragraph states the rule and its honesty.
+No sentence in either file still says the owner alone picks the reviewer or that `repos` is read by nothing (grep). Three digest markers were added and tightened to the
+120-character bound; the adoption pack digest is at its 40-line bound, so the flow-down note carries no marker of its own (it would have been the 41st).
+
+**Flow-down note (T022).** `adoption/updating.md`, "Flow-down note: the 2026-10-18 review claim and the fit note (kit feature 037 — no constitution amendment)", shaped
+like feature 036's: what was wrong, what it does now, what flows down (verbatim: the four scripts, two documents and this one; surgical: the roadmap template paragraph),
+what an owner may newly see (only a team-arm project, only a Critical feature whose review is owed), what does not change, seven stated limits, what was measured, what to
+do. `doc-lint.ps1` passes, so every path in it resolves in an adopted project.
+
+**Roadmap (T023).** The GAP-024 inventory row records what 037 closes and what stays open; this feature's row is `in progress` (it becomes `shipped` only after the human
+review at merge, as the task says); a decisions-log entry dated 2026-10-18 records Q1, Q2, the plan approval, what the work found, the measurement and the open decisions.
+`roadmap-claim-check.ps1` passes, with the claim 037 exempt as the branch checked. `build-digests.ps1` regenerated the branching and critical digests; `-Check` is OK.
+
+**Measurement (T024, SC-001).** Fresh `--no-hardlinks` clones of FitForge, FlowBoard and ExpenseTracker, each with the kit's `scripts/` overlaid as an update would, once as of
+`b6b39d4` (the tip before this feature's first phase commit) and once as of the branch tip `fbd02c8`; `enforcement-pack.ps1` and `roadmap-claim-check.ps1` run each way
+(`ritual-checks.ps1` was not run). Nothing in place was touched and nothing pushed. Results: **`main` is byte-identical before and after in all three projects**
+(FitForge `roadmap-claims: OK (1 claim(s) visible with non-idea rows, Owners and claim counts graded against the declared roster)`, FlowBoard `OK (no NNN-* claims on origin)`,
+ExpenseTracker `OK (1 claim(s) visible with non-idea rows)`). The pack applies no scripted checks to the trunk, so this shows no script broke and no verdict moved, not that a
+claim was graded. On FitForge's real Critical branch `002-identity-member-profile` (43 commits, team arm by `["anas.m","ahmad"]`) the verdict is the same `FAIL` with exit 1 before and
+after, and the only difference is one clause appended to the existing missing-review failure (`; nobody has pulled the review of 002-identity-member-profile yet - a reviewer takes
+it with: pwsh -File scripts/claim-review.ps1 -Feature 002-identity-member-profile -As <roster name> (docs/sdlc/team-workflow.md)`). A reviewed Critical feature carrying a claim
+was not available in any of the three, so **the claim grading itself rests on the kit's fixtures (`CRIT-R05` to `CRIT-R09`), not on a real history**; SC-001 is met for
+"no verdict, line or exit code moves except where the update note says one will", and SC-002 is shown by fixtures only. SC-003's fit note was likewise measured on fixtures only
+(none of the three rosters declares `repos`, and none of their roadmaps has a `Repos` column, so a claim there prints nothing).
+
+**Open for the owner: F1 of the phase 3 review.** The prefix-binding limit of `-Row` and `-As` is documented (guidance, update note, roadmap) and the spec's FR-011 is not reworded;
+rewording it is an amendment and needs the owner's approver record. Recorded in the roadmap log as open.

@@ -127,7 +127,7 @@ not give it to itself, and a machine can check only that it is well formed.
    - **Two or more developers** → `specs/NNN-name/human-pr-review.md`, **committed**, carrying
      a filled `## Review Provenance` block whose **Reviewer** is not its **Owner**, **is on the
      roster** (below), and is not a developer whose entry says `canApproveCritical: false`, plus
-     the verbatim attestation. No cooling-off. A Reviewer who is not on the roster fails naming
+     the verbatim attestation, **and a review claim by that Reviewer** (below). No cooling-off. A Reviewer who is not on the roster fails naming
      the Reviewer and the names declared; a Reviewer whose entry does not permit it fails saying
      so.
 
@@ -143,12 +143,23 @@ not give it to itself, and a machine can check only that it is well formed.
    and only `name` is required. A bare name is permitted to approve Critical, so a project that has
    only ever written names is not newly locked out; `canApproveCritical: false` (a value that
    is not a boolean is read as `false`, the safe direction for a permission) is how a record says a developer may not be the
-   Reviewer of a Critical feature. `repos` is validated and recorded and **read by no check** —
-   matching developers to repositories is assignment authority, which the kit does not
-   implement. Names compare after trimming, exactly and case-insensitively: a Reviewer written
+   Reviewer of a Critical feature. `repos` is validated and recorded and read by **no check**: its one reader
+   is the advisory Fit note of `scripts/claim-feature.ps1` (`docs/sdlc/team-workflow.md`), which prints a line and
+   never refuses a claim, because assigning developers to repositories is assignment authority, which the kit does
+   not implement. Names compare after trimming, exactly and case-insensitively: a Reviewer written
    `Grace Hopper` does not match the entry `grace`, and the failure names both strings so the fix
    is visible.
 
+   **The review claim** (feature 037). The Reviewer is not chosen by the owner: they take the review by pushing the ref
+   `review/NNN-name/<slug>` with `scripts/claim-review.ps1` (`docs/sdlc/team-workflow.md`, "Who judges a Critical feature").
+   After the conditions above hold, the check requires that claim: a Reviewer with none fails naming the command; a claim whose name
+   slugs to the Owner's, or whose commit was authored under the Owner's name or email, does not count; a review nobody has pulled says so
+   beside the missing review. A claim is a written claim: someone who can push to `origin` wrote a roster name. It does not show who they
+   are, that the review happened or that it was independent, and the author test catches only the owner's own identity. A ledger or an
+   author the check cannot read is `UNGRADED` with the cause, never a pass, so a Critical team feature can reach merge with that line on a
+   CI that cannot read `origin`; gate 6, the human review, stands behind it. The solo arm never reads a claim.
+
+   <!-- digest: Critical 5 (team): the Reviewer must have pulled the review; an owner's claim does not count. -->
    **Honesty about the team arm too**: it compares names written by the same team, in one
    file. That converts a silent omission into a written claim a reviewer can falsify —
    which is worth something, and is not the same as verifying that the review happened.

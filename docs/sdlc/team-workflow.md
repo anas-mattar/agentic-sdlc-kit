@@ -51,8 +51,11 @@ How a developer takes a feature from the roadmap (**docs/roadmap.md**, see
    `specified`, spec link — so the claim reaches `main`'s roadmap when the feature merges.
    Until then, the remote branch (step 2) is the authoritative claim.
 4. From here the normal ritual applies unchanged; the picker is the feature's owner
-   (rule 1), and picks their cross-reviewer (rule 4) at claim time — the owner of a
-   neighboring feature is usually the best choice.
+   (rule 1). **The owner does not choose who judges a Critical feature:** the reviewer
+   pulls the review themselves with `scripts/claim-review.ps1`, the way a developer
+   pulls a feature (section "Who judges a Critical feature", below). The kit never
+   proposes, ranks or assigns a reviewer. For any other feature, rule 4 still says the
+   human reviewer must not be the owner: agree it with a teammate, as before.
 
 <!-- digest: A remote NNN-* branch IS the claim — check remote branches before picking, never the roadmap alone. -->
 
@@ -95,7 +98,7 @@ be checked on.
 is required. Names compare after trimming, exactly and case-insensitively, and a person written
 twice counts once (and is denied Critical approval if any copy denies it). There is no mapping
 between a handle and a display name: `Anas M.` against `anas.m` is a mismatch, and the failure
-names both strings. `repos` is recorded and read by nothing.
+names both strings. `repos` is read by one thing, the advisory Fit note of `claim-feature.ps1` (below); no check grades it.
 
 **The Owner reading.** For each claim on `origin` whose roadmap row has a Status other than
 `idea` and a real Owner cell (not blank, not `—`), the Owner must be on the roster. The Owner
@@ -129,6 +132,55 @@ approve a Critical feature. It does not prove identity.**
 <!-- digest: WIP counter: more than two active claims per Owner fails, exactly two is noted; graded only where a roster is declared. -->
 <!-- digest: The roster catches a stranger or a typo as Owner or Reviewer; it does not prove identity or that a pull request is open. -->
 
+### Who judges a Critical feature, and whether a feature fits you (feature 037)
+
+Two choices were left with the people who make them and are now written down where a reviewer can falsify them. Neither is
+assignment: nobody is told what to take or whom to review, there is no queue and no coordinator, and the claim-by-push ledger is
+all the state there is. Both are graded **only where `kit-adoption.json` declares a roster**; a project with none sees nothing new.
+
+**The review claim.** On a Critical feature in the team arm, the Reviewer takes the review by pushing a claim under their own name:
+
+```powershell
+pwsh -File scripts/claim-review.ps1 -Feature NNN-name [-As <roster name>]
+```
+
+A claim is the remote ref `review/NNN-name/<slug>` on `origin`, where the slug is the roster name made safe for a ref (`Anas M.` is
+`anas-m`; two roster names that slug alike cannot claim, and the command and the check say so). It points at one commit built on the
+feature tip, authored by whoever pushed it. The command refuses a name that is not on the roster, or whose entry says
+`canApproveCritical: false`, and a claim that already exists is not pushed again. The Critical evidence check requires the claim
+**after** the existing conditions hold (Reviewer on the roster, permitted, not the Owner): the Reviewer named in `human-pr-review.md`
+must have one; a claim whose name slugs to the Owner's does not count; and neither does one whose commit was authored under the
+Owner's name or email (`ada.lovelace@` and `ada-lovelace` are compared alike). A review nobody has pulled says so beside the missing
+review, naming the command, and the kit assigns no one. An abandoned claim keeps counting until the Reviewer named in the review file
+is someone else: reclaiming a review is a second person pulling it, as a stale feature claim is adopted. Any ref at that slug is a
+claim, and the check reads no dates.
+
+**What the claim does not prove.** Someone who can push to `origin` wrote a roster name. The roster maps no name to a git identity, so
+the author test catches the owner pushing a claim from their own identity and nothing more; it does not show who the person is, that
+the review happened or that it was independent. A ledger the check cannot read (no `origin`, a failed `ls-remote`, a claim whose author
+cannot be fetched) is `UNGRADED` with the cause and never a pass, and an Owner whose name has no usable characters is `UNGRADED` too.
+To read an author the check may fetch a claim ref into the clone it is grading, which writes objects and `FETCH_HEAD` there.
+
+**The fit note.** A roadmap table that already has `Status` and `Owner` columns may add a `Repos` column: the repositories the feature is
+expected to touch, comma-separated, in the names `codeRepos` uses (an empty cell, an em dash or a hyphen declares nothing). A claim can
+say which row it is for:
+
+```powershell
+pwsh -File scripts/claim-feature.ps1 -ShortName <name> -Row "<fragment of the Feature cell>" [-As <roster name>] "<description>"
+```
+
+When the claimant's roster `repos` do not cover the row's, one line is printed before the number is allocated, and the claim goes
+ahead unchanged: `Fit: row '…' declares web; ada does not list web; listed by: grace`. It is **advisory**: it never refuses, delays or
+alters a claim, never changes an exit code and never ranks the roadmap. It is silent when there is no roster, no `-Row`, no declaration,
+no `repos` for the claimant, or a full cover. It says `Fit: not read - …` when it cannot decide: the claimant (`-As`, default the git
+`user.name`) is not a roster name, the fragment names no row or several, the table has no `Repos` column, or the roadmap cannot be read.
+It reads `docs/roadmap.md` and the roster from the working tree, so claim from an up-to-date `main`; a tree behind `origin` can give a
+wrong match. One limit of the command line: `-Row` and `-As` bind by prefix, so a feature description that contains a dash-led word
+such as `-A`, `-As`, `-R` or `-Row` is taken as a parameter, and one that ends in it fails with "Missing an argument": write the
+description without dash-led words.
+
+<!-- digest: A Critical reviewer pulls the review (claim-review.ps1); a written claim, not identity. -->
+<!-- digest: claim-feature -Row prints an advisory Fit note if a row's Repos exceed yours; it never refuses. -->
 ## 4. Cross-review — the owner never approves their own feature
 
 With one developer, human review means reviewing your own agent's work. With a team there
