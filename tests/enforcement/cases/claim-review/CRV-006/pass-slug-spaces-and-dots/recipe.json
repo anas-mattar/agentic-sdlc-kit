@@ -1,0 +1,23 @@
+{
+  "description": "CRV-006 pass variant: a roster name with spaces, a dot and capitals is written as a safe ref name, and the output names the roster name.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": "{\r\n  \"developers\": [\r\n    \"Grace M. Hopper\",\r\n    \"ada\"\r\n  ]\r\n}"
+      }
+    },
+    {
+      "branch": "007-payments",
+      "message": "spec: 007-payments",
+      "write": {
+        "specs/007-payments/spec.md": "# 007-payments\n"
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

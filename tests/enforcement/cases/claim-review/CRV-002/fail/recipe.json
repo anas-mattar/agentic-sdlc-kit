@@ -1,0 +1,22 @@
+{
+  "description": "CRV-002 fail: no origin remote, so there is no ledger to claim against.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": "{\r\n  \"developers\": [\r\n    \"ada\",\r\n    \"grace\"\r\n  ]\r\n}"
+      }
+    },
+    {
+      "branch": "007-payments",
+      "message": "spec: 007-payments",
+      "write": {
+        "specs/007-payments/spec.md": "# 007-payments\n"
+      }
+    }
+  ],
+  "checkout": "main"
+}

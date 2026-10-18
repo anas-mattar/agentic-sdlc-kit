@@ -1,0 +1,23 @@
+{
+  "description": "CRV-008 pass variant: -Json prints the one-line object.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": "{\r\n  \"developers\": [\r\n    \"ada\",\r\n    \"grace\"\r\n  ]\r\n}"
+      }
+    },
+    {
+      "branch": "007-payments",
+      "message": "spec: 007-payments",
+      "write": {
+        "specs/007-payments/spec.md": "# 007-payments\n"
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

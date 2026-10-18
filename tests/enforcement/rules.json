@@ -2543,6 +2543,78 @@
       "emitAnchor": "'last-commit-failed'",
       "exemption": "git log -1 of origin/<other> fails only when the tip COMMIT object is damaged, and a damaged tip breaks git rev-list --count (read just before it, checked since feature 003) first, which is TERR-012's 'claim-skipped'. No data state reaches this read with the count succeeding (plan Amendment 1, G14a). Guarded by an injected failure recorded in notes.md.",
       "notes": "Feature 029 phase 4 (G14a). An unreadable tip leaves the branch's status unknown, and an epoch of 0 would have called it stale (reclaimable), so the branch is not compared."
+    },
+    {
+      "id": "CRV-001",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a review claim started outside a git repository is refused rather than answered",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "Not inside a git repository."
+    },
+    {
+      "id": "CRV-002",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a review claim with no origin remote is refused: there is no ledger to claim against",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "No origin remote - a review claim lives on the remote ledger"
+    },
+    {
+      "id": "CRV-003",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a ledger or feature that cannot be read from origin is refused by name and never read as no claims",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "- cannot read the remote ledger. Nothing was claimed."
+    },
+    {
+      "id": "CRV-004",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a review claim for a feature that is not a branch on origin is refused",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "is not a branch on origin - nothing to take the review of"
+    },
+    {
+      "id": "CRV-005",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a review claim on a project with no team roster is refused: the solo arm uses no claim",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "No team roster is declared in kit-adoption.json"
+    },
+    {
+      "id": "CRV-006",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a review claim by a name the roster does not declare is refused",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "is not on the developer roster in kit-adoption.json"
+    },
+    {
+      "id": "CRV-007",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a review claim by a developer the roster denies Critical approval is refused",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "does not permit approving Critical features"
+    },
+    {
+      "id": "CRV-008",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "a claim that could not be built or whose push was rejected is refused, saying nothing was claimed",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "The review claim was not made: $Detail"
+    },
+    {
+      "id": "CRV-009",
+      "script": "claim-review.ps1",
+      "function": "(top level)",
+      "summary": "two roster names that write as one ref name cannot claim: the refusal names both and picks neither",
+      "law": "docs/sdlc/team-workflow.md (the reviewer pulls the review); specs/037-reviewer-choice-and-fit FR-001, FR-013; roadmap GAP-024 (b)",
+      "emitAnchor": "have no unique ref name"
     }
   ]
 }

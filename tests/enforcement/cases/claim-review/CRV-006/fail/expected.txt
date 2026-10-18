@@ -1,0 +1,1 @@
+'zed' is not on the developer roster in kit-adoption.json (ada, grace) - name a declared developer with -As, or add the person to the roster.

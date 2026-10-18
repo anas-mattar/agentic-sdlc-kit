@@ -1,0 +1,1 @@
+Roster name(s) 'Ann B' and 'ann-b' have no unique ref name ('ann-b') in kit-adoption.json - two roster names that slug alike, or a name with no usable characters, cannot be told apart by a claim. Rename one.

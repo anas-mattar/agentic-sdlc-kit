@@ -1,0 +1,35 @@
+{
+  "description": "CLAIM-001 pass variant (feature 037): the ledger also holds review/011-thing/grace. It is not an NNN-* claim, so the verdict is the pass direction's.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "docs/roadmap.md": [
+          "# Roadmap",
+          "",
+          "| Item | Status | Owner | Spec |",
+          "|---|---|---|---|",
+          "| Roadmap claim check | in progress | anas.m | `specs/011-thing/` |"
+        ]
+      }
+    },
+    {
+      "branch": "011-thing",
+      "message": "spec: 011-thing",
+      "write": {
+        "specs/011-thing/spec.md": [
+          "# Feature Specification: Thing"
+        ]
+      }
+    },
+    {
+      "branch": "review/011-thing/grace",
+      "message": "review claim: 011-thing by grace"
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}

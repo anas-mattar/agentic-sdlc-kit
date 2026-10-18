@@ -363,3 +363,85 @@ function Get-CodeRepos {
     $result.Repos = @($clean)
     return $result
 }
+
+# --- Review claims (feature 037, GAP-024 b) ------------------------------------------------------------
+# A Critical feature's reviewer takes the review: a remote ref refs/heads/review/<feature>/<slug>, one
+# commit, pushed by scripts/claim-review.ps1. These two functions and Get-RosterBySlug are the one reader
+# of that ledger, so the command that writes a claim and the check that grades it cannot disagree about
+# what a claim is (the 013 lesson). The ref can never match the pattern the other ledger readers use
+# (refs/heads/(\d{3,}-\S+)$), so no claim counter, number allocator or territory comparison sees it.
+
+# A roster name as a ref name can hold it. A ref cannot contain a space, a leading dot, '..', a trailing
+# '.' or '.lock', and a roster name may hold any of them. Trim, lower-case, every character outside
+# [a-z0-9._-] becomes '-', runs of '-' and of '.' collapse, leading and trailing '-' and '.' are removed,
+# and a trailing '.lock' becomes '-lock'. An empty result means the name has no usable slug.
+function ConvertTo-ReviewSlug {
+    param([string]$Name)
+    $s = "$Name".Trim().ToLowerInvariant()
+    $s = [regex]::Replace($s, '[^a-z0-9._-]', '-')
+    $s = [regex]::Replace($s, '-{2,}', '-')
+    $s = [regex]::Replace($s, '\.{2,}', '.')
+    $s = $s.Trim('-', '.')
+    if ($s.EndsWith('.lock')) { $s = $s.Substring(0, $s.Length - 5) + '-lock' }
+    return $s
+}
+
+# The roster entries by slug: slug -> @(entries). A slug held by two entries is ambiguous, and neither
+# of them can claim (the check and the command name both, and pick neither). Entries are the objects
+# Get-DeveloperMode returns in .Roster.
+function Get-RosterBySlug {
+    param([object[]]$Roster = @())
+    $map = [ordered]@{}
+    foreach ($entry in @($Roster)) {
+        $slug = ConvertTo-ReviewSlug $entry.Name
+        if (-not $slug) { continue }
+        if (-not $map.Contains($slug)) { $map[$slug] = @() }
+        $map[$slug] += $entry
+    }
+    return $map
+}
+
+# The review claims on origin for one feature. A read that fails is NOT an empty list: Failed is set with
+# a Cause, and a caller that reads Claims without looking at Failed would read "nobody pulled the review"
+# where the truth is "could not tell" (the GAP-036 recipe, one species with GAP-027/034/035). With
+# -WithAuthors each claim's commit author is read too, fetching the ref once if the commit is not in the
+# clone; a claim whose author cannot be read fails the whole reading, because a claim whose author is
+# unknown cannot be told from the Owner's.
+#
+# Returns: Failed, Cause, Claims = @( @{ Slug; Sha; AuthorName; AuthorEmail } )
+function Get-ReviewClaims {
+    param([Parameter(Mandatory)][string]$Root, [Parameter(Mandatory)][string]$Feature, [switch]$WithAuthors)
+    $result = @{ Failed = $false; Cause = ''; Claims = @() }
+    git -C $Root remote get-url origin 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        $result.Failed = $true; $result.Cause = 'there is no origin remote, so the review claims cannot be read'
+        return $result
+    }
+    $lines = @(git -C $Root ls-remote --heads origin "refs/heads/review/$Feature/*" 2>$null)
+    $exit = $LASTEXITCODE
+    if ($exit -ne 0) {
+        $result.Failed = $true; $result.Cause = "git ls-remote --heads origin failed (git exited $exit), so the review claims cannot be read"
+        return $result
+    }
+    $pattern = '^([0-9a-fA-F]+)\s+refs/heads/review/' + [regex]::Escape($Feature) + '/([^/\s]+)$'
+    foreach ($line in $lines) {
+        if ("$line" -notmatch $pattern) { continue }
+        $claim = @{ Slug = $matches[2]; Sha = $matches[1]; AuthorName = ''; AuthorEmail = '' }
+        if ($WithAuthors) {
+            $meta = @(git -C $Root log -1 --format='%an%x1f%ae' $claim.Sha 2>$null)
+            if ($LASTEXITCODE -ne 0) {
+                git -C $Root fetch --quiet origin "refs/heads/review/$Feature/$($claim.Slug)" 2>$null | Out-Null
+                $meta = @(git -C $Root log -1 --format='%an%x1f%ae' $claim.Sha 2>$null)
+            }
+            if ($LASTEXITCODE -ne 0 -or "$($meta[0])" -notmatch "\x1f") {
+                $result.Failed = $true; $result.Cause = "the author of the review claim '$($claim.Slug)' could not be read (git log failed on its commit, and a fetch did not supply it)"
+                $result.Claims = @()
+                return $result
+            }
+            $parts = "$($meta[0])" -split "\x1f", 2
+            $claim.AuthorName = $parts[0]; $claim.AuthorEmail = $parts[1]
+        }
+        $result.Claims += $claim
+    }
+    return $result
+}

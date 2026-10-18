@@ -1,0 +1,22 @@
+{
+  "description": "CRV-005 fail variant: no kit-adoption.json at all, the stricter default.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n"
+      }
+    },
+    {
+      "branch": "007-payments",
+      "message": "spec: 007-payments",
+      "write": {
+        "specs/007-payments/spec.md": "# 007-payments\n"
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "self"
+}
