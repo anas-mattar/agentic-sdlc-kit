@@ -47,3 +47,25 @@ text is one function, so a reworded message is caught there.
 expression, which PowerShell unrolls to a string, so `$tree[0]` was one character; the success fixtures caught it before any
 phase review. The working copy of `scripts/adoption-lib.ps1` and `tests/enforcement/emission-idioms.json` was CRLF on disk
 while the index holds LF (the known state of this working tree); both were written LF so the diff is the change and nothing else.
+
+### Phase 1 review follow-ups (`ai-code-review-phase1.md`: APPROVE with follow-ups, F1 to F8)
+
+- **F1 (closed).** T004 named `CRV-010` (the reader's failure channel) and `CRV-011` (slug cases) and ticked without them: the work was folded into
+  other rule ids and not recorded. Now recorded, and the gap closed: the reader's `Failed` channel behind the first read is `CRV-003/fail-claims-read`
+  (origin's second read fails through `originFailCall: 2`, so the feature is found and the claims read fails: refused with the reader's cause, exit 1);
+  the slug rule's edge cases are `CRV-006/pass-slug-spaces-and-dots`, `CRV-009/fail` (two names that slug alike) and the new
+  `CRV-009/fail-no-usable-characters` (a name with no character a ref can hold). The `-WithAuthors` path has no phase 1 caller by design: its first
+  fixtures are phase 2's `CRIT-R07` and `CRIT-R09` (an unreadable author), and phase 2 does not start without them.
+- **F2 (recorded).** The numbering that shipped: `CRV-001` to `CRV-008` the eight refusals of the contract, `CRV-009` the slug collision (a ninth refusal
+  the contract folds into refusal 6), and the three "other ledger readers ignore a review ref" controls filed as `pass-review-ref-ignored` variants under
+  `CLAIM-001`, `TERR-001` and `CLF-012` (T004's `CRV-012`). The task text keeps its original numbering; this file is the record, the text was not edited
+  (an edit to an approved task list needs an approver record).
+- **F3 (deferred to phase 2).** No phase 1 fixture reads the pushed commit back (parent, tree, message, author) or proves an existing ref is never
+  overwritten. Phase 2's fixtures read claims through `Get-ReviewClaims -WithAuthors`, which is the author and the ref shape; a non-fast-forward is refused by
+  git (a push is never forced). A rival-ref case is added there if the phase 2 review asks for it.
+- **F4 (fixed).** "already claimed" now compares slugs case-sensitively (`-ceq`); the slug is lower-case by construction. "Any ref at the slug is a claim" is
+  the semantics and goes in the phase 4 guidance.
+- **F5, F6, F7 (accepted).** The commit sha is taken from merged output and fails safe (a warning makes the push be refused); the slug rule is not
+  injective and refuses clearly when two names collide or none is usable; a few twins differ in more than one condition but the extra difference cannot
+  rescue a fail for a wrong reason.
+- **F8 (recorded).** The T001 parent baseline was not recorded in full; stated above, and the append-only change to `adoption-lib.ps1` is why no verdict moves.

@@ -1,0 +1,45 @@
+{
+  "description": "CRV-003 fail variant: the first read of origin (the feature) succeeds and the SECOND (the review claims) fails, so the reader reports Failed with its cause instead of an empty list of claims.",
+  "defaultBranch": "main",
+  "commits": [
+    {
+      "branch": "main",
+      "message": "init",
+      "write": {
+        "README.md": "fixture kit\n",
+        "kit-adoption.json": "{\r\n  \"developers\": [\r\n    \"ada\",\r\n    \"grace\"\r\n  ]\r\n}"
+      }
+    },
+    {
+      "branch": "007-payments",
+      "message": "spec: 007-payments",
+      "write": {
+        "specs/007-payments/spec.md": "# 007-payments\n"
+      }
+    }
+  ],
+  "checkout": "main",
+  "origin": "origin.git",
+  "originFailCall": 2,
+  "nestedRepos": {
+    "origin.git": {
+      "defaultBranch": "main",
+      "commits": [
+        {
+          "branch": "main",
+          "message": "init",
+          "write": {
+            "README.md": "origin\n"
+          }
+        },
+        {
+          "branch": "007-payments",
+          "message": "spec: 007-payments",
+          "write": {
+            "specs/007-payments/spec.md": "# 007-payments\n"
+          }
+        }
+      ]
+    }
+  }
+}

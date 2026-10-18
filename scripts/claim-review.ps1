@@ -118,7 +118,7 @@ if (-not $entry.CanApproveCritical) {
 
 # --- 3. Already claimed? --------------------------------------------------------------------
 $ref = "review/$Feature/$slug"
-$already = @($existing.Claims | Where-Object { $_.Slug -eq $slug }).Count -gt 0
+$already = @($existing.Claims | Where-Object { $_.Slug -ceq $slug }).Count -gt 0
 if (-not $already) {
     # --- 4. Build the claim and push it. A claim is never forced: a name already taken is a push refused. ---
     git fetch --quiet origin $Feature 2>$null | Out-Null
