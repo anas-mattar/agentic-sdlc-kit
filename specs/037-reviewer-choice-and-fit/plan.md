@@ -4,7 +4,8 @@
 **Input**: Approved feature specification (Q1 pull and Q2 advisory decided by the owner, 2026-10-18) + decisions P1 to P10 below
 **Gate Batching**: none
 **Gate Certification**: user-run
-**Status**: Draft, awaiting the owner's approval of decisions P1 to P10
+**Amendment approved by**: anas.m, 2026-10-18
+**Status**: Approved (anas.m, 2026-10-18) — decisions P1–P10 approved as written
 
 ## Summary
 
