@@ -38,10 +38,38 @@
   until amended (see `plan.md`, amendment of 2026-10-20).**
 - Cross-repo feature: one feature touches API contract and UI together (contract first,
   constitution VII).
-- Visual Compliance Loop: needs screenshots as references before the UI feature; the tester
-  supplies them.
+- Visual Compliance Loop: design references exist (added 2026-10-20 after the install prompt was
+  written): prototype and 4 screenshots in `D:\solutions\taskboard-design` (README there). Copy them
+  into `specs/NNN-name/screenshots/` when the UI feature is specified; the tester
+  supplies them (done).
 - Brownfield track steps: baseline audit feature (documents only), descriptive constitution,
   golden-fixture tests before touching critical logic, read-only features first.
+
+## UI verification approach (decided 2026-10-20)
+
+How the UI feature proves it matches the design references. Every point is something the
+feature's `plan.md` must carry; this record is not a substitute for that approval.
+
+- **Source of truth:** the prototype and screenshots in `D:\solutions\taskboard-design`.
+  The agent ports the prototype's CSS verbatim; it does not re-implement the look from the
+  screenshots.
+- **Visual check (the gate evidence):** Playwright screenshots of the running app at 1280 and
+  500 px with the prototype's data, diffed against the reference PNGs with `pixelmatch`. The
+  agent reports the diff percentage and attaches the diff image. Threshold and viewports are
+  stated in the plan before implementation. The reference screenshots are 1280 px wide, plus
+  500 px because headless Edge cannot render narrower.
+- **Behaviour check:** Playwright tests for create project, add task, change status (task moves
+  column), API error banner, empty state. Run against a **mocked API** (route interception) as
+  the gate. One **full-stack smoke test** (real API + LocalDB) belongs to the cross-repo feature.
+- **Claude in Chrome:** debugging aid only (find which element differs when the diff fails). It
+  never declares a pass; a "looks the same" claim without the diff number is logged as
+  `agent-faked` in the claim audit.
+- **Backend logic:** stays in xUnit tests in `taskboard-api`; Playwright does not replace them.
+- **Approvals needed in `plan.md` before implementation:** Playwright and `pixelmatch` as new
+  packages (CLAUDE.md, Strict Rules); the gate command gains the web tests; Territory lists
+  test paths in `taskboard-web`, and the smoke test lists both repos.
+- **Known gap:** `taskboard-web` has no test runner today, so the first UI feature adds one.
+  Log it as friction if the kit gives no guidance for a brownfield repo with no tests.
 
 ## Kit versions used
 

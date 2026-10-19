@@ -37,3 +37,7 @@ Tester notes (not part of the prompt):
   the agent confuses which repository is active before committing, and principle III staying
   applicable (two code repos, unlike A).
 - Check `~/.claude/CLAUDE.md` is still absent and record it in the install record.
+- Design references are not given at install (the install stops before any feature). Hand over
+  `D:\solutions\taskboard-design` only at the UI feature's specify step, by copying the
+  screenshots into `specs/NNN-name/screenshots/`. Note whether the agent's spec cites them as the
+  top source-of-truth rung and whether it runs the Visual Compliance Loop unprompted.
