@@ -5,8 +5,10 @@ runner/automation around it. Output: a ranked list of kit fixes, a list of what 
 automating, and a go/no-go decision on the runner.
 
 Scope: **solo developer**. Team workflow (`docs/sdlc/team-workflow.md`, `claim-feature.ps1`
-races) and multi-repo projects (`scope-check-repos.ps1`) are **out of scope** for this
-round. Nothing here claims they were tested.
+races) is **out of scope** for this round. Multi-repo projects (`scope-check-repos.ps1`) were
+out of scope when this plan was drafted; **amended 2026-10-20 to include them for project B
+only** (owner decision by anas.m, recorded 2026-10-20: B is backend + frontend in two
+repositories). A and C stay single-repo. Nothing here claims team workflow was tested.
 
 ## Ground rules
 
@@ -38,10 +40,10 @@ brownfield project (B2 below).
 | # | Type | Adoption path | Size | Lanes / paths to cover | Why |
 |---|------|---------------|------|------------------------|-----|
 | A | Backend / API | greenfield | 3-5 features | Standard, Micro, `ci-held` gate on one feature | Tests backend rules, data model, contracts, CI-held certification |
-| B | UI-heavy app | **brownfield** (`adoption/existing-system.md`) | 3-5 features | Standard (with visual refs), Lite | Tests Visual Compliance Loop and adoption into existing code |
+| B | UI-heavy app, backend + frontend, **multi-repo** (governance root + 2 code repos) | **brownfield** (`adoption/existing-system.md`) | 3-5 features | Standard (with visual refs, one cross-repo feature), Lite | Tests Visual Compliance Loop, adoption into existing code, and the multi-repo path (`codeRepos`, repo-prefixed Territory, `scope-check-repos.ps1`) |
 | C | Small utility / script | greenfield | 1-2 features | Micro, Lite, a planned Micro promotion | Tests that the process is not too heavy for small work |
 
-Projects: A = `booking-api` (booking/reservation API, .NET 10 Web API + SQL Server; record in `field-test/booking-api/project.md`) B = ____ C = ____
+Projects: A = `booking-api` (booking/reservation API, .NET 10 Web API + SQL Server; record in `field-test/booking-api/project.md`) B = `taskboard` (task/project board, ASP.NET Core + SQL Server API and Next.js frontend, brownfield, two code repos; record in `field-test/taskboard/project.md`) C = ____
 
 Deliberate probes, built into the projects:
 
@@ -151,6 +153,7 @@ The field test is done when:
 - [ ] Micro promotion probe run (pass or fail recorded)
 - [ ] `ci-held` certification exercised on at least one feature
 - [ ] Fresh-install path verified on A and C; brownfield adoption verified on B
+- [ ] Multi-repo path verified on B (`codeRepos` declared, a cross-repo feature graded by `scope-check-repos.ps1`)
 - [ ] Update path verified on A (`update-kit.ps1` + `verify-kit.ps1` after the first round of fixes)
 - [ ] Friction log triaged: each item is "fix kit", "document", or "ignore"
 - [ ] Kit fixes and automation candidates ranked (method above)
