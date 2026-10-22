@@ -7,7 +7,9 @@
 
 .DESCRIPTION
     Dot-sourced by scripts/enforcement-pack.ps1 (which enforces) and scripts/verify-kit.ps1
-    (which reports) for the developer and surface readers, and by scripts/scope-check-repos.ps1
+    (which reports) for the developer, surface and cooling-off readers (Get-CoolingOff, feature 038:
+    the default period and its floor live in this file and nowhere else, so the pack and the
+    doctor cannot hold two opinions of what the period is), and by scripts/scope-check-repos.ps1
     for Get-CodeRepos (and, from feature 018 phase 3, scripts/territory-check.ps1). Feature 012 established this pattern with scripts/scope-lib.ps1, for the
     same reason: two graders of one rule drift, and a comment claiming they agree is not a
     mechanism.
@@ -240,7 +242,9 @@ function Get-CoolingOff {
     $problems = [System.Collections.Generic.List[object]]::new()
     $default = $script:CoolingOffDefaultHours
     $floor = $script:CoolingOffFloorHours
-    $noRecord = { param($why) return @{ Hours = $default; Declared = $false; Honored = $true; Reason = $null; Why = $why; Problems = $problems } }
+    # Every caller of this block passes a clause ending "so the default period"; the number is added here, once, so no
+    # clause can say less than the others (phase 1 review, F9).
+    $noRecord = { param($why) return @{ Hours = $default; Declared = $false; Honored = $true; Reason = $null; Why = "$why of $default hours applies"; Problems = $problems } }
 
     $recordPath = Join-Path $Root 'kit-adoption.json'
     if (-not (Test-Path -LiteralPath $recordPath)) { return (& $noRecord 'no kit-adoption.json, so the default period') }
@@ -295,7 +299,9 @@ function Get-CoolingOff {
         }
     }
     if ($null -eq $hours) {
-        $shown = try { ConvertTo-Json -InputObject $value -Compress -Depth 3 } catch { "$value" }
+        # -WarningAction: a value nested deeper than -Depth makes ConvertTo-Json write its own WARNING line, which would
+        # land in the middle of a caller's output (phase 1 review, F7).
+        $shown = try { ConvertTo-Json -InputObject $value -Compress -Depth 3 -WarningAction SilentlyContinue } catch { "$value" }
         if ($shown.Length -gt 40) { $shown = $shown.Substring(0, 40) + '...' }
         return (& $setAside "kit-adoption.json coolingOffHours is not a whole number of hours of at least $floor (read: $shown)" "write a whole number of hours at or above $floor, for example 8 — until then $default hours applies (adoption/updating.md)" "coolingOffHours is not usable, so the default period of $default hours applies")
     }
@@ -304,17 +310,23 @@ function Get-CoolingOff {
         if ($reasonPresent) {
             $problems.Add(@{ Severity = 'warn'; Message = "kit-adoption.json coolingOffReason is recorded but coolingOffHours is $default or more, so there is nothing to justify"; Fix = 'remove coolingOffReason, or lower coolingOffHours if a shorter period was meant' })
         }
-        return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $null; Why = "coolingOffHours declares $hours hours"; Problems = $problems }
+        return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $null; Why = "coolingOffHours declares $hours $(if ($hours -eq 1) { 'hour' } else { 'hours' })"; Problems = $problems }
     }
 
+    # A reason is what a reader sees in the pack's WARN, so a character that shows as nothing, or that steers the
+    # terminal, cannot be part of one (phase 1 review, F1). Invisible format characters (zero-width space, joiners, a
+    # BOM) are removed: they have no width, and removing them keeps a word written with a joiner whole. Control
+    # characters (ESC, NUL, VT, FF, NEL, CR, LF) and line and paragraph separators become a space, so a warning
+    # stays on one line and an escape sequence cannot erase it. What is left is collapsed and trimmed, and a reason
+    # that is empty after that is no reason.
     $reason = $null
     if ($reasonPresent -and $reasonProp.Value -is [string]) {
-        $reason = ($reasonProp.Value -replace '\s*[\r\n]+\s*', ' ').Trim()
+        $reason = ($reasonProp.Value -replace '\p{Cf}+', '' -replace '[\p{Cc}\p{Zl}\p{Zp}]+', ' ' -replace '\s+', ' ').Trim()
     }
     if ([string]::IsNullOrWhiteSpace($reason)) {
         return (& $setAside "kit-adoption.json coolingOffHours is $hours, below the $default-hour default, and coolingOffReason is missing, blank or not a string" "add coolingOffReason, one line saying why a shorter period is acceptable, or write $default or more — until then $default hours applies (adoption/updating.md)" "coolingOffHours $hours has no recorded reason, so the default period of $default hours applies")
     }
-    return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $reason; Why = "coolingOffHours declares $hours hours with a recorded reason"; Problems = $problems }
+    return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $reason; Why = "coolingOffHours declares $hours $(if ($hours -eq 1) { 'hour' } else { 'hours' }) with a recorded reason"; Problems = $problems }
 }
 
 # The project's critical surfaces (constitution X, Level declaration; feature 017): path globs

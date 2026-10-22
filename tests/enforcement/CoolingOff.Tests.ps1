@@ -61,9 +61,29 @@ BeforeDiscovery {
         @{ Name = 'an object';                          Json = '{"coolingOffHours":{},"coolingOffReason":"why"}';             Hours = 24;  Declared = $true;  Honored = $false; Problems = @('fail') }
         @{ Name = 'a number no double can hold';        Json = '{"coolingOffHours":1e999,"coolingOffReason":"why"}';          Hours = 24;  Declared = $true;  Honored = $false; Problems = @('fail') }
 
+        # --- a reason that only looks like one (phase 1 review, F1): invisible or terminal-steering characters -----------
+        @{ Name = '2, reason of zero-width spaces only'; Json = '{"coolingOffHours":2,"coolingOffReason":"​​"}';   Hours = 24;  Declared = $true;  Honored = $false; Problems = @('fail') }
+        @{ Name = '2, reason a lone BOM';               Json = '{"coolingOffHours":2,"coolingOffReason":"﻿"}';           Hours = 24;  Declared = $true;  Honored = $false; Problems = @('fail') }
+        @{ Name = '2, reason a lone NUL';               Json = '{"coolingOffHours":2,"coolingOffReason":"\u0000"}';           Hours = 24;  Declared = $true;  Honored = $false; Problems = @('fail') }
+        @{ Name = '2, reason control characters only';  Json = '{"coolingOffHours":2,"coolingOffReason":"\u001b\u000b\u000c\u0085"}'; Hours = 24; Declared = $true; Honored = $false; Problems = @('fail') }
+        @{ Name = '2, reason of line and paragraph separators only'; Json = '{"coolingOffHours":2,"coolingOffReason":"  "}'; Hours = 24; Declared = $true; Honored = $false; Problems = @('fail') }
+        @{ Name = '2, reason carrying an ANSI escape sequence (read as a space, so it cannot erase a line)'; Json = '{"coolingOffHours":2,"coolingOffReason":"ok\u001b[2K\u001b[1Ahidden"}'; Hours = 2; Declared = $true; Honored = $true; Problems = @(); Reason = 'ok [2K [1Ahidden' }
+        @{ Name = '2, reason with a line separator and a NEL (one line)'; Json = '{"coolingOffHours":2,"coolingOffReason":"a b\u0085c"}'; Hours = 2; Declared = $true; Honored = $true; Problems = @(); Reason = 'a b c' }
+        @{ Name = '2, reason with a zero-width joiner inside a word (kept whole)'; Json = '{"coolingOffHours":2,"coolingOffReason":"ab‍cd"}'; Hours = 2; Declared = $true; Honored = $true; Problems = @(); Reason = 'abcd' }
+        @{ Name = '2, reason with runs of spaces and tabs'; Json = '{"coolingOffHours":2,"coolingOffReason":" a  \tb "}';         Hours = 2;   Declared = $true;  Honored = $true;  Problems = @();       Reason = 'a b' }
+
         # --- a reason with nothing to justify ----------------------------------------------------------------------
         @{ Name = 'a reason and no value';              Json = '{"coolingOffReason":"why"}';                                  Hours = 24;  Declared = $false; Honored = $true;  Problems = @('warn') }
     )
+
+    # Reason is what a reader sees in the pack's warning. Unless a row says otherwise it is 'why' for a period under the
+    # default that is honored (every such row above uses that reason) and nothing for every other row, so a reason that
+    # leaks onto the set-aside path or the 24-and-over path fails the row it leaks on (phase 1 review, F2).
+    foreach ($row in $script:Rows) {
+        if (-not $row.ContainsKey('Reason')) {
+            $row.Reason = if ($row.Honored -and $row.Hours -lt 24 -and $row.Json -match '"coolingOffReason":"why"') { 'why' } else { $null }
+        }
+    }
 
     # The record itself cannot be used: the reader says nothing about it (Get-DeveloperMode already does) and returns 24.
     $script:Unusable = @(
@@ -99,6 +119,7 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         $r.Hours | Should -Be $Hours
         $r.Declared | Should -Be $Declared
         $r.Honored | Should -Be $Honored
+        $r.Reason | Should -Be $Reason
         # Severity is always there, so this read cannot throw under the strict mode Run-Tests.ps1 sets.
         $severities = @($r.Problems | ForEach-Object { $_.Severity })
         $severities | Should -Be $Problems
@@ -109,6 +130,47 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         # Why is one clause naming where the period came from, for a caller to put in its own message.
         $r.Why | Should -Not -BeNullOrEmpty
         $r.Why | Should -Not -Match '[\r\n]'
+    }
+
+    # A whole number past what a 64-bit integer holds is accepted (the spec sets no ceiling) and must not throw: a cast
+    # to [long] on this path overflows (phase 1 review, F2, mutation M4). The period is returned as a double there.
+    It 'accepts <Name> without throwing, as a period of at least the default' -ForEach @(
+        @{ Name = 'a twenty-digit integer';        Json = '{"coolingOffHours":99999999999999999999}' }
+        @{ Name = 'the largest 64-bit integer';    Json = '{"coolingOffHours":9223372036854775807}' }
+        @{ Name = 'a thirty-one-digit integer';    Json = '{"coolingOffHours":1000000000000000000000000000000}' }
+        @{ Name = '1e20';                          Json = '{"coolingOffHours":1e20}' }
+    ) {
+        $root = New-RecordRoot -Json $Json; $script:Made.Add($root)
+        $r = Get-CoolingOff -Root $root
+        $r.Hours | Should -BeGreaterThan 24
+        $r.Declared | Should -BeTrue
+        $r.Honored | Should -BeTrue
+        @($r.Problems).Count | Should -Be 0
+    }
+
+    It 'names the period in Why, singular for one hour, and the default period whenever the record gives none' {
+        $one = New-RecordRoot -Json '{"coolingOffHours":1,"coolingOffReason":"why"}'; $script:Made.Add($one)
+        (Get-CoolingOff -Root $one).Why | Should -Be 'coolingOffHours declares 1 hour with a recorded reason'
+        $four = New-RecordRoot -Json '{"coolingOffHours":4,"coolingOffReason":"why"}'; $script:Made.Add($four)
+        (Get-CoolingOff -Root $four).Why | Should -Be 'coolingOffHours declares 4 hours with a recorded reason'
+        $long = New-RecordRoot -Json '{"coolingOffHours":48}'; $script:Made.Add($long)
+        (Get-CoolingOff -Root $long).Why | Should -Be 'coolingOffHours declares 48 hours'
+        $none = New-RecordRoot -Json '{}'; $script:Made.Add($none)
+        (Get-CoolingOff -Root $none).Why | Should -Be 'no coolingOffHours declared, so the default period of 24 hours applies'
+        $gone = New-RecordRoot -Json $null; $script:Made.Add($gone)
+        (Get-CoolingOff -Root $gone).Why | Should -Be 'no kit-adoption.json, so the default period of 24 hours applies'
+        $typo = New-RecordRoot -Json '{"coolingOffHours":"8"}'; $script:Made.Add($typo)
+        (Get-CoolingOff -Root $typo).Why | Should -Be 'coolingOffHours is not usable, so the default period of 24 hours applies'
+        $bare = New-RecordRoot -Json '{"coolingOffHours":4}'; $script:Made.Add($bare)
+        (Get-CoolingOff -Root $bare).Why | Should -Be 'coolingOffHours 4 has no recorded reason, so the default period of 24 hours applies'
+    }
+
+    It 'writes nothing to the warning stream for a value nested deeper than it prints' {
+        $root = New-RecordRoot -Json '{"coolingOffHours":{"a":{"b":{"c":{"d":{"e":1}}}}}}'; $script:Made.Add($root)
+        # 3>&1 merges the warning stream into the output, so a warning the function leaves on it shows up as a record here.
+        $out = @(Get-CoolingOff -Root $root 3>&1)
+        @($out | Where-Object { $_ -is [System.Management.Automation.WarningRecord] }).Count | Should -Be 0
+        @($out | Where-Object { $_ -is [hashtable] })[0].Hours | Should -Be 24
     }
 
     It 'returns the period as a whole number, not a double, so a message prints "4" and never "4.0"' {
@@ -188,7 +250,7 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         } finally { $ErrorActionPreference = $saved }
     }
 
-    It 'keeps the default and the floor in this library and nowhere a caller could change them silently' {
+    It 'defines the default and the floor in this library, as 24 and 1' {
         $script:CoolingOffDefaultHours | Should -Be 24
         $script:CoolingOffFloorHours | Should -Be 1
     }
