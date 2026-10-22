@@ -2,8 +2,8 @@
 .SYNOPSIS
     Shared readers for the adoption record's declarations: the developer roster
     (Get-DeveloperMode, feature 013), the critical surfaces (Get-CriticalSurfaces,
-    feature 017) and the nested code repositories (Get-CodeRepos, feature 012, shared since
-    feature 018).
+    feature 017), the nested code repositories (Get-CodeRepos, feature 012, shared since
+    feature 018) and the solo cooling-off period (Get-CoolingOff, feature 038).
 
 .DESCRIPTION
     Dot-sourced by scripts/enforcement-pack.ps1 (which enforces) and scripts/verify-kit.ps1
@@ -203,6 +203,118 @@ function Get-DeveloperMode {
         Roster   = @($rosterOut)
         HasObjectEntries = $hasObject
     }
+}
+
+# The solo arm's cooling-off period (docs/sdlc/critical-delivery.md item 5; feature 038): the hours between a
+# Critical feature's second-model review being first committed and the merge. It used to be one constant in
+# scripts/enforcement-pack.ps1. It now comes from the optional `coolingOffHours` key of kit-adoption.json, with
+# `coolingOffReason` as the written justification a period under the default must carry.
+#
+# The default and the floor live HERE and nowhere else: the pack and the doctor both read this function, and a
+# second constant in either would be a second opinion about what the period is.
+#
+# The direction of every degenerate input is the stricter one, as in Get-DeveloperMode: no record, an unreadable or
+# unparsable one, a root that is not an object, no key, a value that is not a whole number of at least the floor, a
+# value under the default with no usable reason. All of them give the default. A project that never declares the key
+# is unchanged, and one that mistypes it can only ever get the longer wait.
+#
+# Returns:
+#   Hours     the period the check applies: a whole number of at least 1, the default whenever anything is missing,
+#             unusable or unjustified
+#   Declared  whether the record declares coolingOffHours at all (an explicit null counts: the key is present)
+#   Honored   false only when a declared value was set aside; true for an undeclared key and for a value that applies
+#   Reason    the recorded reason, trimmed, a line break read as one space, so a warning stays on one line; $null unless
+#             a value under the default is honored on its strength
+#   Why       one clause naming where the period came from, for the caller's message
+#   Problems  zero or more @{ Severity; Message; Fix } that the doctor reports, Severity being 'fail' or, for a reason
+#             with nothing to justify, 'warn'. Severity is always present, unlike Get-DeveloperMode's, which omits it
+#             for a failure: a caller under strict mode throws on a key that is not there. The check ignores them. A
+#             record that cannot be read as an object reports nothing here: Get-DeveloperMode already says so, and
+#             saying it twice would be the doctor disagreeing with itself
+$script:CoolingOffDefaultHours = 24
+$script:CoolingOffFloorHours = 1
+
+function Get-CoolingOff {
+    param([Parameter(Mandatory)][string]$Root)
+
+    $problems = [System.Collections.Generic.List[object]]::new()
+    $default = $script:CoolingOffDefaultHours
+    $floor = $script:CoolingOffFloorHours
+    $noRecord = { param($why) return @{ Hours = $default; Declared = $false; Honored = $true; Reason = $null; Why = $why; Problems = $problems } }
+
+    $recordPath = Join-Path $Root 'kit-adoption.json'
+    if (-not (Test-Path -LiteralPath $recordPath)) { return (& $noRecord 'no kit-adoption.json, so the default period') }
+    # Inside the try for the reason Get-DeveloperMode's read is: a read can fail on a path Test-Path accepts.
+    try {
+        $rawRecord = "$(Get-Content -LiteralPath $recordPath -Raw -ErrorAction Stop)"
+    } catch {
+        return (& $noRecord 'kit-adoption.json could not be read, so the default period')
+    }
+    # The root must be a JSON OBJECT, judged from the text (see Get-DeveloperMode: a one-element root array collapses
+    # to a lone object once parsed, and a brace inside a string cannot fool a test on the first character).
+    if ($rawRecord.TrimStart([char]0xFEFF, ' ', "`t", "`r", "`n") -notmatch '^\{') {
+        return (& $noRecord 'kit-adoption.json is not a JSON object, so the default period')
+    }
+    try { $record = $rawRecord | ConvertFrom-Json } catch { return (& $noRecord 'kit-adoption.json does not parse, so the default period') }
+    if ($record -isnot [PSCustomObject]) { return (& $noRecord 'kit-adoption.json is not a JSON object, so the default period') }
+
+    # Properties[], never `$record.coolingOffHours`: strict mode throws on an absent property, and a key nested in
+    # another object or quoted in a string is not a top-level declaration.
+    $hoursProp = $record.PSObject.Properties['coolingOffHours']
+    $reasonProp = $record.PSObject.Properties['coolingOffReason']
+    $reasonPresent = ($null -ne $reasonProp) -and ($null -ne $reasonProp.Value)
+
+    if ($null -eq $hoursProp) {
+        if ($reasonPresent) {
+            $problems.Add(@{ Severity = 'warn'; Message = 'kit-adoption.json coolingOffReason is recorded but coolingOffHours is not declared, so there is nothing to justify'; Fix = 'declare coolingOffHours, or remove coolingOffReason — the default period applies either way' })
+        }
+        return (& $noRecord 'no coolingOffHours declared, so the default period')
+    }
+
+    $value = $hoursProp.Value
+    $setAside = {
+        param($message, $fix, $why)
+        $problems.Add(@{ Severity = 'fail'; Message = $message; Fix = $fix })
+        return @{ Hours = $default; Declared = $true; Honored = $false; Reason = $null; Why = $why; Problems = $problems }
+    }
+
+    if ($null -eq $value) {
+        return (& $setAside 'kit-adoption.json coolingOffHours is null' "write a whole number of hours of at least $floor, or remove the key — an explicit null is read as no declaration and $default hours applies" "coolingOffHours is null, so the default period of $default hours applies")
+    }
+
+    # A JSON number is a long, a double or a BigInteger once parsed. A boolean, a string, an array and an object are not
+    # numbers, whatever they hold: "8" and [8] are typos, and a typo must never shorten the wait.
+    $isNumber = ($value -is [long]) -or ($value -is [int]) -or ($value -is [double]) -or ($value -is [decimal]) -or ($value -is [System.Numerics.BigInteger])
+    $hours = $null
+    if ($isNumber) {
+        $d = [double]$value
+        if (-not [double]::IsNaN($d) -and -not [double]::IsInfinity($d) -and $d -eq [math]::Floor($d) -and $d -ge $floor) {
+            # A whole number is returned as one, so a message prints 4 and never 4.0; only a number past what a long
+            # holds exactly stays a double.
+            $hours = if ($d -le 9007199254740992) { [long]$d } else { $d }
+        }
+    }
+    if ($null -eq $hours) {
+        $shown = try { ConvertTo-Json -InputObject $value -Compress -Depth 3 } catch { "$value" }
+        if ($shown.Length -gt 40) { $shown = $shown.Substring(0, 40) + '...' }
+        return (& $setAside "kit-adoption.json coolingOffHours is not a whole number of hours of at least $floor (read: $shown)" "write a whole number of hours at or above $floor, for example 8 — until then $default hours applies (adoption/updating.md)" "coolingOffHours is not usable, so the default period of $default hours applies")
+    }
+
+    if ($hours -ge $default) {
+        if ($reasonPresent) {
+            $problems.Add(@{ Severity = 'warn'; Message = "kit-adoption.json coolingOffReason is recorded but coolingOffHours is $default or more, so there is nothing to justify"; Fix = 'remove coolingOffReason, or lower coolingOffHours if a shorter period was meant' })
+        }
+        return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $null; Why = "coolingOffHours declares $hours hours"; Problems = $problems }
+    }
+
+    $reason = $null
+    if ($reasonPresent -and $reasonProp.Value -is [string]) {
+        $reason = ($reasonProp.Value -replace '\s*[\r\n]+\s*', ' ').Trim()
+    }
+    if ([string]::IsNullOrWhiteSpace($reason)) {
+        return (& $setAside "kit-adoption.json coolingOffHours is $hours, below the $default-hour default, and coolingOffReason is missing, blank or not a string" "add coolingOffReason, one line saying why a shorter period is acceptable, or write $default or more — until then $default hours applies (adoption/updating.md)" "coolingOffHours $hours has no recorded reason, so the default period of $default hours applies")
+    }
+    return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $reason; Why = "coolingOffHours declares $hours hours with a recorded reason"; Problems = $problems }
 }
 
 # The project's critical surfaces (constitution X, Level declaration; feature 017): path globs
