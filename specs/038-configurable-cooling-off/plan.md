@@ -5,6 +5,7 @@
 **Gate Batching**: none
 **Gate Certification**: user-run
 **Status**: Approved (anas.m, 2026-10-22) — decisions P1–P9 approved as written
+**Amendment approved by**: anas.m, 2026-10-23
 
 ## Summary
 
@@ -68,6 +69,7 @@ adoption predating this feature declares neither and is unchanged. The shape is 
 
 **P2: one reader, one place for the constants (FR-001 to FR-005, FR-011).** `scripts/adoption-lib.ps1` gains
 `Get-CoolingOff -Root`, returning `Hours` (the period in effect, always an integer of at least 1), `Declared`,
+`AnyDeclared` (true when the record carries either key, a reason with no value included),
 `Honored` (false when a declared value was set aside), `Reason`, `Why` (one clause, for a caller's message) and
 `Problems` (`@{ Message; Fix; Severity }` for the doctor, the shape `Get-DeveloperMode` already uses). The default
 (24) and the floor (1) live in that file and nowhere else; `$Config.CoolingOffHours` is removed from
@@ -100,9 +102,9 @@ calls the reader, so the team arm cannot change. The clock is not edited: still 
 --format=%aI` for `second-model-review.md`, the first commit of the file.
 
 **P6: what the doctor says (FR-011).** `scripts/verify-kit.ps1` gains one block after the `developers` block, gated on
-the library's own `Declared` and reading `Get-CoolingOff` only. Problems from the reader are reported as failures
+the library's own `AnyDeclared` and reading `Get-CoolingOff` only. Problems from the reader are reported as failures
 (an unaccepted value, a value under 24 with no usable reason) or warnings (a reason that is unused); each states the
-period that applies and the fix. When a value is declared and the project is in team mode (read from the existing
+period that applies and the fix. When either key is declared and the project is in team mode (read from the existing
 `$devMode`) the doctor adds one warning that the setting has no effect there. An accepted declaration prints one
 `ok` line stating the period and, below 24, quoting the reason. A project that declares neither key prints nothing:
 absence is information, never a finding.

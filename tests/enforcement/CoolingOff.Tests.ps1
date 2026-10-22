@@ -73,6 +73,7 @@ BeforeDiscovery {
         @{ Name = '2, reason with runs of spaces and tabs'; Json = '{"coolingOffHours":2,"coolingOffReason":" a  \tb "}';         Hours = 2;   Declared = $true;  Honored = $true;  Problems = @();       Reason = 'a b' }
 
         # --- a reason with nothing to justify ----------------------------------------------------------------------
+        @{ Name = 'a reason that is null and no value'; Json = '{"coolingOffReason":null}';                                    Hours = 24;  Declared = $false; Honored = $true;  Problems = @() }
         @{ Name = 'a reason and no value';              Json = '{"coolingOffReason":"why"}';                                  Hours = 24;  Declared = $false; Honored = $true;  Problems = @('warn') }
     )
 
@@ -80,6 +81,8 @@ BeforeDiscovery {
     # default that is honored (every such row above uses that reason) and nothing for every other row, so a reason that
     # leaks onto the set-aside path or the 24-and-over path fails the row it leaks on (phase 1 review, F2).
     foreach ($row in $script:Rows) {
+        # AnyDeclared: either key is a key of the record (phase 1 review, F3) - every row but the two that declare neither.
+        $row.AnyDeclared = ($row.Json -match '"coolingOff(Hours|Reason)"')
         if (-not $row.ContainsKey('Reason')) {
             $row.Reason = if ($row.Honored -and $row.Hours -lt 24 -and $row.Json -match '"coolingOffReason":"why"') { 'why' } else { $null }
         }
@@ -119,6 +122,7 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         $r.Hours | Should -Be $Hours
         $r.Declared | Should -Be $Declared
         $r.Honored | Should -Be $Honored
+        $r.AnyDeclared | Should -Be $AnyDeclared
         $r.Reason | Should -Be $Reason
         # Severity is always there, so this read cannot throw under the strict mode Run-Tests.ps1 sets.
         $severities = @($r.Problems | ForEach-Object { $_.Severity })
@@ -211,6 +215,7 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         $r = Get-CoolingOff -Root $root
         $r.Hours | Should -Be 24
         $r.Declared | Should -BeFalse
+        $r.AnyDeclared | Should -BeFalse
         @($r.Problems).Count | Should -Be 0
     }
 
@@ -220,6 +225,7 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         $r = Get-CoolingOff -Root $root
         $r.Hours | Should -Be 24
         $r.Declared | Should -BeFalse
+        $r.AnyDeclared | Should -BeFalse
         @($r.Problems).Count | Should -Be 0
     }
 
@@ -228,6 +234,7 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         $r = Get-CoolingOff -Root $root
         $r.Hours | Should -Be 24
         $r.Declared | Should -BeFalse
+        $r.AnyDeclared | Should -BeFalse
         @($r.Problems).Count | Should -Be 0
     }
 
@@ -236,6 +243,7 @@ Describe 'Get-CoolingOff (feature 038, plan P2 to P4)' {
         $r = Get-CoolingOff -Root $root
         $r.Hours | Should -Be 24
         $r.Declared | Should -BeFalse
+        $r.AnyDeclared | Should -BeFalse
         @($r.Problems).Count | Should -Be 0
     }
 

@@ -224,6 +224,9 @@ function Get-DeveloperMode {
 #   Hours     the period the check applies: a whole number of at least 1, the default whenever anything is missing,
 #             unusable or unjustified
 #   Declared  whether the record declares coolingOffHours at all (an explicit null counts: the key is present)
+#   AnyDeclared  whether the record carries EITHER key, a reason with no value included, so a caller that reports on
+#             the declaration (the doctor) can gate on one field and see a reason-only record and the team-mode case
+#             without reading the record itself (phase 1 review, F3; owner decision 2026-10-23)
 #   Honored   false only when a declared value was set aside; true for an undeclared key and for a value that applies
 #   Reason    the recorded reason, trimmed, a line break read as one space, so a warning stays on one line; $null unless
 #             a value under the default is honored on its strength
@@ -244,7 +247,7 @@ function Get-CoolingOff {
     $floor = $script:CoolingOffFloorHours
     # Every caller of this block passes a clause ending "so the default period"; the number is added here, once, so no
     # clause can say less than the others (phase 1 review, F9).
-    $noRecord = { param($why) return @{ Hours = $default; Declared = $false; Honored = $true; Reason = $null; Why = "$why of $default hours applies"; Problems = $problems } }
+    $noRecord = { param($why, $any = $false) return @{ Hours = $default; Declared = $false; AnyDeclared = $any; Honored = $true; Reason = $null; Why = "$why of $default hours applies"; Problems = $problems } }
 
     $recordPath = Join-Path $Root 'kit-adoption.json'
     if (-not (Test-Path -LiteralPath $recordPath)) { return (& $noRecord 'no kit-adoption.json, so the default period') }
@@ -272,14 +275,14 @@ function Get-CoolingOff {
         if ($reasonPresent) {
             $problems.Add(@{ Severity = 'warn'; Message = 'kit-adoption.json coolingOffReason is recorded but coolingOffHours is not declared, so there is nothing to justify'; Fix = 'declare coolingOffHours, or remove coolingOffReason — the default period applies either way' })
         }
-        return (& $noRecord 'no coolingOffHours declared, so the default period')
+        return (& $noRecord 'no coolingOffHours declared, so the default period' ($null -ne $reasonProp))
     }
 
     $value = $hoursProp.Value
     $setAside = {
         param($message, $fix, $why)
         $problems.Add(@{ Severity = 'fail'; Message = $message; Fix = $fix })
-        return @{ Hours = $default; Declared = $true; Honored = $false; Reason = $null; Why = $why; Problems = $problems }
+        return @{ Hours = $default; Declared = $true; AnyDeclared = $true; Honored = $false; Reason = $null; Why = $why; Problems = $problems }
     }
 
     if ($null -eq $value) {
@@ -310,7 +313,7 @@ function Get-CoolingOff {
         if ($reasonPresent) {
             $problems.Add(@{ Severity = 'warn'; Message = "kit-adoption.json coolingOffReason is recorded but coolingOffHours is $default or more, so there is nothing to justify"; Fix = 'remove coolingOffReason, or lower coolingOffHours if a shorter period was meant' })
         }
-        return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $null; Why = "coolingOffHours declares $hours $(if ($hours -eq 1) { 'hour' } else { 'hours' })"; Problems = $problems }
+        return @{ Hours = $hours; Declared = $true; AnyDeclared = $true; Honored = $true; Reason = $null; Why = "coolingOffHours declares $hours $(if ($hours -eq 1) { 'hour' } else { 'hours' })"; Problems = $problems }
     }
 
     # A reason is what a reader sees in the pack's WARN, so a character that shows as nothing, or that steers the
@@ -326,7 +329,7 @@ function Get-CoolingOff {
     if ([string]::IsNullOrWhiteSpace($reason)) {
         return (& $setAside "kit-adoption.json coolingOffHours is $hours, below the $default-hour default, and coolingOffReason is missing, blank or not a string" "add coolingOffReason, one line saying why a shorter period is acceptable, or write $default or more — until then $default hours applies (adoption/updating.md)" "coolingOffHours $hours has no recorded reason, so the default period of $default hours applies")
     }
-    return @{ Hours = $hours; Declared = $true; Honored = $true; Reason = $reason; Why = "coolingOffHours declares $hours $(if ($hours -eq 1) { 'hour' } else { 'hours' }) with a recorded reason"; Problems = $problems }
+    return @{ Hours = $hours; Declared = $true; AnyDeclared = $true; Honored = $true; Reason = $reason; Why = "coolingOffHours declares $hours $(if ($hours -eq 1) { 'hour' } else { 'hours' }) with a recorded reason"; Problems = $problems }
 }
 
 # The project's critical surfaces (constitution X, Level declaration; feature 017): path globs

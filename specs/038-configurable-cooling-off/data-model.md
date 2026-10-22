@@ -17,6 +17,7 @@ The only stored data is two optional keys in `kit-adoption.json`. The rest is de
 |---|---|
 | `Hours` | The period the check applies. An integer, at least 1; 24 whenever anything is absent, unusable or unjustified |
 | `Declared` | Whether the record declares `coolingOffHours` at all |
+| `AnyDeclared` | Whether the record carries either key, a reason with no value included; what the doctor gates on (phase 1 review F3, owner decision 2026-10-23) |
 | `Honored` | False when a declared value was set aside (unaccepted, or under 24 with no usable reason) |
 | `Reason` | The recorded reason with line breaks read as spaces, or `$null` |
 | `Why` | One clause naming where the period came from, for the caller's message |
