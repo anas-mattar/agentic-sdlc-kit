@@ -285,6 +285,41 @@ try {
                 }
             }
 
+            # coolingOffHours / coolingOffReason (038): the solo arm's cooling-off period, which the pack in
+            # scripts/enforcement-pack.ps1 reads from the record instead of a constant. Read through
+            # Get-CoolingOff, the same function the pack uses, and interpreted nowhere in this script: the period, the
+            # reason and every problem arrive from the library, so the doctor cannot disagree with the pack about what
+            # a declaration means.
+            #
+            # Absence is NOT a finding. Every adoption predating 038 declares neither key and keeps the 24-hour
+            # default, so nothing is printed. Gated on the library's own AnyDeclared, which also sees a reason with no
+            # value and the team-mode case. A malformed record is not reported here: Get-DeveloperMode already says so.
+            $cooling = Get-CoolingOff -Root $Root
+            if ($cooling.AnyDeclared) {
+                foreach ($coolProblem in $cooling.Problems) {
+                    # The severity travels with the problem, as for the roster: the doctor never decides it.
+                    # In team mode no cooling-off period applies, so a value the reader set aside changes no verdict
+                    # and is a warning, not a failure; its fix says what would happen if the project went solo
+                    # (review F5, owner decision 2026-10-23). The message is the reader's, unchanged.
+                    if ($coolProblem.Severity -eq 'warn') { Add-Finding WARN 'record' $coolProblem.Message $coolProblem.Fix }
+                    elseif ($devMode.Mode -eq 'team') { Add-Finding WARN 'record' $coolProblem.Message "correct it before the project goes solo: in team mode no cooling-off period applies, so it changes no verdict today, and solo the value is set aside and $($script:CoolingOffDefaultHours) hours applies until it is fixed" }
+                    else { Add-Finding FAIL 'record' $coolProblem.Message $coolProblem.Fix }
+                }
+                # An accepted value is stated back. Below the default the reason is quoted, because it is what the
+                # pack's warning will quote on every Critical solo check.
+                if ($cooling.Declared -and $cooling.Honored) {
+                    $coolingUnit = if ($cooling.Hours -eq 1) { 'hour' } else { 'hours' }
+                    # The pack prints its WARN only on a solo Critical check, so a team-mode project is not told it will.
+                    $coolingPackNote = if ($devMode.Mode -eq 'team') { '' } else { ' — the pack prints a WARN naming it on every Critical solo check' }
+                    $coolingNote = if ($null -ne $cooling.Reason) { " with a recorded reason: `"$($cooling.Reason)`"$coolingPackNote" } else { ' — the solo cooling-off period' }
+                    Add-Finding ok 'record' "kit-adoption.json coolingOffHours declares $($cooling.Hours) $coolingUnit$coolingNote (docs/sdlc/critical-delivery.md item 5)" ''
+                }
+                # The team arm never reads the setting, so a project that declares it there has changed nothing.
+                if ($devMode.Mode -eq 'team') {
+                    Add-Finding WARN 'record' "kit-adoption.json declares a cooling-off setting (coolingOffHours or coolingOffReason) but $($devMode.Count) developers are declared, so the team evidence rule applies and no cooling-off period does" 'remove the setting, or leave it if the project expects to return to a single developer — it is recorded and read by no check in team mode (docs/sdlc/critical-delivery.md item 5)'
+                }
+            }
+
             # criticalSurfaces (017): where the project's critical code lives, which arms the
             # surface floor in scripts/enforcement-pack.ps1 (constitution X, Level declaration).
             # Read through scripts/adoption-lib.ps1, the same function the check uses.

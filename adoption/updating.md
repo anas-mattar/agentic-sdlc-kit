@@ -1043,7 +1043,7 @@ in-process and relied on its throwing, check `$LASTEXITCODE` after the call.
 ### Flow-down note: the 2026-10-13 Critical branch that is not red from its first commit (kit feature 024 — no constitution amendment)
 
 **What was wrong.** `scripts/enforcement-pack.ps1` demanded a Critical feature's independence artifact on every commit of its
-branch: `human-pr-review.md` in team mode, `second-model-review.md` plus the 24-hour cooling-off in solo mode. That artifact cannot
+branch: `human-pr-review.md` in team mode, `second-model-review.md` plus the cooling-off (24 hours by default) in solo mode. That artifact cannot
 exist before the final phase is written and reviewed (`docs/sdlc/definition-of-done.md`, item 6: once per feature, at merge), so
 `ritual-checks` failed on a Critical branch from spec approval to the last commit, on a member whose subject did not yet exist.
 An owner trained that red is normal stops reading the other six members, which are the ones a Critical feature most needs read on
@@ -1066,7 +1066,7 @@ your constitution. Run `scripts/build-digests.ps1` after the update: until you d
 reports the affected digests as stale.
 
 **What an owner may newly see.** On a Critical feature mid-flight, a `WARNING: CriticalEvidence` line where there was a failure, and
-a green `enforcement-pack` verdict that used to be red. **Committing the artifact early puts it under the arm's grading from that commit on:** the branch is red until the artifact is valid (team mode) or 24 hours old (solo mode, where the cooling-off clock starts at that commit), and passes once it is. An artifact left
+a green `enforcement-pack` verdict that used to be red. **Committing the artifact early puts it under the arm's grading from that commit on:** the branch is red until the artifact is valid (team mode) or as old as the cooling-off period, 24 hours by default (solo mode, where the cooling-off clock starts at that commit), and passes once it is. An artifact left
 uncommitted mid-feature warns where it used to fail. An unusable `kit-adoption.json` selects the solo arm, so a committed team-arm
 file does not end the pending state there. A branch the check cannot show to be mid-feature (a depth-1 CI checkout, a `tasks.md`
 without `## Phase N` headings) is exactly as red as before, now with the reason on a `WARNING` line. Non-Critical features and the
@@ -1570,6 +1570,24 @@ instead. If a claim ends on `could not withdraw <branch> from origin`, delete th
 
 **What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. On a Critical team-arm feature, the Reviewer runs `pwsh -File scripts/claim-review.ps1 -Feature NNN-name` (as themselves, `-As <roster name>` if their `git user.name` is not a roster name) before the review is filed; the owner does not nominate. If you want the fit note, add a `Repos` column to your roadmap table and claim with `-Row`. If your CI cannot read `origin`, expect the `UNGRADED` line and read it as ungraded.
 
+### Flow-down note: the 2026-10-23 configurable cooling-off period (kit feature 038 — constitution 0.8.0 → 0.8.1, a PATCH)
+
+**What was wrong.** The solo substitute for a Critical feature's independent review (`docs/sdlc/critical-delivery.md` item 5) waited a fixed 24 hours between the first commit of `second-model-review.md` and the merge, a constant inside `scripts/enforcement-pack.ps1`. A project could not choose another period: a single-developer project with small, same-day-reviewed features either lived with a wait it found excessive or stopped declaring Critical, and a project that wanted a longer wait could not ask for one.
+
+**What it does now.** `kit-adoption.json` takes two optional keys, `coolingOffHours` and `coolingOffReason` (shape and rules under "Declaring the solo cooling-off period", above). One reader, `Get-CoolingOff` in `scripts/adoption-lib.ps1`, holds the default (24) and the floor (1) and is the only code that interprets them. `scripts/enforcement-pack.ps1` applies the period in effect in the solo arm of the Critical evidence check; a shorter period that is honored prints one `WARN` naming it and quoting the reason, and a declared value that is set aside prints one `WARN` saying so and why. The "recorded too recently" failure names the period in effect and, only when it is not 24, says where the number came from. `scripts/verify-kit.ps1` reports each unusable or unjustified declaration (a failure in solo mode, a warning in team mode, where no period applies), an unused reason, a setting declared in team mode, and an accepted declaration.
+
+**What flows down.** Verbatim: `scripts/adoption-lib.ps1`, `scripts/enforcement-pack.ps1`, `scripts/verify-kit.ps1`, `docs/sdlc/critical-delivery.md` and this document. The kit's own fixtures stay in the kit. **One surgical item is reported, the constitution** (the update lists it and exits 2, as section 2 describes). The kit's constitution takes a **PATCH, 0.8.0 → 0.8.1**, sync-list bookkeeping only: the "Templates requiring updates" entry that named the Critical cooling-off hours as a constant of `scripts/enforcement-pack.ps1` now points at `scripts/adoption-lib.ps1`, where the default and the floor live, and no principle changes. It is never applied by the update. Re-express it in your own constitution only if your sync list carries the old entry: correct that one entry and bump your own patch version; if it does not, the report has nothing for you to re-express. `scripts/init-kit.ps1` is unchanged: a fresh adoption writes neither key. One digest marker in `docs/sdlc/critical-delivery.md` changed: run `scripts/build-digests.ps1` after the update, until you do the digests member of `scripts/ritual-checks.ps1` reports the affected digests stale.
+
+**What an owner may newly see.** A project whose `kit-adoption.json` declares **neither key sees nothing**: the same verdicts, the same exit codes, the same messages byte for byte, from the pack and from the doctor. A project that declares one sees, on a solo Critical feature, the `WARN` lines above (a period under 24 prints one on every run that grades the solo arm, including when the review is missing; while the branch is evidently mid-feature, or the plan says `**Merge Readiness**: pending`, the check returns before it reads the review and prints none) and the doctor's findings. The one surprise to expect: **a record that already carries a `coolingOffHours` or `coolingOffReason` key** was ignored before this update and is read now, so a value written earlier "for later" takes effect. The doctor names it on the first run.
+
+**What does NOT change.** The team arm, which never reads either key; the clock (the first commit of `second-model-review.md`; a later revision does not restart it); every message and verdict for a project that declares neither key; every Standard, Lite and Micro feature; and the principles of the constitution: the independence rule (Principles IX and X) is parameterised here, not changed, and only the sync-list entry above was corrected.
+
+**Known limits, stated rather than hidden.** (1) The reason is a written claim: the check shows that it exists and is not blank, not that it is a good one. (2) The declaration sits in the same repository, usually on the same branch, as the feature it governs, so an owner can shorten their own wait in the same pull request; the warning and the diff show it and gate 6, the human review, is where it is caught. Reading the declaration from the diff base would close it and is not done here. (3) A shortening made after the review was committed applies against the original first-commit time, because the clock does not restart.
+
+**What was measured.** Shown by the kit's own fixtures (`CRIT-C01`, `CRIT-C02`, the `CRIT-S03` and `CRIT-T01` variants and `VK-033` to `VK-036`), every existing case passing with its expectation unedited; no adopted project's history was replayed, so nothing here shows how a real project's declaration will read.
+
+**What to do about it.** Take the update, run `scripts/build-digests.ps1`, and run `scripts/ritual-checks.ps1`. Declare nothing unless you want a different period. If you do, write the number and, below 24, the reason, and read the doctor's `ok` line to confirm it read the period you meant.
+
 ## 3. Other surgical files
 
 Not every surgical report is a constitution amendment. `docs/sdlc/gate-command.md`,
@@ -1660,7 +1678,7 @@ which evidence a **Critical** feature must produce for independent approval
 
 | What the record says | What a Critical feature must produce |
 |---|---|
-| nothing (the default) | `second-model-review.md` + the 24-hour cooling-off — the solo substitute |
+| nothing (the default) | `second-model-review.md` + the cooling-off period (24 hours unless the record declares another, below) — the solo substitute |
 | one name | the same; one developer *is* the solo case |
 | two or more names | a committed `specs/NNN-name/human-pr-review.md` with a filled `## Review Provenance` block — Reviewer, Owner (not the same person), and the verbatim attestation line the template carries — and **no** cooling-off |
 
@@ -1687,6 +1705,40 @@ the record actually produces — on every one of those paths, including the not-
 The doctor and the check read the record through the same function
 (`scripts/adoption-lib.ps1`), so the mode it prints is the mode you will be held to. Without both halves, a project could believe it declared a team for
 months while being checked as solo.
+
+**Declaring the solo cooling-off period (feature 038)** — two optional lines, and they change exactly one thing: how
+long a **solo** project's `second-model-review.md` must have been committed before a Critical feature merges
+(`docs/sdlc/critical-delivery.md` item 5). Put them beside `developers` and `criticalSurfaces`:
+
+```json
+  "coolingOffHours": 8,
+  "coolingOffReason": "two-person-team-in-waiting; features are small and reviewed next morning",
+```
+
+- `coolingOffHours` is a JSON number: a whole number of hours of at least 1, with no upper bound. The documented presets
+  are 2, 4, 8 and 24; any other whole number at or above 1 is equally valid, and `4.0` reads as 4. Absent, it is 24,
+  which is the period every project had before this feature.
+- `coolingOffReason` is a JSON string, one line, and it is **required below 24**: with a usable reason the period
+  applies and every run of `scripts/enforcement-pack.ps1` that grades the solo arm prints a `WARN` naming the period and
+  quoting the reason; without one (missing, blank or not a string) the declared value is set aside and 24 applies. On a
+  period of 24 or more the reason is ignored, and the doctor says so. The pack grades the solo arm whenever the artifact is
+  owed, so the `WARN` also appears when the review itself is missing; while the branch is evidently mid-feature, or the plan
+  says `**Merge Readiness**: pending`, the pack returns before it reads the review and prints no cooling-off `WARN`.
+- Anything else in `coolingOffHours` (`0`, a negative, a fraction, `"8"`, `true`, `null`, an array, an object, a number
+  too large to represent) is set aside too, and 24 applies. Every fallback lands on 24 hours, never below it. A typo that is itself a valid number is
+  read as written: `2` typed for `24` is a 2-hour period, which needs a reason and warns on every run that grades the solo
+  arm. A mistyped period meant to be longer, such as `"48"` for 48, also falls to 24, shorter than you meant: the pack prints a
+  `WARN` naming the value it read, and the doctor reports a FAIL (a warning in team mode) naming the field, the value it
+  read, the period that applies and the fix. The doctor prints one `ok` line for a declaration it accepts, and a record that
+  declares neither key prints nothing.
+- The team arm (two or more developers) never reads either key, and the doctor warns when a team-mode project declares
+  one, because it changes nothing there. A malformed value or a missing reason in a team-mode project is a warning too,
+  not a failure, because no period applies there; it still names the value, and solo the 24-hour default would apply. The clock does not move: it is the first commit of `second-model-review.md`,
+  and a later shortening applies against that original time.
+
+Do not shorten the period to make a branch merge. The reason is a written claim a reviewer can falsify, not something the
+check can judge, and the declaration sits in your repository, usually on the same branch as the feature it governs, so it
+shows in the diff and gate 6, the human review, is where it is read.
 
 <!-- digest: kit-adoption.json is project-owned: every declared tier needs an instantiated rulebook; gateProof is your attestation. -->
 

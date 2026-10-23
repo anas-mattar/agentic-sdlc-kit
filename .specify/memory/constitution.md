@@ -1,7 +1,25 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 0.7.0 → 0.8.0 (kit template — not yet ratified by a project)
+Version change: 0.8.0 → 0.8.1 (kit template — not yet ratified by a project)
+Bump rationale: PATCH — sync-list bookkeeping only, no rule change (feature 038,
+  configurable-cooling-off; AI review finding F1, owner decision anas.m, 2026-10-23). The
+  Critical solo cooling-off period is no longer a fixed 24 hours: it is the project's own
+  declaration (coolingOffHours and coolingOffReason in kit-adoption.json, read by
+  Get-CoolingOff in scripts/adoption-lib.ps1), 24 hours by default, with a floor of 1 hour, and
+  a period under 24 hours needs a written reason (docs/sdlc/critical-delivery.md item 5). The
+  "Templates requiring updates" entry for scripts/enforcement-pack.ps1 named the Critical
+  cooling-off hours as a constitutional constant encoded there; that constant moved, so the
+  entry no longer names it, and a new entry names scripts/adoption-lib.ps1 for the default
+  and the floor. No principle text changes: Principles IX and X delegate the Critical-solo
+  substitute to docs/sdlc/critical-delivery.md and state no number, and the earlier version
+  history below, including the 0.3.0 "minimum 24-hour cooling-off" wording, is history and is
+  left as written; read that number as the default since feature 038. Nothing is redefined
+  and no principle is removed. Human adoption of this amendment: the owner's decision
+  (anas.m, 2026-10-23) plus the feature's gate-6 human review at merge. Mirrors synced in
+  the same change: adoption/updating.md (the feature 038 flow-down note).
+
+Prior version history (0.7.0 → 0.8.0):
 Bump rationale: MINOR — Level declaration clause added to Principle X (feature 017,
   level-declaration-graded; roadmap GAP-023). The delivery level decides how much rigour a
   feature gets and was the one decision no check graded: the only validation was spelling. The
@@ -191,8 +209,12 @@ Templates requiring updates when this file changes:
   - .specify/templates/plan-template.md (Constitution Check gate must mirror the principles 1:1)
   - .specify/templates/tasks-template.md (test-policy language must not contradict Principle VIII)
   - CLAUDE.md (strict rules must not contradict this file)
+  - scripts/adoption-lib.ps1 (Get-CoolingOff holds the Critical solo cooling-off default,
+    24 hours, and its floor, 1 hour; the period a project uses is its own declaration in
+    kit-adoption.json — the default and the floor MUST change in lockstep with amendments
+    touching them)
   - scripts/enforcement-pack.ps1 (encodes constitutional constants — batch-phase cap,
-    Critical cooling-off hours, the Gate Certification legal values `user-run`/`ci-held`
+    the Gate Certification legal values `user-run`/`ci-held`
     and the Critical ci-held exclusion, the Micro-lane bounds (territory-file cap 5,
     phase-line hard bound 400, single-phase rule), the Delivery Level legal values, the four
     Level Rationale trigger keys and the `**Rationale Rule**` marker value —
@@ -479,4 +501,4 @@ evaluated before Phase 0 research and re-evaluated after Phase 1 design. Any vio
 justified in the plan's Complexity Tracking section or the work MUST stop and be reported. Use
 `CLAUDE.md` and the `docs/` guidance files for runtime development guidance.
 
-**Version**: 0.8.0 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)
+**Version**: 0.8.1 | **Ratified**: TODO(RATIFICATION_DATE) | **Last Amended**: TODO(RATIFICATION_DATE)

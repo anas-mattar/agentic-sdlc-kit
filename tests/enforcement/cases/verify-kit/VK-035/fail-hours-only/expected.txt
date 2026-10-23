@@ -1,0 +1,10 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: ok record — 2 developer(s) declared — Critical features use the team evidence rule (docs/sdlc/critical-delivery.md item 5)
+verify-kit: ok record — kit-adoption.json coolingOffHours declares 48 hours — the solo cooling-off period (docs/sdlc/critical-delivery.md item 5)
+verify-kit: WARN record: kit-adoption.json declares a cooling-off setting (coolingOffHours or coolingOffReason) but 2 developers are declared, so the team evidence rule applies and no cooling-off period does — fix: remove the setting, or leave it if the project expects to return to a single developer — it is recorded and read by no check in team mode (docs/sdlc/critical-delivery.md item 5)
+verify-kit: ok record — criticalSurfaces not declared — the surface floor is not armed (adoption/updating.md)
+verify-kit: ok record — adoption record valid — tiers: backend; gate proven
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: OK — adoption integrity verified (1 warning(s))

@@ -623,9 +623,27 @@
       "script": "enforcement-pack.ps1",
       "function": "Invoke-CriticalSoloEvidence",
       "summary": "the second-model review is younger than the cooling-off period",
-      "law": "docs/sdlc/critical-delivery.md item 5 (CoolingOffHours = 24)",
+      "law": "docs/sdlc/critical-delivery.md item 5 (the period is 24h unless kit-adoption.json declares another: feature 038)",
       "emitAnchor": "cooling-off requires",
-      "notes": "The pair sits either side of 24h by half an hour (23.5 / 24.5), using the recipe's new 'hoursAgo' back-dating. Relative, not absolute: an absolute date would make this fixture expire."
+      "notes": "The pair sits either side of 24h by half an hour (23.5 / 24.5), using the recipe's new 'hoursAgo' back-dating. Relative, not absolute: an absolute date would make this fixture expire. Feature 038 added variants, all of which exercise this one message: a declared 24 either side (word for word the default message, no clause, no WARN), a declared 48 (stricter than the default: the message gains the clause naming where the number came from, and no WARN is printed), and a record that cannot be read as an object (24 applies, nothing about a cooling-off is printed). The honored short period is CRIT-C01 and the set-aside value is CRIT-C02, which own the two WARN sites. Review fix F4 added two more unreadable-record variants beside the root array: fail-record-unreadable (kit-adoption.json is a directory, so the read fails) and fail-record-unparsable (it opens with a brace and does not parse); each expects exactly the root-array output."
+    },
+    {
+      "id": "CRIT-C01",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalSoloEvidence",
+      "summary": "a solo Critical feature runs under a declared cooling-off period below the 24h default: the period is applied and the weaker control is named, with its recorded reason",
+      "law": "docs/sdlc/critical-delivery.md item 5; feature 038 spec FR-005, FR-006, FR-008",
+      "emitAnchor": "- declared in kit-adoption.json coolingOffHours with the recorded reason",
+      "notes": "A WARN, never a failure: the failure, when there is one, is the CRIT-S03 message, which now names the declared period. The pair sits half an hour either side of the declared 4h (4.5 passes, 3.5 fails). Variants: the floor itself (1h, either side), a whole number written 4.0 (prints 4h, never 4.0h), and a reason with a line break (printed on one line). The value is honored only with a usable reason (CRIT-C02 is the case where it is not). fail-review-missing (review fix F4) commits no second-model-review.md at all: the honored-period WARN must still print and the run fails on the missing review, which pins that the reader is called before the missing-review return (plan P5); moving the call after that return fails this case."
+    },
+    {
+      "id": "CRIT-C02",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalSoloEvidence",
+      "summary": "a declared cooling-off value that cannot be honored is set aside, 24h applies, and the output says so and why",
+      "law": "docs/sdlc/critical-delivery.md item 5; feature 038 spec FR-003, FR-005, FR-006",
+      "emitAnchor": "h default applies instead (",
+      "notes": "One emission site, many causes, each a variant: a value under 24 with no reason, a blank reason, a reason that is not a string, and every unusable shape of the value itself (0, negative, fractional, a string, a boolean, null, an array, an object). Each is read by Get-CoolingOff and the WARN carries the reader's own message, so the pack and the doctor cannot word it differently. The fail variants sit at 23.5h, where the unchanged default message proves 24 applied; the pass variants at 25h, where the run passes on the default and the WARN is the only trace of the declared value. fail-review-missing (review fix F4) is the same pin for the set-aside WARN: no review is committed, the WARN still prints, and the run fails on the missing review."
     },
     {
       "id": "CRIT-T01",
@@ -1461,6 +1479,51 @@
       "law": "feature 021 spec FR-008, FR-012",
       "emitAnchor": "Add-Finding WARN 'record' $problem.Message $problem.Fix",
       "notes": "A WARN, never a FAIL: repos is recorded and read by no check, so an unknown name cannot make an adoption wrong, only misleading. The same loop prints the FAIL problems (VK-017); the severity travels with the problem so the doctor never decides it itself."
+    },
+    {
+      "id": "VK-033",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a declared coolingOffHours the reader cannot accept, or a period under 24 with no usable reason, is a failure",
+      "law": "feature 038 spec FR-011; docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "Add-Finding FAIL 'record' $coolProblem.Message $coolProblem.Fix",
+      "notes": "The pack falls back to 24 hours silently by design (a WARN, never a failure of its own); the doctor is the half that tells the project its declaration is being set aside. Twelve failing directions, eleven of them one way for a declaration to be unusable: a string, 0, a negative, a fraction, a boolean, an explicit null, an array and an object (each with a usable reason, so exactly one problem is reported), and a period under 24 whose reason is missing, blank or not a string. Read through Get-CoolingOff, the one function the pack uses; the severity travels with the problem so the doctor never decides it. The twelfth, fail-one-developer, is a roster of one (still the solo arm) with an unusable value: the failure stands, where a roster of two is only a warning (VK-037), which pins that the team-mode warning is chosen by the evidence mode and not by whether a roster is declared. The pass direction is a short period with a usable reason: no failure."
+    },
+    {
+      "id": "VK-034",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a coolingOffReason with nothing to justify is a warning",
+      "law": "feature 038 spec FR-011; plan P4",
+      "emitAnchor": "Add-Finding WARN 'record' $coolProblem.Message $coolProblem.Fix",
+      "notes": "A WARN, never a FAIL: a reason on a value of 24 or more, or with no coolingOffHours at all, changes nothing the pack does, so it can only mislead. Two warning directions, 'fail' (a reason alone) and 'fail-reason-on-48' (a reason on a period above the default, which still gets its accepted declaration stated). The pass direction is the same period with no reason."
+    },
+    {
+      "id": "VK-035",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a cooling-off setting declared in team mode is a warning that it has no effect there",
+      "law": "feature 038 spec FR-010, FR-011; docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "Add-Finding WARN 'record' \"kit-adoption.json declares a cooling-off setting",
+      "notes": "The team arm never reads the setting (Invoke-CriticalTeamEvidence is not edited), so a project that declares it with two or more developers would otherwise believe it had shortened a wait that does not exist. Read from the existing $devMode.Mode, not from the record. Two warning directions: a short period with a reason and a period above the default. An unusable value in team mode is VK-037, where it is a warning too. The pass direction is team mode with neither key: nothing about cooling-off is printed."
+    },
+    {
+      "id": "VK-036",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "an accepted coolingOffHours declaration is stated back, and below 24 its reason is quoted",
+      "law": "feature 038 spec FR-011; plan P6",
+      "emitAnchor": "Add-Finding ok 'record' \"kit-adoption.json coolingOffHours declares",
+      "notes": "Printed only when a value is declared and applies, so a project that declares neither key sees exactly the output it saw before the setting existed (SC-005); that record is the pass direction. The line is what lets an owner confirm the doctor read the period they meant. Six directions in which the line appears: a short period with a reason, a period above the default, an explicit 24, a whole number written 4.0 (printed as 4), a reason holding a line break (quoted on one line), and the floor of one hour (printed in the singular)."
+    },
+    {
+      "id": "VK-037",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a malformed coolingOffHours or a missing reason in team mode is a warning, not a failure",
+      "law": "feature 038 spec FR-011 (amended 2026-10-23, review F5); plan P6",
+      "emitAnchor": "Add-Finding WARN 'record' $coolProblem.Message \"correct it before the project goes solo",
+      "notes": "In team mode no cooling-off period applies, so a value the reader cannot accept changes no verdict and failing the adoption over it (exit 1, '24 hours applies') said something untrue. The doctor still names the field and the value read, carries the reader's message unchanged, and replaces only the fix: correct it before the project goes solo, where the value is set aside and 24 hours applies. Two warning directions, 'fail' (an unusable value) and 'fail-no-reason' (a period under 24 with no usable reason). The warning is chosen by the evidence mode ($devMode.Mode), and the fix text names the reader's default rather than a literal 24. The pass direction is team mode with an accepted value: nothing is malformed, so only the declaration and the VK-035 warning print. The solo failures stay VK-033 and are unchanged; the reader's own warnings (a reason with nothing to justify, VK-034) keep their text in both modes."
     },
     {
       "id": "VK-019",

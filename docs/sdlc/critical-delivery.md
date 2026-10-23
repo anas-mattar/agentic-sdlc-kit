@@ -110,11 +110,16 @@ not give it to itself, and a machine can check only that it is well formed.
      `specs/_templates/ai-code-review-template.md` but performed by a model different from
      the one that implemented the feature, explicitly instructed to probe for the
      implementer's likely blind spots (not to re-confirm its work); and
-   - a minimum **24-hour cooling-off period** between that review being recorded and the
-     feature being merged, during which the developer does not act further on the feature.
+   - a **cooling-off period** between that review being recorded and the feature being
+     merged, during which the developer does not act further on the feature. It is **24 hours
+     by default**. A project may declare a shorter period, down to one hour, or a longer one in
+     `kit-adoption.json` (`coolingOffHours`; see **The cooling-off period** below). A period
+     under 24 hours must carry a written reason, and every run that applies one says so.
 
    **Honesty**: this substitute is a mitigation for the solo-developer case, not a claim of
    true independence — it does not provide the independence an external human reviewer would.
+   A shorter cooling-off period weakens it further: the record and the warning show the
+   weakening, they do not remove it.
    **Why**: the person who drove the agent is the person least able to see its blind spots,
    and an undefined substitute ("some review, some time") is not falsifiable.
 
@@ -123,7 +128,8 @@ not give it to itself, and a machine can check only that it is well formed.
    `developers` array in `kit-adoption.json`:
 
    - **Nothing declared, or one developer** → `second-model-review.md`, first committed at
-     least 24 hours before merge. The substitute above, unchanged.
+     least the cooling-off period before merge: 24 hours unless the record declares another
+     (below). The substitute above; for a project that declares no period, unchanged.
    - **Two or more developers** → `specs/NNN-name/human-pr-review.md`, **committed**, carrying
      a filled `## Review Provenance` block whose **Reviewer** is not its **Owner**, **is on the
      roster** (below), and is not a developer whose entry says `canApproveCritical: false`, plus
@@ -167,8 +173,37 @@ not give it to itself, and a machine can check only that it is well formed.
    person the record says may not judge; it does **not** prove the person is who the name says,
    and whether the review was independent is still the human reviewer's to judge. The
    cooling-off does not apply there because the period exists to give a solo developer
-   distance from their own work, and a second person already is that distance. The solo arm is
-   unchanged and never reads the human review.
+   distance from their own work, and a second person already is that distance. The solo arm
+   never reads the human review.
+
+   **The cooling-off period** (feature 038). The solo arm reads `coolingOffHours` from
+   `kit-adoption.json`: a whole number of hours of at least 1, with no upper bound. The documented
+   presets are 2, 4, 8 and 24; any other whole number at or above 1 is equally valid. With no key,
+   24 applies and the check, its messages and its exit code are what they were. A period under 24
+   needs `coolingOffReason`, a one-line string saying why; with one, the period applies and every
+   run that grades the solo arm prints a `WARN` naming the period and quoting the reason; without
+   one (missing, blank or not a string) the value is set aside, 24 applies and the run says so. The
+   solo arm is graded whenever the artifact is owed, including when the review itself is missing;
+   while the branch is evidently mid-feature, or the plan declares `**Merge Readiness**: pending`,
+   the check returns before it reads the review and prints no cooling-off `WARN` (see **When the
+   check demands the artifact**, below). A value that is not accepted (zero, a negative, a fraction,
+   text, a boolean, `null`, an array, an object, or a number too large to represent) is set aside
+   the same way, and 24 applies: every fallback lands on 24 hours, never below it. A typo that is
+   itself a valid number is read as written, so `2` typed for `24` is a 2-hour period: below 24 it
+   needs a reason and warns on every run that grades the solo arm. A mistyped period meant to be
+   longer than 24 hours, such as `"48"` for 48, also falls to 24, which is shorter than meant; the
+   doctor reports it as a failure (a warning in team mode, where no period applies), and the check
+   prints a `WARN` naming the value it read. A reason on a period of 24 or more, or
+   with no period declared, changes nothing. The clock does not move: it is still the first commit of `second-model-review.md`, and
+   a later shortening of the period takes effect against that original time. The team arm never
+   reads the setting. The doctor (`scripts/verify-kit.ps1`) reports each of these cases, and a
+   setting declared in team mode, where it has no effect. See **adoption/updating.md** for the shape.
+   **A limit, stated rather than hidden:** the reason is a written claim: the check can show it
+   exists and is not blank, not that it is a good one. The declaration sits in the same repository,
+   usually on the same branch, as the feature it governs, so an owner can shorten their own wait in
+   the same pull request. The warning is printed on every run that grades the solo arm and the change
+   shows in the diff, and gate 6, the human review at merge, is where it is caught. Reading the declaration from the diff
+   base would close it and is not done here.
 
    **When the check demands the artifact** (feature 024). The artifact is owed *at merge*, after the final phase
    (`docs/sdlc/definition-of-done.md`, item 6), so while a Critical branch is evidently **mid-feature** (by the heuristic below, which is evidence and not proof) the check does not
@@ -183,7 +218,7 @@ not give it to itself, and a machine can check only that it is well formed.
    or the check cannot establish mid-feature at all (no diff base, a shallow clone, `tasks.md` unreadable or with no phase
    heading or a gap or a number too large to read, no commit subject with a phase token yet), in which last group it prints a
    `not treated as mid-feature` line saying why. What an owner may therefore see: committing the artifact early puts it
-   under the arm's grading from that commit on (the branch is red until the artifact is valid in team mode, or 24 hours old in solo
+   under the arm's grading from that commit on (the branch is red until the artifact is valid in team mode, or as old as the cooling-off period (24 hours by default) in solo
    mode, where the cooling-off clock starts at that commit, and passes once it is); an artifact
    left uncommitted mid-feature warns where it used to fail; and an unusable `kit-adoption.json` selects the solo arm, so a
    committed team-arm file does not end the pending state there. **A limit, stated rather than hidden:** a final commit whose
@@ -237,7 +272,7 @@ not give it to itself, and a machine can check only that it is well formed.
 
    <!-- digest: Critical 5: a Merge Readiness pending beside a tasks.md with every task ticked is graded as ready. -->
    <!-- digest: Critical 5: ticks are a proxy; an unticked, absent or hidden task leaves Merge Readiness pending a claim. -->
-   <!-- digest: Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. -->
+   <!-- digest: Critical 5: reviewer is never the owner; solo devs: second-model review + cooling-off, 24h default, less needs a reason. -->
    <!-- digest: kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. -->
    <!-- digest: Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. -->
    <!-- digest: Critical 5: the artifact is a WARN until the final phase lands, it is committed or the plan says ready; then FAIL. -->
