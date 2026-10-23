@@ -194,3 +194,9 @@ RESULT OK (verify-kit and scope-repos n/a). Coverage sweep: 297 of 314 sites own
 of 310: the four new sites are `VK-033` to `VK-036`, the exempt and not-a-rule counts are unchanged, and `verify-kit.ps1`
 reads 40 of 41 (the one exempt site is the top-level catch). Every pre-existing case passed in the same run with its
 expectation unedited. Agent-run evidence only; the owner's gate is the certification.
+
+**Phase 3, final state, gated (owner, 2026-10-23).** Committed as `fa7f412`; `scope-check.ps1` PASS (82 files). The owner ran
+`pwsh -File scripts/ritual-checks.ps1` on that commit: RESULT OK (doc-lint, enforcement-pack, scope-check on all phase
+commits, digests, roadmap-claims; scope-repos and verify-kit n/a), exit code 0 confirmed. `PhaseSizeWarning` on `fa7f412`
+(3421 lines, 82 files, non-blocking): 78 of the 82 files are the 26 fixture cases at three files each; the script change is
+29 lines. This is the baseline phase 4 is measured against.

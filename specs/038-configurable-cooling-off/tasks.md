@@ -70,7 +70,7 @@ description: "Task list for feature 038 — the Critical solo-mode cooling-off p
 - [x] T020 Bring the rules into the coverage sweep: add each new `VK-*` rule to `tests/enforcement/rules.json` with its anchor and law; add to `tests/enforcement/emission-idioms.json` only if the sweep reports a new site. Note that problems from the reader travel through the same loop as the roster's, so they are not literal sites; the sweep decides which are
 - [x] T021 Edit `scripts/verify-kit.ps1` (plan P6): after the `developers` block, call `Get-CoolingOff -Root $Root`, gated on its own `AnyDeclared`; report each problem with the severity it carries (the doctor never decides it); add the one warning for team mode, when either key is declared, using the existing `$devMode.Mode`; add the one `ok` line for an accepted declaration; print nothing when neither key is declared. Do not interpret the record in this script
 - [x] T022 Run `-Case verify-kit/`, the full harness, `doc-lint.ps1` and `ritual-checks.ps1`: every pre-existing case keeps its verdict, exit code and bytes against T018, every new fixture passes as written, and the sweep reports no uncovered site. Record the result in `notes.md`
-- [ ] T023 Stop. Review the working diff, commit as `phase 3: doctor reports the cooling-off setting`, run `pwsh -File scripts/scope-check.ps1`, and ask the owner to run the gate
+- [x] T023 Stop. Review the working diff, commit as `phase 3: doctor reports the cooling-off setting`, run `pwsh -File scripts/scope-check.ps1`, and ask the owner to run the gate
 
 ---
 
