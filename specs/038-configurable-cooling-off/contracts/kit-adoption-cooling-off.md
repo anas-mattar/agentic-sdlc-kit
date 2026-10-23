@@ -40,7 +40,10 @@ Pack (`scripts/enforcement-pack.ps1`, CriticalEvidence, solo arm only), each a W
 2. A declared value set aside: names the declared value, says 24 applies, and says why (not accepted, or no reason).
 
 The existing failure for a review recorded too recently names the period in effect. At 24 it is word-for-word the
-message in use before this feature; at any other value it gains `(declared in kit-adoption.json coolingOffHours)`.
+message in use before this feature; at any other value the clause `declared in kit-adoption.json coolingOffHours;`
+opens the existing parenthesis, before the hours remaining (amended 2026-10-23 to match the code, review F6 and G4).
+
+**Amendment approved by**: anas.m, 2026-10-23
 
 Doctor (`scripts/verify-kit.ps1`):
 

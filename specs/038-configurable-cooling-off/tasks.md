@@ -43,8 +43,10 @@ description: "Task list for feature 038 — the Critical solo-mode cooling-off p
 - `scripts/enforcement-pack.ps1`
 - `tests/enforcement/**`
 
+**Amendment approved by**: anas.m, 2026-10-23
+
 - [x] T008 Record the baseline on the phase 1 commit in `notes.md`: the full harness count, and the saved output and exit code of every existing `CRIT-S*`, `CRIT-R*` and `CRIT-T*` case, so SC-004 can be shown byte for byte at the end of the phase
-- [x] T009 [US1] Write the fixtures first, under `tests/enforcement/cases/enforcement-pack/`, using the `hoursAgo` back-dating `CRIT-S03` uses (never an absolute date). `CRIT-C01`, the honored short period: pass with the review 5 hours old and `coolingOffHours: 4` with a reason, expecting the WARN naming 4 hours and quoting the reason and exit 0 for the Critical check; fail with the review 3 hours old, expecting the failure naming 4h, the elapsed time, the hours remaining and `(declared in kit-adoption.json coolingOffHours)`; a boundary pair either side of the period by half an hour
+- [x] T009 [US1] Write the fixtures first, under `tests/enforcement/cases/enforcement-pack/`, using the `hoursAgo` back-dating `CRIT-S03` uses (never an absolute date). `CRIT-C01`, the honored short period: pass with the review 5 hours old and `coolingOffHours: 4` with a reason, expecting the WARN naming 4 hours and quoting the reason and exit 0 for the Critical check; fail with the review 3 hours old, expecting the failure naming 4h, the elapsed time, the hours remaining and the clause `declared in kit-adoption.json coolingOffHours;` (amended 2026-10-23 to match the code, review F6 and G4); a boundary pair either side of the period by half an hour
 - [x] T010 [US2] Write `CRIT-C02`, the declared value set aside: `coolingOffHours: 4` with no reason, with a blank reason and with a non-string reason, each with the review 25 hours old (passes under 24, expecting the WARN saying the value was set aside and why) and 23.5 hours old (fails under 24, expecting the unchanged default message)
 - [x] T011 [US3] Write one variant per unaccepted shape (shipped as the `fail-unaccepted-*` variants of `CRIT-C02`; no `CRIT-C03` exists): `0`, `-3`, `1.5`, `"8"`, `true`, `null`, `[]`, `{}`, each with a usable reason and the review 23.5 hours old, expecting the unchanged 24-hour failure and the set-aside WARN naming the value read; and an unreadable record and a root that is a JSON array (shipped as the `fail-record-unreadable`, `fail-record-unparsable` and `fail-record-root-array` variants of `CRIT-S03`), expecting the unchanged 24-hour failure and no cooling-off warning
 - [x] T012 [US2] Write a period above the default (shipped as the `fail-declared-48` and `pass-declared-48` variants of `CRIT-S03`; no `CRIT-C04` exists): `coolingOffHours: 48` with no reason, the review 30 hours old, expecting a failure naming 48h and no warning; and the same review 49 hours old, expecting a pass and no warning
@@ -105,10 +107,11 @@ description: "Task list for feature 038 — the Critical solo-mode cooling-off p
 - `tests/enforcement/**`
 - `.specify/memory/constitution.md`
 - `adoption/updating.md`
+- `docs/sdlc/critical-delivery.md`
 
 **Amendment approved by**: anas.m, 2026-10-23.
 
-`scripts/adoption-lib.ps1` is in the Territory for its two comments only (T037). An annotation on a Territory bullet is not read by the scope check, so the note sits here.
+`scripts/adoption-lib.ps1` is in the Territory for its two comments only (T037). `docs/sdlc/critical-delivery.md` is in it, added 2026-10-23 on the second review (G6, G8), for two corrected sentences only. An annotation on a Territory bullet is not read by the scope check, so the notes sit here.
 
 - [x] T031 Record the baseline on the last commit of phase 4 and its review fixes in `notes.md`: the full harness count and the coverage report's site counts
 - [x] T032 [US3] Write the fixtures first, under `tests/enforcement/cases/verify-kit/`: new rule `VK-037`, a malformed value or a missing reason in team mode is a warning that names the field and the value read and says the 24-hour default applies if the project goes solo, exit 0: `fail` (team, `coolingOffHours: 0` with a reason), `fail-no-reason` (team, `coolingOffHours: 4`, no reason), and `pass` (team, an accepted `48`). Move `VK-035/fail-unaccepted-value` under `VK-037` (its expectation changes from a failure to a warning), and keep the solo failures in `VK-033` byte for byte. Run them on the parent commit and confirm the new failing ones fail there

@@ -75,9 +75,13 @@ the pack applies 24 and says the shorter value was not honored.
 
 ### User Story 3 - A malformed value can never switch the control off (Priority: P1)
 
-A typo, a zero, a negative number, a fraction, a string or a null in the field cannot take the wait below the 24-hour
-default: every unusable value falls back to 24 hours. (A typo in a period meant to be longer than 24, such as `"48"`,
-also falls to 24, shorter than meant; the pack warns and the doctor reports it. Amended 2026-10-23, review F2.)
+A zero, a negative number, a fraction, a string or a null in the field cannot take the wait below the 24-hour
+default: every value the reader cannot accept falls back to 24 hours. (A mistyped period meant to be longer than 24,
+such as `"48"`, also falls to 24, shorter than meant; the pack warns and the doctor reports it. A typo that is itself a
+valid number, such as 2 for 24, is read as written: below 24 it needs a reason and warns on every run that grades the
+solo arm. Amended 2026-10-23, reviews F2 and G8.)
+
+**Amendment approved by**: anas.m, 2026-10-23
 
 **Why this priority**: the fail-closed fallback is what makes making the value configurable safe.
 

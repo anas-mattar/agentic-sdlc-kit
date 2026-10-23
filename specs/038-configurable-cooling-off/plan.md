@@ -97,10 +97,13 @@ value that does not need one is ignored and the doctor says so.
 **P5: where the pack reads it (FR-006 to FR-010).** In `Invoke-CriticalSoloEvidence` (`scripts/enforcement-pack.ps1`),
 first, before the missing-file return, so the warning is printed whenever the solo arm is graded and a short period
 is in effect. The period used in the comparison is `$period.Hours`. The failure message keeps its words; when the
-period is not 24 it gains one clause, `(declared in kit-adoption.json coolingOffHours)`, so a reader knows where the
+period is not 24 it gains one clause, `declared in kit-adoption.json coolingOffHours;`, opening the existing
+parenthesis (amended 2026-10-23 to match the code, review F6 and G4), so a reader knows where the
 number came from, and at 24 it is byte-identical to today. `Invoke-CriticalTeamEvidence` is not edited and never
 calls the reader, so the team arm cannot change. The clock is not edited: still the last line of `git log --follow
 --format=%aI` for `second-model-review.md`, the first commit of the file.
+
+**Amendment approved by**: anas.m, 2026-10-23
 
 **P6: what the doctor says (FR-011).** `scripts/verify-kit.ps1` gains one block after the `developers` block, gated on
 the library's own `AnyDeclared` and reading `Get-CoolingOff` only. Problems from the reader are reported as failures

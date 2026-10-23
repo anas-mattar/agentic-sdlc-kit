@@ -14,7 +14,7 @@ Run from the repository root of a project (or a fixture) that has a Critical fea
    ```
 
    Re-run. A review 5 hours old now passes, with one WARN naming 4 hours and quoting the reason. A review 3 hours old
-   fails, and the message names 4h and `(declared in kit-adoption.json coolingOffHours)`.
+   fails, and the message names 4h and the clause `declared in kit-adoption.json coolingOffHours;`.
 
 3. **No reason.** Remove `coolingOffReason`. Re-run: 24 hours applies again, and one WARN says the declared 4 hours
    was set aside because no reason is recorded.
