@@ -145,4 +145,10 @@ passed, 0 failed, 0 skipped** (phase 1's 2114 plus 52), exit 0, 2656s. `doc-lint
 verify-kit n/a). Coverage sweep: 293 of 310 sites owned by a fixtured rule, against phase 1's 291 of 308: the two new sites
 (`CRIT-C01`, `CRIT-C02`) are both fixtured, the exempt and not-a-rule counts are unchanged, and `enforcement-pack.ps1` reads
 88 of 95. Every pre-existing case passed in the same run. This is agent-run evidence only; the owner's gate is the
-certification. Phase 2 is not committed yet (T017).
+certification.
+
+**Phase 2, final state, gated (owner, 2026-10-23).** Committed as `942d7b5`; `scope-check.ps1` PASS (82 files). The owner ran
+`pwsh -File scripts/ritual-checks.ps1` on that commit: RESULT OK (doc-lint, enforcement-pack, scope-check on all four phase
+commits, digests, roadmap-claims; scope-repos and verify-kit n/a), exit code 0 confirmed. `PhaseSizeWarning` on `942d7b5`
+(2122 lines, 82 files, non-blocking): 75 of the 82 files are the 25 fixture cases at three files each; the script change is
+28 lines. This is the baseline phase 3 is measured against (T018).
