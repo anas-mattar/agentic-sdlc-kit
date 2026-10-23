@@ -341,3 +341,34 @@ by the system for low memory before it finished; it was not restarted until aske
 Coverage sweep **298 of 315** (297 of 314 plus the one new site, covered by `VK-037`), `verify-kit.ps1` 41 of 42, exempt and
 not-a-rule counts unchanged. Every pre-existing case passed with its expectation unedited, apart from the one that moved.
 Agent-run evidence only; the owner's gate is the certification.
+## AI review of the review fixes and phase 5, 2026-10-23
+
+Filed as `ai-code-review-phase5.md`: a fresh-context agent on a different model from the implementer (reviewer claude-opus-5-5,
+implementer claude-sonnet-5-5), scope `40cb039..HEAD`, verdict **approve with changes**, nothing blocking. It judged F2, F3 and
+F4 actually fixed, F1 and F5 built as decided, the constitution PATCH to change exactly what it says (three removed lines, no
+principle or history touched) and PATCH to be the right bump, and the doctor correct for every combination of roster and
+declaration it tried. It marked one thing unverified: every approver record was written by the implementing session, so the
+repository alone cannot show the owner made these decisions; they rest on the owner's instructions in the session, and the
+owner's human review is where that is read. The review file is the reviewer's own and is not edited here. The owner's decision
+on its findings (2026-10-23): go with the implementer's recommendation.
+
+| Finding | Disposition |
+|---|---|
+| G1 `updating.md` says "Nothing surgical" beside the constitution change | **Fixed.** The 038 flow-down note now says one surgical item is reported, the constitution (the update lists it and exits 2), and that a project whose sync list does not carry the old entry has nothing to re-express. |
+| G2 the team-mode message hardcodes "24 hours" | **Fixed.** It reads `$script:CoolingOffDefaultHours` from the library, as the pack does. `VK-037`'s anchor changed to the double-quoted form. |
+| G3 nothing catches the team check widening to "any roster" | **Fixed.** New case `VK-033/fail-one-developer` (a roster of one is the solo arm: the failure stands, exit 1). Mutation check: with the team test widened to `$devMode.Declared`, the new case fails (186 passed, 2 failed) and the script was restored from a backup; `git diff` shows only the intended edit. |
+| G4 the contract words the failure clause differently from the code (F6) | **Owner decision: amend the documents to match the code.** Contract, plan P5, quickstart and task T009 now say the clause `declared in kit-adoption.json coolingOffHours;` opens the existing parenthesis, before the hours remaining. Approver record in the amendment commit. |
+| G5 `e8b0f86` ticks T031 to T038 one commit before the work that ticks them | **Recorded.** It was the commit that carried the Territory fix, made after the work existed in the working tree and before it was committed. The history shows the ticks first; the tree at `9328f16` had all of it. |
+| G6 `critical-delivery.md` says the doctor reports a mistyped value "as a failure" | **Fixed.** It says "a failure (a warning in team mode, where no period applies)". `docs/sdlc/critical-delivery.md` was added to phase 5's Territory by an amendment commit made before the fix (record in its commit). |
+| G7 in team mode the doctor's `ok` line says the pack prints a warning on every Critical solo check | **Fixed.** The clause is omitted in team mode; solo output is byte-identical. `VK-035/fail`'s expectation changed accordingly. |
+| G8 "a typo cannot take the wait under the default" is too broad (`2` for `24` is accepted as 2 hours) | **Fixed** in `critical-delivery.md`, `updating.md`, spec User Story 3 (amended with a record) and the two comments in `adoption-lib.ps1`: an unusable value never gets a wait below 24, and a typo that is itself a valid number is read as written, needs a reason, and warns. |
+| G9 "the plan says pending, so no warning prints" is untrue once the review is committed or every task is ticked | **Recorded, not changed.** The statement is true for the case it describes (a mid-feature or pending branch with no review committed) and is incomplete for the others, which `critical-delivery.md` "When the check demands the artifact" already states in full. The owner chose not to widen the fix. |
+| G10 in team mode every problem gets one generic fix sentence, dropping the specific remedy | **Recorded, not changed.** The message still names the field and the value read; the generic sentence is the point (no period applies, so there is nothing specific to fix today). The owner chose not to change it. |
+
+**Run after the fixes, 2026-10-23.** `-Case verify-kit/VK-03`: **246 passed, 0 failed**; `-Case enforcement-pack/CRIT-C`: **204
+passed, 0 failed**; each also runs the coverage, inventory and reader tests. Coverage sweep unchanged at **298 of 315** (no new
+emission site; the one new case is under an existing rule). `doc-lint.ps1` OK, `build-digests.ps1 -Check` OK (no marker
+changed). **The full harness was started on this tree and was killed by the system for low memory before it finished, for the
+second time in this feature, so there is no full-suite result for these fixes from the agent; it was not restarted.** The last
+complete run, 2230 passed, 0 failed, was on the tree before these fixes (the phase 5 commit); this round adds one case (2
+assertions) and edits no other expectation than `VK-035/fail`. The owner's gate is the certification.
