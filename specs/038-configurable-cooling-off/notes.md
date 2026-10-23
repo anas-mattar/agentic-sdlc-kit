@@ -277,3 +277,27 @@ review (T030).
 commits, digests, roadmap-claims; scope-repos and verify-kit n/a), exit code 0 confirmed. All four phases are gated. T030's
 two reviews remain: the fresh-context AI review (never self-graded, with the Reviewer Provenance block) and the human review.
 Open for the owner: the constitution sync-list pointer at `.specify/memory/constitution.md` line 195 (listed above), not edited.
+
+## AI review of phases 2 to 4 (T030), 2026-10-23
+
+Filed as `ai-code-review-phases-2-4.md`: a fresh-context agent on a different model from the implementer (reviewer
+claude-opus-5-5, implementer claude-sonnet-5-5), verdict **approve with changes**, nothing blocking in the scripts. The reviewer
+ran `CRIT-C0` (200 passed) and `VK-03` (240 passed) and did not run the full harness. The review file is the reviewer's own and
+is not edited here; the dispositions are recorded in this section.
+
+| Finding | Disposition |
+|---|---|
+| F1 constitution wording (history lines 119-123, sync list 194-198) | **Decided by the owner, 2026-10-23: correct it as a constitution PATCH, 0.8.0 to 0.8.1** (sync-list bookkeeping, no principle text, earlier history untouched). Amended into spec Assumptions, plan P8 and the phases list, and built in phase 5 (T035, T036). |
+| F2 "a typo can never shorten it" is false above 24 | **Fixed** (owner's instruction, 2026-10-23). `docs/sdlc/critical-delivery.md` and `adoption/updating.md` now say every fallback lands on 24 hours, never below it, and that a typo in a period meant to be longer (`"48"`) also falls to 24, shorter than meant, with the pack's WARN and the doctor's FAIL naming the value read. **The same overclaim in two comments of `scripts/adoption-lib.ps1` (lines 221 and 293, phase 1 code) is corrected in phase 5 (T037), and `spec.md` line 77 was amended with an approver record, both on the owner's decision of 2026-10-23.** |
+| F3 "the WARN prints on every run, whether or not the review exists yet" is false mid-feature | **Fixed.** Both documents now say it prints on every run that grades the solo arm, including when the review is missing, and not while the branch is evidently mid-feature or the plan says `**Merge Readiness**: pending`, where the check returns before it reads the review. Confirmed by reading `enforcement-pack.ps1` lines 620-639 against the call at line 646. |
+| F4 no fixture pins the reader call before the missing-review return; T011's unreadable record absent | **Fixed.** Four cases, expectations written by hand: `CRIT-C01/fail-review-missing` and `CRIT-C02/fail-review-missing` (no review committed: the WARN prints, then the run fails on the missing review) and `CRIT-S03/fail-record-unreadable` (`kit-adoption.json` is a directory) and `CRIT-S03/fail-record-unparsable`, each expecting the root-array output. Mutation check: with the missing-review return moved ahead of the reader call, the two `fail-review-missing` cases fail (163 passed, 3 failed) and the pre-existing fixtures did not; the script was restored and `git diff scripts/` is empty. |
+| F5 team-mode doctor FAIL says "24 hours applies" where no period applies | **Decided by the owner, 2026-10-23: a warning in team mode** (the doctor still names the field and the value read, and says the 24-hour default applies if the project goes solo). Amended into spec FR-011 and its edge case, plan P6, the contract and the data model; built in phase 5 (T032 to T034). |
+| F6 the failure's extra clause is worded differently from the approved contract | **Recorded, not changed.** FR-008 is met; the wording is the contract's clause with `declared in kit-adoption.json coolingOffHours;` inside the existing parenthesis, shown in notes under Phase 2. Whether that needs an approver record is the owner's call. |
+| F7 T011 to T013 name rules (`CRIT-C03`, `CRIT-C04`, `CRIT-C05`) that do not exist | **Fixed by amendment.** The three task texts now say where each shipped (`fail-unaccepted-*` of `CRIT-C02`; the `CRIT-S03` variants; the `CRIT-T01` variants). **Amendment approved by**: anas.m, 2026-10-23, on the owner's instruction in this session to fix F7; the amendment commit names the same approver. |
+| F8 a rejected value is echoed without filtering direction-override characters | **Recorded, not changed.** Cosmetic, phase 1 code, outside this fix. |
+| F9 the doctor prints "adoption record valid" beside a cooling-off FAIL | **Recorded, not changed.** Existed before this feature. |
+
+**Run after the fixes, 2026-10-23.** Full harness **2226 passed, 0 failed, 0 skipped** (2218 plus the 8 assertions of the four new
+cases), exit 0, 2566s, run alone. `doc-lint.ps1` OK, `build-digests.ps1 -Check` OK (the digest marker is unchanged, so no
+digest changed), `ritual-checks.ps1` RESULT OK. Coverage sweep unchanged at 297 of 314 (no new emission site). Agent-run evidence
+only; the owner's gate is the certification.
