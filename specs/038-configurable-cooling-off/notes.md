@@ -271,3 +271,9 @@ scope-repos n/a). Coverage sweep unchanged at 297 of 314. `git diff --stat` befo
 `docs/sdlc/critical-delivery.md`, `docs/digests/critical-digest.md` (one line) and this file; nothing under `scripts/` or
 `tests/`. Agent-run evidence only; the owner's gate is the certification, then the fresh-context AI review and the human
 review (T030).
+
+**Phase 4, final state, gated (owner, 2026-10-23).** Committed as `527c099`; `scope-check.ps1` PASS (5 files). The owner ran
+`pwsh -File scripts/ritual-checks.ps1` on that commit: RESULT OK (doc-lint, enforcement-pack, scope-check on all four phase
+commits, digests, roadmap-claims; scope-repos and verify-kit n/a), exit code 0 confirmed. All four phases are gated. T030's
+two reviews remain: the fresh-context AI review (never self-graded, with the Reviewer Provenance block) and the human review.
+Open for the owner: the constitution sync-list pointer at `.specify/memory/constitution.md` line 195 (listed above), not edited.
