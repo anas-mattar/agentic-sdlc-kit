@@ -55,7 +55,8 @@ BeforeAll {
     $script:Unknown = '0000000000000000000000000000000000000001'
 
     $script:Counter = 0
-    # A fresh target per case. -Recorded: a sha for a committed .kit-version, 'absent' for none, 'malformed' for one that is not JSON.
+    # A fresh target per case. -Recorded: a sha for a committed .kit-version, 'absent' for none, 'malformed' for one that is not JSON,
+    # 'bare:<sha>' for a file that holds the sha alone, which adoption/updating.md allows and verify-kit.ps1 accepts.
     function script:New-Target {
         param([string]$Recorded)
         $script:Counter++
@@ -69,6 +70,7 @@ BeforeAll {
         Write-Lf (Join-Path $target 'docs/sdlc/gate-command.md') "my project's gate`n"
         if ($Recorded -eq 'malformed') { Write-Lf (Join-Path $target '.kit-version') '{ not json' }
         elseif ($Recorded -eq 'number') { Write-Lf (Join-Path $target '.kit-version') '{ "kitVersion": "0.9.0", "kitCommit": 123, "updatedOn": "2026-01-01" }' }
+        elseif ($Recorded -like 'bare:*') { Write-Lf (Join-Path $target '.kit-version') ($Recorded.Substring(5) + "`n") }
         elseif ($Recorded -ne 'absent') {
             Write-Lf (Join-Path $target '.kit-version') ('{ "kitVersion": "0.9.0", "kitCommit": "' + $Recorded + '", "updatedOn": "2026-01-01" }')
         }
@@ -116,6 +118,23 @@ Describe 'update-kit.ps1 and the recorded kit commit (feature 033, plan P5)' {
             $r.Exit | Should -Be 2
         }
 
+        It 'a .kit-version holding the commit sha alone, a commit the kit clone has, is read as that commit: the same report as the JSON form, exit 2' {
+            $r = Invoke-UpdateKit (New-Target ('bare:' + $script:KitFirst)) @('-DryRun')
+            $r.Text | Should -Match 'Surgical - upstream changes, never applied \(1\):'
+            $r.Text | Should -Match 'kit two: gate command'
+            $r.Text | Should -Match 'upstream commits since your recorded kit version'
+            $r.Text | Should -Not -Match 'no baseline'
+            $r.Text | Should -Not -Match 'NOTE: the recorded kit commit'
+            $r.Exit | Should -Be 2
+        }
+
+        It 'a .kit-version holding the kit HEAD sha alone: nothing upstream, up to date, exit 0' {
+            $r = Invoke-UpdateKit (New-Target ('bare:' + $script:KitHead)) @('-DryRun')
+            $r.Text | Should -Match 'Result: up to date'
+            $r.Text | Should -Not -Match 'Surgical'
+            $r.Exit | Should -Be 0
+        }
+
         It 'a .kit-version that is not JSON is read as absent: the same report, exit 2' {
             $r = Invoke-UpdateKit (New-Target 'malformed') @('-DryRun')
             $r.Text | Should -Match 'Surgical - upstream changes, never applied \(1\):'
@@ -140,6 +159,15 @@ Describe 'update-kit.ps1 and the recorded kit commit (feature 033, plan P5)' {
             $target = New-Target $script:Unknown
             $r = Invoke-UpdateKit $target @()
             $r.Text | Should -Match 'Surgical - upstream changes, never applied \(1\):'
+            $r.Text | Should -Match ('NOTE: the recorded kit commit ' + $script:Unknown + ' is not in the kit clone')
+            $r.Text | Should -Match 'delivered once'
+            $r.Exit | Should -Be 2
+            (Get-Content (Join-Path $target '.kit-version') -Raw | ConvertFrom-Json).kitCommit | Should -Be $script:KitHead
+        }
+
+        It 'a sha alone that the kit clone does not have is named too, and a real run rewrites .kit-version as JSON at the kit''s HEAD' {
+            $target = New-Target ('bare:' + $script:Unknown)
+            $r = Invoke-UpdateKit $target @()
             $r.Text | Should -Match ('NOTE: the recorded kit commit ' + $script:Unknown + ' is not in the kit clone')
             $r.Text | Should -Match 'delivered once'
             $r.Exit | Should -Be 2
