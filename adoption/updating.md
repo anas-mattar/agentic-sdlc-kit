@@ -1578,7 +1578,7 @@ instead. If a claim ends on `could not withdraw <branch> from origin`, delete th
 
 **What flows down.** Verbatim: `scripts/adoption-lib.ps1`, `scripts/enforcement-pack.ps1`, `scripts/verify-kit.ps1`, `docs/sdlc/critical-delivery.md` and this document. The kit's own fixtures stay in the kit. Nothing surgical, nothing in your constitution, and `scripts/init-kit.ps1` is unchanged: a fresh adoption writes neither key. One digest marker in `docs/sdlc/critical-delivery.md` changed: run `scripts/build-digests.ps1` after the update, until you do the digests member of `scripts/ritual-checks.ps1` reports the affected digests stale.
 
-**What an owner may newly see.** A project whose `kit-adoption.json` declares **neither key sees nothing**: the same verdicts, the same exit codes, the same messages byte for byte, from the pack and from the doctor. A project that declares one sees, on a solo Critical feature, the `WARN` lines above (a period under 24 prints one on every run, whether or not the review exists yet) and the doctor's findings. The one surprise to expect: **a record that already carries a `coolingOffHours` or `coolingOffReason` key** was ignored before this update and is read now, so a value written earlier "for later" takes effect. The doctor names it on the first run.
+**What an owner may newly see.** A project whose `kit-adoption.json` declares **neither key sees nothing**: the same verdicts, the same exit codes, the same messages byte for byte, from the pack and from the doctor. A project that declares one sees, on a solo Critical feature, the `WARN` lines above (a period under 24 prints one on every run that grades the solo arm, including when the review is missing; while the branch is evidently mid-feature, or the plan says `**Merge Readiness**: pending`, the check returns before it reads the review and prints none) and the doctor's findings. The one surprise to expect: **a record that already carries a `coolingOffHours` or `coolingOffReason` key** was ignored before this update and is read now, so a value written earlier "for later" takes effect. The doctor names it on the first run.
 
 **What does NOT change.** The team arm, which never reads either key; the clock (the first commit of `second-model-review.md`; a later revision does not restart it); every message and verdict for a project that declares neither key; every Standard, Lite and Micro feature; and the constitution, whose independence rule (Principles IX and X) is parameterised here, not changed.
 
@@ -1719,13 +1719,17 @@ long a **solo** project's `second-model-review.md` must have been committed befo
   are 2, 4, 8 and 24; any other whole number at or above 1 is equally valid, and `4.0` reads as 4. Absent, it is 24,
   which is the period every project had before this feature.
 - `coolingOffReason` is a JSON string, one line, and it is **required below 24**: with a usable reason the period
-  applies and every run of `scripts/enforcement-pack.ps1` prints a `WARN` naming the period and quoting the reason;
-  without one (missing, blank or not a string) the declared value is set aside and 24 applies. On a period of 24 or more
-  the reason is ignored, and the doctor says so.
+  applies and every run of `scripts/enforcement-pack.ps1` that grades the solo arm prints a `WARN` naming the period and
+  quoting the reason; without one (missing, blank or not a string) the declared value is set aside and 24 applies. On a
+  period of 24 or more the reason is ignored, and the doctor says so. The pack grades the solo arm whenever the artifact is
+  owed, so the `WARN` also appears when the review itself is missing; while the branch is evidently mid-feature, or the plan
+  says `**Merge Readiness**: pending`, the pack returns before it reads the review and prints no cooling-off `WARN`.
 - Anything else in `coolingOffHours` (`0`, a negative, a fraction, `"8"`, `true`, `null`, an array, an object, a number
-  too large to represent) is set aside too, and 24 applies. Every fallback lands on the **longer** wait, so a typo cannot
-  shorten it. The doctor reports each one as a FAIL naming the field, the value it read, the period that applies and the fix,
-  and prints one `ok` line for a declaration it accepts. A record that declares neither key prints nothing.
+  too large to represent) is set aside too, and 24 applies. Every fallback lands on 24 hours, never below it, so a typo cannot
+  take the wait under the default. A typo in a period meant to be longer, such as `"48"` for 48, also falls to 24, shorter than
+  you meant: the pack prints a `WARN` naming the value it read, and the doctor reports a FAIL naming the field, the value it
+  read, the period that applies and the fix. The doctor prints one `ok` line for a declaration it accepts, and a record that
+  declares neither key prints nothing.
 - The team arm (two or more developers) never reads either key, and the doctor warns when a team-mode project declares
   one, because it changes nothing there. The clock does not move: it is the first commit of `second-model-review.md`,
   and a later shortening applies against that original time.

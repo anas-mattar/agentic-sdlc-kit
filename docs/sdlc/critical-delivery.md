@@ -181,20 +181,26 @@ not give it to itself, and a machine can check only that it is well formed.
    presets are 2, 4, 8 and 24; any other whole number at or above 1 is equally valid. With no key,
    24 applies and the check, its messages and its exit code are what they were. A period under 24
    needs `coolingOffReason`, a one-line string saying why; with one, the period applies and every
-   run prints a `WARN` naming the period and quoting the reason; without one (missing, blank or not
-   a string) the value is set aside, 24 applies and the run says so. A value that is not accepted
-   (zero, a negative, a fraction, text, a boolean, `null`, an array, an object, or a number too large
-   to represent) is set aside the same way: every fallback lands on the longer wait, so a typo can
-   never shorten it. A reason on a period of 24 or more, or with no period declared, changes
-   nothing. The clock does not move: it is still the first commit of `second-model-review.md`, and
+   run that grades the solo arm prints a `WARN` naming the period and quoting the reason; without
+   one (missing, blank or not a string) the value is set aside, 24 applies and the run says so. The
+   solo arm is graded whenever the artifact is owed, including when the review itself is missing;
+   while the branch is evidently mid-feature, or the plan declares `**Merge Readiness**: pending`,
+   the check returns before it reads the review and prints no cooling-off `WARN` (see **When the
+   check demands the artifact**, below). A value that is not accepted (zero, a negative, a fraction,
+   text, a boolean, `null`, an array, an object, or a number too large to represent) is set aside
+   the same way, and 24 applies: every fallback lands on 24 hours, never below it, so a typo cannot
+   take the wait under the default. A typo in a period meant to be longer than 24 hours, such as
+   `"48"` for 48, also falls to 24, which is shorter than meant; the doctor reports it as a failure,
+   and the check prints a `WARN` naming the value it read. A reason on a period of 24 or more, or
+   with no period declared, changes nothing. The clock does not move: it is still the first commit of `second-model-review.md`, and
    a later shortening of the period takes effect against that original time. The team arm never
    reads the setting. The doctor (`scripts/verify-kit.ps1`) reports each of these cases, and a
    setting declared in team mode, where it has no effect. See **adoption/updating.md** for the shape.
    **A limit, stated rather than hidden:** the reason is a written claim: the check can show it
    exists and is not blank, not that it is a good one. The declaration sits in the same repository,
    usually on the same branch, as the feature it governs, so an owner can shorten their own wait in
-   the same pull request. The warning is printed on every run and the change shows in the diff, and
-   gate 6, the human review at merge, is where it is caught. Reading the declaration from the diff
+   the same pull request. The warning is printed on every run that grades the solo arm and the change
+   shows in the diff, and gate 6, the human review at merge, is where it is caught. Reading the declaration from the diff
    base would close it and is not done here.
 
    **When the check demands the artifact** (feature 024). The artifact is owed *at merge*, after the final phase
