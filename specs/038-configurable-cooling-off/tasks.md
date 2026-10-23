@@ -96,26 +96,28 @@ description: "Task list for feature 038 — the Critical solo-mode cooling-off p
 
 ## Phase 5: The owner's decisions on the AI review (F1, F5, and the overclaim in two comments)
 
-**Amendment approved by**: anas.m, 2026-10-23
-
 **Purpose**: the owner decided (2026-10-23, on `ai-code-review-phases-2-4.md`) that a malformed `coolingOffHours` or a missing reason is a **warning, not a failure, in team mode**, where no period applies (F5); that the constitution's sync-list entry that calls the Critical cooling-off hours a constant of `scripts/enforcement-pack.ps1` is corrected as a **PATCH, 0.8.0 to 0.8.1** (F1); and that the "a typo can never shorten the wait" claim is corrected in the two code comments that carry it (the spec's wording was amended with this phase). No principle text changes. Solo-mode verdicts and every pre-existing case keep their bytes.
 
 **Territory**:
 
 - `scripts/verify-kit.ps1`
-- `scripts/adoption-lib.ps1` (two comments only)
+- `scripts/adoption-lib.ps1`
 - `tests/enforcement/**`
 - `.specify/memory/constitution.md`
 - `adoption/updating.md`
 
-- [ ] T031 Record the baseline on the last commit of phase 4 and its review fixes in `notes.md`: the full harness count and the coverage report's site counts
-- [ ] T032 [US3] Write the fixtures first, under `tests/enforcement/cases/verify-kit/`: new rule `VK-037`, a malformed value or a missing reason in team mode is a warning that names the field and the value read and says the 24-hour default applies if the project goes solo, exit 0: `fail` (team, `coolingOffHours: 0` with a reason), `fail-no-reason` (team, `coolingOffHours: 4`, no reason), and `pass` (team, an accepted `48`). Move `VK-035/fail-unaccepted-value` under `VK-037` (its expectation changes from a failure to a warning), and keep the solo failures in `VK-033` byte for byte. Run them on the parent commit and confirm the new failing ones fail there
-- [ ] T033 Bring the rule into the coverage sweep: add `VK-037` to `tests/enforcement/rules.json` with its anchor and law, and update the `VK-035` note that listed the unusable-value direction. Run the sweep and classify every candidate it prints
-- [ ] T034 Edit `scripts/verify-kit.ps1` (plan P6, amended): when `$devMode.Mode` is `team`, report each reader problem that would be a failure as a warning that carries the reader's message and a team-mode fix; leave the solo path and the reader's own warnings as they are. Do not interpret the record in this script
-- [ ] T035 Edit `.specify/memory/constitution.md`: version 0.8.0 to 0.8.1 (the footer and a new SYNC IMPACT entry above the existing one, which moves down as prior history); correct the "Templates requiring updates" entry so the Critical cooling-off hours are no longer named a constant of `scripts/enforcement-pack.ps1` and `scripts/adoption-lib.ps1` is named for the default and the floor, with the period stated as a project declaration; change no principle and no historical rationale
-- [ ] T036 Edit `adoption/updating.md` to match: the feature 038 flow-down note's heading and its "What flows down", "What an owner may newly see" and "What does NOT change" passages no longer say "no constitution amendment" or "nothing in your constitution" (a PATCH: re-express the sync-list entry only if your constitution carries it), and the section that declares the keys and the note say a malformed value in team mode is a warning
-- [ ] T037 Edit the two comments in `scripts/adoption-lib.ps1` (the header paragraph and the line in the number test) that say a typo can only get the longer wait or can never shorten it, so they say every fallback lands on 24 hours and never below it. Comments only: `git diff` for that file shows no code line
-- [ ] T038 Run `-Case verify-kit/`, the full harness, `doc-lint.ps1`, `build-digests.ps1 -Check` and `ritual-checks.ps1`: every pre-existing case keeps its verdict, exit code and bytes against T031 apart from the one moved case, every new fixture passes as written, and the sweep reports no uncovered site. Record the result in `notes.md`
+**Amendment approved by**: anas.m, 2026-10-23.
+
+`scripts/adoption-lib.ps1` is in the Territory for its two comments only (T037). An annotation on a Territory bullet is not read by the scope check, so the note sits here.
+
+- [x] T031 Record the baseline on the last commit of phase 4 and its review fixes in `notes.md`: the full harness count and the coverage report's site counts
+- [x] T032 [US3] Write the fixtures first, under `tests/enforcement/cases/verify-kit/`: new rule `VK-037`, a malformed value or a missing reason in team mode is a warning that names the field and the value read and says the 24-hour default applies if the project goes solo, exit 0: `fail` (team, `coolingOffHours: 0` with a reason), `fail-no-reason` (team, `coolingOffHours: 4`, no reason), and `pass` (team, an accepted `48`). Move `VK-035/fail-unaccepted-value` under `VK-037` (its expectation changes from a failure to a warning), and keep the solo failures in `VK-033` byte for byte. Run them on the parent commit and confirm the new failing ones fail there
+- [x] T033 Bring the rule into the coverage sweep: add `VK-037` to `tests/enforcement/rules.json` with its anchor and law, and update the `VK-035` note that listed the unusable-value direction. Run the sweep and classify every candidate it prints
+- [x] T034 Edit `scripts/verify-kit.ps1` (plan P6, amended): when `$devMode.Mode` is `team`, report each reader problem that would be a failure as a warning that carries the reader's message and a team-mode fix; leave the solo path and the reader's own warnings as they are. Do not interpret the record in this script
+- [x] T035 Edit `.specify/memory/constitution.md`: version 0.8.0 to 0.8.1 (the footer and a new SYNC IMPACT entry above the existing one, which moves down as prior history); correct the "Templates requiring updates" entry so the Critical cooling-off hours are no longer named a constant of `scripts/enforcement-pack.ps1` and `scripts/adoption-lib.ps1` is named for the default and the floor, with the period stated as a project declaration; change no principle and no historical rationale
+- [x] T036 Edit `adoption/updating.md` to match: the feature 038 flow-down note's heading and its "What flows down", "What an owner may newly see" and "What does NOT change" passages no longer say "no constitution amendment" or "nothing in your constitution" (a PATCH: re-express the sync-list entry only if your constitution carries it), and the section that declares the keys and the note say a malformed value in team mode is a warning
+- [x] T037 Edit the two comments in `scripts/adoption-lib.ps1` (the header paragraph and the line in the number test) that say a typo can only get the longer wait or can never shorten it, so they say every fallback lands on 24 hours and never below it. Comments only: `git diff` for that file shows no code line
+- [x] T038 Run `-Case verify-kit/`, the full harness, `doc-lint.ps1`, `build-digests.ps1 -Check` and `ritual-checks.ps1`: every pre-existing case keeps its verdict, exit code and bytes against T031 apart from the one moved case, every new fixture passes as written, and the sweep reports no uncovered site. Record the result in `notes.md`
 - [ ] T039 Stop. Review the working diff, commit as `phase 5: review decisions - team-mode doctor, constitution PATCH`, run `pwsh -File scripts/scope-check.ps1`, and ask the owner to run the gate. Then request the fresh-context AI review of phase 5 (never self-graded, with the Reviewer Provenance block) and the human review
 
 ---
