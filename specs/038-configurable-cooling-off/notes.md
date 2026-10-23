@@ -372,3 +372,14 @@ changed). **The full harness was started on this tree and was killed by the syst
 second time in this feature, so there is no full-suite result for these fixes from the agent; it was not restarted.** The last
 complete run, 2230 passed, 0 failed, was on the tree before these fixes (the phase 5 commit); this round adds one case (2
 assertions) and edits no other expectation than `VK-035/fail`. The owner's gate is the certification.
+
+**Review fixes and phase 5, final state, gated (owner, 2026-10-23).** Committed through `5cd9dc3`; the phase 5 commits are `9328f16`
+and `5832395`, and `scope-check.ps1` PASSes both (18 and 9 files). The owner ran `pwsh -File scripts/ritual-checks.ps1` on
+`5cd9dc3`: RESULT OK (doc-lint, enforcement-pack with `AmendmentAuthority` grading 19 of 19 commits, scope-check on every phase
+commit, digests, roadmap-claims; scope-repos and verify-kit n/a), exit code 0 confirmed ("confirme", the owner's reply to the
+question whether the exit code was 0). This supersedes the earlier run on `9328f16`, whose exit code was never confirmed, and
+certifies everything since the phase 4 gate on `527c099`: the review fixes (`c185c0a`, `0a02f48`), the amendments (`5578b7f`,
+`d303a92`), phase 5 and its fixes. `PhaseSizeWarning` on `9328f16` (369 lines, 16 files, non-blocking): the doctor change is one
+code line, with three fixtures and the constitution PATCH. The full harness was not completed on the final tree (killed for low
+memory twice; see the two runs above); the last complete run, 2230 passed, 0 failed, was on `9328f16`'s tree. Open for the
+owner: the human review (T030/T039), including the amendment records the AI reviewers could not verify.
