@@ -1,0 +1,4 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 6 changed file(s)
+AmendmentAuthority: graded 0 of 3 commit(s) in <SHA>..HEAD (3 not graded: 3 made before the check existed (plan D2b))
+WARNING: CriticalEvidence: the cooling-off period is 1h, below the 24h default - declared in kit-adoption.json coolingOffHours with the recorded reason "single-developer tooling repo; features are small and reviewed the same day" (a written claim, not a verified one; docs/sdlc/critical-delivery.md item 5; a WARN, not a failure)
+enforcement-pack: OK

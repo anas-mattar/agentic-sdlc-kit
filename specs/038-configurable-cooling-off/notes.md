@@ -105,3 +105,44 @@ on it; this amends `plan.md` P2 and P6 and `tasks.md` T004 and T021 (each carrie
 `data-model.md`. Tests: a column's worth of assertions on every row, the null-reason row, and the unusable, missing,
 directory and nested-key cases; two mutants of the new field fail 2 and 27 tests. F1's open question: **no length limit**
 on the reason, so the contract stands as approved.
+
+**Phase 1, final state, gated (owner, 2026-10-23).** On the final phase 1 commit `633d63c`: full harness **2114 passed, 0
+failed** (the baseline's 2047 plus 67), `doc-lint.ps1` OK, coverage report unchanged (291 of 308 sites). Run by the agent
+on a clean checkout and, separately, by the owner on the working tree with the same totals. This is the baseline phase 2
+is measured against.
+
+## Phase 2: the check reads it (T008 to T017)
+
+**Baseline (T008).** The phase 1 commit above: 2114 passed, 0 failed. Every existing `CRIT-S*`, `CRIT-R*` and `CRIT-T*` case
+passed in it, and they are unchanged by this phase.
+
+**Fixtures first (T009 to T013).** 25 new cases, generated with hand-written expectations (the wording was fixed in
+`plan.md` P4 and P5 before any was written): `CRIT-C01` (6: an honored 4h either side, the 1h floor either side, a whole
+number written `4.0`, a reason with a line break), `CRIT-C02` (13: no reason, a blank reason, a numeric reason, and each
+unusable value: 0, negative, fractional, a string, a boolean, null, an array, an object, with a pass at 25h and fails at
+23.5h), five `CRIT-S03` variants (a declared 24 either side, a declared 48 either side, a record whose root is an array) and
+two `CRIT-T01` team-arm variants copied from the existing team fixtures with only the record changed. Against the unchanged
+`enforcement-pack.ps1`: all 6 `CRIT-C01` and all 13 `CRIT-C02` cases failed, and of the five new `CRIT-S03` variants only
+`fail-declared-48` failed; the declared-24 pair, `pass-declared-48` and the root-array record passed because they are the
+byte-identical controls they were written to be, and so did both team-arm variants.
+
+**The change (T014, T015).** `Invoke-CriticalSoloEvidence` in `scripts/enforcement-pack.ps1` reads `Get-CoolingOff -Root $Root`
+first; a value set aside prints one WARN carrying the reader's own message and "the 24h default applies instead"; an honored
+period under the default prints one WARN naming the period and quoting the reason; the "recorded too recently" failure
+compares against the period in effect and, only when that is not 24, gains `declared in kit-adoption.json coolingOffHours;`
+inside its parenthesis, so at 24 it is word for word the old message. `$Config.CoolingOffHours` is removed and says where the
+default now lives; the header comment is updated. `Invoke-CriticalTeamEvidence`, the clock read and the merge-readiness code
+are untouched. `rules.json` gains `CRIT-C01` and `CRIT-C02` (the two new emission sites) and `CRIT-S03`'s `law` and notes are
+updated; no new idiom was needed. Two deviations from the task text, both within its note that the ids are provisional: the
+explicit-24, above-default and unreadable-record cases are variants of `CRIT-S03`, and the team-arm cases are variants of
+`CRIT-T01`.
+
+**Run (T016), 2026-10-23, on the phase 2 working tree.** `-Case` runs of `enforcement-pack/CRIT-C01`, `CRIT-C02`, `CRIT-S03`
+and `CRIT-T01` passed first (174, 188, 176 and 174, 0 failed; each also runs the coverage, inventory and reader tests). An
+earlier full-harness attempt was killed by the system for low memory; it was rerun alone and finished. Full harness **2166
+passed, 0 failed, 0 skipped** (phase 1's 2114 plus 52), exit 0, 2656s. `doc-lint.ps1` OK. `ritual-checks.ps1` RESULT OK
+(doc-lint, enforcement-pack, scope-check on the three phase 1 commits, digests 5 fresh, roadmap-claims OK; scope-repos and
+verify-kit n/a). Coverage sweep: 293 of 310 sites owned by a fixtured rule, against phase 1's 291 of 308: the two new sites
+(`CRIT-C01`, `CRIT-C02`) are both fixtured, the exempt and not-a-rule counts are unchanged, and `enforcement-pack.ps1` reads
+88 of 95. Every pre-existing case passed in the same run. This is agent-run evidence only; the owner's gate is the
+certification. Phase 2 is not committed yet (T017).

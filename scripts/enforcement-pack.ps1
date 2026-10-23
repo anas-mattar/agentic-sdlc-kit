@@ -54,7 +54,10 @@
                          MODES selected by the 'developers' array in kit-adoption.json.
                          SOLO (one developer declared, or nothing usable declared):
                          second-model-review.md exists and was first committed at least
-                         $Config.CoolingOffHours ago — the solo substitute, unchanged.
+                         the cooling-off period ago — 24 hours unless kit-adoption.json
+                         declares another (coolingOffHours, read by Get-CoolingOff in
+                         adoption-lib.ps1; a period under 24 needs a coolingOffReason and
+                         always prints a WARN) — the solo substitute.
                          TEAM (two or more declared): human-pr-review.md carries a filled
                          '## Review Provenance' block naming a Reviewer who is not the
                          Owner, plus the verbatim attestation; no cooling-off applies,
@@ -158,7 +161,8 @@ $Config = @{
     ContractsGlob           = '*contracts*'
     DomainInvariantsPath    = '{{DOMAIN_INVARIANTS_PATH}}'
     AbuseGuardFileCount     = 25
-    CoolingOffHours         = 24
+    # The solo cooling-off period is not here: its default (24) and floor live beside the reader that applies the
+    # project's declaration, Get-CoolingOff in scripts/adoption-lib.ps1 (feature 038) - two constants would drift.
     PhaseWarnLines          = 400
     PhaseWarnFiles          = 15
     MaxBatchPhases          = 3
@@ -647,6 +651,17 @@ function Invoke-CriticalEvidenceCheck {
 # conditions, same message strings, so a solo project cannot tell this feature happened.
 function Invoke-CriticalSoloEvidence {
     param([string]$Dir)
+    # Feature 038: the period is the project's declaration, not a constant. Read before anything else so a short period
+    # is named in the output whenever the solo arm is graded, even when the review is missing and the run fails on that.
+    # A WARN never changes the verdict: the failure, if any, is the "recorded too recently" line below.
+    $period = Get-CoolingOff -Root $Root
+    $defaultHours = $script:CoolingOffDefaultHours
+    if (-not $period.Honored) {
+        $setAside = @($period.Problems | Where-Object { $_.Severity -eq 'fail' })[0]
+        $script:warnings += "CriticalEvidence: $($setAside.Message) - the $($defaultHours)h default applies instead (docs/sdlc/critical-delivery.md item 5; a WARN, not a failure)"
+    } elseif ($period.Hours -lt $defaultHours) {
+        $script:warnings += "CriticalEvidence: the cooling-off period is $($period.Hours)h, below the $($defaultHours)h default - declared in kit-adoption.json coolingOffHours with the recorded reason `"$($period.Reason)`" (a written claim, not a verified one; docs/sdlc/critical-delivery.md item 5; a WARN, not a failure)"
+    }
     $reviewPath = Join-Path $Dir 'second-model-review.md'
     if (-not (Test-Path $reviewPath)) {
         $script:failures += "CriticalEvidence: $dir/second-model-review.md is missing (required for Critical features — docs/sdlc/critical-delivery.md item 5)"
@@ -667,9 +682,12 @@ function Invoke-CriticalSoloEvidence {
     }
     $recordedTime = [DateTimeOffset]::Parse($recorded)
     $elapsedHours = ([DateTimeOffset]::UtcNow - $recordedTime).TotalHours
-    if ($elapsedHours -lt $Config.CoolingOffHours) {
-        $remaining = [math]::Ceiling($Config.CoolingOffHours - $elapsedHours)
-        $script:failures += "CriticalEvidence: $dir/second-model-review.md was recorded $([math]::Round($elapsedHours, 1))h ago — cooling-off requires $($Config.CoolingOffHours)h ($remaining h remaining, docs/sdlc/critical-delivery.md item 5)"
+    if ($elapsedHours -lt $period.Hours) {
+        $remaining = [math]::Ceiling($period.Hours - $elapsedHours)
+        # At the default the message is word for word the one a project that declares nothing has always had; any other
+        # period says where the number came from.
+        $source = if ($period.Hours -ne $defaultHours) { 'declared in kit-adoption.json coolingOffHours; ' } else { '' }
+        $script:failures += "CriticalEvidence: $dir/second-model-review.md was recorded $([math]::Round($elapsedHours, 1))h ago — cooling-off requires $($period.Hours)h ($source$remaining h remaining, docs/sdlc/critical-delivery.md item 5)"
     }
 }
 

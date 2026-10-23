@@ -623,9 +623,27 @@
       "script": "enforcement-pack.ps1",
       "function": "Invoke-CriticalSoloEvidence",
       "summary": "the second-model review is younger than the cooling-off period",
-      "law": "docs/sdlc/critical-delivery.md item 5 (CoolingOffHours = 24)",
+      "law": "docs/sdlc/critical-delivery.md item 5 (the period is 24h unless kit-adoption.json declares another: feature 038)",
       "emitAnchor": "cooling-off requires",
-      "notes": "The pair sits either side of 24h by half an hour (23.5 / 24.5), using the recipe's new 'hoursAgo' back-dating. Relative, not absolute: an absolute date would make this fixture expire."
+      "notes": "The pair sits either side of 24h by half an hour (23.5 / 24.5), using the recipe's new 'hoursAgo' back-dating. Relative, not absolute: an absolute date would make this fixture expire. Feature 038 added variants, all of which exercise this one message: a declared 24 either side (word for word the default message, no clause, no WARN), a declared 48 (stricter than the default: the message gains the clause naming where the number came from, and no WARN is printed), and a record that cannot be read as an object (24 applies, nothing about a cooling-off is printed). The honored short period is CRIT-C01 and the set-aside value is CRIT-C02, which own the two WARN sites."
+    },
+    {
+      "id": "CRIT-C01",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalSoloEvidence",
+      "summary": "a solo Critical feature runs under a declared cooling-off period below the 24h default: the period is applied and the weaker control is named, with its recorded reason",
+      "law": "docs/sdlc/critical-delivery.md item 5; feature 038 spec FR-005, FR-006, FR-008",
+      "emitAnchor": "- declared in kit-adoption.json coolingOffHours with the recorded reason",
+      "notes": "A WARN, never a failure: the failure, when there is one, is the CRIT-S03 message, which now names the declared period. The pair sits half an hour either side of the declared 4h (4.5 passes, 3.5 fails). Variants: the floor itself (1h, either side), a whole number written 4.0 (prints 4h, never 4.0h), and a reason with a line break (printed on one line). The value is honored only with a usable reason (CRIT-C02 is the case where it is not)."
+    },
+    {
+      "id": "CRIT-C02",
+      "script": "enforcement-pack.ps1",
+      "function": "Invoke-CriticalSoloEvidence",
+      "summary": "a declared cooling-off value that cannot be honored is set aside, 24h applies, and the output says so and why",
+      "law": "docs/sdlc/critical-delivery.md item 5; feature 038 spec FR-003, FR-005, FR-006",
+      "emitAnchor": "h default applies instead (",
+      "notes": "One emission site, many causes, each a variant: a value under 24 with no reason, a blank reason, a reason that is not a string, and every unusable shape of the value itself (0, negative, fractional, a string, a boolean, null, an array, an object). Each is read by Get-CoolingOff and the WARN carries the reader's own message, so the pack and the doctor cannot word it differently. The fail variants sit at 23.5h, where the unchanged default message proves 24 applied; the pass variants at 25h, where the run passes on the default and the WARN is the only trace of the declared value."
     },
     {
       "id": "CRIT-T01",
