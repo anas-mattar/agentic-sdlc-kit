@@ -298,7 +298,11 @@ try {
             if ($cooling.AnyDeclared) {
                 foreach ($coolProblem in $cooling.Problems) {
                     # The severity travels with the problem, as for the roster: the doctor never decides it.
+                    # In team mode no cooling-off period applies, so a value the reader set aside changes no verdict
+                    # and is a warning, not a failure; its fix says what would happen if the project went solo
+                    # (review F5, owner decision 2026-10-23). The message is the reader's, unchanged.
                     if ($coolProblem.Severity -eq 'warn') { Add-Finding WARN 'record' $coolProblem.Message $coolProblem.Fix }
+                    elseif ($devMode.Mode -eq 'team') { Add-Finding WARN 'record' $coolProblem.Message 'correct it before the project goes solo: in team mode no cooling-off period applies, so it changes no verdict today, and solo the value is set aside and 24 hours applies until it is fixed' }
                     else { Add-Finding FAIL 'record' $coolProblem.Message $coolProblem.Fix }
                 }
                 # An accepted value is stated back. Below the default the reason is quoted, because it is what the

@@ -1,5 +1,5 @@
 {
-  "description": "Two developers declared and an unusable value: the failure and the team-mode warning are both reported.",
+  "description": "Two developers declared (team mode) and coolingOffHours is 0, which is below the floor: no period applies in team mode, so the doctor reports a warning, not a failure, naming the value read and saying 24 hours applies if the project goes solo. The team-mode warning follows.",
   "defaultBranch": "main",
   "commits": [
     {

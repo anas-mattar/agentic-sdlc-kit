@@ -301,3 +301,43 @@ is not edited here; the dispositions are recorded in this section.
 cases), exit 0, 2566s, run alone. `doc-lint.ps1` OK, `build-digests.ps1 -Check` OK (the digest marker is unchanged, so no
 digest changed), `ritual-checks.ps1` RESULT OK. Coverage sweep unchanged at 297 of 314 (no new emission site). Agent-run evidence
 only; the owner's gate is the certification.
+
+## Phase 5: the owner's decisions on the AI review (T031 to T039)
+
+**Baseline (T031).** The tree at `c5bace3`, whose code is the phase 4 code plus the review-fix fixtures: full harness **2226
+passed, 0 failed, 0 skipped**, coverage 297 of 314 sites, `ritual-checks.ps1` RESULT OK (run by the agent, 2026-10-23). The
+owner's gate stands on `527c099`; the review fixes and this phase are not yet gated.
+
+**Fixtures first (T032, T033).** New rule `VK-037` (a malformed `coolingOffHours` or a missing reason in team mode is a
+warning), three cases with hand-written expectations: `fail` (team, `0` with a reason), `fail-no-reason` (team, `4`, no
+reason) and `pass` (team, an accepted `48`). `VK-035/fail-unaccepted-value`, whose expectation was a failure, was removed:
+its scenario is now `VK-037/fail`, with a warning and exit 0. The `VK-035` note was updated. Against the unchanged
+`verify-kit.ps1`: both new failing cases failed on both assertions and the `pass` control passed; the run showed 6
+failures, the 4 assertions plus the 2 coverage tests that cannot find the new anchor.
+
+**The change (T034).** In the cooling-off block of `scripts/verify-kit.ps1`, a reader problem of severity `fail` is reported as
+a warning when `$devMode.Mode` is `team`, with the reader's message unchanged and a team-mode fix ("correct it before the
+project goes solo: in team mode no cooling-off period applies, so it changes no verdict today, and solo the value is set aside
+and 24 hours applies until it is fixed"); in solo mode it is the failure it was, byte for byte. The reader's own warnings (an
+unused reason) keep their text in both modes. One added code line and a comment.
+
+**The constitution (T035).** PATCH 0.8.0 to 0.8.1, sync-list bookkeeping: a new SYNC IMPACT entry above the former top one (which
+moved down as "Prior version history (0.7.0 → 0.8.0)"), the footer, and the "Templates requiring updates" list: the entry for
+`scripts/enforcement-pack.ps1` no longer names the Critical cooling-off hours, and a new entry names `scripts/adoption-lib.ps1`
+for the default and the floor. `git diff` removes exactly three lines (the version-change line, the old list line, the
+footer); no principle and no historical rationale changed. The edit tool left the file with CRLF endings and it was
+normalised back to LF, as `verify-kit.ps1` was earlier in this feature.
+
+**The guidance and the comments (T036, T037).** The feature 038 flow-down note in `adoption/updating.md` now says the
+constitution takes a PATCH, what an adopter does about it (re-express only the one sync-list entry, only if their list carries
+it), that a malformed value in team mode is a warning, and the section that declares the keys says the same. The two comments
+in `scripts/adoption-lib.ps1` that said a typo can only get the longer wait now say it can never get a wait below the default
+and that a mistyped longer period also falls to the default; `git diff` for that file shows comment lines only.
+
+**Run (T038), 2026-10-23, on the phase 5 working tree.** Full harness **2230 passed, 0 failed, 0 skipped** (the baseline's 2226,
+minus the 2 assertions of the moved case, plus the 6 of the three new ones), exit 0, 2332s, run alone. A first attempt was killed
+by the system for low memory before it finished; it was not restarted until asked, and the rerun finished. `-Case verify-kit/`:
+**372 passed, 0 failed**. `doc-lint.ps1` OK. `build-digests.ps1 -Check` OK (5 digests fresh, 124 markers; no marker changed).
+Coverage sweep **298 of 315** (297 of 314 plus the one new site, covered by `VK-037`), `verify-kit.ps1` 41 of 42, exempt and
+not-a-rule counts unchanged. Every pre-existing case passed with its expectation unedited, apart from the one that moved.
+Agent-run evidence only; the owner's gate is the certification.

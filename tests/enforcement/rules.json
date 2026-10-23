@@ -1505,7 +1505,7 @@
       "summary": "a cooling-off setting declared in team mode is a warning that it has no effect there",
       "law": "feature 038 spec FR-010, FR-011; docs/sdlc/critical-delivery.md item 5",
       "emitAnchor": "Add-Finding WARN 'record' \"kit-adoption.json declares a cooling-off setting",
-      "notes": "The team arm never reads the setting (Invoke-CriticalTeamEvidence is not edited), so a project that declares it with two or more developers would otherwise believe it had shortened a wait that does not exist. Read from the existing $devMode.Mode, not from the record. Three warning directions: a short period with a reason, a period above the default, and an unusable value (the failure and this warning are both reported). The pass direction is team mode with neither key: nothing about cooling-off is printed."
+      "notes": "The team arm never reads the setting (Invoke-CriticalTeamEvidence is not edited), so a project that declares it with two or more developers would otherwise believe it had shortened a wait that does not exist. Read from the existing $devMode.Mode, not from the record. Two warning directions: a short period with a reason and a period above the default. An unusable value in team mode is VK-037, where it is a warning too. The pass direction is team mode with neither key: nothing about cooling-off is printed."
     },
     {
       "id": "VK-036",
@@ -1515,6 +1515,15 @@
       "law": "feature 038 spec FR-011; plan P6",
       "emitAnchor": "Add-Finding ok 'record' \"kit-adoption.json coolingOffHours declares",
       "notes": "Printed only when a value is declared and applies, so a project that declares neither key sees exactly the output it saw before the setting existed (SC-005); that record is the pass direction. The line is what lets an owner confirm the doctor read the period they meant. Six directions in which the line appears: a short period with a reason, a period above the default, an explicit 24, a whole number written 4.0 (printed as 4), a reason holding a line break (quoted on one line), and the floor of one hour (printed in the singular)."
+    },
+    {
+      "id": "VK-037",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a malformed coolingOffHours or a missing reason in team mode is a warning, not a failure",
+      "law": "feature 038 spec FR-011 (amended 2026-10-23, review F5); plan P6",
+      "emitAnchor": "Add-Finding WARN 'record' $coolProblem.Message 'correct it before the project goes solo",
+      "notes": "In team mode no cooling-off period applies, so a value the reader cannot accept changes no verdict and failing the adoption over it (exit 1, '24 hours applies') said something untrue. The doctor still names the field and the value read, carries the reader's message unchanged, and replaces only the fix: correct it before the project goes solo, where the value is set aside and 24 hours applies. Two warning directions, 'fail' (an unusable value) and 'fail-no-reason' (a period under 24 with no usable reason). The pass direction is team mode with an accepted value: nothing is malformed, so only the declaration and the VK-035 warning print. The solo failures stay VK-033 and are unchanged; the reader's own warnings (a reason with nothing to justify, VK-034) keep their text in both modes."
     },
     {
       "id": "VK-019",
