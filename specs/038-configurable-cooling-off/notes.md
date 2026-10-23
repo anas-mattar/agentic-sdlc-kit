@@ -152,3 +152,45 @@ certification.
 commits, digests, roadmap-claims; scope-repos and verify-kit n/a), exit code 0 confirmed. `PhaseSizeWarning` on `942d7b5`
 (2122 lines, 82 files, non-blocking): 75 of the 82 files are the 25 fixture cases at three files each; the script change is
 28 lines. This is the baseline phase 3 is measured against (T018).
+
+## Phase 3: the doctor reports it (T018 to T023)
+
+**Baseline (T018).** The phase 2 commit `942d7b5` (gated by the owner, exit 0): full harness 2166 passed, 0 failed. `-Case
+verify-kit/` on that tree, run alone before any phase 3 file existed: **316 passed, 0 failed**, exit 0, over the 77 existing
+`VK-*` cases (VK-001 to VK-032; VK-028 is the exempt top-level catch, so the new ids start at VK-033). Existing expectations
+are not edited in this phase, so "a record declaring neither key prints nothing new" is shown by every existing `VK-*` case
+passing with its `expected.txt` untouched; `git diff` against `942d7b5` for `tests/enforcement/cases/verify-kit/` shows only
+new `VK-033` to `VK-036` directories.
+
+**Fixtures first (T019, T020).** 26 cases in four rules, expectations written by hand from the wording in `plan.md` P6 and
+`contracts/kit-adoption-cooling-off.md`, generated from the `VK-031` project by changing only the `kit-adoption.json` lines:
+`VK-033` (the FAIL: eleven failing directions, one per unusable shape, and one pass), `VK-034` (the unused-reason WARN: a
+reason alone, a reason on 48, and a pass), `VK-035` (the team-mode WARN: a short period, 48, an unusable value, and a pass
+with neither key) and `VK-036` (the accepted declaration stated back: a short period with a reason, 48, an explicit 24, 4.0,
+a reason with a line break, the floor of one hour, and a pass with neither key). The four rules were added to `rules.json`
+with their anchors and laws before the first run, because the harness refuses a case whose rule it does not know. No change
+to `emission-idioms.json`: the existing `Add-Finding (FAIL|WARN|ok)` accumulator already sees every new site, and the four
+new lines are four new sites, each anchored by its own rule. Against the unchanged `verify-kit.ps1`, **23 of the first 25
+cases failed** (output or exit code) and the two controls passed: `VK-035/pass` and `VK-036/pass`, the records that must print
+nothing new. `VK-036/fail-floor-1h` was added after the doctor edit, when its singular wording was written, so it was never
+shown failing on the parent; it passes now and its expectation was written before it was run.
+
+**The change (T021).** One block in `scripts/verify-kit.ps1` after the `developers` block, gated on `Get-CoolingOff`'s own
+`AnyDeclared`: each reader problem is reported with the severity it carries (FAIL or WARN, the doctor never decides it); an
+accepted declaration prints one `ok` line stating the period and, below 24, quoting the reason; either key declared when
+`$devMode.Mode` is `team` adds one WARN that the setting has no effect there. A record declaring neither key prints nothing.
+The doctor does not interpret the record: hours, reason and every message come from the library. One deviation worth the
+owner's eye: in team mode the `ok` line is still printed, as plan P6 says the warning is *added*; it says "declares", not
+"applies", and the WARN beside it says no period applies there.
+
+**Edit hazard, recorded.** The edit tool rewrote `scripts/verify-kit.ps1` with CRLF endings (git showed 769 changed lines for a
+29-line edit). It was normalised back to the repository's LF before this run completed; `git diff --stat` is now 29 insertions.
+
+**Run (T022), 2026-10-23, on the phase 3 working tree.** Full harness **2218 passed, 0 failed, 0 skipped** (phase 2's 2166
+plus 52, the 26 new cases at two assertions each), exit 0, 2396s, run alone. `-Case verify-kit/`: **368 passed, 0 failed**
+(the baseline's 316 plus the same 52), rerun after the new fixtures were normalised to the repository's LF endings (they were
+first written with CRLF; `git ls-files --eol` now reads `i/lf w/lf` for all 78 files). `doc-lint.ps1` OK. `ritual-checks.ps1`
+RESULT OK (verify-kit and scope-repos n/a). Coverage sweep: 297 of 314 sites owned by a fixtured rule, against phase 2's 293
+of 310: the four new sites are `VK-033` to `VK-036`, the exempt and not-a-rule counts are unchanged, and `verify-kit.ps1`
+reads 40 of 41 (the one exempt site is the top-level catch). Every pre-existing case passed in the same run with its
+expectation unedited. Agent-run evidence only; the owner's gate is the certification.

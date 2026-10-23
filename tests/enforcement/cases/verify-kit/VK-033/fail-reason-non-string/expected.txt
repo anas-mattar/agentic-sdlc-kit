@@ -1,0 +1,8 @@
+verify-kit: ok structure — all kit-integrity essentials present
+verify-kit: ok slots — no unfilled slots in project-owned files
+verify-kit: ok constitution — constitution ratified (no template markers remain)
+verify-kit: FAIL record: kit-adoption.json coolingOffHours is 4, below the 24-hour default, and coolingOffReason is missing, blank or not a string — fix: add coolingOffReason, one line saying why a shorter period is acceptable, or write 24 or more — until then 24 hours applies (adoption/updating.md)
+verify-kit: ok record — criticalSurfaces not declared — the surface floor is not armed (adoption/updating.md)
+verify-kit: ok record — adoption record valid — tiers: backend; gate proven
+verify-kit: ok kit-version — .kit-version present (kit commit <SHA>…)
+verify-kit: FAIL (1 failure(s), 0 warning(s))

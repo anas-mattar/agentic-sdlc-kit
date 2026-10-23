@@ -1481,6 +1481,42 @@
       "notes": "A WARN, never a FAIL: repos is recorded and read by no check, so an unknown name cannot make an adoption wrong, only misleading. The same loop prints the FAIL problems (VK-017); the severity travels with the problem so the doctor never decides it itself."
     },
     {
+      "id": "VK-033",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a declared coolingOffHours the reader cannot accept, or a period under 24 with no usable reason, is a failure",
+      "law": "feature 038 spec FR-011; docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "Add-Finding FAIL 'record' $coolProblem.Message $coolProblem.Fix",
+      "notes": "The pack falls back to 24 hours silently by design (a WARN, never a failure of its own); the doctor is the half that tells the project its declaration is being set aside. Eleven failing directions, each one way for a declaration to be unusable: a string, 0, a negative, a fraction, a boolean, an explicit null, an array and an object (each with a usable reason, so exactly one problem is reported), and a period under 24 whose reason is missing, blank or not a string. Read through Get-CoolingOff, the one function the pack uses; the severity travels with the problem so the doctor never decides it. The pass direction is a short period with a usable reason: no failure."
+    },
+    {
+      "id": "VK-034",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a coolingOffReason with nothing to justify is a warning",
+      "law": "feature 038 spec FR-011; plan P4",
+      "emitAnchor": "Add-Finding WARN 'record' $coolProblem.Message $coolProblem.Fix",
+      "notes": "A WARN, never a FAIL: a reason on a value of 24 or more, or with no coolingOffHours at all, changes nothing the pack does, so it can only mislead. Two warning directions, 'fail' (a reason alone) and 'fail-reason-on-48' (a reason on a period above the default, which still gets its accepted declaration stated). The pass direction is the same period with no reason."
+    },
+    {
+      "id": "VK-035",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "a cooling-off setting declared in team mode is a warning that it has no effect there",
+      "law": "feature 038 spec FR-010, FR-011; docs/sdlc/critical-delivery.md item 5",
+      "emitAnchor": "Add-Finding WARN 'record' \"kit-adoption.json declares a cooling-off setting",
+      "notes": "The team arm never reads the setting (Invoke-CriticalTeamEvidence is not edited), so a project that declares it with two or more developers would otherwise believe it had shortened a wait that does not exist. Read from the existing $devMode.Mode, not from the record. Three warning directions: a short period with a reason, a period above the default, and an unusable value (the failure and this warning are both reported). The pass direction is team mode with neither key: nothing about cooling-off is printed."
+    },
+    {
+      "id": "VK-036",
+      "script": "verify-kit.ps1",
+      "function": "dimension 4 record",
+      "summary": "an accepted coolingOffHours declaration is stated back, and below 24 its reason is quoted",
+      "law": "feature 038 spec FR-011; plan P6",
+      "emitAnchor": "Add-Finding ok 'record' \"kit-adoption.json coolingOffHours declares",
+      "notes": "Printed only when a value is declared and applies, so a project that declares neither key sees exactly the output it saw before the setting existed (SC-005); that record is the pass direction. The line is what lets an owner confirm the doctor read the period they meant. Six directions in which the line appears: a short period with a reason, a period above the default, an explicit 24, a whole number written 4.0 (printed as 4), a reason holding a line break (quoted on one line), and the floor of one hour (printed in the singular)."
+    },
+    {
       "id": "VK-019",
       "script": "verify-kit.ps1",
       "function": "dimension 4 record",
