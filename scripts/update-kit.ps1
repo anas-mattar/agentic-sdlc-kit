@@ -183,6 +183,12 @@ $kitVersionPath = Join-Path $Target '.kit-version'
 $recordedCommit = $null
 if (Test-Path $kitVersionPath) {
     try { $recordedCommit = (Get-Content $kitVersionPath -Raw | ConvertFrom-Json).kitCommit } catch {}
+    # A file that holds the commit sha alone is the other form verify-kit.ps1 accepts and adoption/updating.md describes for a project adopted by
+    # copy. Read as JSON it yields no commit, so every file was listed as having no baseline; the sha is the same fact in a plainer form.
+    if (-not $recordedCommit) {
+        $bareSha = "$(Get-Content $kitVersionPath -Raw)".Trim()
+        if ($bareSha -match '^[0-9a-f]{7,40}$') { $recordedCommit = $bareSha }
+    }
 }
 # Is the recorded commit a commit of THIS kit clone? A shallow or rewritten clone, or another fork, does not have it. The surgical pass
 # below reads its log, and a log that failed is not a log with no upstream commits: it must not be reported as 'nothing changed'
