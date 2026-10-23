@@ -2,6 +2,8 @@
 
 The only stored data is two optional keys in `kit-adoption.json`. The rest is derived.
 
+**Amendment approved by**: anas.m, 2026-10-23
+
 ## Stored
 
 | Key | Type | Required | Meaning |
@@ -35,7 +37,8 @@ The only stored data is two optional keys in `kit-adoption.json`. The rest is de
 | record missing, unreadable, unparsable, root not an object | n/a | 24 | n/a | nothing | nothing here (reported by the roster reader) |
 
 Team mode (two or more developers): the check never calls the reader, so no row changes the pack's output; the doctor
-adds one warning if either key is declared.
+adds one warning if either key is declared, and reports every FAIL row above as a warning, because no period applies
+there (review F5, 2026-10-23).
 
 ## State
 

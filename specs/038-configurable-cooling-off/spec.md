@@ -3,6 +3,7 @@
 **Feature Branch**: `038-configurable-cooling-off`
 **Created**: 2026-10-22
 **Status**: Approved (anas.m, 2026-10-22)
+**Amendment approved by**: anas.m, 2026-10-23
 **Delivery Level**: Standard
 **Rationale Rule**: 1
 **Input**: User description: "Make the Critical solo-mode cooling-off period configurable instead of the hardcoded 24 hours. The project owner sets it project-wide in kit-adoption.json. Accepted values: presets 2, 4, 8, 24, or a custom whole number of hours at or above a minimum floor, so it cannot be set to 0 and silently disabled. Default when undeclared or unusable stays 24 (fail-closed, as the developers roster does). Any value below 24h must require a recorded one-line justification and print a visible warning in the CriticalEvidence output so the weaker control is auditable. Applies only to the solo arm; the team arm is unchanged. The cooling-off clock semantics are unchanged."
@@ -74,7 +75,9 @@ the pack applies 24 and says the shorter value was not honored.
 
 ### User Story 3 - A malformed value can never switch the control off (Priority: P1)
 
-A typo, a zero, a negative number, a fraction, a string or a null in the field cannot shorten or remove the wait.
+A typo, a zero, a negative number, a fraction, a string or a null in the field cannot take the wait below the 24-hour
+default: every unusable value falls back to 24 hours. (A typo in a period meant to be longer than 24, such as `"48"`,
+also falls to 24, shorter than meant; the pack warns and the doctor reports it. Amended 2026-10-23, review F2.)
 
 **Why this priority**: the fail-closed fallback is what makes making the value configurable safe.
 
@@ -116,7 +119,8 @@ A project that declares two or more developers, or any project that never declar
 - A reason present with a value of 24 or more, or with no value: ignored, and the doctor notes the reason is unused.
 - A reason that is only whitespace: counts as blank.
 - A Critical feature in a team-mode project that also has the field declared: the field is unused for grading; the
-  doctor reports that it has no effect in team mode.
+  doctor reports that it has no effect in team mode. A malformed value or a missing reason there is reported as a
+  warning, not a failure, because no period applies in team mode (amended 2026-10-23, review F5).
 - `second-model-review.md` committed but period shortened afterwards: the new period is applied against the same
   first-commit time; no retroactive restart.
 
@@ -152,7 +156,8 @@ A project that declares two or more developers, or any project that never declar
   requirement.
 - **FR-011**: The adoption doctor MUST report a malformed field, a below-24 value with a missing reason, an unused
   reason, and a field that has no effect because the project is in team mode. Each report states the period that
-  applies and the fix.
+  applies and the fix. In team mode, where no period applies, a malformed field or a missing reason is a warning, not
+  a failure (amended 2026-10-23, review F5).
 - **FR-012**: `docs/sdlc/critical-delivery.md` item 5, its "What the machine checks" paragraph and its digest marker
   MUST describe the configurable period, the floor, the default, the reason requirement and the warning, and MUST keep
   the honesty sentence that the solo substitute is a mitigation and not independence. `docs/digests/critical-digest.md`
@@ -186,8 +191,11 @@ A project that declares two or more developers, or any project that never declar
 
 ## Assumptions
 
-- The kit's own constitution mentions 24 hours only in a historical bump rationale, not as a normative rule, so no
-  constitution amendment is needed. The normative rule lives in `docs/sdlc/critical-delivery.md` item 5.
+- The kit's own constitution states no number in any principle: it mentions 24 hours in historical bump rationales,
+  and its "Templates requiring updates" list names the Critical cooling-off hours as a constant of
+  `scripts/enforcement-pack.ps1`. The normative rule lives in `docs/sdlc/critical-delivery.md` item 5. The list entry
+  is a stale pointer once the default moves to `scripts/adoption-lib.ps1`, so the owner decided (review F1,
+  2026-10-23) to correct it as a PATCH, 0.8.0 to 0.8.1: sync-list bookkeeping only, no principle text changes.
 - The setting is project-wide, as decided by the owner; there is no per-feature override.
 - The floor of 1 hour is a design choice of this feature; its only job is to rule out 0 and negatives, and the reason
   requirement is what makes shorter values accountable.

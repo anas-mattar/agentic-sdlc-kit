@@ -46,9 +46,9 @@ description: "Task list for feature 038 — the Critical solo-mode cooling-off p
 - [x] T008 Record the baseline on the phase 1 commit in `notes.md`: the full harness count, and the saved output and exit code of every existing `CRIT-S*`, `CRIT-R*` and `CRIT-T*` case, so SC-004 can be shown byte for byte at the end of the phase
 - [x] T009 [US1] Write the fixtures first, under `tests/enforcement/cases/enforcement-pack/`, using the `hoursAgo` back-dating `CRIT-S03` uses (never an absolute date). `CRIT-C01`, the honored short period: pass with the review 5 hours old and `coolingOffHours: 4` with a reason, expecting the WARN naming 4 hours and quoting the reason and exit 0 for the Critical check; fail with the review 3 hours old, expecting the failure naming 4h, the elapsed time, the hours remaining and `(declared in kit-adoption.json coolingOffHours)`; a boundary pair either side of the period by half an hour
 - [x] T010 [US2] Write `CRIT-C02`, the declared value set aside: `coolingOffHours: 4` with no reason, with a blank reason and with a non-string reason, each with the review 25 hours old (passes under 24, expecting the WARN saying the value was set aside and why) and 23.5 hours old (fails under 24, expecting the unchanged default message)
-- [x] T011 [US3] Write `CRIT-C03`, one variant per unaccepted shape: `0`, `-3`, `1.5`, `"8"`, `true`, `null`, `[]`, `{}`, each with a usable reason and the review 23.5 hours old, expecting the unchanged 24-hour failure and the set-aside WARN naming the value read; and an unreadable record and a root that is a JSON array, expecting the unchanged 24-hour failure and no cooling-off warning
-- [x] T012 [US2] Write `CRIT-C04`, a period above the default: `coolingOffHours: 48` with no reason, the review 30 hours old, expecting a failure naming 48h and no warning; and the same review 49 hours old, expecting a pass and no warning
-- [x] T013 [US4] Write `CRIT-C05`, the team arm: a roster of two developers with a committed, valid `human-pr-review.md`, once with `coolingOffHours: 2` and a reason and once with no key, expecting identical output apart from nothing at all: no cooling-off line, no warning, the same exit code. Run all of T009 to T013 on the parent commit and confirm each new failing case fails there; `CRIT-C05` passes on the parent and must keep passing
+- [x] T011 [US3] Write one variant per unaccepted shape (shipped as the `fail-unaccepted-*` variants of `CRIT-C02`; no `CRIT-C03` exists): `0`, `-3`, `1.5`, `"8"`, `true`, `null`, `[]`, `{}`, each with a usable reason and the review 23.5 hours old, expecting the unchanged 24-hour failure and the set-aside WARN naming the value read; and an unreadable record and a root that is a JSON array (shipped as the `fail-record-unreadable`, `fail-record-unparsable` and `fail-record-root-array` variants of `CRIT-S03`), expecting the unchanged 24-hour failure and no cooling-off warning
+- [x] T012 [US2] Write a period above the default (shipped as the `fail-declared-48` and `pass-declared-48` variants of `CRIT-S03`; no `CRIT-C04` exists): `coolingOffHours: 48` with no reason, the review 30 hours old, expecting a failure naming 48h and no warning; and the same review 49 hours old, expecting a pass and no warning
+- [x] T013 [US4] Write the team arm (shipped as the `fail-cooling-keys-ignored` and `pass-cooling-keys-ignored` variants of `CRIT-T01`; no `CRIT-C05` exists): a roster of two developers with a committed, valid `human-pr-review.md`, once with `coolingOffHours: 2` and a reason and once with no key, expecting identical output apart from nothing at all: no cooling-off line, no warning, the same exit code. Run all of T009 to T013 on the parent commit and confirm each new failing case fails there; the team-arm variants pass on the parent and must keep passing
 - [x] T014 Bring the rules into the coverage sweep: add each new rule to `tests/enforcement/rules.json` with its anchor (`declared in kit-adoption.json coolingOffHours`, the honored-period warning wording, the set-aside warning wording) and law (`docs/sdlc/critical-delivery.md` item 5), and the update to `CRIT-S03`'s `law` field, which still reads `CoolingOffHours = 24`; add to `tests/enforcement/emission-idioms.json` only if the sweep reports a new site. Run the sweep and classify every candidate it prints
 - [x] T015 Edit `scripts/enforcement-pack.ps1` (plan P5): remove `CoolingOffHours` from `$Config` and say in its place, in one line, where the default now lives; in `Invoke-CriticalSoloEvidence` call `Get-CoolingOff -Root $Root` first, before the missing-file return; add the two WARNs to `$script:warnings`; compare with `$period.Hours`; keep the failure message's words and add the `(declared in kit-adoption.json coolingOffHours)` clause only when the period is not 24 so the default message is byte-identical. Do not edit `Invoke-CriticalTeamEvidence`, the clock read, or the merge-readiness code. Update the header comment near line 57 that names `$Config.CoolingOffHours`
 - [x] T016 Run `-Case enforcement-pack/`, the full harness, `doc-lint.ps1` and `ritual-checks.ps1`: every pre-existing case keeps its verdict, exit code and bytes against T008, every new fixture passes as written, and the coverage sweep reports no uncovered site. Record the result in `notes.md`
@@ -94,9 +94,35 @@ description: "Task list for feature 038 — the Critical solo-mode cooling-off p
 
 ---
 
+## Phase 5: The owner's decisions on the AI review (F1, F5, and the overclaim in two comments)
+
+**Amendment approved by**: anas.m, 2026-10-23
+
+**Purpose**: the owner decided (2026-10-23, on `ai-code-review-phases-2-4.md`) that a malformed `coolingOffHours` or a missing reason is a **warning, not a failure, in team mode**, where no period applies (F5); that the constitution's sync-list entry that calls the Critical cooling-off hours a constant of `scripts/enforcement-pack.ps1` is corrected as a **PATCH, 0.8.0 to 0.8.1** (F1); and that the "a typo can never shorten the wait" claim is corrected in the two code comments that carry it (the spec's wording was amended with this phase). No principle text changes. Solo-mode verdicts and every pre-existing case keep their bytes.
+
+**Territory**:
+
+- `scripts/verify-kit.ps1`
+- `scripts/adoption-lib.ps1` (two comments only)
+- `tests/enforcement/**`
+- `.specify/memory/constitution.md`
+- `adoption/updating.md`
+
+- [ ] T031 Record the baseline on the last commit of phase 4 and its review fixes in `notes.md`: the full harness count and the coverage report's site counts
+- [ ] T032 [US3] Write the fixtures first, under `tests/enforcement/cases/verify-kit/`: new rule `VK-037`, a malformed value or a missing reason in team mode is a warning that names the field and the value read and says the 24-hour default applies if the project goes solo, exit 0: `fail` (team, `coolingOffHours: 0` with a reason), `fail-no-reason` (team, `coolingOffHours: 4`, no reason), and `pass` (team, an accepted `48`). Move `VK-035/fail-unaccepted-value` under `VK-037` (its expectation changes from a failure to a warning), and keep the solo failures in `VK-033` byte for byte. Run them on the parent commit and confirm the new failing ones fail there
+- [ ] T033 Bring the rule into the coverage sweep: add `VK-037` to `tests/enforcement/rules.json` with its anchor and law, and update the `VK-035` note that listed the unusable-value direction. Run the sweep and classify every candidate it prints
+- [ ] T034 Edit `scripts/verify-kit.ps1` (plan P6, amended): when `$devMode.Mode` is `team`, report each reader problem that would be a failure as a warning that carries the reader's message and a team-mode fix; leave the solo path and the reader's own warnings as they are. Do not interpret the record in this script
+- [ ] T035 Edit `.specify/memory/constitution.md`: version 0.8.0 to 0.8.1 (the footer and a new SYNC IMPACT entry above the existing one, which moves down as prior history); correct the "Templates requiring updates" entry so the Critical cooling-off hours are no longer named a constant of `scripts/enforcement-pack.ps1` and `scripts/adoption-lib.ps1` is named for the default and the floor, with the period stated as a project declaration; change no principle and no historical rationale
+- [ ] T036 Edit `adoption/updating.md` to match: the feature 038 flow-down note's heading and its "What flows down", "What an owner may newly see" and "What does NOT change" passages no longer say "no constitution amendment" or "nothing in your constitution" (a PATCH: re-express the sync-list entry only if your constitution carries it), and the section that declares the keys and the note say a malformed value in team mode is a warning
+- [ ] T037 Edit the two comments in `scripts/adoption-lib.ps1` (the header paragraph and the line in the number test) that say a typo can only get the longer wait or can never shorten it, so they say every fallback lands on 24 hours and never below it. Comments only: `git diff` for that file shows no code line
+- [ ] T038 Run `-Case verify-kit/`, the full harness, `doc-lint.ps1`, `build-digests.ps1 -Check` and `ritual-checks.ps1`: every pre-existing case keeps its verdict, exit code and bytes against T031 apart from the one moved case, every new fixture passes as written, and the sweep reports no uncovered site. Record the result in `notes.md`
+- [ ] T039 Stop. Review the working diff, commit as `phase 5: review decisions - team-mode doctor, constitution PATCH`, run `pwsh -File scripts/scope-check.ps1`, and ask the owner to run the gate. Then request the fresh-context AI review of phase 5 (never self-graded, with the Reviewer Provenance block) and the human review
+
+---
+
 ## Dependencies and order
 
-- Phase 1 before 2 and 3. Phase 2 and phase 3 are independent of each other and are still run in order, one at a time. Phase 4 follows all three, so the guidance describes behaviour that exists.
+- Phase 1 before 2 and 3. Phase 2 and phase 3 are independent of each other and are still run in order, one at a time. Phase 4 follows all three, so the guidance describes behaviour that exists. Phase 5 follows phase 4: it corrects the doctor and the guidance after the review.
 - Within a phase, fixtures come first and are shown failing on the parent commit; the script change follows.
 - Parallel work within a phase is limited to writing fixtures (T009 to T013) and is not needed.
 
@@ -108,7 +134,7 @@ description: "Task list for feature 038 — the Critical solo-mode cooling-off p
 | FR-006, FR-007 | T009, T010, T012, T015 |
 | FR-008, FR-009 | T009, T010, T015, T016 |
 | FR-010 | T013, T015 |
-| FR-011 | T003, T019, T021 |
+| FR-011 | T003, T019, T021, T032 to T034 |
 | FR-012, FR-013 | T025 to T028 |
 | FR-014 | T003, T009 to T014, T019, T020 |
 | SC-001 | T009, T015 |

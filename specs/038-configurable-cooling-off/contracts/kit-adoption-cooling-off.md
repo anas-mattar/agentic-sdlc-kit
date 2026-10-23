@@ -2,6 +2,8 @@
 
 Two optional top-level keys. Read by `Get-CoolingOff` in `scripts/adoption-lib.ps1` and nowhere else.
 
+**Amendment approved by**: anas.m, 2026-10-23
+
 ## Keys
 
 - `coolingOffHours` — a JSON number. Project-wide hours between the first commit of a Critical feature's
@@ -44,7 +46,8 @@ Doctor (`scripts/verify-kit.ps1`):
 
 - FAIL: an unaccepted value; a value under 24 with no usable reason. Each names the field, the value read, the period
   that applies and the fix.
-- WARN: a reason with nothing to justify; either key declared in team mode (no effect there).
+- WARN: a reason with nothing to justify; either key declared in team mode (no effect there). In team mode every FAIL
+  above is a WARN instead, because no period applies there; it still names the field, the value read and the fix.
 - `ok`: an accepted declaration, stating the period and, under 24, quoting the reason.
 - Nothing, when neither key is declared.
 

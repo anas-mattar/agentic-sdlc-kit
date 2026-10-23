@@ -14,8 +14,9 @@ The record gains two optional keys, `coolingOffHours` and `coolingOffReason`. On
 `scripts/adoption-lib.ps1`, `Get-CoolingOff`, is the only place that interprets them, so the check that enforces the
 period and the doctor that reports it cannot disagree (the 013 lesson). Every unusable shape resolves to 24; a value
 below 24 is honored only with a non-blank reason and always prints a warning that quotes it. The team arm, the clock
-and the default message are untouched. Four phases: the reader, the check, the doctor, then guidance, flow-down and
-digests. No package, no new script, no constitution amendment.
+and the default message are untouched. Five phases: the reader, the check, the doctor, then guidance, flow-down and
+digests, then the owner's decisions on the AI review (a fifth phase, amended in 2026-10-23). No package, no new script;
+one constitution PATCH, sync-list bookkeeping only, added by the owner's decision on review F1.
 
 ## Technical Context
 
@@ -36,7 +37,7 @@ block added to `scripts/verify-kit.ps1`, about twenty fixture cases, a Pester fi
 ## Constitution Check
 
 - [x] **Specification First (I)**: the spec is approved (anas.m, 2026-10-22); this plan follows it; `tasks.md` follows once the plan is approved. No code before approval.
-- [x] **Source of Truth (II)**: no conflict found. The constitution mentions 24 hours only in a historical bump rationale, not as a rule; the normative rule is `docs/sdlc/critical-delivery.md` item 5, rewritten in phase 4. `scripts/enforcement-pack.ps1` carries the constant today and is changed to read the record.
+- [x] **Source of Truth (II)**: no conflict found in the principles. The constitution mentions 24 hours only in historical bump rationales, not as a rule, and its sync list names the hours as a constant of `scripts/enforcement-pack.ps1`, a pointer phase 5 corrects (review F1, owner decision 2026-10-23); the normative rule is `docs/sdlc/critical-delivery.md` item 5, rewritten in phase 4. `scripts/enforcement-pack.ps1` carries the constant today and is changed to read the record.
 - [ ] **Repository Separation (III)**: not applicable, the kit is one repository.
 - [x] **Architecture Consistency (IV)**: the new reader sits beside `Get-DeveloperMode` and `Get-CriticalSurfaces` in `scripts/adoption-lib.ps1` and is read by the same two callers; no new pattern, script or dependency.
 - [ ] **Domain Invariants (V)**: not applicable, the kit has no domain-invariants pack.
@@ -105,7 +106,10 @@ calls the reader, so the team arm cannot change. The clock is not edited: still 
 the library's own `AnyDeclared` and reading `Get-CoolingOff` only. Problems from the reader are reported as failures
 (an unaccepted value, a value under 24 with no usable reason) or warnings (a reason that is unused); each states the
 period that applies and the fix. When either key is declared and the project is in team mode (read from the existing
-`$devMode`) the doctor adds one warning that the setting has no effect there. An accepted declaration prints one
+`$devMode`) the doctor adds one warning that the setting has no effect there, and every problem that would be a
+failure is reported as a warning instead (a malformed value or a missing reason cannot change anything where no period
+applies; its fix text says the 24-hour default applies if the project goes solo; review F5, owner decision 2026-10-23).
+An accepted declaration prints one
 `ok` line stating the period and, below 24, quoting the reason. A project that declares neither key prints nothing:
 absence is information, never a finding.
 
@@ -121,8 +125,12 @@ record shows), its digest marker; `adoption/updating.md` (the record shape, the 
 flow-down note: which files flow, that nothing changes for a project that declares neither key, and what a project
 sees when it declares one). `docs/digests/critical-digest.md` is rebuilt by `scripts/build-digests.ps1` only and
 never edited by hand. `scripts/init-kit.ps1` is not changed: both keys are optional and a fresh adoption writes
-neither. No constitution amendment: the independence rule of IX and X is parameterised, not changed (recorded in
-`notes.md`).
+neither. No principle changes: the independence rule of IX and X is parameterised, not changed (recorded in
+`notes.md`). One constitution PATCH, 0.8.0 to 0.8.1, is added in phase 5 (review F1, owner decision 2026-10-23): the
+"Templates requiring updates" entry that calls the Critical cooling-off hours a constant of
+`scripts/enforcement-pack.ps1` now points at `scripts/adoption-lib.ps1`, where the default and the floor live, and says
+the period itself is a project declaration; a SYNC IMPACT entry records it; the earlier version history is left as
+written.
 
 **P9: what the declaration is, and is not (spec Assumptions).** The reason is a written claim: the pack can show it
 exists and is not blank, not that it is a good one, and a reviewer reads it at gate 6. The record sits in the same
@@ -146,6 +154,12 @@ Detailed tasks and the per-phase **Territory** blocks go in `tasks.md`.
    SC-005.
 4. **Guidance, flow-down and digests.** P8 and P9. `docs/sdlc/critical-delivery.md`, `adoption/updating.md`, the
    digest marker, `scripts/build-digests.ps1`, the doc-lint run, `notes.md`. Delivers FR-012 and FR-013.
+5. **The owner's decisions on the AI review.** P6 in team mode, and the constitution PATCH. `scripts/verify-kit.ps1`
+   reports a malformed value or a missing reason as a warning in team mode; `.specify/memory/constitution.md` 0.8.0 to
+   0.8.1; `adoption/updating.md` corrected to match; two code comments in `scripts/adoption-lib.ps1` that overclaim.
+   Delivers the amended FR-011.
+
+**Amendment approved by**: anas.m, 2026-10-23
 
 ## Project Structure
 
