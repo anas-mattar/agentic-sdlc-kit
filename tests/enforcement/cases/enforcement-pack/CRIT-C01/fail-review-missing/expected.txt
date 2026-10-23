@@ -1,0 +1,5 @@
+enforcement-pack: branch '001-thing', diff base '<SHA>', 5 changed file(s)
+AmendmentAuthority: graded 0 of 2 commit(s) in <SHA>..HEAD (2 not graded: 2 made before the check existed (plan D2b))
+WARNING: CriticalEvidence: the cooling-off period is 4h, below the 24h default - declared in kit-adoption.json coolingOffHours with the recorded reason "single-developer tooling repo; features are small and reviewed the same day" (a written claim, not a verified one; docs/sdlc/critical-delivery.md item 5; a WARN, not a failure)
+enforcement-pack: FAIL (1 issue(s)):
+  - CriticalEvidence: specs/001-thing/second-model-review.md is missing (required for Critical features — docs/sdlc/critical-delivery.md item 5)
