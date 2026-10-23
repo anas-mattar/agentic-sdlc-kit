@@ -200,3 +200,74 @@ expectation unedited. Agent-run evidence only; the owner's gate is the certifica
 commits, digests, roadmap-claims; scope-repos and verify-kit n/a), exit code 0 confirmed. `PhaseSizeWarning` on `fa7f412`
 (3421 lines, 82 files, non-blocking): 78 of the 82 files are the 26 fixture cases at three files each; the script change is
 29 lines. This is the baseline phase 4 is measured against.
+
+## Phase 4: guidance, flow-down and digests (T024 to T030)
+
+**Search before editing (T024), 2026-10-23.** Searched `scripts/`, `tests/enforcement/` and every governance doc for the
+phrases "24-hour", "24h", "24 hours", "cooling-off" and `coolingOff`, and read each hit that is not feature history.
+
+- **Machine rules keyed on the wording of item 5: none.** No script other than the three this feature already changed
+  (`adoption-lib.ps1`, `enforcement-pack.ps1`, `verify-kit.ps1`) mentions it; `doc-lint.ps1`, `build-digests.ps1` and
+  `ritual-checks.ps1` match nothing. The pack and the doctor cite the rule as "docs/sdlc/critical-delivery.md item 5", a
+  label this phase does not change. `rules.json` `law` fields that name the period (`CRIT-S03`, `CRIT-C01`, `CRIT-C02`,
+  `VK-033` to `VK-036`) were written or updated in phases 2 and 3.
+- **The one generated coupling is the digest marker** for item 5 (`docs/sdlc/critical-delivery.md`, the line reading "solo
+  devs substitute a second-model review + 24h cooling-off"), which feeds `docs/digests/critical-digest.md`. It is inside this
+  phase's Territory and is rewritten here; the digest is rebuilt by the script, never edited.
+- **In Territory, edited:** `docs/sdlc/critical-delivery.md` (item 5: the rule text, the solo arm line, the honesty
+  sentence, a new paragraph "The cooling-off period", the "24 hours old in solo mode" passage under feature 024's heading,
+  the marker); `adoption/updating.md` (the two passages that call the wait 24 hours, the arm table row, a section on
+  declaring the period, a flow-down note).
+- **Outside Territory, not edited, listed for the owner.** (1) `.specify/memory/constitution.md` lines 122, 154 and 195. Lines
+  122 and 154 are prior-version history (the 0.4.1 and 0.3.0 rationales) and stay true as history. Line 195 is in the
+  "Templates requiring updates" list: it says `scripts/enforcement-pack.ps1` "encodes constitutional constants (...
+  Critical cooling-off hours ...)" that must change in lockstep with an amendment. After this feature the default and the
+  floor live in `scripts/adoption-lib.ps1`, and `enforcement-pack.ps1` no longer holds the constant. The constitution's
+  principles do not state the 24 hours (item 5 of `critical-delivery.md` does), so no principle conflicts; the list entry is
+  now a stale pointer, a bookkeeping matter. Touching it is a constitution edit, which this phase may not do and which would
+  need the owner's recorded approval. (2) `specs/_templates/human-pr-review-template.md` line 17 says "the cooling-off period"
+  without a number: still true. (3) `docs/roadmap.md` lines 31, 49, 51 and 601 describe the 24-hour period in rows about earlier
+  gaps and features: history. (4) `tests/enforcement/lib/FixtureRepo.psm1` comments: harness text.
+- **Not in a Territory-bound rule:** nothing above is a rule that fails on the phrase, so T024's stop condition (a rule
+  outside Territory that keys on it) did not arise.
+
+**The edits (T025 to T027).** Item 5 now says: 24 hours by default; a project may declare a shorter period (down to one hour)
+or a longer one; a period under 24 needs a written reason and every run that applies one says so; a shorter period is a
+further weakening the record and the warning show and do not remove; the doctor reports every case; and, in one place beside
+the rule, that the declaration sits in the same repository as the feature and is checked by review at gate 6 (plan P9). Two
+deviations from the task text, for the owner's eye: (a) the team-arm Honesty paragraph ended "The solo arm is unchanged and
+never reads the human review"; "is unchanged" would now be untrue for a project that declares a period, so it reads "The solo
+arm never reads the human review". Every other mention of the team arm is untouched. (b) The passage under feature 024's heading
+in `critical-delivery.md` that said a solo branch is red until the artifact is "24 hours old" now says "as old as the
+cooling-off period (24 hours by default)", the same fact as the two passages T027 names in `updating.md`.
+
+**Digest marker length.** The item 5 marker is capped at 120 characters by `build-digests.ps1`; my first wording was 137 (measured against the limit before the first
+build, so the build never saw it). It reads "Critical 5: reviewer is never the owner; solo devs: second-model review +
+cooling-off, 24h default, less needs a reason." (120). A marker added to `adoption/updating.md` for the flow-down note was
+dropped: the adoption digest was already at its 40-line cap and one more made it 41, so the build refused. The other markers
+were not touched to make room; the rule is carried by the critical digest.
+
+**Digest rebuild (T028).** `pwsh -File scripts/build-digests.ps1` then `-Check`: OK, 5 digests fresh, 124 markers. Only
+`docs/digests/critical-digest.md` changed, by one line; no other digest changed. It was written by the script alone.
+
+**Determination and limits (T029).**
+
+- **No constitution amendment is needed (plan P8).** The independence rule of Principles IX and X is parameterised, not
+  changed: the constitution delegates the Critical-solo substitute to `docs/sdlc/critical-delivery.md` item 5 and states no
+  number in a principle. The one stale reference, the sync-list entry above, is a bookkeeping pointer and is the owner's to
+  decide on; it is not part of this feature's approved scope.
+- **The limit (plan P9).** The declaration is read from the working tree of the repository being checked, so an owner can
+  shorten their own wait in the same pull request that needs it; the reason is a written claim, not a verified one; and
+  shortening the period after the review was committed applies against the original first-commit time, because the clock
+  does not restart. The warning prints on every run and the change shows in the diff; gate 6 is where it is caught. The
+  guidance says so beside the rule, in item 5 and in the flow-down note.
+- **Follow-up the owner may want, as a note and not as work:** read the declaration from the diff base rather than the working
+  tree, which would close the same-branch limit. That is a separate feature with its own spec.
+
+**Run (T028), 2026-10-23, on the phase 4 working tree.** Full harness **2218 passed, 0 failed, 0 skipped** (identical to
+phase 3's count: this phase adds no case and changes no script), exit 0, 2344s, run alone. `doc-lint.ps1` OK.
+`scripts/build-digests.ps1 -Check` OK (5 digests fresh, 124 markers). `ritual-checks.ps1` RESULT OK (verify-kit and
+scope-repos n/a). Coverage sweep unchanged at 297 of 314. `git diff --stat` before the commit: `adoption/updating.md`,
+`docs/sdlc/critical-delivery.md`, `docs/digests/critical-digest.md` (one line) and this file; nothing under `scripts/` or
+`tests/`. Agent-run evidence only; the owner's gate is the certification, then the fresh-context AI review and the human
+review (T030).

@@ -14,7 +14,7 @@
 - Critical 5 (team): the Reviewer must have pulled the review; an owner's claim does not count. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: a Merge Readiness pending beside a tasks.md with every task ticked is graded as ready. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: ticks are a proxy; an unticked, absent or hidden task leaves Merge Readiness pending a claim. (`docs/sdlc/critical-delivery.md`)
-- Critical 5: the human reviewer is never the owner; solo devs substitute a second-model review + 24h cooling-off. (`docs/sdlc/critical-delivery.md`)
+- Critical 5: reviewer is never the owner; solo devs: second-model review + cooling-off, 24h default, less needs a reason. (`docs/sdlc/critical-delivery.md`)
 - kit-adoption.json developers picks Critical 5's arm: none or one = solo substitute, 2+ = independent human review. (`docs/sdlc/critical-delivery.md`)
 - Critical 5 team arm: the Reviewer must be on the roster and permitted; membership catches a stranger, not identity. (`docs/sdlc/critical-delivery.md`)
 - Critical 5: the artifact is a WARN until the final phase lands, it is committed or the plan says ready; then FAIL. (`docs/sdlc/critical-delivery.md`)
