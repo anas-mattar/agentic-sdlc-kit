@@ -188,10 +188,12 @@ not give it to itself, and a machine can check only that it is well formed.
    the check returns before it reads the review and prints no cooling-off `WARN` (see **When the
    check demands the artifact**, below). A value that is not accepted (zero, a negative, a fraction,
    text, a boolean, `null`, an array, an object, or a number too large to represent) is set aside
-   the same way, and 24 applies: every fallback lands on 24 hours, never below it, so a typo cannot
-   take the wait under the default. A typo in a period meant to be longer than 24 hours, such as
-   `"48"` for 48, also falls to 24, which is shorter than meant; the doctor reports it as a failure,
-   and the check prints a `WARN` naming the value it read. A reason on a period of 24 or more, or
+   the same way, and 24 applies: every fallback lands on 24 hours, never below it. A typo that is
+   itself a valid number is read as written, so `2` typed for `24` is a 2-hour period: below 24 it
+   needs a reason and warns on every run that grades the solo arm. A mistyped period meant to be
+   longer than 24 hours, such as `"48"` for 48, also falls to 24, which is shorter than meant; the
+   doctor reports it as a failure (a warning in team mode, where no period applies), and the check
+   prints a `WARN` naming the value it read. A reason on a period of 24 or more, or
    with no period declared, changes nothing. The clock does not move: it is still the first commit of `second-model-review.md`, and
    a later shortening of the period takes effect against that original time. The team arm never
    reads the setting. The doctor (`scripts/verify-kit.ps1`) reports each of these cases, and a

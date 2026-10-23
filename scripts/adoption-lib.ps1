@@ -218,8 +218,9 @@ function Get-DeveloperMode {
 # The direction of every degenerate input is the stricter one, as in Get-DeveloperMode: no record, an unreadable or
 # unparsable one, a root that is not an object, no key, a value that is not a whole number of at least the floor, a
 # value under the default with no usable reason. All of them give the default. A project that never declares the key
-# is unchanged, and one that mistypes it can never get a wait below the default. (A mistyped period meant to be longer
-# than the default also falls to the default, which is shorter than meant; the doctor reports it, review F2.)
+# is unchanged, and an unusable value never gets a wait below the default. (A mistyped period meant to be longer than the
+# default also falls to the default, which is shorter than meant, and the doctor reports it; a typo that is itself a valid
+# number, 2 for 24, is read as written and needs a reason, reviews F2 and G8.)
 #
 # Returns:
 #   Hours     the period the check applies: a whole number of at least 1, the default whenever anything is missing,
@@ -291,7 +292,7 @@ function Get-CoolingOff {
     }
 
     # A JSON number is a long, a double or a BigInteger once parsed. A boolean, a string, an array and an object are not
-    # numbers, whatever they hold: "8" and [8] are typos, and a typo must never take the wait below the default.
+    # numbers, whatever they hold: "8" and [8] are typos, and a value that is not a number must never take the wait below the default.
     $isNumber = ($value -is [long]) -or ($value -is [int]) -or ($value -is [double]) -or ($value -is [decimal]) -or ($value -is [System.Numerics.BigInteger])
     $hours = $null
     if ($isNumber) {

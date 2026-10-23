@@ -302,14 +302,16 @@ try {
                     # and is a warning, not a failure; its fix says what would happen if the project went solo
                     # (review F5, owner decision 2026-10-23). The message is the reader's, unchanged.
                     if ($coolProblem.Severity -eq 'warn') { Add-Finding WARN 'record' $coolProblem.Message $coolProblem.Fix }
-                    elseif ($devMode.Mode -eq 'team') { Add-Finding WARN 'record' $coolProblem.Message 'correct it before the project goes solo: in team mode no cooling-off period applies, so it changes no verdict today, and solo the value is set aside and 24 hours applies until it is fixed' }
+                    elseif ($devMode.Mode -eq 'team') { Add-Finding WARN 'record' $coolProblem.Message "correct it before the project goes solo: in team mode no cooling-off period applies, so it changes no verdict today, and solo the value is set aside and $($script:CoolingOffDefaultHours) hours applies until it is fixed" }
                     else { Add-Finding FAIL 'record' $coolProblem.Message $coolProblem.Fix }
                 }
                 # An accepted value is stated back. Below the default the reason is quoted, because it is what the
                 # pack's warning will quote on every Critical solo check.
                 if ($cooling.Declared -and $cooling.Honored) {
                     $coolingUnit = if ($cooling.Hours -eq 1) { 'hour' } else { 'hours' }
-                    $coolingNote = if ($null -ne $cooling.Reason) { " with a recorded reason: `"$($cooling.Reason)`" — the pack prints a WARN naming it on every Critical solo check" } else { ' — the solo cooling-off period' }
+                    # The pack prints its WARN only on a solo Critical check, so a team-mode project is not told it will.
+                    $coolingPackNote = if ($devMode.Mode -eq 'team') { '' } else { ' — the pack prints a WARN naming it on every Critical solo check' }
+                    $coolingNote = if ($null -ne $cooling.Reason) { " with a recorded reason: `"$($cooling.Reason)`"$coolingPackNote" } else { ' — the solo cooling-off period' }
                     Add-Finding ok 'record' "kit-adoption.json coolingOffHours declares $($cooling.Hours) $coolingUnit$coolingNote (docs/sdlc/critical-delivery.md item 5)" ''
                 }
                 # The team arm never reads the setting, so a project that declares it there has changed nothing.
